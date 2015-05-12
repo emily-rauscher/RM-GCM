@@ -405,7 +405,9 @@ C            FNET(LHT)=FNETDIFF
 C      FNET(0)=FBASEFLUX+FLS(1)/(1.0-SWALB)+FDWN(0)
 
 C Setup SW code                                                           
-      SOLC=SOLC_IN * (1.0-TOAALB)
+C      SOLC=SOLC_IN * (1.0-TOAALB)
+      call BinaryFlux(KOUNT,SOLC)
+      SOLC=SOLC*(1.0-TOAALB)
           
 !      LDIUR=.TRUE.   !Diurnally averaged if false                        
 C      LDIUR=.FALSE.   !Diurnally averaged if false
