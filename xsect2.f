@@ -159,6 +159,8 @@ C----- KM modif for OLR flux i fort.29
       REAL*8 TOUTFLUX(MG,JG*2)
 C------
       REAL SSLON,SSLAT
+C--- erin for binary flux output                                                                                                  
+      REAL BINFLUX
 
 C PGPLOT map variables
 C      REAL*4 TRMAT(6)
@@ -466,6 +468,12 @@ C      ENDIF
       WRITE (50,105) DAY,SSLON,SSLAT
       WRITE (64,105) DAY,SSLON,SSLAT
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
+
+      IF (mod(KOUNT,ITSPD)=0) THEN
+ 201  FORMAT(E13.5)
+        call BinaryFLux(KOUNT,BINFLUX)
+        write(89,201) BINFLUX
+      ENDIF 
       
       RETURN                                                              
       END                                                                 
