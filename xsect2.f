@@ -469,11 +469,9 @@ C      ENDIF
       WRITE (64,105) DAY,SSLON,SSLAT
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
 
-      IF (mod(KOUNT,ITSPD)=0) THEN
  201  FORMAT(E13.5)
-        call BinaryFLux(KOUNT,BINFLUX)
-        write(89,201) BINFLUX
-      ENDIF 
+      call BinaryFLux(KOUNT,BINFLUX)
+      write(89,201) BINFLUX
       
       RETURN                                                              
       END                                                                 
