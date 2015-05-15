@@ -162,6 +162,11 @@ C------
 C--- erin for binary flux output                                                                                                  
       REAL BINFLUX
 
+      COMMON/BINVAL/LBIN,PORBST,ECCPL,ECCST,SMAPL,SMAST,STMASS1,
+     & STMASS2,STRAD1,STRAD2,STTTEMP1,STTEMP2
+
+      LOGICAL LBIN
+
 C PGPLOT map variables
 C      REAL*4 TRMAT(6)
 C      REAL*4 BRIGHT
@@ -470,8 +475,13 @@ C      ENDIF
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
 
  201  FORMAT(E13.5)
-      call BinaryFLux(KOUNT,BINFLUX)
-      write(89,201) BINFLUX
+      IF (LBIN) THEN
+        call BinaryFlux(KOUNT,BINFLUX)
+      ELSE
+        BINFLUX=SOLC_IN
+      ENDIF
+
+      write(89,201) BINFLUX*(1.0-TOAALB)
       
       RETURN                                                              
       END                                                                 

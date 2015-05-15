@@ -412,8 +412,9 @@ C Setup SW code
 C      SOLC=SOLC_IN * (1.0-TOAALB)
       IF (LBIN) THEN
         call BinaryFlux(KOUNT,SOLC)
-      ELSE
         SOLC=SOLC*(1.0-TOAALB)
+      ELSE
+        SOLC=SOLC_IN*(1.0-TOAALB)
       ENDIF
           
 !      LDIUR=.TRUE.   !Diurnally averaged if false                        
