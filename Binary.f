@@ -7,10 +7,10 @@
       x0=0
       x=x0
       do
-        a=(x0-e*sin(x0)-(2.0*PI*i/P))
+        a=(x0-e*sin(x0)-(2.0*PI*i/(P*1000.)))
         b=1.0-e*cos(x0)
         x1=x0-(a/b)
-        if (abs(x0-e*sin(x0)-(2.0*PI*i/P)) <10E-10) exit
+        if (abs(x0-e*sin(x0)-(2.0*PI*i/(P*1000.))) <10E-10) exit
         x0=x1
       end do
       x=x1
@@ -18,7 +18,6 @@
 
 
       subroutine BinaryFlux(i,output)
-      IMPLICIT NONE
 
       real, parameter         :: SIGMA = 5.67E-8        !StefanBoltzman
       real, parameter         :: RSUN      = 6.95E8         !Radius of Sun
@@ -50,8 +49,8 @@
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
      & PORB, OBLIQ, ECCEN
 
-      integer, parameter         :: Pplanet        = Torbplanet*1000  !*TSPD
-      integer, parameter         :: Pstars         = Torbstars*1000   !*TSPD
+!      integer, parameter         :: Pplanet        = PORB*1000  !*TSPD
+!      integer, parameter         :: Pstars         = PORBST*1000   !*TSPD
 
 
 !below are parameters necessary to define so that calculations can be broken up into multiple steps for ease
@@ -99,20 +98,22 @@
 !FIRST - given timestep, calculate Ec_p (Ep) and Ec_s (Ec)
 ! i is the given timestep to be calcuated for
 
-      call ec_anom(eccp,Pplanet,Ep,i)
-      call ec_anom(eccs,Pstars,Es,i)
+      call ec_anom(ECCPL,PORB,Ep,i)
+      call ec_anom(ECCST,PORBST,Es,i)
 
 !SECOND - for the calcuated Ep and Es - corresponding angle on the orbit
 
-      AngleP=2*atan(sqrt((1+eccp)/(1-eccp))*tan(Ep/2))
-      AngleS=2*atan(sqrt((1+eccs)/(1-eccs))*tan(Es/2))
+      AngleP=2*atan(sqrt((1+ECCPL)/(1-ECCPL))*tan(Ep/2))
+      AngleS=2*atan(sqrt((1+ECCST)/(1-ECCST))*tan(Es/2))
 
 !THIRD - for calculated angle - Distance to COM for planet and star1 and star2
 ! R2 is conventionaly defined to be negative
 
-      Rp=ap*(1-eccp**2)/(1+eccp*cos(AngleP))
-      Rs1=(mstar2/(mstar1+mstar2))*as*(1-eccs**2)/(1+eccs*cos(AngleS))
-      Rs2=-(mstar1/(mstar1+mstar2))*as*(1-eccs**2)/(1+eccs*cos(AngleS))
+      Rp=SMAPL*(1-ECCPL**2)/(1+ECCPL*cos(AngleP))
+      Rs1=(STMASS2/(STMASS1+STMASS2))*SMAST*(1-ECCST**2)
+     &/(1+ECCST*cos(AngleS))
+      Rs2=-(STMASS1/(STMASS1+STMASS2))*SMAST*(1-ECCST**2)
+     &/(1+ECCST*cos(AngleS))
 
 ! FOURTH - distance from planet to each star
 
@@ -137,8 +138,8 @@
 
 ! LAST - flux (in units of W/m^2)
 
-      Ls1=4*PI*SIGMA*(Rstar1)**2*(Tstar1**4)
-      Ls2=4*PI*SIGMA*(Rstar2)**2*(Tstar2**4)
+      Ls1=4*PI*SIGMA*(STRAD1)**2*(STTEMP1**4)
+      Ls2=4*PI*SIGMA*(STRAD2)**2*(STTEMP2**4)
 
       Fs1=Ls1/(4*PI*(Rp1**2))
       Fs2=Ls2/(4*PI*(Rp2**2))
