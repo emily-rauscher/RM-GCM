@@ -37,28 +37,21 @@
 ! for Eccentric anomaly equation - need time in units of timesteps
 
 ! => P = Torb*1000 = units of timesteps
+!These are Binary values from Fort.7
+      COMMON/BINVAL/LBIN,PORBST,ECCPL,ECCST,SMAPL,SMAST,STMASS1,
+     & STMASS2,STRAD1,STRAD2,STTTEMP1,STTEMP2
 
-!      real, parameter         :: Torbplanet     = 450.3  !KEP47c
-      real, parameter         :: Torbplanet     = 75.0  !KEP47b
+      LOGICAL LBIN
 
-      real, parameter         :: Torbstars      = 10.8
+
+! need this for PORB (planet orbit in planet days)
+       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
+     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS,
+     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
+     & PORB, OBLIQ, ECCEN
+
       integer, parameter         :: Pplanet        = Torbplanet*1000  !*TSPD
       integer, parameter         :: Pstars         = Torbstars*1000   !*TSPD
-
-!      real, parameter         :: eccp    = 0.400   !KEP47c
-      real, parameter         :: eccp    = 0.035   !KEP47b
-      real, parameter         :: eccs     = 0.0234
-
-      real, parameter         :: mstar1         = 1.043  !these six to fort.7
-      real, parameter         :: mstar2         = 0.362
-      real, parameter         :: Rstar1         = 0.964*RSUN
-      real, parameter         :: Rstar2         = 0.3506*RSUN
-      real, parameter         :: Tstar1         = 5636
-      real, parameter         :: Tstar2         = 3357
-
- !     real, parameter         :: ap        = 0.989*AU   !KEP47c
-      real, parameter         :: ap        = 0.2956*AU   !KEP47c
-      real, parameter         :: as         = 0.0836*AU
 
 
 !below are parameters necessary to define so that calculations can be broken up into multiple steps for ease
@@ -106,12 +99,8 @@
 !FIRST - given timestep, calculate Ec_p (Ep) and Ec_s (Ec)
 ! i is the given timestep to be calcuated for
 
-!      i=1000.0  !test timestep
       call ec_anom(eccp,Pplanet,Ep,i)
       call ec_anom(eccs,Pstars,Es,i)
-
-!      write(*,*) Ep
-!      write(*,*) Es
 
 !SECOND - for the calcuated Ep and Es - corresponding angle on the orbit
 
