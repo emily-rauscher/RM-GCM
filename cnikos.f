@@ -54,7 +54,11 @@ C
       LOGICAL LSHIST,LMINIH                                               
       LOGICAL LSPO,LGPO    
 
+! need this for the logical switch for if binary or not.
+      COMMON/BINVAL/LBIN,PORBST,ECCPL,ECCST,SMAPL,SMAST,STMASS1,
+     & STMASS2,STRAD1,STRAD2,STTTEMP1,STTEMP2
 
+      LOGICAL LBIN
 
 C                 -----------                                             
 C  Driving program for the extended atmospheric radiation scheme of       
@@ -406,8 +410,11 @@ C      FNET(0)=FBASEFLUX+FLS(1)/(1.0-SWALB)+FDWN(0)
 
 C Setup SW code                                                           
 C      SOLC=SOLC_IN * (1.0-TOAALB)
-      call BinaryFlux(KOUNT,SOLC)
-      SOLC=SOLC*(1.0-TOAALB)
+      IF (LBIN) THEN
+        call BinaryFlux(KOUNT,SOLC)
+      ELSE
+        SOLC=SOLC*(1.0-TOAALB)
+      ENDIF
           
 !      LDIUR=.TRUE.   !Diurnally averaged if false                        
 C      LDIUR=.FALSE.   !Diurnally averaged if false
