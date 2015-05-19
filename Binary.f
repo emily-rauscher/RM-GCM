@@ -21,8 +21,8 @@
 
       real, parameter         :: SIGMA = 5.67E-8        !StefanBoltzman
       real, parameter         :: RSUN      = 6.95E8         !Radius of Sun
-      real, parameter         :: PI        = 3.1415
       real, parameter         :: AU        = 1.496E11
+      real, parameter         :: PI=3.14159265359
 
       real                    :: output
 

@@ -477,12 +477,12 @@ C      ENDIF
  201  FORMAT(E13.5)
       IF (LBIN) THEN
         call BinaryFlux(KOUNT,BINFLUX)
+        write(89,201) BINFLUX
       ELSE
-        BINFLUX=SOLC_IN
+        write(89,201) SOLC_IN
       ENDIF
 
-      write(89,201) BINFLUX*(1.0-TOAALB)
-      
+  
       RETURN                                                              
       END                                                                 
                                                                           
