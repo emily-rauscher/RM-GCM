@@ -1,23 +1,26 @@
-      subroutine ec_anom(e,P,x,i)
-      real :: x0,x1,x,e,a,b
+      subroutine ec_anom(bine,binP,binx,i)
+      real :: binx0,binx1,binx,bine,bina,binb,binP
       real, parameter :: PI = 3.1415
 
-      integer :: i, P
+      integer :: i
 
-      x0=0
-      x=x0
+      binx0=0
+      binx=binx0
       do
-        a=(x0-e*sin(x0)-(2.0*PI*i/(P*1000.)))
-        b=1.0-e*cos(x0)
-        x1=x0-(a/b)
-        if (abs(x0-e*sin(x0)-(2.0*PI*i/(P*1000.))) <10E-10) exit
-        x0=x1
+        bina=(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*ITSPD)))
+        binb=1.0-bine*cos(binx0)
+        binx1=binx0-(bina/binb)
+        if (abs(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*ITSPD)))
+     & <10E-10) exit
+        binx0=binx1
       end do
-      x=x1
+      binx=x1
       end subroutine
 
 
       subroutine BinaryFlux(i,output)
+
+      include 'params.i'
 
       real, parameter         :: SIGMA = 5.67E-8        !StefanBoltzman
       real, parameter         :: RSUN      = 6.95E8         !Radius of Sun
@@ -49,11 +52,18 @@
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
      & PORB, OBLIQ, ECCEN
 
-!      integer, parameter         :: Pplanet        = PORB*1000  !*TSPD
-!      integer, parameter         :: Pstars         = PORBST*1000   !*TSPD
+! need this for TSPD (use KOUNTP)
+      COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
+     +              ,RNTAPO                                               
+     +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR                          
+     +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY                          
+     +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG                 
+     +              ,LSPO(NL),LGPO(NL)                                    
+     $              ,LSHIST,LMINIH                                        
+      LOGICAL LSHIST,LMINIH                                               
+      LOGICAL LSPO,LGPO  
 
-
-!below are parameters necessary to define so that calculations can be broken up into multiple steps for ease
+!below are parameters necessary to define so that calculations can be broken up into multiple steps ***CHANGE THIS
 
       real :: AngleP                   !Theta, Planet
       real :: AngleS                   !Theta, Star

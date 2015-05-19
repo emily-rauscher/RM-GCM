@@ -74,6 +74,10 @@ C
        COMMON/MAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
        LOGICAL LBDRAG
 
+       COMMON/BINVAL/LBIN,PORBST,ECCPL,ECCST,SMAPL,SMAST,STMASS1,
+     & STMASS2,STRAD1,STRAD2,STTTEMP1,STTEMP2
+
+       LOGICAL LBIN
 C       COMMON/VARPARAM2/LDIUR_IN, OCFLUX_IN, ROUGHLENGTH,NSWALBEDO_FUNC,
 C     & SURFDEPTH_TOP, SURFDEPTH_BOT, EFFSOILCONDUCT,
 C     & TSURF_INIT_TOP, TSURF_INIT_BOT, SNET_INIT
@@ -116,6 +120,9 @@ C       write(*,*) 'reading fort.7 in inivarparam'
 C       write(*,*) 'second read in inivarparam'
        READ (7,INMAG)
        WRITE(2,INMAG)
+
+       READ(7,INBINVAL)
+       WRITE(2,INBINVAL)
 
 C      WRITE(2,240)                                                        
 
