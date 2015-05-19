@@ -474,13 +474,12 @@ C      ENDIF
       WRITE (64,105) DAY,SSLON,SSLAT
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
 
- 201  FORMAT(E13.5)
-      LBIN=.TRUE.
+ 2015 FORMAT(E13.5)
       IF (LBIN) THEN
         call BinaryFlux(KOUNT,BINFLUX)
-        write(89,201) BINFLUX
+        write(89,2015) BINFLUX
       ELSE
-        write(89,201) 0.0
+        write(89,2015) 0.0
       ENDIF
 
   

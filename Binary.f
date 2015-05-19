@@ -7,10 +7,10 @@
       binx0=0
       binx=binx0
       do
-        bina=(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*ITSPD)))
+        bina=(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*KOUNTP)))
         binb=1.0-bine*cos(binx0)
         binx1=binx0-(bina/binb)
-        if (abs(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*ITSPD)))
+        if (abs(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*KOUNTP)))
      & <10E-10) exit
         binx0=binx1
       end do
