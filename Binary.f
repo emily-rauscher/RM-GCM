@@ -22,9 +22,9 @@
 
       include 'params.i'
 
-      real, parameter         :: SIGMA = 5.67E-8        !StefanBoltzman
+      real, parameter         :: STEFBOL = 5.67E-8        !StefanBoltzman
       real, parameter         :: RSUN      = 6.95E8         !Radius of Sun
-      real, parameter         :: AU        = 1.496E11
+      real, parameter         :: ASTROU        = 1.496E11
       real, parameter         :: PI=3.14159265359
 
       real                    :: output
@@ -41,7 +41,7 @@
 ! => P = Torb*1000 = units of timesteps
 !These are Binary values from Fort.7
       COMMON/BINVAL/LBIN,PORBST,ECCPL,ECCST,SMAPL,SMAST,STMASS1,
-     & STMASS2,STRAD1,STRAD2,STTTEMP1,STTEMP2
+     & STMASS2,STRAD1,STRAD2,STTEMP1,STTEMP2
 
       LOGICAL LBIN
 
@@ -148,11 +148,12 @@
 
 ! LAST - flux (in units of W/m^2)
 
-      Ls1=4*PI*SIGMA*(STRAD1)**2*(STTEMP1**4)
-      Ls2=4*PI*SIGMA*(STRAD2)**2*(STTEMP2**4)
+      Ls1=4*PI*STEFBOL*(STRAD1*RSUN)**2*(STTEMP1**4)
+      Ls2=4*PI*STEFBOL*(STRAD2*RSUN)**2*(STTEMP2**4)
+ls
 
-      Fs1=Ls1/(4*PI*(Rp1**2))
-      Fs2=Ls2/(4*PI*(Rp2**2))
+      Fs1=Ls1/(4*PI*((Rp1*ASTROU)**2))
+      Fs2=Ls2/(4*PI*((Rp2*ASTROU)**2))
       Ftot=Fs1+Fs2
       output=Ftot
 
