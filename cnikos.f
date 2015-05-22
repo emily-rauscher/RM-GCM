@@ -413,7 +413,7 @@ C      SOLC=SOLC_IN * (1.0-TOAALB)
 
 !      LBIN=.TRUE.
       IF (LBIN) THEN
-        call BinaryFlux(KOUNT,SOLC)
+        call BinaryFlux(SOLC,KOUNT,ITSP)
         SOLC=SOLC*(1.0-TOAALB)
       ELSE
         SOLC=SOLC_IN*(1.0-TOAALB)

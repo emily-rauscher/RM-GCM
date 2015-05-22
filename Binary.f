@@ -1,38 +1,22 @@
-      subroutine ec_anom(bine,binP,binx,i)
-      real :: binx0,binx1,binx,bine,bina,binb,binP
-      real, parameter :: PI = 3.1415
+!#################################
+!# Calculates Flux for two stars #
+!#################################
 
-      integer :: i
-
-      binx0=0
-      binx=binx0
-      do
-        bina=(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*KOUNTP)))
-        binb=1.0-bine*cos(binx0)
-        binx1=binx0-(bina/binb)
-        if (abs(binx0-bine*sin(binx0)-(2.0*PI*i/(binP*KOUNTP)))
-     & <10E-10) exit
-        binx0=binx1
-      end do
-      binx=x1
-      end subroutine
-
-
-      subroutine BinaryFlux(i,output)
+!      subroutine BinaryFlux(count,output)
+      subroutine BinaryFlux(output,KOUNT,ITSPD)
 
       include 'params.i'
 
       real, parameter         :: STEFBOL = 5.67E-8        !StefanBoltzman
       real, parameter         :: RSUN      = 6.95E8         !Radius of Sun
       real, parameter         :: ASTROU        = 1.496E11
-      real, parameter         :: PI=3.14159265359
 
       real                    :: output
 
       real                    :: Ep                         !Ecc Anomoly Planet
       real                    :: Es                         !Ecc Anomoly Stars
 
-      integer                 :: i                          ! input current timestep
+!      integer                 :: count                          ! input current timestep
 
 
 ! Period of Planet = PORB (orbital period in units of rotation period) * 2pi/WW
@@ -52,16 +36,19 @@
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
      & PORB, OBLIQ, ECCEN
 
-! need this for TSPD (use KOUNTP)
-      COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
-     +              ,RNTAPO                                               
-     +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR                          
-     +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY                          
-     +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG                 
-     +              ,LSPO(NL),LGPO(NL)                                    
-     $              ,LSHIST,LMINIH                                        
-      LOGICAL LSHIST,LMINIH                                               
-      LOGICAL LSPO,LGPO  
+       LOGICAL LPLOTMAP
+
+! meed this for pi and for common block with kount/tspd in it
+
+      PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
+     +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
+     +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
+     +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL             
+     +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG                    
+     +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL   
+     +,NWW=1+(MM-1)/MOCT)                                                 
+
+
 
 !below are parameters necessary to define so that calculations can be broken up into multiple steps ***CHANGE THIS
 
@@ -92,7 +79,6 @@
       real :: Ls2
 
 
-
 !at each timestep - need to calcuate Eccentric Annomaly of Planet and Stars
 ! and then Theta of Planet and Stars
 ! and then distance from center of mass
@@ -108,9 +94,10 @@
 !FIRST - given timestep, calculate Ec_p (Ep) and Ec_s (Ec)
 ! i is the given timestep to be calcuated for
 
-      call ec_anom(ECCPL,PORB,Ep,i)
-      call ec_anom(ECCST,PORBST,Es,i)
-
+!      call ec_anom(ECCPL,PORB,Ep,count)
+!      call ec_anom(ECCST,PORBST,Es,count)
+      call ec_anom(ECCPL,PORB,Ep,KOUNT,ITSPD)
+      call ec_anom(ECCST,PORBST,Es,KOUNT,ITSPD)
 !SECOND - for the calcuated Ep and Es - corresponding angle on the orbit
 
       AngleP=2*atan(sqrt((1+ECCPL)/(1-ECCPL))*tan(Ep/2))
@@ -150,13 +137,44 @@
 
       Ls1=4*PI*STEFBOL*(STRAD1*RSUN)**2*(STTEMP1**4)
       Ls2=4*PI*STEFBOL*(STRAD2*RSUN)**2*(STTEMP2**4)
-ls
 
       Fs1=Ls1/(4*PI*((Rp1*ASTROU)**2))
       Fs2=Ls2/(4*PI*((Rp2*ASTROU)**2))
       Ftot=Fs1+Fs2
       output=Ftot
 
+      end subroutine
+
+!#################################
+! solves first kepler equation 
+!################################
+
+!      subroutine ec_anom(bine,binP,binx,count)                                                                                   
+      subroutine ec_anom(bine,binP,binx,KOUNT,ITSPD)
+
+      include 'params.i'
+
+      real :: binx0,binx1,binx,bine,bina,binb,binP
+!      integer :: count                                                                                                           
+      PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                                                                           
+     +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2                                                    
+     +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL                                                            
+     +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL                                                              
+     +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG                                                                     
+     +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL                                                   
+     +,NWW=1+(MM-1)/MOCT)                                                                                                   
+
+      binx0=0
+      binx=binx0
+      do
+        bina=(binx0-bine*sin(binx0)-(PI2*KOUNT/(binP*ITSPD)))
+        binb=1.0-bine*cos(binx0)
+        binx1=binx0-(bina/binb)
+        if (abs(binx0-bine*sin(binx0)-(PI2*KOUNT/(binP*ITSPD)))
+     & <10E-10) exit
+        binx0=binx1
+      end do
+      binx=binx1
       end subroutine
 
 

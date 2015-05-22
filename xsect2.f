@@ -481,15 +481,17 @@ C      ENDIF
 !     & 'STRAD1=',E13.5,'STRAD2=',E13.5,/
 !     & 'STTEMP1=',E13.5,'STTEMP2=',E13.5/
 !     & 'OUTPUT FLUX=',E13.5)
- 2016 FORMAT(E13.5)
- 2017 FORMAT(/'SINGLE STAR CASE! SOLC_IN=', E13.5)
+ 2016 FORMAT(/'Flux=',E13.5,' Timestep=',I10.3,' Day=',F10.4)
+ 2017 FORMAT(/'SINGLE STAR CASE! SOLC_IN=', E13.5, 'Timestep=', F8.3)
       IF (LBIN) THEN
-        call BinaryFlux(KOUNT,BINFLUX)
+        BINFLUX=0.0
+!        write(89,2016) BINFLUX, KOUNT,DAY
+        call BinaryFlux(BINFLUX,KOUNT,ITSPD)
 !        write(89,2015)PORBST,PORB,ECCST,ECCPL,SMAST,SMAPL,STMASS1,
 !     & STMASS2,STRAD1,STRAD2,STTEMP1,STTEMP2, BINFLUX
-        write(89,2016) BINFLUX
+        write(89,2016) BINFLUX, KOUNT,DAY
       ELSE
-        write(89,2017) SOLC_IN
+        write(89,2017) SOLC_IN, KOUNT
       ENDIF
 
   
