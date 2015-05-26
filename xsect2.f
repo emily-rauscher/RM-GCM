@@ -474,24 +474,14 @@ C      ENDIF
       WRITE (64,105) DAY,SSLON,SSLAT
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
 
-! 2015 FORMAT(/'PORBST=',E13.5,'PORBPL=',E13.5,/ 
-!     & 'ECCST=',E13.5,'ECCPL=',E13.5,/
-!     & 'SMAST=',E13.5,'SMAPL=',E13.5,/
-!     & 'STMASS1=',E13.5,'STMASS2=',E13.5,/
-!     & 'STRAD1=',E13.5,'STRAD2=',E13.5,/
-!     & 'STTEMP1=',E13.5,'STTEMP2=',E13.5/
-!     & 'OUTPUT FLUX=',E13.5)
-
  2016 FORMAT(I8.3,E13.5)
  2017 FORMAT(/'SINGLE STAR CASE! SOLC_IN=', E13.5, 'Timestep=', F8.3)
- 2018 FORMAT(/' TS=',I8.1,' KOUTP=',I8.1,' KOUNTP=',I8.1,' DAY=',F10.4)
       IF (LBIN) THEN
 !        BINFLUX=0.0
         call BinaryFlux(BINFLUX,KOUNT,ITSPD)
         write(89,2016) KOUNT, BINFLUX
-!        write(88,2018) KOUNT, KOUTP, KOUNTP, DAY
       ELSE
-        write(89,2017) SOLC_IN, KOUNT
+        write(88,2017) SOLC_IN, KOUNT
       ENDIF
 
   
