@@ -409,12 +409,10 @@ C            FNET(LHT)=FNETDIFF
 C      FNET(0)=FBASEFLUX+FLS(1)/(1.0-SWALB)+FDWN(0)
 
 C Setup SW code                                                           
-C      SOLC=SOLC_IN * (1.0-TOAALB)
-
-!      LBIN=.TRUE.
       IF (LBIN) THEN
-        call BinaryFlux(SOLC,KOUNT,ITSP)
+        call BinaryFlux(SOLC,KOUNT,ITSPD)
         SOLC=SOLC*(1.0-TOAALB)
+!        WRITE(88,*) SOLC
       ELSE
         SOLC=SOLC_IN*(1.0-TOAALB)
       ENDIF
