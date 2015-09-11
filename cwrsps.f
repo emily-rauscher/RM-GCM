@@ -109,6 +109,6 @@ C******************************
          WRITE(2,1000)(COEFF(I,2),POLAR(A(IP(I)+(2-IA)*NWJ2)*FP(I)),      
      1   COEFF(I,1),POLAR(A(IP(I)+(IA-1)*NWJ2)*FP(I)),I=1,INSPC)          
       ENDIF                                                               
- 1000 FORMAT(3(A8,1X,1PE8.2,0PF7.1))                                      
+ 1000 FORMAT(3(A8,1X,1PE9.2,0PF7.1))                                      
       RETURN                                                              
       END                                                                 

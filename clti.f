@@ -203,5 +203,6 @@ C
          PMG(I)=CMPA(I)*PLG(I)                                            
    70 CONTINUE                                                            
 C                                                                         
-      RETURN                                                              
+      RETURN
+      write(*,*) 'ctli line 207, plg:',PLG                                                              
       END                                                                 

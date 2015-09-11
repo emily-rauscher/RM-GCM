@@ -133,9 +133,9 @@ C
      +' AND ZONAL WAVENO. ',I3,' (NN=',I3,' MM=',I3,')')                  
   221 FORMAT(' NO LATERAL DISSIPATION')                                   
   222 FORMAT(' DEL',I2,' LATERAL DISSIPATION ON VORTICITY, DIVERGENCE'/   
-     + ' AND TEMPERATURE WITH DIFFUSION COEFFICIENT  ',E10.4,             
+     + ' AND TEMPERATURE WITH DIFFUSION COEFFICIENT  ',E11.4,             
      + ' m**',I1,'/s'/' THE E-FOLDING TIME FOR SMALLEST RESOLVED',        
-     + ' SCALE IS ',F5.3,' DAYS')                                         
+     + ' SCALE IS ',F6.3,' DAYS')                                         
   223 FORMAT(' NO TIME FILTER')                                           
   224 FORMAT(' ROBERT TIME FILTER WITH PARAMETER PNU ',F5.2)              
   280 FORMAT(' GLOBAL DOMAIN: BOTH EVEN AND ODD COEFFICIENTS INCLUDED',   
