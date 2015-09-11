@@ -71,8 +71,8 @@ C
       IDUM=-1                                                             
       DO 800 IHEM=1,NHEM                                                  
          DO 10 I=IBAS,IEND                                                
-            ZR1=RANF(IDUM)-0.5                                            
-            ZR2=RANF(IDUM)-0.5                                            
+            ZR1=CRANF(IDUM)-0.5                                            
+            ZR2=CRANF(IDUM)-0.5                                            
             SP(I)=SP(I)+SCALE*CMPLX(ZR1,ZR2)                              
             SPMI(I)=SP(I)                                                 
 10       CONTINUE                                                         
