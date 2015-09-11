@@ -177,9 +177,8 @@ C  mid-levels (TLEV)
 !        WRITE(2,*) 'NEED IMPLEMENTATION OF LOG-LEVELS SUB-LAYERS'
 !        CALL ABORT
        ENDIF
-      
-!      write(*,*) 'line 181 cirrad.f'
-!      write(*,*) pres                                                                          
+
+                                                                          
       PMID(1)=0.5*(0.5*(PRES(1)+PRES(2))+PRES(0))                         
       QP(1)=0.5*(PMID(1)+0.5*(PRES(1)+PRES(2)))                           
  
@@ -1918,36 +1917,16 @@ C          Calculate absorber amount in the path between IDWN and IUP
             END IF 
 
 C KM Modif: Integration Absorption along UPATH. Diffusive factor 1.66 applied
-            IF(NLWMODEL.EQ.1) THEN
-               
-                IF (OPACIR_POWERLAW.eq.0) THEN
-                   ABSCOEFF=CABSLW1*QULAY(IDWN+1)
-                ELSE IF (OPACIR_POWERLAW.eq.1) THEN
-                   ABSCOEFF=CABSLW1*QULAY(IDWN+1)
-     &             *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**1)
-                ELSE IF (OPACIR_POWERLAW.eq.2) THEN
-                   ABSCOEFF=CABSLW1*QULAY(IDWN+1)     
-     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**2)
-                ELSE IF (OPACIR_POWERLAW.eq.3) THEN
-                   ABSCOEFF=CABSLW1*QULAY(IDWN+1)     
-     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**3)
-                ELSE  (ABSCOEFF=CABSLW1*QULAY(IDWN+1) 
-     &             *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**OPACIR_POWERLAW)
-
-               ENDIF        
+            IF(NLWMODEL.EQ.1) THEN   
+               ABSCOEFF=CABSLW1*QULAY(IDWN+1) !*0.0
+     &         *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**OPACIR_POWERLAW)           
 !KM Modif for Saturated limit (Hourdin): use total UPATH below, outside loop
                IF ((IUP-IDWN).GT.1) THEN                                     
                   DO ILAY=IDWN+2,IUP                                         
-                     IF (OPACIR_POWERLAW.ne.0) THEN  !MTR Modif
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
+                     ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
      &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW) 
-                     ELSE
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
-                     ENDIF
-
-             
 !KM Modif for Saturated limit (Hourdin): use total UPATH below, outside loop
-                  END DO                                        
+                  END DO                                                     
                END IF 
 !KM Modif for Saturated limit (Hourdin): outside loop since no integral done
 !            ABSCOEFF=CABSLW1*SQRT(UPATH*(PMID(IUP)+PMID(IDWN+1))/2e5) 
@@ -2083,12 +2062,8 @@ C KM Modif: Integrating Absorption along UPATH. Diffusive factor 1.66 applied
 
             ABSCOEFF=0.0
                DO ILAY=IDWN+1,IUP                                         
-                     IF (OPACIR_POWERLAW.ne.0) THEN !MTR Modif to avoid exponent
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
-     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW) 
-                     ELSE
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
-                     ENDIF
+                  ABSCOEFF=ABSCOEFF+ CABSLW1*ULAY(1,ILAY) 
+     & *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW)  
 !KM Modif for Saturated limit (Hourdin): use total UPATH outside integral 
                END DO                                                     
 !KM Modif for Saturated limit (Hourdin): outside loop since no integral done
