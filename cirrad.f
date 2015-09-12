@@ -1931,18 +1931,29 @@ C KM Modif: Integration Absorption along UPATH. Diffusive factor 1.66 applied
                 ELSE IF (OPACIR_POWERLAW.eq.3) THEN
                    ABSCOEFF=CABSLW1*QULAY(IDWN+1)     
      &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**3)
-                ELSE  (ABSCOEFF=CABSLW1*QULAY(IDWN+1) 
-     &             *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**OPACIR_POWERLAW)
+                ELSE  
+                   ABSCOEFF=CABSLW1*QULAY(IDWN+1) 
+     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**OPACIR_POWERLAW)
 
                ENDIF        
 !KM Modif for Saturated limit (Hourdin): use total UPATH below, outside loop
                IF ((IUP-IDWN).GT.1) THEN                                     
                   DO ILAY=IDWN+2,IUP                                         
-                     IF (OPACIR_POWERLAW.ne.0) THEN  !MTR Modif
+                     IF (OPACIR_POWERLAW.eq.0) THEN  !MTR Modif
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+                     ELSE IF (OPACIR_POWERLAW.eq.1) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
-     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW) 
-                     ELSE
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**1) 
+                     ELSE IF (OPACIR_POWERLAW.eq.2) THEN
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**2)
+                     ELSE IF (OPACIR_POWERLAW.eq.3) THEN
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**3)
+                     ELSE 
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW)
+ 
                      ENDIF
 
              
@@ -2083,11 +2094,21 @@ C KM Modif: Integrating Absorption along UPATH. Diffusive factor 1.66 applied
 
             ABSCOEFF=0.0
                DO ILAY=IDWN+1,IUP                                         
-                     IF (OPACIR_POWERLAW.ne.0) THEN !MTR Modif to avoid exponent
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
-     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW) 
-                     ELSE
-                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
+                     IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY) 
+                     ELSE IF (OPACIR_POWERLAW.eq.1) THEN
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**1) 
+                     ELSE IF (OPACIR_POWERLAW.eq.2) THEN
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**2) 
+                     ELSE IF (OPACIR_POWERLAW.eq.3) THEN
+                       ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**3)
+                     ELSE 
+                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY) 
+     &                *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW) 
+
                      ENDIF
 !KM Modif for Saturated limit (Hourdin): use total UPATH outside integral 
                END DO                                                     
