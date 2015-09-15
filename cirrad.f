@@ -1924,13 +1924,16 @@ C KM Modif: Integration Absorption along UPATH. Diffusive factor 1.66 applied
                    ABSCOEFF=CABSLW1*QULAY(IDWN+1)
                 ELSE IF (OPACIR_POWERLAW.eq.1) THEN
                    ABSCOEFF=CABSLW1*QULAY(IDWN+1)
-     &             *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**1)
+     &             *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES))
                 ELSE IF (OPACIR_POWERLAW.eq.2) THEN
                    ABSCOEFF=CABSLW1*QULAY(IDWN+1)     
-     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**2)
+     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES))
+     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES))
                 ELSE IF (OPACIR_POWERLAW.eq.3) THEN
                    ABSCOEFF=CABSLW1*QULAY(IDWN+1)     
-     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**3)
+     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES))
+     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES))
+     &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES))
                 ELSE  
                    ABSCOEFF=CABSLW1*QULAY(IDWN+1) 
      &           *MAX(1e-6,(PMID(IDWN+1)/OPACIR_REFPRES)**OPACIR_POWERLAW)
@@ -1943,13 +1946,16 @@ C KM Modif: Integration Absorption along UPATH. Diffusive factor 1.66 applied
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
                      ELSE IF (OPACIR_POWERLAW.eq.1) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)  
-     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**1) 
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)) 
                      ELSE IF (OPACIR_POWERLAW.eq.2) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
-     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**2)
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
                      ELSE IF (OPACIR_POWERLAW.eq.3) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
-     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**3)
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
+     &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
                      ELSE 
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
      &           *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW)
@@ -2098,13 +2104,16 @@ C KM Modif: Integrating Absorption along UPATH. Diffusive factor 1.66 applied
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY) 
                      ELSE IF (OPACIR_POWERLAW.eq.1) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
-     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**1) 
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)) 
                      ELSE IF (OPACIR_POWERLAW.eq.2) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
-     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**2) 
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)) 
                      ELSE IF (OPACIR_POWERLAW.eq.3) THEN
                        ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY)
-     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**3)
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
+     &                 *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES))
                      ELSE 
                         ABSCOEFF=ABSCOEFF+CABSLW1*ULAY(1,ILAY) 
      &                *MAX(1e-6,(PMID(ILAY)/OPACIR_REFPRES)**OPACIR_POWERLAW) 
