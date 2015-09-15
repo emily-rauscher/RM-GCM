@@ -366,30 +366,138 @@ C call nikos LW scheme
          TAUCONST=(ABSLW1/GA/100.)  ! units of cm s^2/g
 C         TAU=TAUCONST*PFLUX(LHT)*1.e3
 C     REFPRES in Pa (=10 g/cm/s^2)
+c         write(*,*) mod(2.0,1.0)
+c            IF (mod(OPACIR_POWERLAW,1.0).eq.0.0) THEN
+c              OPACIR_POWERLAW=int(OPACIR_POWERLAW) 
+c        MODIF: Replacing the following line:
+c         TAU=TAUCONST*PFLUX(LHT)*1.E3
+c     &        *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)**(OPACIR_POWERLAW)
+c        with a case specific exponent solution--MTR
+           IF (OPACIR_POWERLAW.EQ.0) THEN
+             TAU=TAUCONST*PFLUX(LHT)*1.E3
+           ELSEIF (OPACIR_POWERLAW.EQ.1) THEN
+         TAU=TAUCONST*PFLUX(LHT)*1.E3
+     &        *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)
+           ELSEIF (OPACIR_POWERLAW.EQ.2) THEN
+         TAU=TAUCONST*PFLUX(LHT)*1.E3
+     &   *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)
+     &   *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)
+           ELSEIF (OPACIR_POWERLAW.EQ.3) THEN
+         TAU=TAUCONST*PFLUX(LHT)*1.E3
+     &   *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)
+     &   *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)
+     &   *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)
+           ELSE 
          TAU=TAUCONST*PFLUX(LHT)*1.E3
      &        *(1.e2*PFLUX(LHT)/OPACIR_REFPRES)**(OPACIR_POWERLAW)
+           ENDIF
+c          END MODIF MTR
+
          IF (TAU.GT.1.) THEN 
             TLIMIT=2.*LOG(1.e-2)/1.66
      &           /(10.**(-1.*OOM_IN/NL)-10.**(OOM_IN/NL))
          IF (TAU.GT.TLIMIT) THEN 
             IF (LHT.EQ.1) THEN
                GRAD=(TEMP(LHT+1)-TEMP(LHT))/(PRES(LHT+1)-PRES(LHT))*100.  !for mbar
-               EXPCORR=TAUCONST*1.E6*0.5
+               
+c            MODIF: Same as above. Replacig ** with specific cases--MTR                        
+C                EXPCORR=TAUCONST*1.E6*0.5
+c     &              *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
+c     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+                  IF (OPACIR_POWERLAW.EQ.0) THEN
+                     EXPCORR=TAUCONST*1.E6*0.5
+     &                *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
+                  ELSEIF (OPACIR_POWERLAW.EQ.1) THEN
+                     EXPCORR=TAUCONST*1.E6*0.5
+     &              *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                  ELSEIF (OPACIR_POWERLAW.EQ.2) THEN
+                     EXPCORR=TAUCONST*1.E6*0.5
+     &              *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                  ELSEIF (OPACIR_POWERLAW.EQ.3) THEN
+                     EXPCORR=TAUCONST*1.E6*0.5
+     &              *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                  ELSE
+                     EXPCORR=TAUCONST*1.E6*0.5
      &              *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+                  ENDIF
+c                 END MODIF--MTR
             ELSEIF (LHT.EQ.MXLEV) THEN
                GRAD=(TLEV(LHT)-TEMP(LHT))/(PFLUX(LHT)-PRES(LHT)/100.)
+c                MODIF as above--MTR
+c               EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+c     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+                IF (OPACIR_POWERLAW.EQ.0) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+                ELSEIF (OPACIR_POWERLAW.EQ.1) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                ELSEIF (OPACIR_POWERLAW.EQ.2) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                ELSEIF (OPACIR_POWERLAW.EQ.3) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                ELSE
                EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+                ENDIF
             ELSE
                GRAD=(TEMP(LHT+1)-TEMP(LHT))/(PRES(LHT+1)-PRES(LHT))*100.
+C               EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
+C     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+                  IF (OPACIR_POWERLAW.EQ.0) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
+                  ELSEIF (OPACIR_POWERLAW.EQ.1) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES) 
+                  ELSEIF (OPACIR_POWERLAW.EQ.2) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+                  ELSEIF (OPACIR_POWERLAW.EQ.3) THEN
+                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)                     
+                  ELSE
                EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
-     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW               
+                  ENDIF
+
             ENDIF  ! units: K/mbar = 1e-3 K cm s^2 /g
 !           boltzmann is 5.6704e-8 W/m^2 K^-4; want flux in W/m^2
 C            FNETDIFF=3.0242e-10*(GRAD/TAUCONST)*((TLEV(LHT))**3) 
-            FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
+C           ONE MORE MODIF, AS ABOVE--MTR
+C            FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
+C     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)**OPACIR_POWERLAW
+                IF (OPACIR_POWERLAW.EQ.0) THEN
+                 FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
+                ELSEIF (OPACIR_POWERLAW.EQ.1) THEN
+                 FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
+     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)
+                ELSEIF (OPACIR_POWERLAW.EQ.2) THEN
+                 FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
+     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)
+     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)
+                ELSEIF (OPACIR_POWERLAW.EQ.3) THEN
+                 FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
+     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)
+     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)
+     &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)
+                ELSE
+                FNETDIFF=3.0242E-10*GRAD*(TLEV(LHT))**3/TAUCONST
      &           *(OPACIR_REFPRES/PFLUX(LHT)/1.E2)**OPACIR_POWERLAW
+                ENDIF
 !           linear implementation, from tau=1 to 100
 C            IF (TAU.LT.5) THEN
 C               TFAC=(1./4.)*TAU-(1./4.)
