@@ -1,5 +1,5 @@
         PROGRAM IGCM3                                                     
-!$ use omp_lib
+c!$ use omp_lib
 C**********************************************************************   
 C                    IGCM3_1                                              
 C                                                                         
@@ -273,8 +273,8 @@ C set surface pressure to 976mb
 !!      print*,kount                                                        
 C     Main loop over latitudes                                            
 C                                                                         
-!$omp parallel default(shared) private(IH,JH,JL,I,WORK) 
-!$omp do
+C!$omp parallel default(shared) private(IH,JH,JL,I,WORK) 
+C!$omp do
       DO 5 IH=1,JG                                                        
          JH=IH                                                            
          IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP                          
@@ -334,8 +334,8 @@ C         JL=JL+JINC
          JL=1+JINC*IH
 !!         write(*,*) IH, JH, JL, JINC
  5    CONTINUE                                                            
-!$omp end do 
-!$omp end parallel
+C!$omp end do 
+C!$omp end parallel
 C                                                                         
       IF (LBALAN) THEN                                                    
 C        Balance spectral fields                                          

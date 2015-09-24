@@ -218,7 +218,10 @@ C     Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW                                         
 C     2nd index - Direction 1=DN, 2=UP                                    
 C     3rd index - Where 1=TOP, 2=SURFACE                                  
-      real fluxes(2,2,2)                                                  
+      real fluxes(2,2,2) 
+
+c     The following for parallel testing --MTR
+      integer TID, NTHREADS                                           
                                                                           
       save                          ! Want to keep things like dcompl.    
                                                                           
@@ -285,7 +288,11 @@ c                           N.B. Read in from global climatology.
                open (51,file='climdata/'//o3file2,status='old')                  
                open (53,file='climdata/'//h2ofile2,status='old')                 
             ENDIF                                                              
-                                                                          
+            write(*,*) 'line 288 of cmorc.f'
+            write(*,*) 'j',j
+            write(*,*) 'nhem',nhem
+            write(*,*) 'mg', mg
+            Write(*,*) 'jg',jg                                                                 
             j =jh                                                              
             DO 796 ihem=1,nhem  ! start of loop over hemispheres           
                DO 798 i=1,mg    ! start of loop over longitude                
@@ -353,7 +360,9 @@ c  begin smrdebug
 c end smrdebug                                                            
                   CMTH=MTH2+1                                                      
                   IF (cmth.eq.13) cmth=1 ! Wrap-around to January.            
-! Copy 'next' to 'current'.                                               
+! Copy 'next' to 'current'.
+                 write(*,*) 'line 360 stop'
+                STOP                                               
                   do j=1,jg     ! loop over latitude                           
                      do ihem=1,nhem !           hemispheres                      
                         do i=1,mg !           longitude                          
@@ -418,7 +427,12 @@ C  Does do Radn scheme
 C                                                                         
 C loop over longitudes for radn calculation                               
             ilast=0                                                             
+            !TID = OMP_GET_MAX_THREADS()
+            !write(*,*) 'TID',TID
+c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
+!$OMP PARALLEL DO schedule(runtime)
             DO i=1,mg                                                         
+         !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
                im=i+iofm                                                        
                idocalc=0                                                        
                IF ((i.eq.1).or.(i-ilast.ge.nskip)) then                         
@@ -471,7 +485,7 @@ c water, units of mmr
      +                 (1.0-AMFRAC)*o3mod1(NL,i,ihem,JH)                       
                                                                           
 c --------------------------------------- Now set rest of column.         
-                                                                          
+cMTR                  write(*,*) 'cmorc ln486', mg, i                                                       
                   DO LD=1,NL    ! Start of loop over column.     
                      L=NL+2-LD  ! Reverse index (Morc goes bottom up).                     
                      PR(L)=SIGMA(LD)*PR(1) ! Pressure                       
@@ -628,9 +642,14 @@ c  longitude and last one calculated (i-nskip)
 
                   ilast=i                                                         
 C end of conditional execution of morcrette code                          
-               ENDIF                                                            
+               ENDIF 
+C          PRINT *, 'threads number =',TID
 C end of loop over longitudes                                             
-            ENDDO                                                             
+            ENDDO
+!$OMP END PARALLEL DO
+C END OF PARALLEL PROCESSING REGION
+!           write(*,*) 'line 654 of cmorc'
+!            stop                                                            
             IF (ilast.ne.mg) then                                             
                DO j=ilast+1,mg                                                  
                   a=REAL(j-ilast)/REAL(mg+1-ilast)                               
