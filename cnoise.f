@@ -31,7 +31,8 @@ C
 C     Number of 2D (surface) output fields. This value is                 
 C     Doubled due to averaged and instantaneous fields.                   
       PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)                           
-C                                                                         
+      
+                                                                         
 C                                                                         
 C     Array ordering in SPECTR must correspond to that in GRIDP.          
 C                                                                         
@@ -71,7 +72,7 @@ C
       IDUM=-1                                                             
       DO 800 IHEM=1,NHEM                                                  
          DO 10 I=IBAS,IEND                                                
-            ZR1=CRANF(IDUM)-0.5                                            
+            ZR1=CRANF(IDUM)-0.5
             ZR2=CRANF(IDUM)-0.5                                            
             SP(I)=SP(I)+SCALE*CMPLX(ZR1,ZR2)                              
             SPMI(I)=SP(I)                                                 
@@ -79,6 +80,6 @@ C
          IBAS=IBAS+NWJ2                                                   
          IEND=IEND+NWJ2                                                   
 800   CONTINUE                                                            
-C                                                                         
+      stop
       RETURN                                                              
       END                                                                 
