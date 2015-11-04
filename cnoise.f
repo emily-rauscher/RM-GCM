@@ -80,6 +80,5 @@ C
          IBAS=IBAS+NWJ2                                                   
          IEND=IEND+NWJ2                                                   
 800   CONTINUE                                                            
-      stop
       RETURN                                                              
       END                                                                 
