@@ -2,7 +2,7 @@
 
 rm -f igcm3_nopg 
 
-OPT='-O2 -xHost'
+OPT='-O3 -xHost'
 PROF='-g -p'
 REPORT='-warn noalign -openmp-report2'
 PARALLEL='-openmp'

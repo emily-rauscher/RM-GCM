@@ -18,7 +18,7 @@ C     this is now the ground and is not a layer
 C                                                                         
 C                                                                         
 C     Determines model resolution                                         
-C                                                                         
+      use omp_lib                                                              
       include 'params.i'
 C      PARAMETER(NN=21,MM=21,NHEM=2,NL=5,MOCT=1,MG=64,JG=16,NWJ2=121       
 C     P         ,NCRAY=64,JGL=JG,NTRAC=1,NLEVRF=1)                         
@@ -222,7 +222,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
 
 c     The following for parallel testing --MTR
       integer TID, NTHREADS                                           
-                                                                          
+                                                                        
       save                          ! Want to keep things like dcompl.    
                                                                           
       data mn/'dec','jan','feb','mar','apr','may','jun','jul',            
@@ -427,12 +427,14 @@ C  Does do Radn scheme
 C                                                                         
 C loop over longitudes for radn calculation                               
             ilast=0                                                             
-            !TID = OMP_GET_MAX_THREADS()
-            !write(*,*) 'TID',TID
+c            TID = OMP_GET_MAX_THREADS()
+c            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
 c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 !$OMP PARALLEL DO schedule(runtime)
             DO i=1,mg                                                         
          !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
+c         write(*,*), 'Thread id=', omp_get_thread_num()
+         !write(*,*),nthreads
                im=i+iofm                                                        
                idocalc=0                                                        
                IF ((i.eq.1).or.(i-ilast.ge.nskip)) then                         
