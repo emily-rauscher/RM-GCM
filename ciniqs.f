@@ -31,7 +31,7 @@ C
        PARAMETER (NQSTAB=50000)                                           
        REAL PQSVAL                                                        
        COMMON /QSTABS/ PQSVAL(NQSTAB)                                     
-            COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
+      COMMON/PHYS/  LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ                      
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
      :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)         
      :              ,tdeep(igc,jg),hsnow(igc,jg),sqstar(igc,jg)           
@@ -39,15 +39,14 @@ C
      :              ,SVEGE(IGC,JG),CD,DRAG,BLVAD,BLA,BLRH,BLVB(IGC)       
      :              ,AKVV,AKTV,AKQV,ESCONA,ESCONB,EPSIQ,CTQ,CCC           
      : ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw             
-     :        ,ssmc,sdsnd,sasnow,saice,shsstar,shsmax
-     :     ,LOC,LNOICE,LOLDBL,LCOND,LNNSK
-     :              ,NLCR,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP
+     :        ,ssmc,sdsnd,LSL,sasnow,saice,shsstar,shsmax                 
+     :     ,LOC,SHCO,SHCI,LNOICE,LOLDBL,LCOND,LNNSK,ITSLL,ITSLO           
+     :              ,CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2        
+     :              ,NLCR,NCUTOP,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP      
      :              ,SKAP(NL),SK(NLM),FWS(NL),CLR(NL),FB(NLM)             
      :              ,TTDC(NL),QTDC(NL),TTMC(NL),QTMC(NL),TC(NL),QC(NL)    
-     :              ,CTCR(NL,NHEM),CTLR(NL,NHEM)
-     :              ,LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ
-     :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
-                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
+     :              ,CTCR(NL,NHEM),CTLR(NL,NHEM),NAVRD,NAVWT,DELT2C       
+      LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
      :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
 C                                                                         
       do i=1,nqstab                                                       

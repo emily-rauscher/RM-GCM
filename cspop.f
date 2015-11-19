@@ -40,14 +40,14 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
       COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)                
      +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)     
      +              ,TKP(NL),C(NL2),SQH(NNP)                              
-     +              ,MF,MFP,JZF,NF                                    
-     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT             
+     +              ,MF,MFP,JZF,NF,NFP                                    
+     +              ,AKAP,GA,GASCON,RADEA,WW,P0,PFAC,EZ,AIOCT             
      +              ,RD,RV,CPD,CLATNT                                     
-     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
+     +              ,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
      +              ,LFLUX                                                
      +              ,LBALAN,LRESTIJ                                       
      +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE,NFP                                               
+     +              ,LNOISE                                               
       COMPLEX EZ,AIOCT                                                    
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                
@@ -82,10 +82,10 @@ C
 C     Constant arrays and variables associated with time and vertical     
 C     differencing. Also counters.                                        
 C                                                                         
-      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)              
-     +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD           
+      COMMON/BATS/  BM1(IDE),AK(NNP),AQ(NL2),G(NL2),TAU(NL2)              
+     +              ,KOUNT,KITS,KSTART,KTOTAL,KRUN,BEGDAY,ITSPD           
      +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
-     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
+     +              ,NTRACO,CTRA(NTRAC),KOLOUR(NTRAC),RGG(NL2)            
      +              ,BEGDOY,DOY                                           
 C                                                                         
 C                                                                         
