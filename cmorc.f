@@ -221,7 +221,8 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       real fluxes(2,2,2) 
 
 c     The following for parallel testing --MTR
-      integer TID, NTHREADS                                           
+      integer TID, NTHREADS             
+      double precision test_wctime                              
                                                                         
       save                          ! Want to keep things like dcompl.    
                                                                           
@@ -430,17 +431,59 @@ C loop over longitudes for radn calculation
 c            TID = OMP_GET_MAX_THREADS()
 c            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
 c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
-!$OMP PARALLEL DO schedule(runtime)
+
+!$OMP PARALLEL DO schedule(dynamic), default(none), private(test_wctime),
+!$OMP& private(im,idocalc,imp,PR,T,imm,h2o,o3,alat1,cf,ic,SWALB,alon,htlw,
+!$OMP& htsw,HTNETO,a,b),
+!$OMP& shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
+!$OMP& QG,SSLAT,SSLON,fluxes,CHRF),
+!$OMP& firstprivate(ilast),
+!$OMP& lastprivate(ilast),
+!$OMP& shared(ABSLW1, ABSMMRLW, ABSSTRAT, ABSSW1, ABSSW2, ACLD, AIOCT, AK,
+!$OMP& AKAP, AKQC, AKQV, AKTC, AKTV, AKVV, ALAT, ALBSW1, ALP, ALPHA,
+!$OMP& ALPJ, AQ, ARFLUX, ARRCR, ARRLR, ASFLD, ASHBL, ASLBL, ASSBL,
+!$OMP& ASYMSW2, AW, BEGDAY, BEGDOY, BLA, BLCD, BLRH, BLVAD, BLVB, BM1,
+!$OMP& BOTRELAXTIME, C, CBADJP, CBADJT, CCC, CCR, CD, CFRAC, CG, CHIG,
+!$OMP& CLATNT, CLD, CLR, CPD, CQ, CS, CSSQ, CT, CTCR, CTLR, CTQ, CTQI,
+!$OMP& CTRA, CUBMT, CURHM, CUT1, CUT2, CV, DALP, DALPJ, DAY, DELT,
+!$OMP& DELT2, DELT2C, DOY, DRAG, DSIGMA, DTBUOY, EAM1, EAM2, ECCEN,
+!$OMP& EPSIQ, ESCONA, ESCONB, EZ, FB, FBASEFLUX, FORCE1DDAYS, FRAD, FWS,
+!$OMP& G, GA, GASCON, GSG, GWT, HSNOW, HTNET, ICFLAG, INLAT, INSPC,
+!$OMP& ITSLL, ITSLO, ITSPD, JH, JINC, JL, JSKIPLAT, JSKIPLON, JZF, KITS,
+!$OMP& KOLOUR, KOUNT, KOUNTE, KOUNTH, KOUNTP, KOUNTR, KOUTE, KOUTH,
+!$OMP& KOUTP, KOUTR, KRUN, KSTART, KTOTAL, L1DZENITH, L22L, LBALAN, LBL,
+!$OMP& LCBADJ, LCLIM, LCOND, LCR, LCSFCT, LCUBM, LDIUR, LFLUX,
+!$OMP& LFLUXDIAG, LGPO, LLOGPLEV, LLR, LMINIH, LNNSK, LNOICE, LNOISE,
+!$OMP& LOC, LOGICALLBL, LOGICALLLOGPLEV, LOLDBL, LOROG, LPERPET,
+!$OMP& LPLOTMAP, LRD, LRESTIJ, LRSTRT, LSHIST, LSHORT, LSL, LSPO,
+!$OMP& LSTRETCH, LTVEC, LVD, MF, MFP, NAVRD, NAVWT, NCOEFF, NCUTOP,
+!$OMP& NEWTB, NEWTE, NF, NFP, NLAT, NLCR, NLPLOTMAP_IN, NLWMODEL,
+!$OMP& NSKIP_IN, NSWMODEL, NTRACO, NTSTEP_IN, OBLIQ, OOM_IN,
+!$OMP& OPACIR_POWERLAW, OPACIR_REFPRES, P0, PFAC, PLG, PNET, PNU, PNU2,
+!$OMP& PNU21, PORB, PRMIN, QC, QSTAR, QTDC, QTMC, QTVD, RADEA, RCON, RD,
+!$OMP& RDLP, RDSIG, RFCOEFF_IN, RFLUX, RGG, RLP, RMG, RNTAPE, RNTAPO,
+!$OMP& RRCR, RRFLUX, RRLR, RSQ, RSQR2, RV, SAICE, SALB, SASNOW, SBAL,
+!$OMP& SCATSW2, SD1, SD2, SDSN, SDSND, SDW, SECSQ, SFG, SFLD, SHBL,
+!$OMP& SHCI, SHCO, SHCS, SHCSN, SHCSP, SHSMAX, SHSSTAR, SI, SIGMA,
+!$OMP& SIGMAH, SISQ, SK, SKAP, SKSE, SKSN, SLBL, SLHF, SMSTAR, SNET,
+!$OMP& SOLC_IN, SPG, SQ, SQH, SQR2, SQSTAR, SSBL, SSMC, SVEGE, T0,
+!$OMP& T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
+!$OMP& TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSLD, TSTAR, TSTARO, TTCR,
+!$OMP& TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
+!$OMP& UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
             DO i=1,mg                                                         
          !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
-c         write(*,*), 'Thread id=', omp_get_thread_num()
-         !write(*,*),nthreads
-               im=i+iofm                                                        
+cM         write(*,*),mg
+cM         write(*,*), 'Thread id=', omp_get_thread_num(),i
+cm               test_wctime=omp_get_wtime()
+               im=i+iofm                                 
                idocalc=0                                                        
                IF ((i.eq.1).or.(i-ilast.ge.nskip)) then                         
                   idocalc=1                                                       
                ELSE                                                             
-                  IF (LNNSK) THEN                                                 
+                  IF (LNNSK) THEN
+Cm                     write(*,*) 'line444 stop'
+Cm                     stop                                                 
                      imp=im+1                                                       
                      IF (imp.gt.(mg+iofm)) imp=1+iofm                               
                      imm=im-1                                                       
@@ -527,7 +570,9 @@ c ----------------------------------------------------- And alat1
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
                   IF (KOUTP.EQ.KOUNTP-1) THEN
                      IF(JH.EQ.1.AND.IHEM.EQ.1.AND.I.EQ.1) THEN
-                        REWIND(63) !! Rewind file for fluxes in nikosrad 
+c$$$                        write (*,*) 'Thread ', omp_get_thread_num(),
+c$$$     ,                              ' rewinds!'
+c$$$                        REWIND(63) !! Rewind file for fluxes in nikosrad 
                         IF (PORB.NE.0) THEN 
                            SSLON=(1./PORB-1.)*KOUNT*360./ITSPD
                            SSLON=MOD(SSLON,360.)
@@ -618,10 +663,16 @@ c sets this heating rate
                                                                           
 c  put in linear interpolation of heating rates between this              
 c  longitude and last one calculated (i-nskip)                            
-                     IF (i-ilast.gt.1) then                                         
+                     IF ((i-ilast.gt.1).and.(nskip.gt.0)) then                                         
+c                        write(*,*),i,last
                         DO j=ilast+1,i-1                                              
                            a=REAL(j-ilast)/REAL(i-ilast)                               
-                           b=1.-a                                                      
+                           b=1.-a
+c                           write(*,*),IHEM,JH,ilast,ld
+c                           write(*,*),HTNET(IHEM,JH,J,LD) 
+                 write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
+                 write(*,*),'Please set nskip=0 in fort.7'
+                 STOP
                            HTNETO=HTNET(IHEM,JH,J,LD)                                  
                            htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,i,ld)+                  
      $                          b*htnet(ihem,jh,ilast,ld)                  
@@ -646,20 +697,38 @@ c  longitude and last one calculated (i-nskip)
 C end of conditional execution of morcrette code                          
                ENDIF 
 C          PRINT *, 'threads number =',TID
-C end of loop over longitudes                                             
+C end of loop over longitudes                                            
+c               test_wctime=omp_get_wtime()-test_wctime
+c               write (*,*) 'DEBUG: thread ',omp_get_thread_num(),
+c     +                     ' iteration i=',i,
+c     +                     ' time=',test_wctime
             ENDDO
 !$OMP END PARALLEL DO
 C END OF PARALLEL PROCESSING REGION
+c            write (*,*) 'DEBUG: parallel loop is over'
 !           write(*,*) 'line 654 of cmorc'
-!            stop                                                            
+c NOTE TO MIKE ROMAN... what is going on below? and why is ilast
+c sometimes different?
+            IF (nskip.ne.0) then
+               write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
+               write(*,*),'Please set nskip=0 in fort.7'
+               STOP 
+            ELSE
+                ilast=mg
+            ENDIF
+
             IF (ilast.ne.mg) then                                             
-               DO j=ilast+1,mg                                                  
+               write(*,*) 'ilast',ilast
+Cm                stop
+                DO j=ilast+1,mg                                                  
                   a=REAL(j-ilast)/REAL(mg+1-ilast)                               
                   b=1.-a                                                         
                   im=j+iofm                                                      
                   DO l=nl,1,-1                                                   
                      ld=nl+1-l                                                    
                      HTNETO=HTNET(IHEM,JH,J,LD)                                   
+                     write(*,*),'l,dl,nl,ihem,jh,j',l,dl,nl,ihmem,jh,j
+                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
                      htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
      $                    b*htnet(ihem,jh,ilast,ld)                  
                      TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             
@@ -682,8 +751,9 @@ c       if (ihem.eq.2) print *, 'rad ',jh,(pnet(im1,jh),im1=1,IGC)
          ELSE                   ! ntstep requirement
 C                                                                         
 c  Doesn't do rad scheme (simply uses old heating rates)                  
-C                                                                         
-            DO i=1,mg                                                        
+Cm           write(*,*) 'Ilast,mg',ilast,mg                                                              
+            DO i=1,mg
+Cm               write(*,*) 'line 691'                                                        
                DO LD=1,NL                                                     
                   im=i+IOFM                                                    
                   TTRD(im,LD)=(htnet(ihem,jh,i,ld))/CHRF                        
