@@ -3,7 +3,7 @@
 rm -f igcm3_nopg 
 
 OPT='-O3 -xHost'
-PROF='-g -p'
+# PROF='-g -p'
 REPORT='-warn noalign -openmp-report2'
 #PARALLEL='-openmp'
 #OTHER_OPTS='-ftrapuv'
