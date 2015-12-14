@@ -11,7 +11,7 @@ C
       DATA IFF /0/
 c      COMMON /OURSEED/IY,IR
       save IY,IR
-c      DATA IY/0/
+c     DATA IY/0/
 C
       IF (IDUM.LT.0.OR.IFF.EQ.0) THEN
         IFF=1

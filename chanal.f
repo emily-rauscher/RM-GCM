@@ -60,14 +60,14 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
       COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)                
      +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)     
      +              ,TKP(NL),C(NL2),SQH(NNP)                              
-     +              ,MF,MFP,JZF,NF,NFP                                    
-     +              ,AKAP,GA,GASCON,RADEA,WW,P0,PFAC,EZ,AIOCT             
+     +              ,MF,MFP,JZF,NF                                    
+     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT             
      +              ,RD,RV,CPD,CLATNT                                     
-     +              ,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
+     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
      +              ,LFLUX                                                
      +              ,LBALAN,LRESTIJ                                       
      +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE                                               
+     +              ,LNOISE,NFP                                               
       COMPLEX EZ,AIOCT                                                    
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                

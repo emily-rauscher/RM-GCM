@@ -40,14 +40,14 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
       COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)                
      +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)     
      +              ,TKP(NL),C(NL2),SQH(NNP)                              
-     +              ,MF,MFP,JZF,NF,NFP                                    
-     +              ,AKAP,GA,GASCON,RADEA,WW,P0,PFAC,EZ,AIOCT             
+     +              ,MF,MFP,JZF,NF                                    
+     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT             
      +              ,RD,RV,CPD,CLATNT                                     
-     +              ,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
+     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
      +              ,LFLUX                                                
      +              ,LBALAN,LRESTIJ                                       
      +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE                                               
+     +              ,LNOISE,NFP                                               
       COMPLEX EZ,AIOCT                                                    
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                
@@ -83,7 +83,7 @@ C swapped round VLNG and UNLG to check
      :         ,SSBL(IGC),SHBL(IGC),SLBL(IGC),RRCR(IGC),RRLR(IGC)         
      :         ,rflux(igc,6),sfld(igc,6),cld(igc,4)                       
 C                                                                         
-      COMMON/PHYS/  LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ                      
+            COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
      :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)         
      :              ,tdeep(igc,jg),hsnow(igc,jg),sqstar(igc,jg)           
@@ -91,14 +91,15 @@ C
      :              ,SVEGE(IGC,JG),CD,DRAG,BLVAD,BLA,BLRH,BLVB(IGC)       
      :              ,AKVV,AKTV,AKQV,ESCONA,ESCONB,EPSIQ,CTQ,CCC           
      : ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw             
-     :        ,ssmc,sdsnd,LSL,sasnow,saice,shsstar,shsmax                 
-     :     ,LOC,SHCO,SHCI,LNOICE,LOLDBL,LCOND,LNNSK,ITSLL,ITSLO           
-     :              ,CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2        
-     :              ,NLCR,NCUTOP,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP      
+     :        ,ssmc,sdsnd,sasnow,saice,shsstar,shsmax
+     :     ,LOC,LNOICE,LOLDBL,LCOND,LNNSK
+     :              ,NLCR,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP
      :              ,SKAP(NL),SK(NLM),FWS(NL),CLR(NL),FB(NLM)             
      :              ,TTDC(NL),QTDC(NL),TTMC(NL),QTMC(NL),TC(NL),QC(NL)    
-     :              ,CTCR(NL,NHEM),CTLR(NL,NHEM),NAVRD,NAVWT,DELT2C       
-      LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
+     :              ,CTCR(NL,NHEM),CTLR(NL,NHEM)
+     :              ,LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ
+     :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
+                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
      :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
 C                                                                         
 C                                                                         
