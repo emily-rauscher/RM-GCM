@@ -1,4 +1,10 @@
-        PROGRAM IGCM3                                                     
+
+      PROGRAM IGCM3
+      call IGCM3_SUB()
+      END
+
+
+      SUBROUTINE IGCM3_SUB
 C!$ use omp_lib
 C**********************************************************************   
 C                    IGCM3_1                                              
@@ -818,4 +824,4 @@ C      CALL PGCLOS
 !      ENDIF
                                                
       STOP                                                                
-      END                                                                 
+      END SUBROUTINE

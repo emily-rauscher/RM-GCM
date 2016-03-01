@@ -284,13 +284,13 @@ If Tnum eq 'T213' then begin
 	if L eq 'L30' then begin
 
 printf,filnum,'C T213 L30  full sphere'
-printf,filnum,'     PARAMETER(NN=2 13,MM=2 13,NHEM=2 ,NL=30,MOCT=1,MG=1024,JG=160'
+printf,filnum,'     PARAMETER(NN=213,MM=213,NHEM=2 ,NL=30,MOCT=1,MG=1024,JG=160'
 printf,filnum,'   +,NWJ2=11449,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
 goto,quit
 	endif
 	if L eq 'L60' then begin
 printf,filnum,'C T213 L60  full sphere'
-printf,filnum,'     PARAMETER(NN=2 13,MM=2 13,NHEM=2 ,NL=60,MOCT=1,MG=1024,JG=160,NWJ2=11449'  
+printf,filnum,'     PARAMETER(NN=213,MM=213,NHEM=2 ,NL=60,MOCT=1,MG=1024,JG=160,NWJ2=11449'  
 printf,filnum,'   +,NCRAY=1,JGL=JG)'  
 goto,quit
 	endif
@@ -594,7 +594,7 @@ if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
 line1='T213 L30  full sphere'
-line2='   PARAMETER(NN=2 13,MM=2 13,NHEM=2 ,NL=30,MOCT=1,MG=1024,JG=160'
+line2='   PARAMETER(NN=213,MM=213,NHEM=2 ,NL=30,MOCT=1,MG=1024,JG=160'
 line3='  +,NWJ2=11449,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
 
 print,line1
