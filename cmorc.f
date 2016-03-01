@@ -428,11 +428,12 @@ C  Does do Radn scheme
 C                                                                         
 C loop over longitudes for radn calculation                               
             ilast=0                                                             
+c             write(*,*) 'line431'
 c            TID = OMP_GET_MAX_THREADS()
 c            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
 c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 
-!$OMP PARALLEL DO schedule(dynamic), default(none), private(test_wctime),
+!$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
 !$OMP& private(im,idocalc,imp,PR,T,imm,h2o,o3,alat1,cf,ic,SWALB,alon,htlw,
 !$OMP& htsw,HTNETO,a,b),
 !$OMP& shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
@@ -473,7 +474,7 @@ c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 !$OMP& UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
             DO i=1,mg                                                         
          !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
-cM         write(*,*),mg
+c         write(*,*),mg
 cM         write(*,*), 'Thread id=', omp_get_thread_num(),i
 cm               test_wctime=omp_get_wtime()
                im=i+iofm                                 
@@ -482,7 +483,7 @@ cm               test_wctime=omp_get_wtime()
                   idocalc=1                                                       
                ELSE                                                             
                   IF (LNNSK) THEN
-Cm                     write(*,*) 'line444 stop'
+c                     write(*,*) 'line444 stop'
 Cm                     stop                                                 
                      imp=im+1                                                       
                      IF (imp.gt.(mg+iofm)) imp=1+iofm                               
@@ -570,9 +571,7 @@ c ----------------------------------------------------- And alat1
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
                   IF (KOUTP.EQ.KOUNTP-1) THEN
                      IF(JH.EQ.1.AND.IHEM.EQ.1.AND.I.EQ.1) THEN
-c$$$                        write (*,*) 'Thread ', omp_get_thread_num(),
-c$$$     ,                              ' rewinds!'
-c$$$                        REWIND(63) !! Rewind file for fluxes in nikosrad 
+                        REWIND(63) !! Rewind file for fluxes in nikosrad 
                         IF (PORB.NE.0) THEN 
                            SSLON=(1./PORB-1.)*KOUNT*360./ITSPD
                            SSLON=MOD(SSLON,360.)
@@ -718,7 +717,7 @@ c sometimes different?
             ENDIF
 
             IF (ilast.ne.mg) then                                             
-               write(*,*) 'ilast',ilast
+c               write(*,*) 'ilast',ilast
 Cm                stop
                 DO j=ilast+1,mg                                                  
                   a=REAL(j-ilast)/REAL(mg+1-ilast)                               
@@ -727,8 +726,8 @@ Cm                stop
                   DO l=nl,1,-1                                                   
                      ld=nl+1-l                                                    
                      HTNETO=HTNET(IHEM,JH,J,LD)                                   
-                     write(*,*),'l,dl,nl,ihem,jh,j',l,dl,nl,ihmem,jh,j
-                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
+c                     write(*,*),'l,dl,nl,ihem,jh,j',l,dl,nl,ihmem,jh,j
+c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
                      htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
      $                    b*htnet(ihem,jh,ilast,ld)                  
                      TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             

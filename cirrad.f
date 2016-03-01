@@ -147,8 +147,11 @@ C Pre-computed tables for gas absorption
       REAL FBACK  ! Background upward irradiance                          
       LOGICAL LLBLM                                                       
       INTEGER IFIRST                                                      
-      DATA IFIRST/0/  !! KM Modif                                                      
-                                                                          
+      DATA IFIRST/0/  !! KM Modif  
+C MTR COMMENT: By defining IFIRST to be zero in the above line, the 
+C following IF statement conditional is skipped and no LLBLM gas files
+C are read, I think                                                  
+                                                                        
 C     READ in tables                                                      
       IF (IFIRST.EQ.1) THEN                                               
         IFIRST=0                                                          
@@ -268,7 +271,8 @@ C      Temperature at mid-levels
 C      Absorber amounts                                                   
                                                                           
 C         DP(ILAY)=0.5*(PRES(ILAY-1)-PRES(ILAY+1))                        
-                                                                          
+C MTRTEST  
+                                                                                 
          DO IGAS=1,MXGAS                                                  
                                                                           
             IF (GAS(IGAS).EQ.1) THEN                                      
@@ -299,11 +303,10 @@ C         DP(ILAY)=0.5*(PRES(ILAY-1)-PRES(ILAY+1))
                   QH2O(ILAY)=QULAY(ILAY)                                  
                   QDP(ILAY)=0.25*(PRES(ILAY-1)-PRES(ILAY+1))              
                   QULAY(ILAY)=QULAY(ILAY)*QDP(ILAY)/GR                    
-                                                                          
                END IF                                                     
                                                                           
  1973          CONTINUE                                                   
-                                                                          
+                                                                           
             END IF                                                        
                                                                           
          END DO                                                           
