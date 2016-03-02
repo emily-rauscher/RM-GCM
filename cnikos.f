@@ -190,7 +190,8 @@ C ER modif for non-zero obliquity
 C        SSLAT=ALAT  !local latitudinal angle to star, in degrees
          DLENGTH=PI/2.
       ELSE
-         SSLAT=OBLIQ*SIN(PI2*KOUNT/ITSPD/PORB)
+         SSLAT=ASIN(SIN(OBLIQ*PI/180.)
+     +        *SIN(PI2*KOUNT/ITSPD/PORB))*180./PI
 C        SSLAT=ALAT-SSLAT
          IF (SSLAT.GT.0) THEN
             IF (ALAT.GT.90.-SSLAT) THEN

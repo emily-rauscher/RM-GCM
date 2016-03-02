@@ -578,7 +578,8 @@ c ----------------------------------------------------- And alat1
                         ELSE
                            SSLON=0.
                         ENDIF
-                        SSLAT=OBLIQ*SIN(PI2*KOUNT/ITSPD/PORB)
+                        SSLAT=ASIN(SIN(OBLIQ*PI/180.)
+     +                       *SIN(PI2*KOUNT/ITSPD/PORB))*180./PI
                         WRITE(63,2021) DAY,SSLON,SSLAT
  2021                  FORMAT('DAY:',F7.2,', SUBSTELLAR LON,LAT:',2F7.2)
                         WRITE(63,*)
