@@ -134,7 +134,7 @@ Some things to note:
 
 a) Several parameters are dependent on the number of layers.  In the above case, 30 layers are expected.
 The user must ensure that the number in fort.7 matches the number specified in the compiled params.i file,
-or else the code will crash upon running.
+or else the code will crash upon running.  A sneaky one is NLCR, which should be set to NL-1.
 
 b) Some parameters are factors of the number of time steps per day.  
 
@@ -149,7 +149,7 @@ d) Choosing a integer value for the opacity power law will greatly reduce the ru
 With the executable produced and the fort.7 file supplied, the code can be run using the following command:
 ./igcm_nopg
 
-Now that's fine, but it's the bear minimum.  It would be better to include 'nohup' to esnure that the
+Now that's fine, but it's the bear minimum.  It would be better to include 'nohup' to ensure that the
 run is not interrupted when you logout, and 'nice' to share the computer with other processes.  Also, it 
 is often convenient to create a file that records how long the run took, and to make the entire process
 run in the background by ending everything with an ampersand. The resulting command would be:
@@ -188,4 +188,18 @@ e.g. nohup nice /usr/bin/time -p -o timing ./igcm3_nopg &
 
 5) To confirm that the calculations are using multiple threads, you can use the 'top' command. You'll note that the %CPU for the process >100% for a parallel process. 'top -H' will display each parallel process separately, and you can simply count them to see how many threads are currently being used.
 
+=============================
+1.3.3. USING RESTART TO RUN
+=============================
+There are situations where you might want to restart a run, without starting it again from the very beginning (perhaps the atmosphere hasn't reached a statistical equilibrium, perhaps the computer was turned off).  You can do this by using the restart mechanism:
 
+1) No need to recompile.  Copy fort.7, fort.11, and fort.13 from the run you want to restart.
+
+2) In fort.7 change the following parameters, as described:
+  a) LRSTRT=T [this is the logical switch to perform a restart run]
+ [b) LSHORT=F (this is the logical to use initial short timesteps and should already be =F, but double-check)]
+ [c) LRESTIJ=T (related to initialization, should already be =T, but double-check)]
+  d) KITS=0 [this is the number of short initial timesteps to use]
+  e) BEGDAY: set this to the last day a restart record was written
+     (You can figure this out by checking fort.26 for the day on which the run ended, and then calculating the most recent record from the greatest integer multiple of KOUNTR.)
+  f) KRUN: set to the number of additional timesteps you want the simulation to run, starting from BEGDAY
