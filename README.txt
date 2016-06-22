@@ -200,7 +200,7 @@ There are situations where you might want to restart a run, without starting it 
  [b) LSHORT=F (this is the logical to use initial short timesteps and should already be =F, but double-check)]
  [c) LRESTIJ=T (related to initialization, should already be =T, but double-check)]
   d) KITS=0 [this is the number of short initial timesteps to use]
-  e) BEGDAY: set this to the last day a restart record was written
+  e) BEGDAY: set this to the last day a restart record was written (not to be confused with "BEGDOY = 0")
      (You can figure this out by checking fort.26 for the day on which the run ended, and then calculating the most recent record from the greatest integer multiple of KOUNTR/TSPD, where KOUNTR gives the number of timesteps between each write of the restart record.)
          for example: last line of fort.26 shows "OUTPUTS FOR DAY   463.0000"
                       fort.7 states that "TSPD= 12000.,... KOUNTR= 1200000,"
