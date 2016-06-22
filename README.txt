@@ -156,11 +156,16 @@ run in the background by ending everything with an ampersand. The resulting comm
 
 'nohup nice /usr/bin/time -p -o timing ./igcm3_nopg &'
 
+And if you wanted to receive an email when the run is complete, you could use the following:
+'nohup nice /usr/bin/time -p -o timing ./igcm3_nopg echo "Run complete" | mail -s "Run complete" uniqname@umich.edu &'
+
 Since that's a bit much, I recommend editing your .cshrc file to include an alias similar to:
 
 alias runigcm 'nohup nice /usr/bin/time -p -o timing ./igcm3_nopg &'
 
 This permits you to simply type 'runigcm' as a shortcut for the full command.
+
+
 
 =============================
 1.3.3. RUNNING IN PARALLEL
