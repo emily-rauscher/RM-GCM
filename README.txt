@@ -202,4 +202,8 @@ There are situations where you might want to restart a run, without starting it 
   d) KITS=0 [this is the number of short initial timesteps to use]
   e) BEGDAY: set this to the last day a restart record was written
      (You can figure this out by checking fort.26 for the day on which the run ended, and then calculating the most recent record from the greatest integer multiple of KOUNTR/TSPD, where KOUNTR gives the number of timesteps between each write of the restart record.)
+         for example: last line of fort.26 shows "OUTPUTS FOR DAY   463.0000"
+                      fort.7 states that "TSPD= 12000.,... KOUNTR= 1200000,"
+                      therefore, KOUNTR/TSPD= 100. and the most recent restart file is for day 400. (meaning 63 days were not recorded).
+                      In this case, BEGDAY should be set to 400. 
   f) KRUN: set to the number of additional timesteps you want the simulation to run, starting from BEGDAY
