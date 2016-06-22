@@ -189,7 +189,7 @@ e.g. nohup nice /usr/bin/time -p -o timing ./igcm3_nopg &
 5) To confirm that the calculations are using multiple threads, you can use the 'top' command. You'll note that the %CPU for the process >100% for a parallel process. 'top -H' will display each parallel process separately, and you can simply count them to see how many threads are currently being used.
 
 =============================
-1.3.3. USING RESTART TO RUN
+1.3.4. USING RESTART TO RUN
 =============================
 There are situations where you might want to restart a run, without starting it again from the very beginning (perhaps the atmosphere hasn't reached a statistical equilibrium, perhaps the computer was turned off).  You can do this by using the restart mechanism:
 
