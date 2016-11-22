@@ -163,27 +163,30 @@ C      Mass correction namelist defaults
       LMASOLD=.TRUE.  ! masses read from restart file                     
       LMASPRT=.FALSE. ! mass correction printed every KOUNTP steps        
 C                                                                         
-C                                                                         
-      GA=9.80665                                                          
-      GASCON=287.0                                                        
-      RADEA=6371000.0                                                     
-      AKAP=0.286                                                          
-      WW=7.292E-5                                                         
-      P0=100000.0                                                         
-      RV=461.51                                                           
-      CLATNT=2.5E6                                                        
-      CPD=GASCON/AKAP                                                     
-C                                                                         
+C     THE FOLLOWING PARAMETERS ARE ALL DEFINED AS INPUTS IN FORT.7, 
+C     WHICH IS READ IN BELOW. ALL THESE VALUES ARE THEREFORE
+C     PLACEHOLDERS
+                                                                         
+      GA=0.0                                                          
+      GASCON=0.0                                                        
+      RADEA=0.0                                                     
+      AKAP=0.0                                                          
+      WW=0.0                                                         
+      P0=0.0                                                         
+      RV=0.0                                                           
+      CLATNT=0.0                                                        
+      CPD=0.0 !GASCON/AKAP                                                     
+C     
       KRUN=0                                                              
       BEGDAY=0.0                                                          
       BEGDOY=0.0                                                          
-      TSPD=24.0                                                           
-      KITS=3                                                              
+      TSPD=0.0 !24.0                                                           
+      KITS=0.0 !3                                                              
       PNU=0.02                                                            
-      TDISS=0.25                                                          
-      NDEL=6                                                              
+      TDISS=0.0 !0.25                                                          
+      NDEL=0.0  !6                                                              
       DO 17 L=1,NL                                                        
-         T0(L)=250.0                                                      
+         T0(L)=00.0                                                      
    17 CONTINUE                                                            
       LRSTRT=.FALSE.                                                      
       LSTRETCH =.FALSE.                                                   
@@ -231,7 +234,7 @@ C
 C     Set remaining physical constants.                                   
 C                                                                         
       RD=GASCON                                                           
-C                                                                         
+      CPD=GASCON/AKAP  !No longer defined explicitly in fort.7                                                                     
 C     Write out details of model run                                      
 C                                                                         
       WRITE(2,205)RNTAPE                                                  
