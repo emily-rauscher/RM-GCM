@@ -152,12 +152,12 @@ C NLWMODEL=2 is LW with Planck opacities from Freedman, Lodders & Marley 08
        NLWMODEL=1
 
 C Values of parameters entering the above models
-       ABSSW1=0.3  ! optical thickness at surface (* Press)
+!MTR       ABSSW1=0.3  ! optical thickness at surface (* Press)
        ALBSW1=0.0   ! 0.0 for full absorption at bottom
        ABSSW2=0.3  ! optical thickness at surface (* Press)
        SCATSW2= 0.8 ! 0.8 in Schneider & Liu 08 for Jupiter
        ASYMSW2= 0.204 ! 0.204 in Schneider & Liu 08 for Jupiter
-       ABSLW1= 3e-5 !in cm^2/g (* Press, hence  *Press^2 for optical depth)
+!MTR       ABSLW1= 3e-5 !in cm^2/g (* Press, hence  *Press^2 for optical depth)
        NEWTB=0
        NEWTE=0
 
@@ -176,6 +176,9 @@ C Values of parameters entering the above models
  247  FORMAT(' NSWMODEL INDEX INAPPROPRIATE:',I4)
  248  FORMAT(' NLWMODEL INDEX INAPPROPRIATE:',I4)
  249  FORMAT('Newtonian heating only on levels: ',I4,' to ',I4)
+ 250  FORMAT('MATRIX SW FROM TOON ET AL. 1989: '
+     &,'SW ABSCOEFF AT REFERENCE PRESSURE=',f6.1)
+ 251  FORMAT('MATRIX LW & SOURCE FUNCTION FROM TOON ET AL. 1989') 
 
 C      write(*,*) 'reading fort.7 in inisimprad'
       READ (7,INSIMPRAD)                                                     
@@ -192,12 +195,14 @@ C      write(*,*) 'reading fort.7 in inisimprad'
 
 C Scale bottom of atmosphere optical depth for RADSW, using P0 and GA
 C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
-         ABSSW1=P0/GA*ABSSW1/10.0
-         ABSSTRAT=P0/GA*ABSSTRAT/10.0
+!MTR         ABSSW1=P0/GA*ABSSW1/10.0
+!MTR         ABSSTRAT=P0/GA*ABSSTRAT/10.0
 
          WRITE(2,243) ALBSW1
       ELSE IF(NSWMODEL.EQ.2) THEN
          WRITE(2,244) ABSSW2, SCATSW2, ASYMSW2
+      ELSE IF(NSWMODEL.EQ.3) THEN
+         WRITE(2,250) ABSSW1
       ELSE
       WRITE(2,247) NSWMODEL
       CALL ABORT
@@ -207,10 +212,17 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
          WRITE(2,245) ABSLW1
       ELSE IF(NLWMODEL.EQ.2) THEN
          WRITE(2,246)
+      ELSE IF(NLWMODEL.EQ.3) THEN
+         WRITE(2,251)
       ELSE
       WRITE(2,248) NLWMODEL
       CALL ABORT
       ENDIF
+
+    
+      
+      
+      
     
       IF(.NOT.(NEWTB.EQ.NEWTE)) WRITE(2,249),NEWTB,NEWTE
                                                                           

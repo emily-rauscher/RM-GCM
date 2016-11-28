@@ -654,6 +654,13 @@ C      REWIND NAVWT
          DO 260 IH=1,JG                                                   
             JH=IH                                                         
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP                       
+ 
+C     FOR RADIATIVE TRANSFER
+C       Here's where we extract a row from the aerosol array,
+C       representing vertical profiles of aersols for each longitude for
+C       the given latitude being currently indexed.
+C       aer4thislat=aerosolarry(alllays,allons,IH)
+
 C                                                                         
 C        Go from spectral space to grid point space using                 
 C        inverse Legendre and Fourier transforms                          
