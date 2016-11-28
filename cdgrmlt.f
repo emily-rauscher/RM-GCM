@@ -289,8 +289,9 @@ C
       endif                                                               
       IF(LVD) CALL VDIFF
       IF(LCR) CALL CONVEC            
-      IF(LLR) CALL LSCRN                                                  
-      IF(LRD) CALL RADN(TROPHT)                                           
+      IF(LLR) CALL LSCRN
+      IF(LRD) CALL RADIATION(TROPHT)
+!      IF(LRD) CALL RADN(TROPHT)                                           
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
 C                                                                         
       do j=1,igc                                                          
