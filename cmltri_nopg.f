@@ -115,7 +115,7 @@ C
        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
      & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
-     & PORB, OBLIQ, ECCEN 
+     & PORB, OBLIQ, ECCEN, TAULIMIT 
       
        LOGICAL LPLOTMAP
 
@@ -242,7 +242,6 @@ C      write(*,*) 'Hello',i
 C      enddo
 C!$omp end do
 C!$omp end parallel
-
       CALL INISET                                                         
 C     if not restart run, then use modified start to set TTRES, otherwise skip
       IF(.NOT.LRSTRT) THEN

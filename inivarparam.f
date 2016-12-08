@@ -67,7 +67,7 @@ C
        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
      & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
-     & PORB, OBLIQ, ECCEN 
+     & PORB, OBLIQ, ECCEN, TAULIMIT
       
        LOGICAL LPLOTMAP
 
@@ -125,6 +125,10 @@ C       write(*,*) 'second read in inivarparam'
        READ(7,INBINVAL)
        WRITE(2,INBINVAL)
 
+       TAULIMIT=2.*LOG(1.e-2)/1.66
+     &           /(10.**(-1.*OOM_IN/NL)-10.**(OOM_IN/NL))
+C       write(*,*) 'TAULIMIT',TAULIMIT
+      
 C      WRITE(2,240)                                                        
 
 C      IF(NSWMODEL.EQ.1) THEN
