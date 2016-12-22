@@ -13,19 +13,16 @@
 !     * ****************************************************************
 !
       include 'rcommons.h'
-      real  EXPCORR,GRAD,FNETDIFF,TFAC,TLIMIT
+      real  EXPCORR,GRAD,FNETDIFF,TFAC,TAULIMIT
       DIMENSION PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
       DIMENSION T(NLAYER)
       integer kindex
 !     **************************************     
       T=T_aerad
-
-      IF(IR .NE. 0) THEN
       DO 100 L     =  NSOLP+1,NTOTAL  ! LOOP OVER IR BINS IF ANY
        DO 200 ILEV  =  1,NLAYER  ! LOOP OVER LAYERS
-      
 !      IF THIS CONDITIONAL, BASED ON RESOLUTION DEFINED IN INVARPARAM, IS MET...
-       IF (OPD(L,ILEV).GT.TLIMIT) THEN
+       IF (OPD(L,ILEV).GT.TAULIMIT) THEN
 !            CHOOSE THE OPACITY POWER LAW CASE; IN PRACTICE, THIS HAS FOUND TO
 !            REDUCE THE COMPUTING TIME SURPRISINGLY
 !            FOR THE OPACITY POWER LAW = 0 (CONSTANT IN HEIGHT) CASE:
@@ -152,8 +149,7 @@
        ENDIF
 200   CONTINUE      
 100   CONTINUE
-      ENDIF
-
+      
       RETURN
       END
 

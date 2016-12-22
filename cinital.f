@@ -57,7 +57,6 @@ C      CALL INISET
 
 !!KM Modif
       CALL INIVARPARAM
-                                                        
       CALL INISI                                                          
       CALL INIPHYS                                                        
       IF (LRESTIJ) THEN                                                   

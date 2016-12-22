@@ -24,51 +24,12 @@
 
 !      use physical_constants
       include 'rcommons.h'
-!       real R_AIR,GRAV,Cpd,PREF,eps,RdCp  
-!       real, parameter :: EXPMAX = 50.
-!       real, parameter :: PI = 3.14159
        real, parameter :: BK = 1.38054e-16
-!       real, parameter :: RGAS = 8.31430e+07
-!       real, parameter :: AVG = 6.02252e23
-       real, parameter :: WTMOL_AIR = 28.966e+0
-       real, parameter :: WTMOL_H2O = 18.
-       real, parameter :: WTMOL_HNO3 = 63.
-!       real R_AIR,GRAV,CP,PREF,eps,RdCp   !  GASCON *10000.! converting from J/kg/K to erg/K/g R_AIR = RGAS / WTMOL_AIR
-!       real, parameter :: GRAV = GA *100. ! converting to cm/s^2 for Rad!980.6e+0
-!       real, parameter :: PREF = P0 !1013.e3
-!       real, parameter :: Cp = GASCON/AKAP !1.004e+7
-       real, parameter :: RHOSOL = 1.38
-       real, parameter :: RHOW = 1.
-       real, parameter :: RHOI = 0.93
-       real, parameter :: RHONAT = 1.62
-!       real, parameter :: PRENUC = 2.075e33 * RHOW / RHOI
-       real, parameter :: BAL = 6.1121e3
-       real, parameter :: BBL = 18.729
-       real, parameter :: BCL = 257.87
-       real, parameter :: BDL = 227.3
-       real, parameter :: BAI = 6.1115e3
-       real, parameter :: BBI = 23.036
-       real, parameter :: BCI = 279.82
-       real, parameter :: BDI = 333.7
-
-       real, parameter :: RLHE_AVE = 2.5e10
-
-!       real, parameter :: Rv     = 461.e4
-!       real, parameter :: Rd     = 287.e4
        real, parameter :: L      = 2.5e10
        
-!       real, parameter :: eps  = Rd/Rv
-!       real, parameter :: RdCp = Rd/Cpd
-! integer, parameter :: NZ = 3200
-!      integer, parameter :: NZ = NL+1
-
-!real, dimension(2555) :: p_full, t_full, qh2o_bas, qh2o_dec, qh2o_mar,
-!radheat, qh2o_full
       REAL PR(NZ),T(NZ),Cpd,PRFLUX(NZ)
       real, dimension(NZ) :: p_full, t_full, radheat
       real, dimension(NZ) :: z, htsw,htlw
-! real, dimension(208) :: p_full, t_full, qh2o_bas, qh2o_dec, qh2o_mar,
-! radheat, qh2o_full
       real, dimension(45) :: wave_pass
       real, dimension(NWAVE,2,2) :: rfluxes
 !      integer, dimension(20) :: ibinmin
@@ -86,71 +47,26 @@
       RdCp = Rd/Cpd
       player=pr
 
-       
-!      write(*,*),'Rd',Rd
-!      write(*,*),'CASCON',GASCON
-!      write(*,*),'AKAP',AKAP
-!      write(*,*),'Rv',Rv
-!      write(*,*),'Cpd',Cpd
-!      write(*,*),'GRAV',GRAV
-!      write(*,*),'R_air',R_AIR
-!      write(*,*),'p_full',P_full
-!      write(*,*),'t_full',t_full
-!      write(*,*) 'Player',player
-!      write(*,*) 'Prflux',PrFLux
-!      write(*,*) 'fluxes',rfluxes
-!...Read in profiles from pfister's data file
-! open( 9, file='pfprof.dat', form='formatted', status='unknown' )
-! read(9,*) p_full
-! read(9,*) t_full
-! read(9,*) qh2o_bas
-! read(9,*) qh2o_dec
-! read(9,*) qh2o_mar
-! 
-! p_full = p_full * 1.e3
-! qh2o_bas = qh2o_bas / 1.e6
-! qh2o_dec = qh2o_dec / 1.e6
-! qh2o_mar = qh2o_mar / 1.e6
-
-!open( 9, file='barrow.20080418.input_sounding', form='formatted',
-!status='unknown' )
-!open( 9, file='barrow.20080418.1600.input_sounding', form='formatted',
-!status='unknown' )
-!open( 9, file='barrow.20080427.1600.input_sounding', form='formatted',
-!status='unknown' )
-!read(9,*) ii
-!print*, ii
-!do i = 1,ii
-!  read(9,*) ii, t_full(i), p_full(i), qh2o_full(i)
-!  print*, i, ii, t_full(i), p_full(i)/1.e3, qh2o_full(i)
-!enddo
-!stop
-!      do i = 1, NZ
-!        print*, i, t_full(i), p_full(i),prflux(i)
-!      enddo
-!qh2o_full = qh2o_full / 1.e3
-!p_full = p_full * 1.e1
-
 !...Calculate z and dz based on hydrostatic equilibrium
 
 !pmean is the average pressure for the layer.i.e. for each layer,
 ! the base and top are added and divided by 2. It's in pascals. 
 
-      z(1) = 0.
-      do iz = 2, NZ
-        scale = R_AIR*0.5*(t_full(iz)+t_full(iz-1)) / GRAV
-        pmean = 0.5*(prflux(iz)+prflux(iz-1))
-        z(iz) = z(iz-1) - scale * (prflux(iz)-prflux(iz-1)) / pmean
+!      z(1) = 0.
+!      do iz = 2, NZ
+!        scale = R_AIR*0.5*(t_full(iz)+t_full(iz-1)) / GRAV
+!        pmean = 0.5*(prflux(iz)+prflux(iz-1))
+!        z(iz) = z(iz-1) - scale * (prflux(iz)-prflux(iz-1)) / pmean
 !        write(*,*) 'scale',scale
 !        write(*,*) 'z(iz)',scale * (prflux(iz)-prflux(iz-1)) / pmean
 !        write(*,*)'pmean',pmean
 !  print*, iz, pmean/1.e3, t_full(iz), scale/1.e5, z(iz)/1.e5
-      enddo
-        dz(1)=z(2)*(-1)
-      do iz = 2,NZ-1
-        dz(iz) = -1*(z(iz+1)-z(iz))
+!      enddo
+!        dz(1)=z(2)*(-1)
+!      do iz = 2,NZ-1
+!        dz(iz) = -1*(z(iz+1)-z(iz))
 !        print*, iz, z(iz)/1.e5, dz(iz)/1.e5
-      enddo
+!      enddo
 !        write(*,*)'dz',dz
 
 !      do iz = 1, NZ
@@ -188,7 +104,7 @@
 !         write(*,*) 'radheat',radheat
 !         write(*,*) 'wave_pass',wave_pass
 !         write(*,*) 'ibinm',ibinm        
-         call radsub(iffirst, dz,pr,p_full,t_full,qh2o_full,
+         call radsub(iffirst, pr,p_full,t_full,qh2o_full,
      &               radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD)
 
         iffirst = 0

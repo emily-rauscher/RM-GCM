@@ -111,7 +111,7 @@
      &                 O3(NLAYER), CAER(NRAD,NLAYER,NGROUP),      
      &                 PBAR(NLAYER),PLAYER(NLAYER),                                          
      &                 DPG(NLAYER), TT(NLAYER), Y3(NTOTAL,NGAUSS,NLAYER),     
-     &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY,FLXLIMDIF       
+     &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY       
 !                                                                       
 ! DEFINED IN 'OPPROP'                                                   
 !

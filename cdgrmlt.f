@@ -155,7 +155,8 @@ c
      *               arrcr1(igc,jg),arrlr1(igc,jg),                       
      *               arflux1(igc,6,jg),asfld1(igc,6,jg),                  
      *               acld1(igc,4,jg)                                      
-C                                                                         
+
+
 C     Setup moisture variables by equivilencing them to                   
 C     Tracer No. 1                                                        
 C                                                                         

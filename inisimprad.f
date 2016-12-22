@@ -116,14 +116,16 @@ C
 C                                                                         
        COMMON/GSG/GSG(IGC,JG)                                             
 C                
-       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
-     & JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,ABSSW1,ABSSTRAT,PRMIN,ALBSW1,
-     & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE
-       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR
+       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
+     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
+     & ALBSSW, NEWTB, NEWTE
+       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
+     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
-       NAMELIST/INSIMPRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
-     &      JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,ABSSW1,ABSSTRAT,PRMIN,
-     &      ALBSW1,ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE
+       NAMELIST/INSIMPRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,FLXLIMDIF,SURFEMIS,
+     & RAYSCAT, RAYSCATLAM,AEROSOLS,ABSSW,ABSLW, ALBSSW, NEWTB, NEWTE
 
 C Switch to enable proper sub-layer calculation in LW scheme given log(P) 
 C distribution of vertical levels
@@ -135,28 +137,65 @@ C Switch to force irradiation at zenith around sphere (1D equivalent run)
 C ER modif: switch to use diurnally averaged forcing instead of hemispheric
        LDIUR=.FALSE.
 
-C Value of Mass Mixing Ratio (MMR) of absorber in LW scheme
-C Should be 1.0 but allows overall scaling up/down of asborber amount  
-       ABSMMRLW=1.0
-
 C Indices to be used to skip RT calculation every JSKIP index in LON and LAT 
        JSKIPLON=1
        JSKIPLAT=1
 
-C Indices to select the SW and LW models used in RT calculation 
-C NSWMODEL=1 is SW clear sky with surface reflection specified by albedo
-C NSWMODEL=2 is SW semi-infinite scattering atmosphere (e.g Schneider & Liu 08)
-C NLWMODEL=1 is LW unique absorption coeff (*Press) like Schneider & Liu 08
-C NLWMODEL=2 is LW with Planck opacities from Freedman, Lodders & Marley 08  
-       NSWMODEL=1   
-       NLWMODEL=1
+C The following are related to the flags in the radiative transfer suite
+!     DOSWRAD= ISL        - do solar calculations when = 1
+!     DOLWRAD= IR        - do infrared calculations when = 1
+!     LWSCAT= IRS        - do infrared scattering when = 1
+!     FLXLIMDIF  - do flux limited diffusion correction = 1 ~MTR
+!     SURFEMIS=  EMISIR     - SURFACE IR EMISSIVITY
+      DOSWRAD      = .TRUE.
+      DOLWRAD      = .TRUE.
+      LWSCAT       = .TRUE.
+      FLXLIMDIF    = .TRUE.
+      SURFEMIS     = 1.
 
-C Values of parameters entering the above models
-!MTR       ABSSW1=0.3  ! optical thickness at surface (* Press)
-       ALBSW1=0.0   ! 0.0 for full absorption at bottom
-       ABSSW2=0.3  ! optical thickness at surface (* Press)
-       SCATSW2= 0.8 ! 0.8 in Schneider & Liu 08 for Jupiter
-       ASYMSW2= 0.204 ! 0.204 in Schneider & Liu 08 for Jupiter
+!     RAYSCAT    - include rayleigh scattering
+!     RAYSCATWL  - wavelength at which to compute scattering optical
+!     depth in double gray regime
+      RAYSCAT      =.FALSE.
+      RAYSCATLAM    = 0.      
+      
+!     INCLUDE AEROSOLS 
+      AEROSOLS  =.FALSE.
+      AEROSOLMODEL ='GENERATE'
+      PI0AERSW = 1.
+      ASYMSW = 1.
+      EXTFACTLW= .1
+      PI0AERLW= .8
+      ASYMLW= 0.01 
+!     GASEOUS ABSORPTION
+      ABSSW =1.0
+      ABSLW =1.0      
+      ALBSW =0.0   ! 0.0 for full absorption at bottom
+
+        LLOGPLEV        = .FALSE.
+        LFLUXDIAG       = .TRUE.
+        L1DZENITH       = .FALSE.
+        LDIUR           = .FALSE.
+        JSKIPLON        = 1
+        JSKIPLAT        = 1
+        DOSWRAD        = .TRUE.
+        DOLWRAD         = .TRUE.
+        LWSCAT          = .TRUE.
+        FLXLIMDIF       = .TRUE.
+        EMISIR          = 1.
+        RAYSCAT         = .FALSE.
+        RAYSCATLAM      = 0.
+        AEROSOLS        = .FALSE.
+        ABSSW           = 8.14e-4
+        ABSLW           = 1E-2
+        ALBSSW          = 0.0
+        NEWTB           = 0
+        NEWTE           = 0
+
+
+c       ABSSW2=0.3  ! optical thickness at surface (* Press)
+c       SCATSW2= 0.8 ! 0.8 in Schneider & Liu 08 for Jupiter
+c       ASYMSW2= 0.204 ! 0.204 in Schneider & Liu 08 for Jupiter
 !MTR       ABSLW1= 3e-5 !in cm^2/g (* Press, hence  *Press^2 for optical depth)
        NEWTB=0
        NEWTE=0
@@ -175,15 +214,15 @@ C Values of parameters entering the above models
   246 FORMAT(' LW MODEL 2: PLANCK MEAN OPACITY TABLE') 
  247  FORMAT(' NSWMODEL INDEX INAPPROPRIATE:',I4)
  248  FORMAT(' NLWMODEL INDEX INAPPROPRIATE:',I4)
- 249  FORMAT('Newtonian heating only on levels: ',I4,' to ',I4)
+! 249  FORMAT('Newtonian heating only on levels: ',I4,' to ',I4)
  250  FORMAT('MATRIX SW FROM TOON ET AL. 1989: '
-     &,'SW ABSCOEFF AT REFERENCE PRESSURE=',f6.1)
- 251  FORMAT('MATRIX LW & SOURCE FUNCTION FROM TOON ET AL. 1989') 
+     &,'SW ABSCOEFF AT REFERENCE PRESSURE=',f10.5)
+ 251  FORMAT('MATRIX LW & SOURCE FUNCTION FROM TOON ET AL. 1989: '
+     &,'LW ABSCOEFF AT REFERENCE PRESSURE=',f10.5) 
 
 C      write(*,*) 'reading fort.7 in inisimprad'
       READ (7,INSIMPRAD)                                                     
-      WRITE(2,INSIMPRAD)                                                     
-
+C      WRITE(2,INSIMPRAD)                                                     
       WRITE(2,240)                                                        
       IF(LLOGPLEV) THEN 
          WRITE(2,241)                                        
@@ -191,39 +230,40 @@ C      write(*,*) 'reading fort.7 in inisimprad'
          WRITE(2,242) 
       ENDIF
 
-      IF(NSWMODEL.EQ.1) THEN
+!      IF(NSWMODEL.EQ.1) THEN
 
 C Scale bottom of atmosphere optical depth for RADSW, using P0 and GA
 C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
 !MTR         ABSSW1=P0/GA*ABSSW1/10.0
 !MTR         ABSSTRAT=P0/GA*ABSSTRAT/10.0
 
-         WRITE(2,243) ALBSW1
-      ELSE IF(NSWMODEL.EQ.2) THEN
-         WRITE(2,244) ABSSW2, SCATSW2, ASYMSW2
-      ELSE IF(NSWMODEL.EQ.3) THEN
-         WRITE(2,250) ABSSW1
-      ELSE
-      WRITE(2,247) NSWMODEL
-      CALL ABORT
-      ENDIF
+!         WRITE(2,243) ALBSW1
+!      ELSE IF(NSWMODEL.EQ.2) THEN
+!         WRITE(2,244) ABSSW2, SCATSW2, ASYMSW2
+!      ELSE IF(NSWMODEL.EQ.3) THEN
+         WRITE(2,250) ABSSW
+!      ELSE
+!      WRITE(2,247) NSWMODEL
+!      CALL ABORT
+!      ENDIF
  
-      IF(NLWMODEL.EQ.1) THEN
-         WRITE(2,245) ABSLW1
-      ELSE IF(NLWMODEL.EQ.2) THEN
-         WRITE(2,246)
-      ELSE IF(NLWMODEL.EQ.3) THEN
-         WRITE(2,251)
-      ELSE
-      WRITE(2,248) NLWMODEL
-      CALL ABORT
-      ENDIF
+!      IF(NLWMODEL.EQ.1) THEN
+!         WRITE(2,245) ABSLW1
+!      ELSE IF(NLWMODEL.EQ.2) THEN
+!         WRITE(2,246)
+!      ELSE IF(NLWMODEL.EQ.3) THEN
+         WRITE(2,251) ABSLW
+         
+!      ELSE
+!      WRITE(2,248) NLWMODEL
+!      CALL ABORT
+!      ENDIF
 
     
       
       
       
     
-      IF(.NOT.(NEWTB.EQ.NEWTE)) WRITE(2,249),NEWTB,NEWTE
+!      IF(.NOT.(NEWTB.EQ.NEWTE)) WRITE(2,249),NEWTB,NEWTE
                                                                           
       END                                                                 

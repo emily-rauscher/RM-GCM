@@ -225,8 +225,23 @@ C-----------------------------------------------------------------------
       EQUIVALENCE(R8SP(1),SP(1))                                          
        REAL htnet                                                         
        COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)                                
-       REAL TAVE(IGP)                                                     
-C                                                                         
+       REAL TAVE(IGP) 
+       real POSLATS(JG)
+
+       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
+     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
+     & ALBSSW, NEWTB, NEWTE
+       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
+     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
+      
+       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+     &   ASYMLW,SIG_AREA,PHI_LON,AERO4LAT(NL,MG,2),AEROPROF(NL)
+       CHARACTER(15) :: AEROSOLMODEL       
+ 
+       REAL TAUAEROSOL(nl,mg,2,jg)                                  
+C                                                                      
  2000 FORMAT(/' RESTART RECORD WRITTEN TO CHANNEL ',I3,/                  
      +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)                      
  2010 FORMAT(/' HISTORY RECORD WRITTEN TO CHANNEL ',I3,/                  
@@ -257,8 +272,46 @@ C     &&&&&&&&&&&&&MODIFIED START &&&&&&&&&&&&&&
             TT(I)=0.0        
             DTE(I)=0.0       
          ENDDO               
+ 
+!      HERE WE MAKE OR READ IN THE AEROSOLS     
+!      CALL READ_AEROSOLS
+!           IF (AEROSOLS) THEN
+!         DO      L  = 1, NL
+!          DO     I  = 1, MG
+!           DO    JH = 1, JG
+!            DO   IHEM = 1,NHEM
+!         READ(71,*)  CLAT,CLAY,CHEM,CLON,TAUVAL
+C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
+          IF(AEROSOLS) THEN
+           DO JH=1,JG
+           poslats(JH)=alat(JH)
+           ENDDO
+          CALL MAKECLOUDS(poslats,mg,jg,nl,p0,sigma,tauaerosol)
+          ELSE
+          PI0AERSW   =  0.0
+          ASYMSW     =  0.0
+          EXTFACTLW  =  0.0
+          PI0AERLW   =  0.0
+          ASYMLW     =  0.0
+          ENDIF
+C         The loop for the radiative transfer code is as follows:
+!        DO_LATLOOP (below in cmltr_nopg.f)
+!            DO_HEMLOOP (in rradiation.f aka formally cmorc)
+!              {START PARALLEL}
+!                 DO_LONLOOP (inrradiation.f)
+!                      DO_VERTLOOP (actually matrix inversion)
+!                          RADIATIVE TRANSFER
+!                      ENDDO_VERTLOOP
+!                 ENDDO_LONLOOP
+!               {END PARALLEL}
+!            ENDDO_HEMLOOP
+!        ENDDO_LATLOOP
+!        So for speed, innermost is leftmost (and should ideally be
+!        smallest)  
+!        THEREFORE, INDEX ORDER SHOULD BE: TAUAER(NL,MG,IHEM,JH)
+
 C                 
-C     Main loop over latitudes 
+C     Main loop over latitudes ( so says previous author, but it's NOT so for radiation  ~mtr)
 C
          JL=1
 C
@@ -334,6 +387,10 @@ C     ER modif for output management
       ITSOUT=2600
       IFTOUT=5000
       ISFOUT=6400
+
+!@@@@@ HERE IS WHERE THE TIME STEP ITERATION LOOP BEGINS @@@@@@@@@@@@@@
+!@@@@@                                                   @@@@@@@@@@@@@@
+!
 
  1    CONTINUE                                                            
 C                                                                         
@@ -648,18 +705,39 @@ C        and calculation of diabatic tendencies.
 C                                                                         
          IF (JGL.EQ.1) REWIND(25)                                         
 C      REWIND NAVRD                                                       
-C      REWIND NAVWT                                                       
+C      REWIND NAVWT 
+
+                                                      
+!@@@@@@  HERE IS WHERE THE ITERATION OVER LATITUDE FOR  @@@@@@@@@@@@@@@@
+!@@@@@@  THE RADIATIVE TRANSFER BEGINS. SHOULD BE PARALELLIZED @@@@@@@@@
+
          JL=1                                                             
          DO 260 IH=1,JG                                                   
             JH=IH                                                         
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP                       
  
 C     FOR RADIATIVE TRANSFER
-C       Here's where we extract a row from the aerosol array,
-C       representing vertical profiles of aersols for each longitude for
-C       the given latitude being currently indexed.
+C       IF the aerosol keyword is set true, then here's where we extract
+C       a row from the aerosol array, representing vertical profiles of
+C       aersols for each longitude for the given latitude being currently indexed.
 C       aer4thislat=aerosolarry(alllays,allons,IH)
 
+C         The loop for the radiative transfer code is as follows:
+!        DO_LATLOOP (here in cmltr_nopg.f)
+!            DO_HEMLOOP (in rradiation.f aka formally cmorc)
+!              {START PARALLEL}
+!                 DO_LONLOOP (inrradiation.f)
+!                      DO_VERTLOOP (actually matrix inversion)
+!                          RADIATIVE TRANSFER
+!                      ENDDO_VERTLOOP
+!                 ENDDO_LONLOOP
+!               {END PARALLEL}
+!            ENDDO_HEMLOOP
+!        ENDDO_LATLOOP
+!
+       IF(AEROSOLS) THEN
+       AERO4LAT=TAUAEROSOL(:,:,:,IH)  
+       ENDIF
 C                                                                         
 C        Go from spectral space to grid point space using                 
 C        inverse Legendre and Fourier transforms                          

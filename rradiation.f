@@ -117,11 +117,13 @@ C
      :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
                 LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
      :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
-C
-       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
-     & JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,ABSSW1,ABSSTRAT,PRMIN,ALBSW1,
-     & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE,PRFLUX
-       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR
+
+       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
+     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
+     & ALBSSW, NEWTB, NEWTE
+       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
+     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
      +              ,RNTAPO                                               
@@ -132,7 +134,9 @@ C
      $              ,LSHIST,LMINIH                                        
       LOGICAL LSHIST,LMINIH                                               
       LOGICAL LSPO,LGPO    
-C                                                                         
+
+
+                                                                         
 C                                                                         
 C     Setup moisture variables by equivilencing them to                   
 C     Tracer No. 1                                                        
@@ -148,26 +152,20 @@ C
       REAL htnet                                                         
       COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)                                
       REAL TAVE(IGP) 
-c Morcrette profiles (have extra level)                                  
                                                                           
-!      REAL PR(NL+1),T(NL+1),h2o(nl+1),o3(nl+1),htlw(nl+1),htsw(nl+1)      
        REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
        real PRB2T(NL+1),adum                                                           
-                                                                          
+      
+       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,                  
+     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+     &   ASYMLW,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
+       CHARACTER(15) :: AEROSOLMODEL
+       REAL AERO4LAT(NL,MG,2)                    
+       REAL AEROPROF(NL)                
                                                                           
       integer ifirst                ! If =1, first time reading o3        
                                     ! and h2o (2 months' worth).          
                                                                           
-      character*31 o3file1, h2ofile1, o3file2, h2ofile2                   
-                                    ! Filenames of o3 and h2o             
-                                    ! climatology read in. 1=current,     
-                                    ! 2=next.                             
-      integer cmth                  ! Current month counter. = month      
-                                    ! number +1 'cos have 13 months       
-                                    ! (dec in twice)                      
-      character*3 mn(13)            ! Month names. 13 to enable           
-                                    ! wrap-around.                        
-      integer mnlen(13)             ! Month lengths in days.              
       real amfrac                   ! fraction through month              
       integer ichange               ! =1 when in process of month change  
 *---------------------------                                              
@@ -180,8 +178,6 @@ c Morcrette profiles (have extra level)
       integer im                    ! Pointer for array plg (for          
                                     ! getting sfc pressure).              
                                                                           
-      integer ic(4,2)    !cloud positions (deep,h,m,l;bottom,top)         
-      real cf(4,2)       !cloud fraction,lwp deep,high,mid,low            
 C     Array to hold fluxes at top and bottom of atmosphere                
 C     1st index - flux 1=SW, 2=LW                                         
 C     2nd index - Direction 1=DN, 2=UP                                    
@@ -194,8 +190,6 @@ c     The following for parallel testing --MTR
                                                                         
       save                          ! Want to keep things like dcompl.    
                                                                           
-      data mn/'dec','jan','feb','mar','apr','may','jun','jul',            
-     &          'aug','sep','oct','nov','dec'/                            
                                                                           
                                                                           
       DATA IFIRST/1/                                                      
@@ -220,13 +214,17 @@ C to get to TTRD from K/day divide the K/day heating rate by
 C     (86400*WW*CT)                                                       
 C     TTRD(non-dim)=HTRT(k/day)/(86400*WW*CT)                             
 c
+   
+                                           
+ 
+
+
 c
 c --------------------------------- Now start the radiation bit.          
 c                                                                         
 C loop over hemispheres                                                   
       IOFM=0                                                              
 C
-
                                                                          
       DO 800 ihem=1,nhem                                                  
                                                                           
@@ -237,21 +235,47 @@ c calculates heating rates every ntstep time steps
 C                                                                         
 C  Does do Radn scheme                                                    
 C                                                                         
-C loop over longitudes for radn calculation                               
+C loop over longitudes for radn calculation
+!!!  NOTE, THIS PARALLELISM IS ONLY DOING THE LONGITUDES IN PARALLEL,
+!    NOT THE LAITITUDES. THE |LATITUDE| LOOP STARTS IN DGRMLT, AND
+!    HEMISPHERE LOOP (TO DO BOTH + AND - LAT VALUE) BEGINS ABOVE.  IF WE BEGIN
+!    THE PARALLELISM OUTSIDE THE LATITUDE LOOP, THEN WE WOULD COMPUTE EACH
+!    |LATITUDE| IN PARALLEL, BUT THE LONGITUDES AND HEMISPHERES WOULD BE DONE SERIALLY
+!    WITHIN EACH THREAD, UNLESS NESTING IS POSSIBLE. 
+!    THE NUMBER OF LONGITUDES EXCEEDS THE NUMBER OF
+!    LATITUDES (MORE SO WHEN CONSIDERING HEMISPHERE SEPERATELY) SO THE
+!    BENEFIT IS POTENTIALLY GREATER IF THE NUMBER OF CORES EXCEEDS THE
+!    NUMBER OF LATITUDES. NESTING SHOULD SPEED THIS UP FURTHER. 
+!      THE ARCHITECTURE IS AS FOLLOWS
+!        DO_LATLOOP (IN DGRMLT)
+!            DO_HEMLOOP
+!              {START PARALLEL}
+!                 DO_LONLOOP
+!                      DO_VERTLOOP
+!                          RADIATIVE TRANSFER
+!                      ENDDO_VERTLOOP
+!                 ENDDO_LONLOOP
+!               {END PARALLEL}
+!            ENDDO_HEMLOOP
+!        ENDDO_LATLOOP
+!
+!            write(*,*) MAXVAL(AERO4LAT)
             ilast=0                                                             
 c             write(*,*) 'line431'
 c            TID = OMP_GET_MAX_THREADS()
 c            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
 c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 
+!  NOTE THAT THIS NEEDS TO BE UPDATED FOR THE NEW RADIATIVE TRANSFER
+!  SCHEME!!!!!!!WARNING!
 !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
-!$OMP& private(im,idocalc,imp,PR,T,imm,h2o,o3,alat1,cf,ic,SWALB,alon,htlw,
+!$OMP& private(im,idocalc,imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw,
 !$OMP& htsw,HTNETO,a,b),
 !$OMP& shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
 !$OMP& QG,SSLAT,SSLON,fluxes,CHRF),
 !$OMP& firstprivate(ilast),
 !$OMP& lastprivate(ilast),
-!$OMP& shared(ABSLW1, ABSMMRLW, ABSSTRAT, ABSSW1, ABSSW2, ACLD, AIOCT, AK,
+!$OMP& shared(ABSLW, ABSSW, ACLD, AIOCT, AK,
 !$OMP& AKAP, AKQC, AKQV, AKTC, AKTV, AKVV, ALAT, ALBSW1, ALP, ALPHA,
 !$OMP& ALPJ, AQ, ARFLUX, ARRCR, ARRLR, ASFLD, ASHBL, ASLBL, ASSBL,
 !$OMP& ASYMSW2, AW, BEGDAY, BEGDOY, BLA, BLCD, BLRH, BLVAD, BLVB, BM1,
@@ -340,7 +364,8 @@ c --------------------------------------- Now set rest of column.
                      L=NL-LD+2  ! Reverse index (Morc goes bottom up).                     
                      PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure 
                      PRB2T(L)=PR(LD)                      
-                     T(LD)=TG(im,ld)*CT ! Temperature  
+                     T(LD)=TG(im,ld)*CT ! Temperature 
+                     AEROPROF(LD)=0.0 
 !         write(*,*)'LD,L,sigma(LD),PR(L),T(L)',LD,sigma(LD),PR(LD),T(LD)                  
                   ENDDO
                    PRB2T(1)=PLG(im)*P0
@@ -367,13 +392,9 @@ c ----------------------------------------------------- And alat1
                      ENDIF
                   ENDIF
                                                                           
-
-                  IF(NSWMODEL.EQ.1) THEN
-                     SWALB=ALBSW1
-                  ELSE
-!!          SWALB=SALB(IM,JH)                                               
-                     SWALB=0.0
-                  ENDIF
+!! BOTTOM SHORT WAVE ALBEDO SET IN FORT.7 INISIMPRAD
+             SWALB=ALBSW 
+                  
 ! PR AND T ARE THE TEMPERATURE AND PRESSURE AT THE SIGMA LEVELS
 ! AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE. 
 ! TO COMPUTE HEATING RATES AT THESE CENTERS, WE NEED TO DEFINE
@@ -393,6 +414,15 @@ C Call radiation scheme
 !     PR in pascals for layer boundaries (NL+1), T in Kelvin for layer
 !     centers + one layer for the bottom boundary. The top is n=1, the
 !     bottom is n=NL+1
+
+!
+            IF(AEROSOLS) THEN
+!           AEROSOLS TIME!
+!           Extract a single column from the array AER4LAT(NLEV,LON,HEM)
+            AEROPROF=AERO4LAT(:,mg,ihem)
+            ENDIF
+            
+             
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
                                  
