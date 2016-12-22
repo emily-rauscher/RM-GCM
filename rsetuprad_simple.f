@@ -4,9 +4,15 @@
 !     *  Purpose            :  Defines all constants, and     *
 !     *                        calculates pressure averaged   *
 !     *                        absorption coefficients.       *
+!     *                                                       *
+!     *       THIS IS A SIMPLER VERSION OF SETUPRAD           *
+!     * If you are attempting to add complexity to the model, *
+!     * Such as adding more wavelength bins or mie calculations
+!     * then consult that program first.                      *
 !     * *******************************************************
 !
       include 'rcommons.h'
+
 !
 ! **********************************************************************
 !
@@ -29,6 +35,7 @@
       DATA AVG    / 6.02252E+23  /
       DATA PI    /3.14159265359/
 
+      
 !
 ! **********************************************************************
 !
@@ -36,26 +43,11 @@
 !
 ! **********************************************************************
 !
-!
 !     UNITS ARE (CM**2)/GM
-!MTR      DATA (AH2O(I),I=1,77)  /      14*0.0, 0.0000, 0.1965, 9.2460,
-!MTR     &       0.0000, 0.1765, 9.2460, 0.0000, 0.0000, 0.2939, 0.5311,
-!MTR     &     113.40, 0.0000, 0.0000, 0.3055, 5.2180, 113.00, 0.0000,
-!MTR     &       0.3355, 5.5090, 124.90, 3*0.00, 0.0000, 0.3420, 7.1190,
-!MTR     &       95.740, 4*0.00,   0.00, 4*0.00, 4*.3012,4*5.021,4*63.17, 
-!MTR     &        4*699.1,0.0000, 6.3321, 5.336,  123.4,  7*0.0    /
-!
-!MTR      DATA (PSH2O(I),I=1,77) /     
-!MTR     &       14*0.0, 3*0.54, 3*0.54, 0.0, 4*0.54, 0.0, 4*0.52,     
-!MTR     &       4*0.44, 3*0.00, 4*0.62, 5*0.0, 20*0.60,   4*0.60,     
-!MTR     &       7*0.0                     /
 !
 !     ***********************
 !     *  DATA FOR INFRARED  *
 !     ***********************
-!
-!MTR      DATA (PSH2O(I),I=78,148)  /   71*0.0                  /
-!
 !
 !     GAUSS ANGLES AND GAUSS WEIGHTS FOR GAUSSIAN INTEGRATION
 !     MOMENTS (USE FIRST MOMENT VALUES) N=3
@@ -91,60 +83,20 @@
 !
       DATA EPSILON / ALMOST_ZERO  /
 !
-!     EXPMAX - LARGEST (NEGATIVE) EXP ARGUMENT
 !
-!MTR      DATA EXPMAX  / POWMAX       /
-!
-!     THIS ROUTINE ASSUMES THAT PRESSURE DOES NOT VARY WITH
-!     LOCATION OR TIME.
-!
-!     CO2MOL - MOLECULAR WEIGHT OF CO2 (G/MOL)
-!     O3MOL  - MOLECULAR WEIGHT OF O3 (G/MOL)
-!     O2MOL  - MOLECULAR WEIGHT OF O2 (G/MOL)
-!
-      DATA O2MOL   /  32.         /
-!
-!
-!MTR      DATA (AKH2O(1,I),I=1,6)  / 0.02080, 0.01550, 0.01040, 0.00510,
-!MTR     &                            0.00200, 0.00062       /
-!
-!     CORERAD - RADIUS OF CORE OF AEROSOL PARTICLES
-!     COREREAL- REAL PART OF REFRACTIVE INDEX OF CORES
-!     COREIMAG- IMAGINARY PART OF REFRACTIVE INDEX OF CORES
-!
-      DATA CORERAD  / 0.0        /
-      DATA COREREAL / 1.25       /
-      DATA COREIMAG / 0.5        /
-!
-!     
-!      write(*,*) 'top of pradsetup,, P',P
-!      write(*,*) 'top of pradsetup,PR',Pr
-!      write(*,*) 'top of pradsetup,Pfull',p_full
-!      write(*,*) 'top of pradsetup,paerad',p_aerad 
       AM= RGAS/R_AIR
-!      write(*,*)'ABSLW1',ABSLW1
-      ABSCOEFF(1)=ABSSW1
-      ABSCOEFF(2)=ABSLW1
-!      write(*,*)'ABSCOEFF', ABSCOEFF
-!      write(*,*) 'Im in rsetuprad_simple'
+      ABSCOEFF(1)=ABSSW
+      ABSCOEFF(2)=ABSLW
 !     DERIVED PARAMETERS
 !
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
       JN      =   JDBLE-1
       TPI     =   2.*PI
-!      CPCON   =   1.006
       CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K 
       FDEGDAY =   1.0E-4*G*SCDAY/CPCON
-!  Open output print files
-!
-      prtofil = 'carma.p'
-      radofil = 'rad.p'
 
 
-!MTR      open(unit=LUNOPRT,file=prtofil,status='unknown')
-!MTR      open(unit=LUNORAD,file=radofil,status='unknown')
-!
 !     Initialize the aerosol concentrations
 !
 !MTR ayayay...
@@ -223,30 +175,23 @@
 !        asmm(5,iwave) = temparr(1,iwave)
 !      enddo
 
-      do iwave = 1, NWAVE
-        do iz = 1, NVERT
-          taua(iwave,iz) = 0.
-          taus(iwave,iz) = 0.
-          g01(iwave,iz) = 0.
-        enddo
-        do iz = 2, NVERT
-          plev = p_aerad(iz)/1.e3
-          do ip = 1, 4
-            if( plev < pbndsm(ip) .and. plev >= pbndsm(ip+1) ) then
+!      do iwave = 1, NWAVE
+!        do iz = 1, NVERT
+!          taua(iwave,iz) = 0.
+!          taus(iwave,iz) = 0.
+!          g01(iwave,iz) = 0.
+!        enddo
+!        do iz = 2, NVERT
+!          plev = p_aerad(iz)/1.e3
+!          do ip = 1, 4
+!            if( plev < pbndsm(ip) .and. plev >= pbndsm(ip+1) ) then
 !MTR              taua(iwave,iz) = tauem(ip,iwave)*dz(iz)
 !MTR              taus(iwave,iz) = taua(iwave,iz) * ssam(ip,iwave)
-              g01(iwave,iz) = asmm(ip,iwave)
-!...dbg:
-!      if( iwave == 9 ) print*, iz, ip, plev, tauem(ip,iwave),
-!      taua(iwave,iz)
-!      if( iz == 13 ) print*, iwave, plev, taus(iwave,iz),
-!      taua(iwave,iz), g01(iwave,iz)
-!      if( iz >= 1 ) print*, iwave, ip, plev, tauem(ip,iwave),
-!      taus(iwave,iz)
-            endif
-          enddo
-        enddo
-      enddo
+!              g01(iwave,iz) = asmm(ip,iwave)
+!            endif
+!          enddo
+!        enddo
+!      enddo
 !      print*, sum( taua(9,:) )
 !      stop
 
@@ -330,18 +275,27 @@
 !     SFC_WIND   - wind speed at 10 m altitude (m/s)
 !     SFC_ALB    - surface albedo when fixed
 !
-      ISL          = 1
-      IR           = 1
-      IRS          = 1
-      FLXLIMDIF    = 1
-      EMISIR       = 1.
+
+      ISL          = 0
+      IR           = 0
+      IRS          = 0
+      IF(DOSWRAD) THEN 
+         ISL = 1
+      ENDIF
+      IF(DOLWRAD) THEN 
+         IR  = 1
+      ENDIF
+      IF(LWSCAT) THEN 
+        IRS  = 1
+      ENDIF
+      EMISIR       = SURFEMIS
 !      PTOP         = 53.6e3
 !      PBOT         = 1000.e3
       PTOP         =p_aerad(1)*10. !P(1)
       PBOT         =p_aerad(NL+1)*10.
 !       WRITE(*,*) 'PTOP',PTOP
 !       write(*,*) 'PBOT',PBOT
-!       write(*,*) 'ISL', ISL
+
 !       write(*,*) 'PLANK',PLANK
      
 !      write(*,*) 'p_aerad',p_aerad
@@ -445,8 +399,6 @@
 !     RDH2O(1) = .64
 !
 !     For z_top = 19 km
-      RDH2O(1)   = 1.6e-4
-      RDH2O(1)   = 1.6e-3
 !
 !     CALCULATE CLOUD AND AEROSOL OPACITY.
 !
@@ -530,13 +482,15 @@
           TAUCONST(L)=ABSCOEFF(L)/GA/100.
       ENDDO
 
-  
+!@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  
 !     WAVE MUST BE IN MICRONS
 !     CALCULATE RAYLEIGH OPTICAL DEPTH PARAMETERS.
-!
-!      write(*,*) 'G', G
-!      write(*,*) 'AM',AM
-!      write(*,*) 'AVG',AVG
+
+!     RAYLEIGH SCATTERING CONDITIONAL:
+
+      IF(RAYSCAT.EQ.1) THEN
+
+!     COMPUTE THE CONVERSION FACTOR FOR BAR TO 2KM AMAGATS
       bar2kamg=AVG*1.e5/(2.686763e25*G/100.*AM*1e-3)*1e-3
 !      bar2kamg= 2.686763e25*G*AM/(1e5*1e-3*AVG)
 !        write(*,*) 'bar2kamg',bar2kamg
@@ -550,29 +504,45 @@
 !molec. weight for mole fraction .86 H2 and .136 He (von Zahn)
 ! 2.27 *10^-3 kg/mole
 
-      DO 310 L      =   1,NTOTAL
-!
+          DO 310 L      =   1,NTOTAL
+        
 !MTR          WVO       =    WAVE(NPROB(L))
 !MTR          TAURAY(L) =   (8.46E-9/WVO**4) *     &
 !MTR                        ( 1.+0.0113/WVO**2+0.00013/WVO**4 )
-              WVO = 0.6  !Hardwire for H2!! MTR
+              WVO = RAYSCATWL  !Hardwire for H2!! MTR
               RAYPERBAR(L) =   (bar2kamg*0.000219/WVO/WVO/WVO/WVO) *     
-     &           ( 1.+0.0157248/WVO/WVO+0.0001978/WVO/WVO/WVO/WVO)*0.
-              
-!              write(*,*) 'RAYPERBAR(L)', RAYPERBAR(L)
-!              write(*,*) 'PBAR',PBAR
- 310  CONTINUE
+     &           ( 1.+0.0157248/WVO/WVO+0.0001978/WVO/WVO/WVO/WVO) 
+310       CONTINUE   
+
+               DO 330 J          =   1,NLAYER
+                DO 335 L         =   1,NTOTAL
+             if( L .LE. NSOLP )then
+               TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
+             else
+               TAURAY(L,J) = 0.0
+             endif
+335             CONTINUE
+330            CONTINUE
+      ELSE
+         DO 320 J     = 1,NLAYER
+          DO 325 L    = 1,NTOTAL
+           TAURAY(L,J)= 0.0
+325       CONTINUE
+320      CONTINUE
+      ENDIF
+
+! @@@@@@@@@@@ END OF RAYLEIGH SCATTERING CONDITIONAL @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 !     WE DO NOT INCLUDE RAYLEIGH SCATTERING IN INFRARED
 !
-      DO 330 J          =   1,NLAYER
-         DO 320 L       =   1,NTOTAL
-           if( L .LE. NSOLP )then
+!      DO 330 J          =   1,NLAYER
+!         DO 320 L       =   1,NTOTAL
+!           if( L .LE. NSOLP )then
 !             PARAY(L,J+1) = TAURAY(L)*DPG(J)*G ; 
-              TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
-           else
-             TAURAY(L,J) = 0.0
-           endif
- 320     CONTINUE
+!              TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
+!           else
+!             TAURAY(L,J) = 0.0
+!           endif
+! 320     CONTINUE
 !
 !         DO 325 L       =   1,NLAYER
 !            if( L .LE. NSOLP )then
@@ -583,7 +553,7 @@
 !            endif
 ! 325     CONTINUE
 !
- 330  CONTINUE
+! 330  CONTINUE
 !
 ! **********************************************************************
 !

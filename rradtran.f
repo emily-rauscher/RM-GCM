@@ -16,7 +16,8 @@
 
       integer, parameter :: nwave_alb = NTOTAL
 !      integer, parameter :: nwave_alb = 142
-      real wavea(nwave_alb), albedoa(nwave_alb),t(NZ),p(NZ)
+      real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
+      real maxopd(nwave_alb)
 !      real RFLUXES_aerad(2,2,2) 
       integer jflip
 !  Reset flag for computation of solar fluxes
@@ -121,7 +122,6 @@
 !      write(*,*) 'L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)'
 !      write(*,*) L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)
 ! 20   CONTINUE
-!
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
          EMIS(L) =  EMISIR
@@ -181,16 +181,17 @@
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
 !       write(*,*) 'FNET(1,1)',FNET(1,1)       
-!       write(*,*) 'stopping radtran' 
         IF(IR .NE. 0) THEN
 !        write(*,*) 'HEATI',HEATI
          CALL NEWFLUX1
 !        write(*,*) 'HEATI',HEATI
-          IF(FLXLIMDIF .NE. 0) THEN 
-          CALL FLUXLD
+          
+          IF(FLXLIMDIF) THEN 
+            IF(OPD(2,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
+            CALL FLUXLD
+            ENDIF
           ENDIF
-         ENDIF
-        
+        ENDIF
           
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC
 !     MODIFICATION:

@@ -1,4 +1,4 @@
-      subroutine radsub(iffirst, deltaz,pr, p_pass,t_pass,qh2o_pass, 
+      subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass, 
      &                radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD)
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -16,7 +16,7 @@
       integer iffirst
       real t_pass(NZ)
       real p_pass(NZ)
-      real deltaz(NZ)
+!      real deltaz(NZ)
       real qh2o_pass(NZ)
       real radheat(NZ)
       real heats_aerad_tot(NZ), heati_aerad_tot(NZ), radheat_tot(NZ)
@@ -66,7 +66,7 @@
        t_aerad=t_pass
        p_aerad=p_pass
       
-       dz=deltaz
+!       dz=deltaz
 
 !      u0_aerad = 0.78
 !      u0_aerad = 0.318

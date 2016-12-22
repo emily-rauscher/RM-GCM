@@ -121,10 +121,9 @@ C       write(*,*) 'reading fort.7 in inivarparam'
 C       write(*,*) 'second read in inivarparam'
        READ (7,INMAG)
        WRITE(2,INMAG)
-
        READ(7,INBINVAL)
        WRITE(2,INBINVAL)
-
+       
        TAULIMIT=2.*LOG(1.e-2)/1.66
      &           /(10.**(-1.*OOM_IN/NL)-10.**(OOM_IN/NL))
 C       write(*,*) 'TAULIMIT',TAULIMIT
