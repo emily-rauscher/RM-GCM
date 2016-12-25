@@ -1,10 +1,10 @@
       SUBROUTINE MAKECLOUDS(poslats,mg,jg,nl,p0,sigma,tauaerosol)
 
 !      *****************************************************************
-!      * This routine generates a an array of aerosol optical depths   *
-!      * It returns this lat x lon x layer array and writes it to file *
-!      * The file also includes pi0 and asymmetry parameter at both    *
-!      * short wave and long wave channels.  ~2016 MTR                 *
+!      * This routine generates an array of aerosol optical depths.    *
+!      * It returns this (layer x lon x hem x lat) array and writes it *
+!      * to file (fort.21). The file also includes pi0 and asymmetry   *
+!      * parameter at both short wave and long wave channels.          *
 !      *****************************************************************
 
        REAL PRESSURE(NL),PABSDIF1(NL),PABSDIF2(NL),
@@ -84,35 +84,35 @@
  
 
 !      PREPARE TO WRITE THIS CLOUD INFORMATION TO FILE FOR THE RECORD, THOUGH
-!      NOT FOR THE SUBSEQUENT COMPUTATIONS. FILE WILL BE FORT.77 
-       WRITE(77,*) 'CLOUD MODEL'
-       WRITE(77,*) '' 
-       WRITE(77,*) 'NAME: ',AEROSOLMODEL
-       WRITE(77,*) 'Parameters:'
-       WRITE(77,*) 'cloudbase,    cloudtop (bars),     powerlaw:'
-       WRITE(77,7010) cloudbase,cloudtop,aerHfrac
+!      NOT FOR THE SUBSEQUENT COMPUTATIONS. FILE WILL BE FORT.21 
+       WRITE(21,*) 'CLOUD MODEL'
+       WRITE(21,*) '' 
+       WRITE(21,*) 'NAME: ',AEROSOLMODEL
+       WRITE(21,*) 'Parameters:'
+       WRITE(21,*) 'cloudbase,    cloudtop (bars),     powerlaw:'
+       WRITE(21,7010) cloudbase,cloudtop,aerHfrac
  7010  FORMAT(1x,F11.4,2x,F11.4,3x,F7.3)
-       WRITE(77,*) 'Short Wave Scattering--' 
-       WRITE(77,*) '    Total optical depth:', TAUC
-       WRITE(77,*) '    Single scattering albedo (PI0):',PI0AERSW
-       WRITE(77,*) '    Asymmetry parameter:',ASYMSW
-       WRITE(77,*) 'Long Wave Scattering--'
-       WRITE(77,*) '    Extinction Ratio (LW/SW):',EXTFACTLW
-       WRITE(77,*) '    Single scattering albedo (PI0):',PI0AERLW
-       WRITE(77,*) '    Asymmetry parameter:',ASYMLW
-       WRITE(77,*) 'Other parameters:'
-       WRITE(77,*) 'sig_area =',sigc
-       write(77,*) 'phi_lon =',phi_lon
-       write(77,*) ''
-       write(77,*) 'NORMALIZED VERTICAL PROFILE:'
-       WRITE(77,*) '   PRESSURE(MBAR)        NORMALIZED AEROSOL TAU'
+       WRITE(21,*) 'Short Wave Scattering--' 
+       WRITE(21,*) '    Total optical depth:', TAUC
+       WRITE(21,*) '    Single scattering albedo (PI0):',PI0AERSW
+       WRITE(21,*) '    Asymmetry parameter:',ASYMSW
+       WRITE(21,*) 'Long Wave Scattering--'
+       WRITE(21,*) '    Extinction Ratio (LW/SW):',EXTFACTLW
+       WRITE(21,*) '    Single scattering albedo (PI0):',PI0AERLW
+       WRITE(21,*) '    Asymmetry parameter:',ASYMLW
+       WRITE(21,*) 'Other parameters:'
+       WRITE(21,*) 'sig_area =',sigc
+       write(21,*) 'phi_lon =',phi_lon
+       write(21,*) ''
+       write(21,*) 'NORMALIZED VERTICAL PROFILE:'
+       WRITE(21,*) '   PRESSURE(MBAR)        NORMALIZED AEROSOL TAU'
               DO IL = 1, NLEV
-              WRITE(77,7712) PRESSURE(IL)*1e-5,VERTPROF(IL)
- 7712         FORMAT(1x,F11.6,3x,F12.7)
+              WRITE(21,2112) PRESSURE(IL)*1e-5,VERTPROF(IL)
+ 2112         FORMAT(1x,F11.6,3x,F12.7)
               ENDDO
-       WRITE(77,*)''
-       write(77,*) 'FULL GRID:'
-       WRITE(77,*) '' 
+       WRITE(21,*)''
+       write(21,*) 'FULL GRID:'
+       WRITE(21,*) '' 
         thecounter = 0 !counter
        DO ILAT   =1,JG
           DO IHEM  =1,2
@@ -121,11 +121,11 @@
              DO ILON = 1,MG
               
 !            FIRST WRITE THE LAT & LON
-              WRITE(77,*) 'LATITUDE, LONGITUDE:',THELAT,LONGYS(ILON)
-              WRITE(77,771) '1)PRESS(BARS)','2)AEROSOL_SW_TAU',
+              WRITE(21,*) 'LATITUDE, LONGITUDE:',THELAT,LONGYS(ILON)
+              WRITE(21,211) '1)PRESS(BARS)','2)AEROSOL_SW_TAU',
      &         '3)SW_PI0','4)SW_ASYM',
      &         '5)AEROSOL_LW_TAU','6)LW_PI0','7)LW_ASYM'
- 771       FORMAT(1X,A13,1X,A16,4X,A8,4X,A9,4x,A16,4x,A8,4x,A9)  
+ 211       FORMAT(1X,A13,1X,A16,4X,A8,4X,A9,4x,A16,4x,A8,4x,A9)  
                 DO ILEV= 1,NL
 
 !    HERE'S WHERE THE CHOICE OF MODEL SPECIFIED IN FORT.7 IS
@@ -183,12 +183,12 @@
 
  
                      TAUAEROSOL(ILEV,ILON,IHEM,ILAT)=TheTAU
-             WRITE(77,772) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW,ASYMSW
+             WRITE(21,212) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW,ASYMSW,
      &                         TheTAU*EXTFACTLW,PI0AERLW,ASYMLW
- 772       FORMAT(2X,F11.6,3X,F12.7,3X,F7.4,3X,F7.4,3X,F11.6
+ 212       FORMAT(2X,F11.6,3X,F12.7,3X,F7.4,3X,F7.4,3X,F11.6
      &             ,3X,F7.4,3X,F7.4)
                 ENDDO  
-             WRITE(77,*)''
+             WRITE(21,*)''
              ENDDO
           ENDDO
        ENDDO

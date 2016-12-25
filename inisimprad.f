@@ -5,7 +5,7 @@ C**********************************************************
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise the simplified radiation scheme             
 C-----------------------------------------------------------------------  
-C                                                                         
+C                                                                        
 C     Determines model resolution                                         
 C                                                                         
       include 'params.i'
@@ -15,7 +15,9 @@ C     P         ,NCRAY=64,JGL=JG,NTRAC=1,NLEVRF=1)
 C                                                                         
 C                                                                         
 C     Sets basic constants, especially those needed for array dimensions  
-C                                                                         
+C     
+      REAL AVG,LO,MWTOT,RUNIV,TAU_KMAMGALL,KMAMGperBAR,WVO,TAU_KMAMGH2
+     +,mwh2,mwhe,mwh2o,rfhe,rfh2o,fh2,RAYPERBARCONS                                                                   
       PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
      +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
      +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
@@ -119,10 +121,11 @@ C
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
      & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
-     & ALBSSW, NEWTB, NEWTE
+     & ALBSSW, NEWTB, NEWTE,RAYPERBARCONS
+       REAL SURFEMIS,RAYSCATLAM,ABSSW,ABSLW,ALBSSW
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
-
+       
        NAMELIST/INSIMPRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,FLXLIMDIF,SURFEMIS,
      & RAYSCAT, RAYSCATLAM,AEROSOLS,ABSSW,ABSLW, ALBSSW, NEWTB, NEWTE
@@ -258,12 +261,43 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
 !      WRITE(2,248) NLWMODEL
 !      CALL ABORT
 !      ENDIF
-
-    
-      
-      
-      
-    
+!      COMPUTER KM-AMG PER BAR OF PRESSURE
+       AVG          = 6.0221409E23 !#
+       LO           = 2.686763E25  !#/m^3
+       RUNIV        = 8.3143  !J/mol/K 
+       MWTOT        = RUNIV/GASCON * 1000. !Kg/mol
+       KMAMGperBAR  = AVG*1.E5/(LO*GA*MWTOT)
+!      Now compute the rayleigh scattering optical depth per km-amg for
+!      H2 gas using the expression from Dalgarno and Williams (ApJ ,
+!      1962).
+       WVO          = RAYSCATLAM*1E4 ! ANGSTROMS
+       TAU_KMAMGH2  = 2.687*(8.14E11/WVO/WVO/WVO/WVO 
+     &   +1.28E18/WVO/WVO/WVO/WVO/WVO/WVO 
+     &   +1.61E24/WVO/WVO/WVO/WVO/WVO/WVO/WVO/WVO)
+!      However, this is just for H2 gas.  The molecular weight chosen by
+!      choice of gas constant implies a gas with heavier elements, so it
+!      is not technically self consistent.  To make it self consistent,
+!      a fraction of heavier elements can be computed from the molecular
+!      weight if we choose some values. 
+!      Assumption: Let's arbitrarily assume the remainder (not H2)
+!      is 90% HE and 10% H2O (though one could just as arbitrarily use
+!      CH4 to increase the rayleigh scattering given CH4's high index of
+!      refraction); then the resulting H2 fraction is:
+       mwh2=2.0
+       mwhe=4.0
+       mwh2o=18.0 
+       rfhe=0.8
+       rfh2o=0.2
+       fh2=(MWTOT-rfhe*mwhe-rfh2o*mwh2o)/(mwh2-rfhe*mwhe-rfh2o*mwh2o)
+!      Each molecular component contributes its mole fraction x a
+!      product that depends on its index of refraction and that of
+!      hydrogen:  indexfact= (n-1)**2 / (nh2 -1)**2
+!      for HE, indexfact = 0.0641; for H2O = 3.3690; for H2 = 1.0,
+!      CH4=10.1509,etc...
+       TAU_KMAMGALL =TAU_KMAMGH2* 
+     &   (fh2*1.0 + (1.-fh2)*rfhe*0.0641 + (1.-fh2)*rfh2o*3.3690)
+!      Finally, the rayleight scattering optical depth per bar is...
+       RAYPERBARCONS = TAU_KMAMGH2 * KMAMGperBAR
 !      IF(.NOT.(NEWTB.EQ.NEWTE)) WRITE(2,249),NEWTB,NEWTE
                                                                           
       END                                                                 

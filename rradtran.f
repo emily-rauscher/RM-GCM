@@ -286,7 +286,6 @@
         end do
       ENDIF
 
-
 !     Here we compute the heating rates for droplets
 !     (C11 converts W/m^2 to erg/cm^2)
 !
@@ -386,15 +385,24 @@
             SOLNET = SOLNET - FNET(L,NLAYER)
             fp = ck1(L,1)*eL2(L,1) - ck2(L,1)*em2(L,1) + cp(L,1)
             fsLu( nprob(L) ) = fsLu( nprob(L) ) + fp
+            write(*,*),'fsLu(L)',fsLu(L)
+            write(*,*),'ck1(L,1)',ck1(L,1)
+            write(*,*),'el2(L,1),',eL2(L,1)
+            write(*,*),'ck2(L,1)',ck2(L,1)
+            write(*,*),'em2(L,1),',em2(L,1)
+            write(*,*),'cp', cp(L,1)
+            write(*,*),'product fp=',ck1(L,1)*eL2(L,1) -
+     &  ck2(L,1)*em2(L,1) + cp(L,1)
             do 510 j = 1, NLAYER !nlayer
               fp = ck1(L,j)*eL1(L,j) + ck2(L,j)*em1(L,j) + cpb(L,j)
               fupbs(j) = fupbs(j) + fp
               fnetbs(j) = fnetbs(j) + fnet(L,j)
               if (L.eq.nsolp) fdownbs(J) = fupbs(j) - fnetbs(j)
 !              write(*,*) fdownbs(J),fupbs(j),fnetbs(j)
+            write(*,*),'fsLu',fsLu
  510      CONTINUE
           do 508 i = 1, nsoL
-            fsLd(i) = u0*solfx(i)
+            fsLd(i) = psol_aerad !u0*solfx(i)
             alb_toa(i) = fsLu(i)/fsLd(i)
             tsLu = tsLu + fsLu(i)
             tsLd = tsLd + fsLd(i)
@@ -402,7 +410,8 @@
 !
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
-!
+          write(*,*) 'tsLu',tsLu
+          write(*,*) 'tsLd',tsLd
 !      Load albedos into interface common block
 !
           alb_toai_aerad = alb_toai

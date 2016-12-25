@@ -76,7 +76,6 @@
 
              utauL(L,j)  = TAUL(L,J)
              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-!             write(*,*) 'WOT',L,J,WOT
              if (iradgas.eq.0) wot = woL(L,j)
 
              WOT         = min(1.-EPSILON,WOT)
@@ -90,7 +89,7 @@
              endif
              if (iradgas.eq.0) GOT = goL(L,j)
              ug0(L,j)    = GOT
-             FO          = GOT**2
+             FO          = GOT*GOT
              DEN         = 1.-WOT*FO
              TAUL(L,J)   = TAUL(L,J) * DEN
 !       print*, j, L, GOT, DEN, TAUL(L,J)
@@ -101,8 +100,9 @@
              OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
 !MTR             uOPD(L,J)   = 0.0
 !MTR             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
+      
  400        CONTINUE
-!
+           
           IF(IR .EQ. 1) THEN
              DO 450 I        =   1,NGAUSS
                 DO 425 L     =   LLS,LLA
@@ -111,7 +111,6 @@
  450         CONTINUE
           ENDIF
  500  CONTINUE
-      
       RETURN
       END
 
