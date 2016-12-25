@@ -20,7 +20,7 @@
 !
 ! **********************************************************************
 !     
-      REAL bar2kamg,p(NZ),ABSCOEFF(NWAVE),G,WVO,AM
+      REAL p(NZ),ABSCOEFF(NWAVE),G,WVO,AM
 !MTR      DIMENSION AKO3(4,6), AKCO2(6,6), AKH2O(54,6), PJ(6)
       dimension rup_1(NGROUP)
       dimension rhoi(NRAD), dbnds(NRAD+1)
@@ -337,12 +337,11 @@
 !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR 
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 
-!      write(*,*) 'P_aerad in rsetuprad',P_aerad
 !      write(*,*) 'G in rsetuprad',G
 !      write(*,*) 'NLAYER',NLAYER
 !      write(*,*) 'NL',NL
       PRESS=P_aerad*10.
-      PBAR(1)  = P_AERAD(2)*1e-6
+      PBAR(1)  = P_AERAD(1)*1e-6
       DPG(1)= PRESS(1)/G
       DO 45 J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
@@ -487,15 +486,9 @@
 !     CALCULATE RAYLEIGH OPTICAL DEPTH PARAMETERS.
 
 !     RAYLEIGH SCATTERING CONDITIONAL:
-
-      IF(RAYSCAT.EQ.1) THEN
-
-!     COMPUTE THE CONVERSION FACTOR FOR BAR TO 2KM AMAGATS
-      bar2kamg=AVG*1.e5/(2.686763e25*G/100.*AM*1e-3)*1e-3
-!      bar2kamg= 2.686763e25*G*AM/(1e5*1e-3*AVG)
-!        write(*,*) 'bar2kamg',bar2kamg
-    
-!      write(*,*) 'kmamg2bar',kmamg2bar
+      IF(RAYSCAT) THEN
+! NOTE: The conversion factor KMAMGperBAR is computed in insimprad
+! KMAMGperBAR  = AVG*1.E5/(LO*GA*MWTOT)     
 !it is derived by the relation:
 !km-amagats= Pressure * Avogadro's# * mole fraction/  (Loshchmidt's# *
 !gravity* molecular weight)
@@ -509,9 +502,10 @@
 !MTR          WVO       =    WAVE(NPROB(L))
 !MTR          TAURAY(L) =   (8.46E-9/WVO**4) *     &
 !MTR                        ( 1.+0.0113/WVO**2+0.00013/WVO**4 )
-              WVO = RAYSCATWL  !Hardwire for H2!! MTR
-              RAYPERBAR(L) =   (bar2kamg*0.000219/WVO/WVO/WVO/WVO) *     
-     &           ( 1.+0.0157248/WVO/WVO+0.0001978/WVO/WVO/WVO/WVO) 
+!              WVO = RAYSCATLAM  !Hardwire for H2!! MTR
+!              RAYPERBAR(L) =   (KMAMGperbar*0.000219/WVO/WVO/WVO/WVO) *     
+!     &           ( 1.+0.0157248/WVO/WVO+0.0001978/WVO/WVO/WVO/WVO)
+               RAYPERBAR(L) = RAYPERBARCONS
 310       CONTINUE   
 
                DO 330 J          =   1,NLAYER
