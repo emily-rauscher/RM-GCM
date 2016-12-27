@@ -107,25 +107,25 @@
 !M      close(21)
 !      stop
 !M      wavea = wavea / 1.e3
-!      DO 20 L =  1,NSOLP
-!         RSFX(L) = 0.0  !ALBEDO_SFC
+      DO 20 L =  1,NSOLP
+         RSFX(L) = ALBSW  !ALBEDO_SFC
 !         EMIS(L) =  1.0
-!         write(*,*) 'RSFX',RSFX(L)
 !         write(*,*) 'EMIS', EMIS(L)
 !      write(*,*) ' calling interpol'
 !        call interpol( albedoa, wavea, wave(nprob(L)),
 !     &                  nwave_alb, 1, rsfx(L) )
 !         if( wave(nprob(L)) > wavea(nwave_alb) ) 
 !     &           rsfx(L) = albedoa(nwave_alb)
-!         EMIS(L) =  1.0 - RSFX(L)
+         EMIS(L) =  1.0 - RSFX(L)
 !         print*, L, wave(nprob(L)), rsfx(L)
 !      write(*,*) 'L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)'
 !      write(*,*) L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)
-! 20   CONTINUE
+ 20   CONTINUE
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
          EMIS(L) =  EMISIR
          RSFX(L) = 1.0 - EMIS(L)
+
 !         call interpol( albedoa, wavea, wave(nprob(L)), 
 !     &    nwave_alb, 1, rsfx(L) )
         if( wave(nprob(L)) > wavea(nwave_alb) ) 
@@ -180,7 +180,7 @@
         ENDIF
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
-!       write(*,*) 'FNET(1,1)',FNET(1,1)       
+!        write(*,*) 'FNET(radtran)',FNET       
         IF(IR .NE. 0) THEN
 !        write(*,*) 'HEATI',HEATI
          CALL NEWFLUX1
@@ -195,7 +195,7 @@
           
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC
 !     MODIFICATION:
-!     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX
+!     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
          FNET(2,NLAYER)=FBASEFLUX  
 !     SINCE WE ARE PLACING A CONSTRAINT ON THE NET FLUX AT THE BOTTOM OF
@@ -229,7 +229,7 @@
            IF(ISL .NE. 0) THEN
              DO 480 L     =  1,NSOLP
                HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
-!               write(*,*) J,Term1,(FNET(L,J+1)-FNET(L,J))
+!               write(*,*)'FNET',(FNET(L,J+1),FNET(L,J))
  480         CONTINUE
            ENDIF
 !           write(*,*) 'IR= ',IR
@@ -275,7 +275,6 @@
 !            write(*,*) 'FNETS(IJ+1,IJ)',IJ,FNET(1,IJ+1),FNET(1,IJ)
 ! 502   CONTINUE        
  
-!      stop
 !     Here we Calculate (4 * pi * mean_intensity) for the IR.
 !
       IF (IR .NE. 0) THEN
@@ -383,23 +382,23 @@
         IF (ISL .NE. 0) THEN
           DO 510 L       =  1,NSOLP
             SOLNET = SOLNET - FNET(L,NLAYER)
-            fp = ck1(L,1)*eL2(L,1) - ck2(L,1)*em2(L,1) + cp(L,1)
+!            fp = ck1(L,1)*eL2(L,1) - ck2(L,1)*em2(L,1) + cp(L,1)
             fsLu( nprob(L) ) = fsLu( nprob(L) ) + fp
-            write(*,*),'fsLu(L)',fsLu(L)
-            write(*,*),'ck1(L,1)',ck1(L,1)
-            write(*,*),'el2(L,1),',eL2(L,1)
-            write(*,*),'ck2(L,1)',ck2(L,1)
-            write(*,*),'em2(L,1),',em2(L,1)
-            write(*,*),'cp', cp(L,1)
-            write(*,*),'product fp=',ck1(L,1)*eL2(L,1) -
-     &  ck2(L,1)*em2(L,1) + cp(L,1)
+!            write(*,*),'fsLu(L)',fsLu(L)
+!            write(*,*),'ck1(L,1)',ck1(L,1)
+!            write(*,*),'el2(L,1),',eL2(L,1)
+!            write(*,*),'ck2(L,1)',ck2(L,1)
+!            write(*,*),'em2(L,1),',em2(L,1)
+!            write(*,*),'cp', cp(L,1)
+!            write(*,*),'product fp=',ck1(L,1)*eL2(L,1) -
+!     &  ck2(L,1)*em2(L,1) + cp(L,1)
             do 510 j = 1, NLAYER !nlayer
-              fp = ck1(L,j)*eL1(L,j) + ck2(L,j)*em1(L,j) + cpb(L,j)
+              fp  =  ck1(L,j)* eL1(L,j) + ck2(L,j)*em1(L,j) + cpb(L,j)
               fupbs(j) = fupbs(j) + fp
               fnetbs(j) = fnetbs(j) + fnet(L,j)
               if (L.eq.nsolp) fdownbs(J) = fupbs(j) - fnetbs(j)
 !              write(*,*) fdownbs(J),fupbs(j),fnetbs(j)
-            write(*,*),'fsLu',fsLu
+!            write(*,*),'fsLu',fsLu
  510      CONTINUE
           do 508 i = 1, nsoL
             fsLd(i) = psol_aerad !u0*solfx(i)
@@ -410,8 +409,8 @@
 !
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
-          write(*,*) 'tsLu',tsLu
-          write(*,*) 'tsLd',tsLd
+!          write(*,*) 'tsLu',tsLu
+!          write(*,*) 'tsLd',tsLd
 !      Load albedos into interface common block
 !
           alb_toai_aerad = alb_toai
@@ -496,9 +495,9 @@ C     1st index - flux 1=SW, 2=LW
 C     2nd index - Direction 1=DN, 2=UP                                    
 C     3rd index - Where 1=TOP, 2=SURFACE   
       RFLUXES_aerad(1,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top                            
-      RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-SWALB)   ! SW down bottom                
+      RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom                
       RFLUXES_aerad(1,2,1)=fsl_up_aerad(NLAYER)  ! SW up top             
-      RFLUXES_aerad(1,2,2)=RFLUXES_aerad(1,1,2)*SWALB   ! SW up bottom                                                                       
+      RFLUXES_aerad(1,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom                                                                       
       RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top                           
       RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom                       
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          

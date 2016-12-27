@@ -17,12 +17,12 @@
 !
 !      write(*,*) 'G0',G0
 !      write(*,*) 'U0',U0
-!      write(*,*) 'RSFX',RSFX
 !      write(*,*) 'EMIS',EMIS
-      
+!       write(*,*) 'EL3',EL3      
 !      DO I=1,NLAYER
 !      write(*,*) 'TAUL',TAUL(1,I)
 !      write(*,*) 'OPD',OPD(1,I),OPD(2,I)
+!      write(*,*) 'W0',w0(1,I)
 !      ENDDO
 !      write(*,*) 'OPD', OPD
 !      write(*,*) 'W0', W0
@@ -44,9 +44,13 @@
                EE3(L,J)    =  EXP(-X2)
                X3          =  OPD(L,J)*DU0
                EL3(L,J)    =  EXP(-X3)*SOL(L)
+!              write(*,*) 'DU0',DU0
+!               write(*,*) 'SOL',SOL
+!               write(*,*) 'OPD',OPD
 !               write(*,*)'X2',J,X2
 !               write(*,*)'X3',X3
 !               write(*,*)'SOL',SOL(L)
+!               write(*,*) 'xc,el3',x3,EL3(1,J)
                DIRECT(L,J) =  U0*EL3(L,J)
                C1          =  B1(L,J) - DU0
                if( ABS(C1).lt.EPSILON ) c1 = SIGN(EPSILON,C1)
@@ -63,22 +67,19 @@
                CM1         =  ( CP1*B2(L,J) + W0(L,J)*B4 )/C1
                CMB(L,J)    =  CM1 * EL3(L,J)
                CM(L,J)     =  CM1 * X4
-!               write(*,*) 'CP(L,J)',L,J,CP(L,J)
+!               write(*,*) 'CP(L,J),CPB',L,J,CP(L,J),CPB(L,J)
 !               write(*,*) 'CM1',L,J,CM1
-!               write(*,*) 'CMB(L,J)',L,J,CMB(L,J)
-!               write(*,*) 'CM(L,J)',L,J,CM(L,J)
-             
+!               write(*,*) 'CM(L,J),CMB',L,J,CM(L,J),CMB(L,J)
   10  CONTINUE
 !
 !       CALCULATE SFCS, THE SOURCE AT THE BOTTOM.
 !
         DO 20 L            =  1,NSOLP
-  20       SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
-!
+          SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
+  20  CONTINUE
       END IF
 !        write(*,*)'DIRECT',DIRECT
 !        write(*,*)'SFCS',SFCS
-        
 
 !     ******************************
 !     * CALCULATIONS FOR INFRARED. *
@@ -119,25 +120,28 @@
       J                =  0
       DO 42 JD         =  2,JN,2
          J             =  J + 1
-         DO 42 L       =  LLS,LLA
+         DO 42 L       = 1! LLS,LLA
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -  
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
 !           HERE ARE THE ODD MATRIX ELEMENTS EXCEPT FOR THE TOP.
             DF(L,JD+1) =  EL2(L,J) * (CP(L,J+1)-CPB(L,J)) +  
      &                    EL1(L,J) * (CMB(L,J) - CM(L,J+1))
+    
+
   42  CONTINUE
 !     HERE ARE THE TOP AND BOTTOM BOUNDARY CONDITIONS AS WELL AS THE
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME NO
 !     DIFFUSE RADIATION IS INCIDENT AT THE TOP.
-!
+!     
+
       DO 44 L        = LLS,LLA
          DF(L,1)     = -CM(L,1)
          DF(L,JDBLE) = SFCS(L)+RSFX(L)*CMB(L,NLAYER)-CPB(L,NLAYER)
          DS(L,JDBLE) = DF(L,JDBLE)/BF(L,JDBLE)
   44     AS(L,JDBLE) = AF(L,JDBLE)/BF(L,JDBLE)
          
-!       write(*,*)'DF',DF
+
 !       write(*,*)'DS',DS
 !       write(*,*)'AS',AS
 !     ********************************************
@@ -153,9 +157,7 @@
      &                         *DS(L,JDBLE+2-J))*X
   46  CONTINUE
 !           
-!MTR             write(*,*) 'DF',DF
 !MTR             write(*,*) 'EF',EF
-!MTR             write(*,*) 'DS',DS
 !MTR             write(*,*) 'X',X
 !MTR             write(*,*) 'BF',BF
 
@@ -175,6 +177,7 @@
         do L = LLS,LLA
           CK1(L,J)   = XK(L,2*J-1)                                         
           CK2(L,J)   = XK(L,2*J)   
+!          write(*,*) 'L,J',L,J
 !          write(*,*)'CK1(L,J)',CK1(L,J) 
 !           write(*,*)'CK2(L,J)',CK2(L,J)          
 !             write(*,*)'CMB(L,J)',CMB(L,J)          
@@ -183,7 +186,7 @@
 !             write(*,*)'EL2(L,J)',EL2(L,J)
 !             write(*,*)'EM1(L,J)',EM1(L,J)
 !            write(*,*)'EM2(L,J)',EM2(L,J)       
-
+!            write(*,*)'DIRECT(L,J)',DIRECT(L,J)
                                       
           FNET(L,J)  = CK1(L,J)  *( EL1(L,J) -EL2(L,J))   +
      &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -    

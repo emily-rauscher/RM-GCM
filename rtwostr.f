@@ -24,7 +24,7 @@
 !       write(*,*) 'G0',G0
 !       write(*,*) 'U1I',U1I
 !       write(*,*)'U1S',U1S  
-       
+          
 !    
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
@@ -35,7 +35,7 @@
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
              B2(L,J)    =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
-             AK(L,J)    =  SQRT(ABS(B1(L,J)**2 - B2(L,J)**2))
+             AK(L,J)    =  SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
              GAMI(L,J)  =  B2(L,J)/(B1(L,J) + AK(L,J))
              EE1(L,J)   =  EXP(-AK(L,J)*TAUL(L,J))
 !             write(*,*) 'EE1',J,EE1(L,J)
@@ -43,9 +43,8 @@
              EL1(L,J)   =  1.0 + GAMI(L,J) *EE1(L,J)                           
              EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J)                       
              EL2(L,J)   =  GAMI(L,J) + EE1(L,J)                               
-             EM2(L,J)   =  GAMI(L,J) - EE1(L,J)     
-!             write(*,*)'EL1',EL1(L,J)
-!             write(*,*)'EM!',EM1(L,J)                          
+             EM2(L,J)   =  GAMI(L,J) - EE1(L,J)  
+
   14  CONTINUE
 !
 !     WE SEEK TO SOLVE AX(L-1)+BX(L)+EX(L+1) = D.
@@ -80,6 +79,7 @@
          BF(L,JDBLE) = EM1(L,NLAYER)-RSFX(L)*EM2(L,NLAYER)
          EF(L,JDBLE) = 0.0
   20  CONTINUE
+!          write(*,*)'RSFX in twostream',RSFX
 !         write(*,*)'AF',AF
 !         write(*,*)'BF',BF
 !         write(*,*)'EF',EF

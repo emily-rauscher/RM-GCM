@@ -312,7 +312,7 @@
 !      endif
 !      SFC_ALB = 0.07
 !      SFC_ALB = 0.9
-      ALBEDO_SFC = SWALB !SFC_ALB MTR
+      ALBEDO_SFC = ALBSW !SFC_ALB MTR
 !
 !     Get atmospheric pressure profile from interface common block
 !     [ dyne / cm^2 ]
@@ -346,8 +346,8 @@
       DO 45 J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
          DPG(J) = (PRESS(J)-PRESS(J-1)) / G
-!         write(*,*),PRESS(J),press(j-1),DPG(j)  
  45    CONTINUE
+
 !        Here we are saying that the top layer has a thickness that
 !        extends from the top of the atmosphere (pressure = 0) down to
 !        the interface ABOVE the top sigma levels. The atmosphere
