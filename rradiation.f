@@ -3,8 +3,11 @@ C             SUBROUTINE RADIATION
 C**********************************************************               
       SUBROUTINE RADIATION(TROPHT)                                             
 C                                                                         
-C     RADIATION SCHEME. DERIVED FROM PREVIOUS CMORC.F AND THE
-C     TOON CODES (TOON ET AL 1989).                           
+C     RADIATION SCHEME DERIVED FROM PREVIOUS CMORC.F AND THE
+C     TOON CODES (TOON ET AL 1989). THE SCHEME IS CURRENTLY DOUBLE GRAY
+C     AND APPLIES THE TWO-STREAM APPROXIMATION WITH QUADRATURE IN THE
+C     VISIBLE AND HEMISPHERIC MEAN IN THE INFRARED. 
+                          
 C     It passes the pressure of the full sigma levels and the surface                                   
 C     to the Radiation scheme temperatures from TG and TSTAR                                  
 C                                                                         
@@ -121,7 +124,7 @@ C
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
      & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
-     & ALBSSW, NEWTB, NEWTE,RAYPERBARCONS
+     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 

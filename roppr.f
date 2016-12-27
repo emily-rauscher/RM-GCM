@@ -73,7 +73,6 @@
              if (iradgas.eq.0) tauL(L,j) = tauaer(L,j)
              if( TAUL(L,J) .lt. EPSILON ) TAUL(L,J) = EPSILON
 
-
              utauL(L,j)  = TAUL(L,J)
              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
              if (iradgas.eq.0) wot = woL(L,j)
@@ -100,7 +99,6 @@
              OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
 !MTR             uOPD(L,J)   = 0.0
 !MTR             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
-      
  400        CONTINUE
            
           IF(IR .EQ. 1) THEN
@@ -112,5 +110,6 @@
           ENDIF
  500  CONTINUE
       RETURN
+
       END
 

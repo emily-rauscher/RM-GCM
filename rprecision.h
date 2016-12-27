@@ -109,68 +109,7 @@
 !
 !--inactive--c  Define implicit type for floating point variables
 !--inactive--c
-!--inactive--      implicit double precision ( a-h, o-z )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define implicit type for integer variables
-!--inactive--c
-!--inactive--      implicit integer ( i-n )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define double precision 1.0 to be multiplied by literal constants
-!--inactive--c  that are embedded within parentheses.
-!--inactive--c
-!--inactive--      parameter( ONE = 1.d0 )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define smallest possible number such that ONE + ALMOST_ZERO > ONE
-!--inactive--c
-!--inactive--      parameter( ALMOST_ZERO = 1.d-15 )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define value slightly < 1.0 to test for total evaporation [ dimensionless ]
-!--inactive--c
-!--inactive--      parameter( ALMOST_ONE = ONE - ALMOST_ZERO )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define value for maximum exponential argument [ dimensionless ]
-!--inactive--c
-!--inactive--      parameter( POWMAX = 700.d0 )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define small particle number concentration [ # / x_units / y_units / z_units ]
-!--inactive--c
-!--inactive--      parameter( SMALL_PC = 1.d-50 )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define (arbitrary) symbols to specify precision of netcdf integers
-!--inactive--c
-!--inactive--      parameter( NCDF_LONG = 1 )
-!--inactive--      parameter( NCDF_SHORT = 2 )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define (arbitrary) symbols to specify precision of netcdf floating points
-!--inactive--c
-!--inactive--      parameter( NCDF_DOUBLE = 1 )
-!--inactive--      parameter( NCDF_FLOAT = 2 )
-!--inactive--c
-!--inactive--c
-!--inactive--c  Define symbols to control the netcdf types for integers & floating points
-!--inactive--c  that are selected at run time in the outhis_ncdf.f routine when <do_ncdf>
-!--inactive--c  is .true.
-!--inactive--c
-!--inactive--      parameter( NCDF_INT = NCDF_LONG )
-!--inactive--      parameter( NCDF_FP  = NCDF_DOUBLE )
-!
-!
-!=============================================================================
-!
-!  Section C:  64 bit word length machine, using 64 bit single precision
-!
-!
-!--inactive--c  Define implicit type for floating point variables
-!--inactive--c
-      implicit real ( a-h, o-z )
+      implicit double precision ( a-h, o-z )
 !--inactive--c
 !--inactive--c
 !--inactive--c  Define implicit type for integer variables
@@ -186,6 +125,7 @@
 !--inactive--c
 !--inactive--c  Define smallest possible number such that ONE + ALMOST_ZERO > ONE
 !--inactive--c
+!      parameter( ALMOST_ZERO = 1.d-15 )
       parameter( ALMOST_ZERO = 1.d-15 )
 !--inactive--c
 !--inactive--c
@@ -196,7 +136,7 @@
 !--inactive--c
 !--inactive--c  Define value for maximum exponential argument [ dimensionless ]
 !--inactive--c
-      parameter( POWMAX = 5500.d0 )
+      parameter( POWMAX = 700.d0 )
 !--inactive--c
 !--inactive--c
 !--inactive--c  Define small particle number concentration [ # / x_units / y_units / z_units ]
@@ -222,4 +162,66 @@
 !--inactive--c
       parameter( NCDF_INT = NCDF_LONG )
       parameter( NCDF_FP  = NCDF_DOUBLE )
+!
+!
+!=============================================================================
+!
+!  Section C:  64 bit word length machine, using 64 bit single precision
+!
+!
+!--inactive--c  Define implicit type for floating point variables
+!--inactive--c
+!      implicit real ( a-h, o-z )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define implicit type for integer variables
+!--inactive--c
+!      implicit integer ( i-n )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define double precision 1.0 to be multiplied by literal constants
+!--inactive--c  that are embedded within parentheses.
+!--inactive--c
+!      parameter( ONE = 1.d0 )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define smallest possible number such that ONE + ALMOST_ZERO > ONE
+!--inactive--c
+!      parameter( ALMOST_ZERO = 1.d-15 )
+!      parameter( ALMOST_ZERO = 1.d-50 )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define value slightly < 1.0 to test for total evaporation [ dimensionless ]
+!--inactive--c
+!      parameter( ALMOST_ONE = ONE - ALMOST_ZERO )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define value for maximum exponential argument [ dimensionless ]
+!--inactive--c
+!      parameter( POWMAX = 5500.d0 )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define small particle number concentration [ # / x_units / y_units / z_units ]
+!--inactive--c
+!      parameter( SMALL_PC = 1.d-50 )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define (arbitrary) symbols to specify precision of netcdf integers
+!--inactive--c
+!      parameter( NCDF_LONG = 1 )
+!      parameter( NCDF_SHORT = 2 )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define (arbitrary) symbols to specify precision of netcdf floating points
+!--inactive--c
+!      parameter( NCDF_DOUBLE = 1 )
+!      parameter( NCDF_FLOAT = 2 )
+!--inactive--c
+!--inactive--c
+!--inactive--c  Define symbols to control the netcdf types for integers & floating points
+!--inactive--c  that are selected at run time in the outhis_ncdf.f routine when <do_ncdf>
+!--inactive--c  is .true.
+!--inactive--c
+!      parameter( NCDF_INT = NCDF_LONG )
+!      parameter( NCDF_FP  = NCDF_DOUBLE )
 
