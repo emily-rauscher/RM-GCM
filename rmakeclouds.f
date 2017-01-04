@@ -3,7 +3,7 @@
 !      *****************************************************************
 !      * This routine generates an array of aerosol optical depths.    *
 !      * It returns this (layer x lon x hem x lat) array and writes it *
-!      * to file (fort.21). The file also includes pi0 and asymmetry   *
+!      * to file (fort.60). The file also includes pi0 and asymmetry   *
 !      * parameter at both short wave and long wave channels.          *
 !      *****************************************************************
 
@@ -90,43 +90,43 @@
  
 
 !      PREPARE TO WRITE THIS CLOUD INFORMATION TO FILE FOR THE RECORD, THOUGH
-!      NOT FOR THE SUBSEQUENT COMPUTATIONS. FILE WILL BE FORT.21 
-       WRITE(21,*) 'CLOUD MODEL'
-       WRITE(21,*) '' 
-       WRITE(21,*) 'NAME: ',AEROSOLMODEL
-       WRITE(21,*) 'Parameters:'
-       WRITE(21,*) 'cloudbase,    cloudtop (bars),     powerlaw:'
-       WRITE(21,7010) cloudbase,cloudtop,aerHfrac
+!      NOT FOR THE SUBSEQUENT COMPUTATIONS. FILE WILL BE FORT.61 
+       WRITE(61,*) 'CLOUD MODEL'
+       WRITE(61,*) '' 
+       WRITE(61,*) 'NAME: ',AEROSOLMODEL
+       WRITE(61,*) 'Parameters:'
+       WRITE(61,*) 'cloudbase,    cloudtop (bars),     powerlaw:'
+       WRITE(61,7010) cloudbase,cloudtop,aerHfrac
  7010  FORMAT(1x,F11.4,2x,F11.4,3x,F7.3)
-       WRITE(21,*) 'AEROSOL SCATTERING PARAMETERS:'
-       WRITE(21,*) 'Short Wave Scattering--' 
-       WRITE(21,*) '    Total optical depth:', TAUC
-       WRITE(21,*) '    Single scattering albedo (PI0):',PI0AERSW
-       WRITE(21,*) '    Asymmetry parameter:',ASYMSW
-       WRITE(21,*) 'Long Wave Scattering--'
-       WRITE(21,*) '    Extinction Ratio (LW/SW):',EXTFACTLW
-       WRITE(21,*) '    Single scattering albedo (PI0):',PI0AERLW
-       WRITE(21,*) '    Asymmetry parameter:',ASYMLW
-       WRITE(21,*) 'NOTE: These are aerosol values only,(i.e. no gas)'
-       write(21,*) '      not total layer values.'
+       WRITE(61,*) 'AEROSOL SCATTERING PARAMETERS:'
+       WRITE(61,*) 'Short Wave Scattering--' 
+       WRITE(61,*) '    Total optical depth:', TAUC
+       WRITE(61,*) '    Single scattering albedo (PI0):',PI0AERSW
+       WRITE(61,*) '    Asymmetry parameter:',ASYMSW
+       WRITE(61,*) 'Long Wave Scattering--'
+       WRITE(61,*) '    Extinction Ratio (LW/SW):',EXTFACTLW
+       WRITE(61,*) '    Single scattering albedo (PI0):',PI0AERLW
+       WRITE(61,*) '    Asymmetry parameter:',ASYMLW
+       WRITE(61,*) 'NOTE: These are aerosol values only,(i.e. no gas)'
+       write(61,*) '      not total layer values.'
             IF(DELTASCALE) THEN 
-            WRITE(21,*) 'Delta-scaling applied'
+            WRITE(61,*) 'Delta-scaling applied'
             ELSE
-            WRITE(21,*) 'No Delta-scaling applied'
+            WRITE(61,*) 'No Delta-scaling applied'
             ENDIF
-       WRITE(21,*) 'Other parameters:'
-       WRITE(21,*) 'sig_area =',sigc
-       write(21,*) 'phi_lon =',phi_lon
-       write(21,*) ''
-       write(21,*) 'NORMALIZED VERTICAL PROFILE:'
-       WRITE(21,*) '   PRESSURE(MBAR)        NORMALIZED AEROSOL TAU'
+       WRITE(61,*) 'Other parameters:'
+       WRITE(61,*) 'sig_area =',sigc
+       write(61,*) 'phi_lon =',phi_lon
+       write(61,*) ''
+       write(61,*) 'NORMALIZED VERTICAL PROFILE:'
+       WRITE(61,*) '   PRESSURE(MBAR)        NORMALIZED AEROSOL TAU'
               DO IL = 1, NLEV
-              WRITE(21,2112) PRESSURE(IL)*1e-5,VERTPROF(IL)
+              WRITE(61,2112) PRESSURE(IL)*1e-5,VERTPROF(IL)
  2112         FORMAT(1x,F11.6,3x,F12.7)
               ENDDO
-       WRITE(21,*)''
-       write(21,*) 'FULL GRID:'
-       WRITE(21,*) '' 
+       WRITE(61,*)''
+       write(61,*) 'FULL GRID:'
+       WRITE(61,*) '' 
         thecounter = 0 !counter
        DO ILAT   =1,JG
           DO IHEM  =1,2
@@ -135,8 +135,8 @@
              DO ILON = 1,MG
               
 !            FIRST WRITE THE LAT & LON
-              WRITE(21,*) 'LATITUDE, LONGITUDE:',THELAT,LONGYS(ILON)
-              WRITE(21,211) '1)PRESS(BARS)','2)AEROSOL_SW_TAU',
+              WRITE(61,*) 'LATITUDE, LONGITUDE:',THELAT,LONGYS(ILON)
+              WRITE(61,211) '1)PRESS(BARS)','2)AEROSOL_SW_TAU',
      &         '3)SW_PI0','4)SW_ASYM',
      &         '5)AEROSOL_LW_TAU','6)LW_PI0','7)LW_ASYM'
  211       FORMAT(1X,A13,1X,A16,4X,A8,4X,A9,4x,A16,4x,A8,4x,A9)  
@@ -197,15 +197,30 @@
 
  
                      TAUAEROSOL(ILEV,ILON,IHEM,ILAT)=TheTAU
-             WRITE(21,212) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW,ASYMSW,
+             WRITE(61,212) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW,ASYMSW,
      &                         TheTAU*EXTFACTLW,PI0AERLW,ASYMLW
  212       FORMAT(2X,F11.6,3X,F12.7,3X,F7.4,3X,F7.4,3X,F11.6
      &             ,3X,F7.4,3X,F7.4)
                 ENDDO  
-             WRITE(21,*)''
+             WRITE(61,*)''
              ENDDO
           ENDDO
        ENDDO
-
+       
+!      WRITE TO FORT.60 FOR ALL INCLUSIVE RADIATIVE TRANSFER SUMMARY
+       WRITE(60,*) 'NAMELIST/INCLOUDY/'
+       WRITE(60,*) 'AEROSOLMODEL',AEROSOLMODEL
+       WRITE(60,*)'AERTOTTAU',AERTOTTAU
+       WRITE(60,*)'CLOUDBASE',CLOUDBASE
+       WRITE(60,*) 'CLOUDTOP',CLOUDTOP
+       WRITE(60,*) 'AERHFRAC',AERHFRAC
+       WRITE(60,*) 'PI0AERSW',PI0AERSW
+       WRITE(60,*)'ASYMSW',ASYMSW
+       WRITE(60,*)'EXTFACTLW',EXTFACTLW
+       WRITE(60,*)'PI0AERLW',PI0AERLW
+       WRITE(60,*)'ASYMLW',ASYMLW
+       WRITE(60,*)'DELTASCALE',DELTASCALE
+       WRITE(60,*)'SIG_AREA',SIG_AREA
+       WRITE(60,*)'PHI_LON',PHI_LON
 
        END

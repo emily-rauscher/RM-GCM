@@ -374,7 +374,7 @@ C
          REWIND(25)
          REWIND(7)
          REWIND(2)
-         REWIND(61)
+         REWIND(60)
          CALL INISET                                                         
 C        &&&&&&&&&&&&&&& END MODIFIED START &&&&&&&&&&&&&&& 
       ENDIF
