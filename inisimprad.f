@@ -299,61 +299,61 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
 !      Finally, the rayleight scattering optical depth per bar is...
        RAYPERBARCONS = TAU_KMAMGH2 * KMAMGperBAR
 !      NOW WRITE SOME GENERAL RADIATIVE TRANSFER SCHEME DETAILS TO FILE 
-       WRITE(61,*) 'RADIATIVE TRANSFER SUMMARY'
-       WRITE(61,*) ''
-       WRITE(61,*) 'Two-stream, plane-parallel columns' 
-       write(61,*) 'Quadrature closure in SW,'
-       write(61,*) 'Hemispheric Mean followed by source function in LW'
-       write(61,*) '(Toon et al.,1989). Potential scattering and' 
-       write(61,*) 'absorption in SW and LW by gas and aerosols.'
-       write(61,*) '(by default, the gas does not scatter in longwave)'
+       WRITE(60,*) 'RADIATIVE TRANSFER SUMMARY'
+       WRITE(60,*) ''
+       WRITE(60,*) 'Two-stream, plane-parallel columns' 
+       write(60,*) 'Quadrature closure in SW,'
+       write(60,*) 'Hemispheric Mean followed by source function in LW'
+       write(60,*) '(Toon et al.,1989). Potential scattering and' 
+       write(60,*) 'absorption in SW and LW by gas and aerosols.'
+       write(60,*) '(by default, the gas does not scatter in longwave)'
      
-       write(61,*) '' 
-       WRITE(61,*) 'GAS TRANSMISSIONS'
-       write(61,*) ' kappa SW: ',ABSSW,'(cm^2/g)'
-       write(61,*) ' kappa LW: ',ABSLW,'(cm^2/g)'
-       write(61,*) ' tau per bar (absorption):' 
-       write(61,*) '       SW: ',ABSSW*1e6/GA/100.
-       write(61,*) '       LW: ',ABSLW*1e6/GA/100.
-       WRITE(61,*)'Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1',
+       write(60,*) '' 
+       WRITE(60,*) 'GAS TRANSMISSIONS'
+       write(60,*) ' kappa SW: ',ABSSW,'(cm^2/g)'
+       write(60,*) ' kappa LW: ',ABSLW,'(cm^2/g)'
+       write(60,*) ' tau per bar (absorption):' 
+       write(60,*) '       SW: ',ABSSW*1e6/GA/100.
+       write(60,*) '       LW: ',ABSLW*1e6/GA/100.
+       WRITE(60,*)'Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1',
      &               (2./3.)/(ABSSW*1e6/GA/100.)
 
-       WRITE(61,*)'Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1',
+       WRITE(60,*)'Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1',
      &               (2./3.)/(ABSLW*1e6/GA/100.)
 
-       WRITE(61,*) 'RAYLEIGH SCATTERING'
-       WRITE(61,*) 'RAYLEIGH OPTICAL DEPTH PER BAR: ',RAYPERBARCONS 
-       WRITE(61,*) 'KM-AMAGATS OF GAS PER BAR: ',KMAMGperBAR
-       WRITE(61,*) ' Pressure of SW Two-way gaseous (inc.ray) tau= 1: ',
+       WRITE(60,*) 'RAYLEIGH SCATTERING'
+       WRITE(60,*) 'RAYLEIGH OPTICAL DEPTH PER BAR: ',RAYPERBARCONS 
+       WRITE(60,*) 'KM-AMAGATS OF GAS PER BAR: ',KMAMGperBAR
+       WRITE(60,*) ' Pressure of SW Two-way gaseous (inc.ray) tau= 1: ',
      &               .5/(ABSSW*1e6/GA/100. + RAYPERBARCONS) 
-       WRITE(61,*) ' N.B. Assumes molecular composition with:'
-       write(61,*) '      H2 fraction = ',fh2
-       write(61,*) '      He fraction = ',rfhe
-       write(61,*) '      H2O fraction= ',rfh2o
-       write(61,*) ' ...To match the molecular weight. (see inisimprad)'
-       WRITE(61,*) ''
-       write(61,*) 'Surface Albedo in SW = ',ALBSW
-       write(61,*) 'Surface Emissivity in LW = ',EMISIR
+       WRITE(60,*) ' N.B. Assumes molecular composition with:'
+       write(60,*) '      H2 fraction = ',fh2
+       write(60,*) '      He fraction = ',rfhe
+       write(60,*) '      H2O fraction= ',rfh2o
+       write(60,*) ' ...To match the molecular weight. (see inisimprad)'
+       WRITE(60,*) ''
+       write(60,*) 'Surface Albedo in SW = ',ALBSW
+       write(60,*) 'Surface Emissivity in LW = ',EMISIR
        
-       write(61,*) 'Flux limited diffusion?, ',FLXLIMDIF 
+       write(60,*) 'Flux limited diffusion?, ',FLXLIMDIF 
        
-       write(61,*)'INSIMPRAD/'
-       write(61,*)'LLOGPLEV',LLOGPLEV
-       write(61,*)'LFLUXDIAG',LFLUXDIAG
-       write(61,*)'L1DZENITH',L1DZENITH
-       write(61,*)'LDIUR',LDIUR
-       write(61,*)'JSKIPLON',JSKIPLON
-       write(61,*)'JSKIPLAT',JSKIPLAT
-       write(61,*) 'DOSWRAD',DOSWRAD 
-       write(61,*)'DOLWRAD',DOLWRAD
-       write(61,*)'LWSCAT',LWSCAT
-       write(61,*)'FLXLIMDIF',FLXLIMDIF
-       write(61,*)'SURFEMIS',SURFEMIS
-       write(61,*)'RAYSCAT',RAYSCAT
-       write(61,*)'RAYSCATLAM',RAYSCATLAM
-       write(61,*)'AEROSOLS',AEROSOLS
-       write(61,*)'ABSSW',ABSSW
-       write(61,*)'ABSLW',ABSLW
-       write(61,*)'ALBSW',ALBSW
+       write(60,*)'INSIMPRAD/'
+       write(60,*)'LLOGPLEV',LLOGPLEV
+       write(60,*)'LFLUXDIAG',LFLUXDIAG
+       write(60,*)'L1DZENITH',L1DZENITH
+       write(60,*)'LDIUR',LDIUR
+       write(60,*)'JSKIPLON',JSKIPLON
+       write(60,*)'JSKIPLAT',JSKIPLAT
+       write(60,*) 'DOSWRAD',DOSWRAD 
+       write(60,*)'DOLWRAD',DOLWRAD
+       write(60,*)'LWSCAT',LWSCAT
+       write(60,*)'FLXLIMDIF',FLXLIMDIF
+       write(60,*)'SURFEMIS',SURFEMIS
+       write(60,*)'RAYSCAT',RAYSCAT
+       write(60,*)'RAYSCATLAM',RAYSCATLAM
+       write(60,*)'AEROSOLS',AEROSOLS
+       write(60,*)'ABSSW',ABSSW
+       write(60,*)'ABSLW',ABSLW
+       write(60,*)'ALBSW',ALBSW
 
       END                                                                 
