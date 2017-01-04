@@ -58,7 +58,7 @@ C
 C     Constant arrays and variables associated with time and vertical     
 C     differencing. Also counters.                                        
 C                                                                         
-      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)              
+      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)  
      +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD           
      +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
      +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
@@ -298,6 +298,62 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
      &   (fh2*1.0 + (1.-fh2)*rfhe*0.0641 + (1.-fh2)*rfh2o*3.3690)
 !      Finally, the rayleight scattering optical depth per bar is...
        RAYPERBARCONS = TAU_KMAMGH2 * KMAMGperBAR
-!      IF(.NOT.(NEWTB.EQ.NEWTE)) WRITE(2,249),NEWTB,NEWTE
-                                                                          
+!      NOW WRITE SOME GENERAL RADIATIVE TRANSFER SCHEME DETAILS TO FILE 
+       WRITE(61,*) 'RADIATIVE TRANSFER SUMMARY'
+       WRITE(61,*) ''
+       WRITE(61,*) 'Two-stream, plane-parallel columns' 
+       write(61,*) 'Quadrature closure in SW,'
+       write(61,*) 'Hemispheric Mean followed by source function in LW'
+       write(61,*) '(Toon et al.,1989). Potential scattering and' 
+       write(61,*) 'absorption in SW and LW by gas and aerosols.'
+       write(61,*) '(by default, the gas does not scatter in longwave)'
+     
+       write(61,*) '' 
+       WRITE(61,*) 'GAS TRANSMISSIONS'
+       write(61,*) ' kappa SW: ',ABSSW,'(cm^2/g)'
+       write(61,*) ' kappa LW: ',ABSLW,'(cm^2/g)'
+       write(61,*) ' tau per bar (absorption):' 
+       write(61,*) '       SW: ',ABSSW*1e6/GA/100.
+       write(61,*) '       LW: ',ABSLW*1e6/GA/100.
+       WRITE(61,*)'Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1',
+     &               (2./3.)/(ABSSW*1e6/GA/100.)
+
+       WRITE(61,*)'Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1',
+     &               (2./3.)/(ABSLW*1e6/GA/100.)
+
+       WRITE(61,*) 'RAYLEIGH SCATTERING'
+       WRITE(61,*) 'RAYLEIGH OPTICAL DEPTH PER BAR: ',RAYPERBARCONS 
+       WRITE(61,*) 'KM-AMAGATS OF GAS PER BAR: ',KMAMGperBAR
+       WRITE(61,*) ' Pressure of SW Two-way gaseous (inc.ray) tau= 1: ',
+     &               .5/(ABSSW*1e6/GA/100. + RAYPERBARCONS) 
+       WRITE(61,*) ' N.B. Assumes molecular composition with:'
+       write(61,*) '      H2 fraction = ',fh2
+       write(61,*) '      He fraction = ',rfhe
+       write(61,*) '      H2O fraction= ',rfh2o
+       write(61,*) ' ...To match the molecular weight. (see inisimprad)'
+       WRITE(61,*) ''
+       write(61,*) 'Surface Albedo in SW = ',ALBSW
+       write(61,*) 'Surface Emissivity in LW = ',EMISIR
+       
+       write(61,*) 'Flux limited diffusion?, ',FLXLIMDIF 
+       
+       write(61,*)'INSIMPRAD/'
+       write(61,*)'LLOGPLEV',LLOGPLEV
+       write(61,*)'LFLUXDIAG',LFLUXDIAG
+       write(61,*)'L1DZENITH',L1DZENITH
+       write(61,*)'LDIUR',LDIUR
+       write(61,*)'JSKIPLON',JSKIPLON
+       write(61,*)'JSKIPLAT',JSKIPLAT
+       write(61,*) 'DOSWRAD',DOSWRAD 
+       write(61,*)'DOLWRAD',DOLWRAD
+       write(61,*)'LWSCAT',LWSCAT
+       write(61,*)'FLXLIMDIF',FLXLIMDIF
+       write(61,*)'SURFEMIS',SURFEMIS
+       write(61,*)'RAYSCAT',RAYSCAT
+       write(61,*)'RAYSCATLAM',RAYSCATLAM
+       write(61,*)'AEROSOLS',AEROSOLS
+       write(61,*)'ABSSW',ABSSW
+       write(61,*)'ABSLW',ABSLW
+       write(61,*)'ALBSW',ALBSW
+
       END                                                                 

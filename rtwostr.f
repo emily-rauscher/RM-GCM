@@ -13,7 +13,7 @@
 !
        DO 10 L    =  LLS,LLA
           if( L .LE. NSOLP )then
-            U1I(L) = SQ3
+            U1I(L) = SQ3  !2.d0 !SQ3
           else
             U1I(L) = 2.d0
           endif
@@ -24,7 +24,6 @@
 !       write(*,*) 'G0',G0
 !       write(*,*) 'U1I',U1I
 !       write(*,*)'U1S',U1S  
-          
 !    
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
@@ -35,15 +34,15 @@
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
              B2(L,J)    =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
-             AK(L,J)    =  SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
+             AK(L,J)    = SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
              GAMI(L,J)  =  B2(L,J)/(B1(L,J) + AK(L,J))
              EE1(L,J)   =  EXP(-AK(L,J)*TAUL(L,J))
 !             write(*,*) 'EE1',J,EE1(L,J)
 !             write(*,*) 'GAMI',J,GAMI(L,J)
-             EL1(L,J)   =  1.0 + GAMI(L,J) *EE1(L,J)                           
-             EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J)                       
-             EL2(L,J)   =  GAMI(L,J) + EE1(L,J)                               
-             EM2(L,J)   =  GAMI(L,J) - EE1(L,J)  
+             EL1(L,J)   =  1.0 + GAMI(L,J) *EE1(L,J)  !e1                          
+             EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J) !e2                      
+             EL2(L,J)   =  GAMI(L,J) + EE1(L,J)       !e3                        
+             EM2(L,J)   =  GAMI(L,J) - EE1(L,J)       !e4
 
   14  CONTINUE
 !
@@ -60,7 +59,7 @@
 !          HERE ARE THE EVEN MATRIX ELEMENTS
              AF(L,JD)   =  EM1(L,J+1)*EL1(L,J)-EM2(L,J+1)*EL2(L,J)
              BF(L,JD)   =  EM1(L,J+1)* EM1(L,J)-EM2(L,J+1)*EM2(L,J)
-             EF(L,JD)   =  EL1(L,J+1)*EM2(L,J+1) - EL2(L,J+1)*EM1(L,J+1)
+             EF(L,JD)  = EL1(L,J+1)*EM2(L,J+1) - EL2(L,J+1)*EM1(L,J+1)
 !          HERE ARE THE ODD MATRIX ELEMENTS EXCEPT FOR THE TOP. 
              AF(L,JD+1) =  EM1(L,J)*EL2(L,J)-EL1(L,J)*EM2(L,J)
              BF(L,JD+1) =  EL1(L,J+1)*EL1(L,J) - EL2(L,J+1)*EL2(L,J)      

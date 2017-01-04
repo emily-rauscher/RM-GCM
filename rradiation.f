@@ -128,6 +128,15 @@ C
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
+       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
+       CHARACTER(15) :: AEROSOLMODEL
+       REAL AERO4LAT(NL,MG,2),AEROPROF(NL)
+       REAL TAUAEROSOL(nl,mg,2,jg)
+       LOGICAL DELTASCALE
+
+
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
      +              ,RNTAPO                                               
      +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR                          
@@ -157,15 +166,9 @@ C
       REAL TAVE(IGP) 
                                                                           
        REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
-       real PRB2T(NL+1),adum                                                           
-      
-       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,                  
-     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
-       CHARACTER(15) :: AEROSOLMODEL
-       REAL AERO4LAT(NL,MG,2)                    
-       REAL AEROPROF(NL)                
-                                                                          
+       real PRB2T(NL+1),adum                                            
+
+
       integer ifirst                ! If =1, first time reading o3        
                                     ! and h2o (2 months' worth).          
                                                                           
@@ -220,8 +223,6 @@ c
    
                                            
  
-
-
 c
 c --------------------------------- Now start the radiation bit.          
 c                                                                         
@@ -380,7 +381,8 @@ c ----------------------------------------------------- And alat1
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
                   IF (KOUTP.EQ.KOUNTP-1) THEN
                      IF(JH.EQ.1.AND.IHEM.EQ.1.AND.I.EQ.1) THEN
-                        REWIND(63) !! Rewind file for fluxes in nikosrad 
+                        REWIND(63) !! Rewind file for fluxes in nikosrad
+                        REWIND(62) ! rwnd file for ancillary RT results 
                         IF (PORB.NE.0) THEN 
                            SSLON=(1./PORB-1.)*KOUNT*360./ITSPD
                            SSLON=MOD(SSLON,360.)
@@ -390,8 +392,16 @@ c ----------------------------------------------------- And alat1
                         SSLAT=ASIN(SIN(OBLIQ*PI/180.)
      +                       *SIN(PI2*KOUNT/ITSPD/PORB))*180./PI
                         WRITE(63,2021) DAY,SSLON,SSLAT
+                        WRITE(62,2021) DAY,SSLON,SSLAT
  2021                  FORMAT('DAY:',F7.2,', SUBSTELLAR LON,LAT:',2F7.2)
                         WRITE(63,*)
+                        WRITE(62,*)''
+!       WRITE(62,*)'Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1',
+!     &               (2./3.)/(ABSSW*1e6/GA/100.)
+!
+!       WRITE(62,*)'Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1',
+!     &               (2./3.)/(ABSLW*1e6/GA/100.)
+!       write(62,*)''
                      ENDIF
                   ENDIF
                                                                           
@@ -424,7 +434,6 @@ C Call radiation scheme
 !           Extract a single column from the array AER4LAT(NLEV,LON,HEM)
             AEROPROF=AERO4LAT(:,mg,ihem)
             ENDIF
-            
              
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)

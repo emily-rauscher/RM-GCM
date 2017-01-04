@@ -341,13 +341,12 @@
 !      write(*,*) 'NLAYER',NLAYER
 !      write(*,*) 'NL',NL
       PRESS=P_aerad*10.
-      PBAR(1)  = P_AERAD(1)*1e-6
+      PBAR(1)  = P_AERAD(1)*1e-5
       DPG(1)= PRESS(1)/G
       DO 45 J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
          DPG(J) = (PRESS(J)-PRESS(J-1)) / G
  45    CONTINUE
-
 !        Here we are saying that the top layer has a thickness that
 !        extends from the top of the atmosphere (pressure = 0) down to
 !        the interface ABOVE the top sigma levels. The atmosphere
@@ -471,7 +470,7 @@
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
                      ELSE
                        TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
+     & *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
           ENDIF
 !      write(*,*)'L,J,TAUGAS',L,J,TAUGAS(L,J)
  306  CONTINUE

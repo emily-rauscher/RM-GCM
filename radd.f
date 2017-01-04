@@ -16,13 +16,14 @@
 !     ATMOSPHERE.
 !
 !      write(*,*) 'G0',G0
-!      write(*,*) 'U0',U0
+!     write(*,*) 'U0',U0
 !      write(*,*) 'EMIS',EMIS
 !       write(*,*) 'EL3',EL3      
 !      DO I=1,NLAYER
 !      write(*,*) 'TAUL',TAUL(1,I)
 !      write(*,*) 'OPD',OPD(1,I),OPD(2,I)
 !      write(*,*) 'W0',w0(1,I)
+!      write(*,*) 'G0',G0(1,I)
 !      ENDDO
 !      write(*,*) 'OPD', OPD
 !      write(*,*) 'W0', W0
@@ -51,7 +52,7 @@
 !               write(*,*)'X3',X3
 !               write(*,*)'SOL',SOL(L)
 !               write(*,*) 'xc,el3',x3,EL3(1,J)
-               DIRECT(L,J) =  U0*EL3(L,J)
+               DIRECT(L,J) = U0*EL3(L,J)
                C1          =  B1(L,J) - DU0
                if( ABS(C1).lt.EPSILON ) c1 = SIGN(EPSILON,C1)
                C2          =  AK(L,J)*AK(L,J) - DU0*DU0
@@ -78,9 +79,6 @@
           SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
   20  CONTINUE
       END IF
-!        write(*,*)'DIRECT',DIRECT
-!        write(*,*)'SFCS',SFCS
-
 !     ******************************
 !     * CALCULATIONS FOR INFRARED. *
 !     ******************************
@@ -141,7 +139,6 @@
          DS(L,JDBLE) = DF(L,JDBLE)/BF(L,JDBLE)
   44     AS(L,JDBLE) = AF(L,JDBLE)/BF(L,JDBLE)
          
-
 !       write(*,*)'DS',DS
 !       write(*,*)'AS',AS
 !     ********************************************
@@ -186,12 +183,10 @@
 !             write(*,*)'EL2(L,J)',EL2(L,J)
 !             write(*,*)'EM1(L,J)',EM1(L,J)
 !            write(*,*)'EM2(L,J)',EM2(L,J)       
-!            write(*,*)'DIRECT(L,J)',DIRECT(L,J)
-                                      
           FNET(L,J)  = CK1(L,J)  *( EL1(L,J) -EL2(L,J))   +
      &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -    
      &                  CMB(L,J) - DIRECT(L,J)                        
-!                                                                      
+!                                                            
           TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
      &                  ( EL1(L,J) + EL2(L,J))   +
      &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +  
@@ -200,6 +195,35 @@
       enddo
 !      write(*,*)'FNET',FNET
 !      write(*,*)'TMI',TMI
+!      DO J = 1,NLAYER 
+!      write(*,*) 'CK1',J,CK1(1,J)
+!      ENDDO 
+!      DO J = 1,NLAYER
+!      write(*,*) 'EL1',J,EL1(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'EL2',J,EL2(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'CK2',J,CK2(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'EM1',J,EM1(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'EM2',J,EM2(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'CPB',J,CPB(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'CMB',J,CMB(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'FNET',J,FNET(1,J)
+!      ENDDO
+
+!         STOP
       RETURN
       END
 

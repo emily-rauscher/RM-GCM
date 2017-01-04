@@ -68,7 +68,6 @@ C      CALL INISET
 
 !! KM Modif
 !      CALL INISURF                                    
-
       CALL INISIMPRAD
 
       CALL INIQS                                                          
