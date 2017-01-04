@@ -178,7 +178,7 @@
       common /irad11/     
      &   tslu,tsld,alb_tot,tiru,firu(NIR),fird(NIR),fsLu(NSOL),     
      &   fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL),     
-     &   fupbs(NLAYER),fdownbs(NLAYER),fnetbs(NLAYER),     
+     &   fupbs(NLAYER),fdownbs(NLAYER),fnetbs(NLAYER),fdownbs2(nlayer),     
      &   fupbi(NLAYER),fdownbi(NLAYER),fnetbi(NLAYER),     
      &   qrad(NLAYER),alb_tomi,alb_toai
 !

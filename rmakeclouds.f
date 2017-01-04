@@ -16,12 +16,13 @@
 
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
        CHARACTER(15) :: AEROSOLMODEL
+       LOGICAL DELTASCALE 
 
        NAMELIST/INCLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &  CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,
-     &  SIG_AREA,PHI_LON
+     &  DELTASCALE,SIG_AREA,PHI_LON
       
 
        READ (7,INCLOUDY)
@@ -52,6 +53,11 @@
            PINDEXBOTC=themin(1)
            themin=MINLOC(PABSDIF2)
            PINDEXTOPC=themin(1)
+           IF (PINDEXTOPC.GT.PINDEXBOTC) THEN 
+       WRITE(*,*) 'CLOUD TOP MUST BE LOWER PRESSURE THAN BASE!'
+       WRITE(*,*) 'ABORTING! PLEASE CHOOSE GREATER RANGE IN FORT.7'     
+           STOP
+           ENDIF  
 !         Now create a vertical array that equals one at the cloud base pressure,
 !         scales with pressure (~uniform mixing ratio) to the power of
 !         aerHfrac (e.g. aerHfrac = 1 is scales 1:1 with pressure) until the cloud top
@@ -92,6 +98,7 @@
        WRITE(21,*) 'cloudbase,    cloudtop (bars),     powerlaw:'
        WRITE(21,7010) cloudbase,cloudtop,aerHfrac
  7010  FORMAT(1x,F11.4,2x,F11.4,3x,F7.3)
+       WRITE(21,*) 'AEROSOL SCATTERING PARAMETERS:'
        WRITE(21,*) 'Short Wave Scattering--' 
        WRITE(21,*) '    Total optical depth:', TAUC
        WRITE(21,*) '    Single scattering albedo (PI0):',PI0AERSW
@@ -100,6 +107,13 @@
        WRITE(21,*) '    Extinction Ratio (LW/SW):',EXTFACTLW
        WRITE(21,*) '    Single scattering albedo (PI0):',PI0AERLW
        WRITE(21,*) '    Asymmetry parameter:',ASYMLW
+       WRITE(21,*) 'NOTE: These are aerosol values only,(i.e. no gas)'
+       write(21,*) '      not total layer values.'
+            IF(DELTASCALE) THEN 
+            WRITE(21,*) 'Delta-scaling applied'
+            ELSE
+            WRITE(21,*) 'No Delta-scaling applied'
+            ENDIF
        WRITE(21,*) 'Other parameters:'
        WRITE(21,*) 'sig_area =',sigc
        write(21,*) 'phi_lon =',phi_lon
@@ -192,5 +206,6 @@
              ENDDO
           ENDDO
        ENDDO
+
 
        END

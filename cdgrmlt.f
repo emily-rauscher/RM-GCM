@@ -130,8 +130,8 @@ C
      :              ,CTCR(NL,NHEM),CTLR(NL,NHEM)
      :              ,LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ
      :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
-                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
-     :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
+                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC 
+     :                 ,LNOICE,LOLDBL,LCOND,LNNSK                       
 C                                                                         
       COMMON/PTENDZ/UTVDZ(IGG),VTVDZ(IGG),TTVDZ(IGG),QTVDZ(IGG)           
      :              ,TTCRZ(IGG),QTCRZ(IGG),TTLRZ(IGG),QTLRZ(IGG)          
@@ -155,6 +155,7 @@ c
      *               arrcr1(igc,jg),arrlr1(igc,jg),                       
      *               arflux1(igc,6,jg),asfld1(igc,6,jg),                  
      *               acld1(igc,4,jg)                                      
+
 
 
 C     Setup moisture variables by equivilencing them to                   

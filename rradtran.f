@@ -354,6 +354,7 @@
           fupbs(j) = 0.
           fdownbs(j) = 0.
           fnetbs(j) = 0.
+          fdownbs2(j)= 0.
  507    continue
 !
 !     <fsLu> and <fsLd> are upwelling, downwelling, and net
@@ -382,8 +383,10 @@
         IF (ISL .NE. 0) THEN
           DO 510 L       =  1,NSOLP
             SOLNET = SOLNET - FNET(L,NLAYER)
-!            fp = ck1(L,1)*eL2(L,1) - ck2(L,1)*em2(L,1) + cp(L,1)
-            fsLu( nprob(L) ) = fsLu( nprob(L) ) + fp
+            fp = ck1(L,1)*eL2(L,1) - ck2(L,1)*em2(L,1) + cp(L,1)
+!            fsLu( nprob(L) ) = fsLu( nprob(L) ) + fp
+             fsLu(L) = fsLu(L)+fp
+!             write(*,*) 'solnet',SOLNET
 !            write(*,*),'fsLu(L)',fsLu(L)
 !            write(*,*),'ck1(L,1)',ck1(L,1)
 !            write(*,*),'el2(L,1),',eL2(L,1)
@@ -394,11 +397,13 @@
 !     &  ck2(L,1)*em2(L,1) + cp(L,1)
             do 510 j = 1, NLAYER !nlayer
               fp  =  ck1(L,j)* eL1(L,j) + ck2(L,j)*em1(L,j) + cpb(L,j)
+              fm  =  ck1(L,j)* eL2(L,j) + ck2(L,j)*em2(L,j) + cmb(L,j)
               fupbs(j) = fupbs(j) + fp
+              fdownbs2(j) = fdownbs2(J) + fm
               fnetbs(j) = fnetbs(j) + fnet(L,j)
               if (L.eq.nsolp) fdownbs(J) = fupbs(j) - fnetbs(j)
-!              write(*,*) fdownbs(J),fupbs(j),fnetbs(j)
-!            write(*,*),'fsLu',fsLu
+!              write(*,*),j,fupbs(j),fdownbs2(j)
+!              write(*,*),j,fnetbs(j),DIRECT(1,J)
  510      CONTINUE
           do 508 i = 1, nsoL
             fsLd(i) = psol_aerad !u0*solfx(i)
@@ -406,9 +411,21 @@
             tsLu = tsLu + fsLu(i)
             tsLd = tsLd + fsLd(i)
  508      continue
-!
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
+!          write(*,*) 'psol_aerad',psol_aerad
+!         write(*,*) 'alb_tomi',alb_tomi
+!          write(*,*) 'alb_toai',alb_toai
+!          write(*,*) 'fups(1)',fupbs(1)
+!          write(*,*) 'fdownbs2(1)',fdownbs2(1)
+!          write(*,*) 'fsLu(1)',fsLu(1)
+!          write(*,*) 'fsLd(1)',fsLd(1)
+!          write(*,*) 'diff=',fsLu(1)-fsLd(1)
+!          write(*,*) 'fnet(1,1)',fnet(1,1)
+!          write(*,*) 'fup-fdown',fupbs(1)-fdownbs2(1)
+!          write(*,*) 'fnet(1,2)',fnet(1,2)
+!          write(*,*) 'fup-fdown',fupbs(2)-fdownbs2(2)
+!          stop
 !          write(*,*) 'tsLu',tsLu
 !          write(*,*) 'tsLd',tsLd
 !      Load albedos into interface common block
@@ -455,7 +472,7 @@
           DO 520 L        =  NSOLP+1,NTOTAL
              XIRDOWN = XIRDOWN + DIREC  (L,NLAYER)
              XIRUP   = XIRUP   + DIRECTU(L,NLAYER)
-             firu( nprob(L)-nsol ) = firu( nprob(L)-nsol ) +    
+             firu(L-nsol ) = firu( L-nsol ) +    
      &                                directu(L,1)
              do 520 j = 1, nlayer
                fupbi(j) = fupbi(j) + directu(L,j)
@@ -503,6 +520,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          
       RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom  
 !      write(*,*)'RFLUXES_aerad',rfluxes_aerad
+      
       return
       END
 

@@ -13,7 +13,7 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
-!
+
 !     W0(NWAVE,NLAYER) : SINGLE SCATTERING ALBEDO *** delta scaled ***
 !     G0(NWAVE,NLAYER) : ASYMMETRY PARAMETER *** delta scaled ***
 !     OPD(NWAVE,NLAYER): cumulative OPTICAL DEPTH *** delta scaled ***
@@ -43,17 +43,37 @@
 
 !  110   CONTINUE
 
-
       DO 200  J          =   1,NLAYER
 !       DO 130 L          = 1,NTOTAL
+!    VIS
        TAUAER(1,J)       = AEROPROF(J)
        WOL(1,J)          = PI0AERSW 
        GOL(1,J)          = ASYMSW
+       TAUS(1,J)         = PI0AERSW*AEROPROF(J)
+       
+!           IF (TAUS(2,J) .NE. 0) THEN 
+!            TTAS         = TAUS(1,J)
+!           ELSE
+!            TTAS         = 1.
+!           ENDIF
+
+!       GOL(1,J)          = G01(1,J)/TTAS
+
+!    IR
        TAUAER(2,J)       = AEROPROF(J)*EXTFACTLW
        WOL(2,J)          = PI0AERLW
        GOL(2,J)          = ASYMLW
- 200  CONTINUE
+       TAUS(2,J)         = PI0AERLW*TAUAER(2,J)
 
+!         if (TAUS(2,J).ne.0) then
+!            TTAS         = TAUS(2,J)
+!         else
+!            TTAS         = 1.
+!         ENDIF
+
+!       GOL(2,J)          = G01(1,J)/TTAS
+
+ 200  CONTINUE
 
 !     iradgas = 0: no gas in radiative xfer!
       iradgas = 1     
@@ -69,7 +89,7 @@
 !              DO NOT SEE THE POINT OF HAVING BOTH OPTICAL DEPTHS IN OUR
 !              MODEL SO I AM OMMITTING TAUCLD, W0CLD, GCLD, ETC
 
-              TAUL(L,J)   = TAUGAS(L,J)+ TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
+              TAUL(L,J)   = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
              if (iradgas.eq.0) tauL(L,j) = tauaer(L,j)
              if( TAUL(L,J) .lt. EPSILON ) TAUL(L,J) = EPSILON
 
@@ -80,6 +100,7 @@
              WOT         = min(1.-EPSILON,WOT)
              uw0(L,j)    = WOT
              DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
+             if( DENOM .LE. EPSILON ) DENOM = EPSILON
              if( DENOM .GT. EPSILON ) then
                GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
 !       print*, j, L, GCLD(l,j), gol(l,j),wol(l,j),got
@@ -88,17 +109,25 @@
              endif
              if (iradgas.eq.0) GOT = goL(L,j)
              ug0(L,j)    = GOT
+             uOPD(L,J)   = 0.0
+             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
+             IF (deltascale) THEN
              FO          = GOT*GOT
              DEN         = 1.-WOT*FO
              TAUL(L,J)   = TAUL(L,J) * DEN
-!       print*, j, L, GOT, DEN, TAUL(L,J)
-       if( taul(L,j) < 0. ) stop
              W0(L,J)     = (1.-FO)*WOT/DEN
              G0(L,J)     = GOT/(1.+GOT)
              OPD(L,J)    = 0.0
-             OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
-!MTR             uOPD(L,J)   = 0.0
-!MTR             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
+             OPD(L,J)    = OPD(L,J1)+TAUL(L,J)             
+             ELSE 
+                  W0(L,J)= uw0(L,J)
+                  G0(L,J)= ug0(L,J)
+                TAUL(L,J)= utaul(L,J)
+                 OPD(L,J)= uOPD(L,J)
+             ENDIF 
+             
+       if( taul(L,j) < 0. ) stop
+                             
  400        CONTINUE
            
           IF(IR .EQ. 1) THEN
@@ -109,7 +138,36 @@
  450         CONTINUE
           ENDIF
  500  CONTINUE
-      RETURN
 
+!      DO J = 1,NLAYER 
+!      write(*,*) 'W0',J,W0(1,J)
+!      ENDDO 
+!      DO J = 1,NLAYER
+!     write(*,*) 'G0',J,G0(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'WOL',J,WOL(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'GOL',J,GOL(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'TAURAY',J,TAURAY(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'TAUAER',J,TAUAER(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'TAUGAS',J,TAUGAS(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'TAUL',J,TAUL(1,J)
+!      ENDDO
+!      DO J = 1,NLAYER
+!      write(*,*) 'OPD',J,OPD(1,J) 
+!      ENDDO     
+!         stop
+      RETURN
       END
+
 
