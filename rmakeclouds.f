@@ -17,7 +17,7 @@
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
-       CHARACTER(15) :: AEROSOLMODEL
+       CHARACTER(20) :: AEROSOLMODEL
        LOGICAL DELTASCALE 
 
        NAMELIST/INCLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
@@ -84,7 +84,7 @@
 !             tauc is cloud thickness, cloud width is sigc.
        tauc=AERTOTTAU
        sigc=SIG_AREA
-       deltalonc=360+(-PHI_LON)
+       deltalonc=360.+(-PHI_LON)
        dellonc360=deltalonc+360.
        
  
@@ -166,7 +166,7 @@
                      ENDIF
               
 !                ENDIF FIRST CONDITIONAL, KEPLER 7B
-!          NIGHTSIDE CLOUDS
+!          NOW NIGHTSIDE CLOUDS
                 ELSE IF (AEROSOLMODEL.EQ.'Nightside') THEN
                   IF (thecounter.EQ.0) THEN   
                     WRITE(*,*) 'Using Cloudmodel: Nightside'
@@ -188,15 +188,66 @@
                       ENDIF
 
                           TheTAU=TAUC*VERTPROF(ILEV)
+
 !               END ELSE GLOBAL CLOUDS
+!            MUNOZ K7B + NIGHSIDE
+                ELSE IF (AEROSOLMODEL.EQ.'Kepler7b_nightside') THEN
+                     IF (thecounter.EQ.0) THEN
+                      WRITE(*,*) 'Using Cloudmodel: Kepler7b_nightside'
+                       thecounter=1.
+                     ENDIF
+
+! For this case, first create the Munoz distribution
+                  TAUpa=(TAUC
+     & *EXP(-(((LONGYS(ILON)-DELTALONC)*(LONGYS(ILON)-DELTALONC))
+     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
+! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
+                TAUpb=(TAUC
+     & *EXP(-(((LONGYS(ILON)-DELLONC360)*(LONGYS(ILON)-DELLONC360))
+     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
+! SUM IT UP
+                     TheTAU=TAUpa+TAUpb
+                     IF (LONGYS(ILON).EQ.360) THEN
+                     TheTAU=TAUpb
+                     ENDIF
+
+! OK, now replace the night side completely
+                    IF(LONGYS(ILON).GE.90.) THEN
+                       IF(LONGYS(ILON).LE.270.) THEN
+                          TheTAU=TAUC*VERTPROF(ILEV)
+                       ENDIF
+                    ENDIF
+! Finally, now remove a chunk for the antisymmetric western limb of
+! night side.
+                  TAUpa=(TAUC
+     & *EXP(-(((LONGYS(ILON)-DELTALONC+180.)*
+     &         (LONGYS(ILON)-DELTALONC+180.))
+     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
+! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
+!                TAUpb=(TAUC
+!     & *EXP(-(((LONGYS(ILON)-DELLONC360+180.)*
+!     &        (LONGYS(ILON)-DELLONC360+180.))
+!     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV) 
+
+! Subtract this shifted cloud from the night side                   
+                    IF(LONGYS(ILON).GE.90.) THEN
+                       IF(LONGYS(ILON).LE.270.) THEN
+                          TheTAU=TheTau-TAUpa*2.0
+                          TheTAU=MAX(TheTAU,0.0)
+                       ENDIF
+                    ENDIF
+                       
+
 !          NOTHING SPECIFIED 
                 ELSE                 
                     WRITE(*,*)'NO VALID CLOUDMODEL SPECIFIED! STOPPING'
                     STOP
                 END IF
 
- 
-                     TAUAEROSOL(ILEV,ILON,IHEM,ILAT)=TheTAU
+!          HERE WE WRITE THE CLOUD ARRAY TO MEMORY 
+             TAUAEROSOL(ILEV,ILON,IHEM,ILAT)=TheTAU
+
+!          AND WRITE IT TO FILE FORT.61
              WRITE(61,212) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW,ASYMSW,
      &                         TheTAU*EXTFACTLW,PI0AERLW,ASYMLW
  212       FORMAT(2X,F11.6,3X,F12.7,3X,F7.4,3X,F7.4,3X,F11.6
