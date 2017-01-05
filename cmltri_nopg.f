@@ -239,11 +239,13 @@ C-----------------------------------------------------------------------
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
        CHARACTER(20) :: AEROSOLMODEL       
-       REAL AERO4LAT(NL,MG,2),AEROPROF(NL) 
+       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1) 
        LOGICAL DELTASCALE
 
-       REAL TAUAEROSOL(nl,mg,2,jg)
+       REAL TAUAEROSOL(nl+1,mg,2,jg)
 
+      NAMELIST/COMMENT/THECOMMENT
+      CHARACTER(70) :: THECOMMENT
 C                                                                      
  2000 FORMAT(/' RESTART RECORD WRITTEN TO CHANNEL ',I3,/                  
      +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)                      
@@ -260,7 +262,15 @@ C      write(*,*) 'Hello',i
 C      enddo
 C!$omp end do
 C!$omp end parallel
-      CALL INISET                                                         
+C     FIRST THE COMMENT
+      READ(7,COMMENT)
+      WRITE(2,COMMENT)
+      WRITE(*,*) THECOMMENT  
+
+
+      tripped=0.0
+      CALL INISET
+      tripped=1.0                                                         
 C     if not restart run, then use modified start to set TTRES, otherwise skip
       IF(.NOT.LRSTRT) THEN
 C     &&&&&&&&&&&&&MODIFIED START &&&&&&&&&&&&&&

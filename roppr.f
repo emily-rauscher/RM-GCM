@@ -75,6 +75,7 @@
 
  200  CONTINUE
 
+
 !     iradgas = 0: no gas in radiative xfer!
       iradgas = 1     
 

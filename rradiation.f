@@ -132,8 +132,8 @@ C
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
        CHARACTER(20) :: AEROSOLMODEL
-       REAL AERO4LAT(NL,MG,2),AEROPROF(NL)
-       REAL TAUAEROSOL(nl,mg,2,jg)
+       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1)
+       REAL TAUAEROSOL(nl+1,mg,2,jg)
        LOGICAL DELTASCALE
 
 
@@ -214,7 +214,6 @@ C      ntstep=max(2,itspd/100000)       ! N.B. No point any more frequent as
 
 !      write(*,*) 'ntstep',ntstep
       nskip=NSKIP_IN                                                       
-
 C this sets the non-dimensional gridpoint temperature tendency (TTRD)     
 C to get to TTRD from K/day divide the K/day heating rate by              
 C     (86400*WW*CT)                                                       
@@ -370,8 +369,8 @@ c --------------------------------------- Now set rest of column.
                      PRB2T(L)=PR(LD)                      
                      T(LD)=TG(im,ld)*CT ! Temperature 
                      AEROPROF(LD)=0.0 
-!         write(*,*)'LD,L,sigma(LD),PR(L),T(L)',LD,sigma(LD),PR(LD),T(LD)                  
                   ENDDO
+                     AEROPROF(NL+1)=0.0
                    PRB2T(1)=PLG(im)*P0
                    PR(NL+1)=PLG(im)*P0
                    T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25

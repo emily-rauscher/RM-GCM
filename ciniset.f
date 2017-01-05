@@ -121,6 +121,8 @@ C
      + ,NCOEFF,NLAT,LGPO,LSPO                                             
      + ,RNTAPO,NTRACO                                                     
      $     ,LSHIST,LMINIH                                                 
+C
+C
 C                                                                         
   205 FORMAT(/' *****RNTAPE*****',F12.3)                                  
   207 FORMAT(' PRINTED OUTPUT EVERY ',I3,' TIMESTEPS'/                    
@@ -219,7 +221,7 @@ C
    18 CONTINUE                                                            
 C                                                                         
 C     Read NAMELISTs, overwrite defaults and write them out               
-C                                                                         
+C
 C      write(*,*) 'reading fort.7 in iniset'
       READ(7,INPPL)                                                       
       WRITE(2,INPPL)                                                      

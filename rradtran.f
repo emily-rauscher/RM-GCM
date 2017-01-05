@@ -406,14 +406,15 @@
 !              write(*,*),j,fnetbs(j),DIRECT(1,J)
  510      CONTINUE
           do 508 i = 1, nsoL
-            fsLd(i) = psol_aerad !u0*solfx(i)
+            fsLd(i) = psol_aerad*u0_aerad !u0*solfx(i)
             alb_toa(i) = fsLu(i)/fsLd(i)
             tsLu = tsLu + fsLu(i)
             tsLd = tsLd + fsLd(i)
  508      continue
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
-!          write(*,*) 'psol_aerad',psol_aerad
+!          write(*,*) 'psol_aerad raddtran',psol_aerad
+!          write(*,*) 'u0_aerad raddtran',u0_aerad
 !         write(*,*) 'alb_tomi',alb_tomi
 !          write(*,*) 'alb_toai',alb_toai
 !          write(*,*) 'fups(1)',fupbs(1)
@@ -520,7 +521,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          
       RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom  
 !      write(*,*)'RFLUXES_aerad',rfluxes_aerad
-      
       return
       END
 
