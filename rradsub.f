@@ -68,14 +68,6 @@
       
 !       dz=deltaz
 
-!      u0_aerad = 0.78
-!      u0_aerad = 0.318
-!      u0_aerad = 0.448
-!      u0_aerad = 0.349  ! Barrow Alaska, 080427, 0z
-!      u0_aerad = 0.4798 ! RF23, (72:21:37.44, 154:51:39.6, 18 Apr, 14:52 local)
-!      u0_aerad = 0.4481 ! RF31, (72:21:37.44, 154:51:39.6, 26 Apr, 17:05 local)
-!!      u0_aerad = 0.01
-!      u0_aerad= 
       ir_above_aerad = 0
       tabove_aerad = 0
 
@@ -163,7 +155,8 @@ C       YCLOCK=3.14159      !time of day in radians
 !       YCLOCK= (DOY-REAL(INT(DOY))*2.*3.14159                            
 C                                                                         
 !      CALL SOLANG(LDIUR,DOY,YCLOCK,ALAT,ALON,AMU0,RDAYL,CDISSEM)          
-C         
+C 
+!      write(*,*) 'solc raddsub',SOLC        
 C     globally averaged solar constant, vertical rays
       AMU0=1.0
       PSOL=SOLC/4.
@@ -208,6 +201,9 @@ C ER modif for non-zero obliquity
 !End CNIKOS lines
       u0_aerad = max( 0.*ONE, AMU0 )  
       PSOL_aerad=PSOL
+!      write(*,*) 'u0_aerad radsub',u0_aerad
+!      write(*,*) 'PSOL_aerad', PSOL_aerad
+
       do_mie_aerad = .false.
          IF (AMU0.GT.0) THEN
            isl_aerad=1

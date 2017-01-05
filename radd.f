@@ -29,8 +29,9 @@
 !      write(*,*) 'W0', W0
 !      write(*,*) 'SQ3',SQ3
 !      write(*,*) 'SOL',SOL
+!      write(*,*) 'u0',U0
+   
 !      write(*,*)'stopping add'
-!      stop      
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *
 !     ******************************

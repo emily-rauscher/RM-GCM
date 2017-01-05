@@ -7,12 +7,12 @@
 !      * parameter at both short wave and long wave channels.          *
 !      *****************************************************************
 
-       REAL PRESSURE(NL),PABSDIF1(NL),PABSDIF2(NL),
-     &      VERTPROF(NL),LONGYS(MG),LATYS(JG),THELAT,TheTAU,
-     &      TOTAL,TAUPA,TAUPB,TAUAEROSOL(nl,mg,2,jg),TAUC,SIGC,
-     &      deltalonc,deltalonc360,SIGMA(NL),themin(1),POSLATS(JG)
+       REAL PRESSURE(NL+1),PABSDIF1(NL+1),PABSDIF2(NL+1),
+     &     VERTPROF(NL+1),PSIGMA(NL),LONGYS(MG),LATYS(JG),THELAT,TheTAU,
+     &     TOTAL,TAUPA,TAUPB,TAUAEROSOL(nl+1,mg,2,jg),TAUC,SIGC,
+     &     deltalonc,deltalonc360,SIGMA(NL),themin(1),POSLATS(JG)
        INTEGER PINDEXBOTC,PINDEXTOPC,NLAT,NLON,NLEV,NHEM
-     &         ,IHEM, ILAT,ILEV,IL,ILON,TheCounter
+     &         ,IHEM, ILAT,ILEV,IL,ILON,TheCounter,LD
 
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
@@ -30,9 +30,15 @@
 !      DIMENSIONS--------------------
        nlat     =  jg
        nlon     =  mg
-       nlev     =  nl
+       nlev     =  nl+1 !To define the layer above the top boundary 
        nhem     =   2
-       pressure = sigma*P0
+       psigma   = sigma*P0
+       ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
+             DO LD    = 1,NL-1
+             pressure(LD+1)=(psigma(LD)+psigma(LD+1))/2.
+             ENDDO
+             pressure(NL+1)=p0
+             pressure(1)=psigma(1)*0.5
 !            Define longitude array:
            DO    ilon  = 1,NLON
            LONGYS(ILON) = REAL(ilon-1)/REAL(NLON)*360.0
@@ -44,7 +50,7 @@
 !         1. VERTICAL
 !          cloudbase and cloudtop pressures read in from fort.7 cloudy namelist
 !          Find the closest sigma-pressure levels to these pressures:
-          DO IL=1,NL 
+          DO IL=1,NLEV
             PABSDIF1(IL)=ABS(PRESSURE(IL)*1e-5 - cloudbase)
             PABSDIF2(IL)=ABS(PRESSURE(IL)*1e-5 - cloudtop) 
             VERTPROF(IL) = 0
@@ -65,7 +71,14 @@
           TOTAL=0.0
           DO IL=PINDEXTOPC,PINDEXBOTC
            VERTPROF(IL) = (PRESSURE(IL)/PRESSURE(PINDEXBOTC))**AERHFRAC
-             TOTAL=TOTAL+VERTPROF(IL)
+          ENDDO
+
+!         Smooth it by averaging with neighbors
+          DO IL=PINDEXTOPC,PINDEXBOTC
+           ABOVE        = MAX(IL-1,1) 
+           BELOW        = MIN(IL+1,NLEV)
+       VERTPROF(IL) = (VERTPROF(ABOVE)+VERTPROF(IL)+VERTPROF(BELOW))/3.
+           TOTAL        = TOTAL+VERTPROF(IL)
           ENDDO
 !         Normalize it to preserve the total integrated optical.
           DO IL=PINDEXTOPC,PINDEXBOTC
@@ -140,7 +153,7 @@
      &         '3)SW_PI0','4)SW_ASYM',
      &         '5)AEROSOL_LW_TAU','6)LW_PI0','7)LW_ASYM'
  211       FORMAT(1X,A13,1X,A16,4X,A8,4X,A9,4x,A16,4x,A8,4x,A9)  
-                DO ILEV= 1,NL
+                DO ILEV= 1,NLEV
 
 !    HERE'S WHERE THE CHOICE OF MODEL SPECIFIED IN FORT.7 IS
 !    USED TO CALCULATE THE CLOUD SPATIAL COVERAGE
