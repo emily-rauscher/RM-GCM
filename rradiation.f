@@ -1,7 +1,7 @@
 C**********************************************************               
 C             SUBROUTINE RADIATION                                             
 C**********************************************************               
-      SUBROUTINE RADIATION(TROPHT)                                             
+      SUBROUTINE RADIATION(TROPHT,IH)                                             
 C                                                                         
 C     RADIATION SCHEME DERIVED FROM PREVIOUS CMORC.F AND THE
 C     TOON CODES (TOON ET AL 1989). THE SCHEME IS CURRENTLY DOUBLE GRAY
@@ -128,13 +128,29 @@ C
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
+       CHARACTER(30) :: AEROSOLMODEL
+       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1)
+       LOGICAL DELTASCALE
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
-       CHARACTER(20) :: AEROSOLMODEL
-       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1)
-       REAL TAUAEROSOL(nl+1,mg,2,jg)
-       LOGICAL DELTASCALE
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
+
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
+!       CHARACTER(20) :: AEROSOLMODEL
+!       REAL TAUAEROSOL(nl+1,mg,2,jg)
+!       REAL AERORPROF
+!       LOGICAL DELTASCALE
+
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF,
+!     &   TAUAEROSOL
+!       CHARACTER(20) :: AEROSOLMODEL
+!       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1)
+!       REAL TAUAEROSOL(nl+1,mg,2,jg)
+!       LOGICAL DELTASCALE
 
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
@@ -315,7 +331,7 @@ c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 c         write(*,*),mg
 cM         write(*,*), 'Thread id=', omp_get_thread_num(),i
 cm               test_wctime=omp_get_wtime()
-               im=i+iofm                                 
+               im=i+iofm   
                idocalc=0                                                        
                IF ((i.eq.1).or.(i-ilast.ge.nskip)) then                         
                   idocalc=1                                                       
@@ -404,8 +420,9 @@ c ----------------------------------------------------- And alat1
                      ENDIF
                   ENDIF
                                                                           
-!! BOTTOM SHORT WAVE ALBEDO SET IN FORT.7 INISIMPRAD
-             SWALB=ALBSW 
+!! BOTTOM SHORT WAVE ALBEDO SET IN FORT.7 INISIMPRAD,
+! Note to future modelers-this is not location or wavelenght dependent
+             SWALB=ALBSW   
                   
 ! PR AND T ARE THE TEMPERATURE AND PRESSURE AT THE SIGMA LEVELS
 ! AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE. 
@@ -427,13 +444,23 @@ C Call radiation scheme
 !     centers + one layer for the bottom boundary. The top is n=1, the
 !     bottom is n=NL+1
 
-!
             IF(AEROSOLS) THEN
 !           AEROSOLS TIME!
 !           Extract a single column from the array AER4LAT(NLEV,LON,HEM)
-            AEROPROF=AERO4LAT(:,mg,ihem)
+!            AEROPROF=AERO4LAT(:,mg,ihem)
+              DO  LD=1,NL +1
+              AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
+             ENDDO
+!            write(*,*) alat1,alon
+!            write(*,*) aeroprof
+!            write(*,*) ''
+!            WRITE(*,*) ''
+!            write(*,*) AERO4LAT(:,10,1)
+!            WRITE(*,*) ''
+!            write(*,*) AERO4LAT(:,10,2)
+            
+!            write(*,*) 'TAUAEROSOL IN RRAD',TAUAEROSOL 
             ENDIF
-             
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
                                  

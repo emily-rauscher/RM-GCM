@@ -1,0 +1,186 @@
+! Example: KEPLER 7B, cloudy, with 30 levels
+ &COMMENT
+ THECOMMENT= 'This comment prints to screen or notification email'
+ /
+ &INPPL      
+ GA = 4.1687, 
+ GASCON  =   3523.,
+ RADEA   =   1.12836e8,
+ AKAP    =  0.2860000000000,
+ WW      =  1.48853e-5,
+ P0      =   1.0E+7     ,
+ RV      =   461.510000000000     ,
+ CLATNT  =   2500000.00000000     
+ /
+ &INPRN
+ KRUN    =           48000.,
+ BEGDAY  =  0.000000000000000E+000,
+ TSPD    =   4800.,
+ KITS    =           3,
+ PNU     =  2.000000000000000E-002,
+ TDISS   =  0.005,
+ LFLUX   = T,
+ BEGDOY  =  0.000000000000000E+000,
+ NDEL    =           8,
+ T0      = 30*1700.00,
+ LRSTRT  = F,
+ LSTRETCH    = F,
+ LSHORT  = F,
+ LTVEC   = F,
+ LBALAN  = F,
+ LRESTIJ = T,
+ LCLIM   = F,
+ LPERPET = T,
+ L22L    = F,
+ LOROG   = F,
+ LCSFCT  = F,
+ KOLOUR  =  0,
+ LNOISE  = T,
+ LMASCOR = T,
+ LMASOLD = T,
+ LMASPRT = F
+ /
+ &INPOP
+ RNTAPE  =  0.000000000000000E+000,
+ KOUNTH  =           48000,
+ KOUNTR  =           48000,
+ KOUNTP  =           4800,
+ KOUNTE  =           0,
+ NCOEFF  =           0,
+ NLAT    =          4,
+ LGPO    = 30*F,
+ LSPO    = 30*F,
+ RNTAPO  =  0.000000000000000E+000,
+ NTRACO  =           0,
+ LSHIST  = T,
+ LMINIH  = T
+ /
+ &INVARPARAM
+OOM_IN		= 5.0, 
+LPLOTMAP 	= F,
+NLPLOTMAP_IN	= 10,
+RFCOEFF_IN	= 0.0e-0, 
+NTSTEP_IN	= 8, 
+NSKIP_IN	= 0, 
+BOTRELAXTIME	= 1.0, 
+FBASEFLUX	= 2325.2, 
+FORCE1DDAYS	= 0.0e0, 
+OPACIR_POWERLAW	= 0.0,
+OPACIR_REFPRES	= 1.0e5, 
+SOLC_IN		= 1.58923e6,
+TOAALB		= 0.0, 
+PORB		= 1.0, 
+OBLIQ		= 0.0, 
+ECCEN		= 0.0
+/
+&INMAG
+ LBDRAG = F,
+ BFIELD = 3.,
+ TDRAG_MIN = 0.005,
+ RAMPUP = 25.
+ /
+&INBINVAL
+LBIN = F,
+PORBST=10.8,
+ECCPL=0.400,
+ECCST=0.0234,
+SMAPL=0.989,
+SMAST=0.0836,
+STMASS1=1.043,
+STMASS2=0.362,
+STRAD1=0.964
+STRAD2=0.3506,
+STTEMP1=5636
+STTEMP2=3357
+/
+ &INPHYS
+ LBL     = F,
+ LVD     = F,
+ LCR     = T,
+ LLR     = F,
+ LRD     = T,
+ LCUBM   = F,
+ LCBADJ  = F,
+ CD      =  1.000000000000000E-003,
+ BLRH    =   100.000000000000     ,
+ AKVV    =   1.0E-20,
+ AKTV    =   1.0E-20,
+ AKQV    =   1.0E-20,
+ AKTC    =   10.0000000000000     ,
+ AKQC    =   10.0000000000000     ,
+ NLCR    =           29,
+ NCUTOP  =           5,
+ FW      =  1.000000000000000E-006,
+ FRADC   =   1.25000000000000     ,
+ CURHM   =   200.000000000000     ,
+ CUBMT   =   3.00000000000000     ,
+ CBADJT  =   3.00000000000000     ,
+ CBADJP  =  -30.0000000000000     ,
+ LSL     = F,
+ LOC     = F,
+ LNOICE  = F,
+ LOLDBL  = F,
+ LCOND   = T,
+ LNNSK   = T,
+ ITSLL   =           6,
+ ITSLO   =           6
+ /
+ &INPRSIJ
+ TFRC    = 30*0.,
+ RESTIM  = 30*1e30,
+ RESTTT = 1523.53 , 1527.07 , 1532.22 , 1539.66 , 1550.34 , 1565.51, 
+      1586.80 , 1616.12 , 1655.60 ,1707.21,  1772.33,  1851.11, 
+      1941.88 , 2040.59 , 2140.60 , 2233.03 , 2308.34,  2359.67,
+      2387.26 , 2399.42 , 2406.78 , 2415.55 , 2428.12,  2446.22, 
+      2472.07 , 2508.62 , 2559.53 , 2629.16 , 2722.31,  2843.80
+ REDTEP = 30*0.,
+ DTNS    =  0.0000000E+00,
+ DTEP    =   300.00000    ,
+ ALR     =  2.0E-06,
+ DTTRP   =   10.000000    ,
+ ZTROP   =   2.0e7    ,
+ TGR     =   2100.0    ,
+ YRLEN   =  0.0000000E+00
+ /
+ &INSIMPRAD
+ LLOGPLEV        = F,
+ LFLUXDIAG       = T,
+ L1DZENITH       = F,
+ LDIUR           = F,
+ JSKIPLON        = 1,
+ JSKIPLAT        = 1,
+ DOSWRAD         = T,
+ DOLWRAD         = T,
+ LWSCAT          = T,
+ FLXLIMDIF       = T,
+ SURFEMIS        = 1.,
+ RAYSCAT         = F,
+ RAYSCATLAM      = 0.3812,
+ AEROSOLS        = F,
+ ABSSW           = 0, 
+ ABSLW           = 1.08E-2,
+ ALBSW           = 1.0,
+ NEWTB           = 0,
+ NEWTE           = 0
+ /
+ &INCLOUDY
+ AEROSOLMODEL    ='Kepler7b',
+ AERTOTTAU       = 150.,
+ CLOUDBASE       = 0.078,
+ CLOUDTOP        = 0.0001,
+ AERHFRAC        = 1.0,
+ PI0AERSW        = 1.0,
+ ASYMSW          = 0.415828,
+ EXTFACTLW       = 0.1,
+ PI0AERLW        = 0.3,
+ ASYMLW          = 1.0E-6,
+ DELTASCALE      = F,
+ SIG_AREA        = 25.,
+ PHI_LON         = 75. 
+/
+ &INQ
+ LRH     = T,
+ RH      =   30*1e-5    ,
+ LNSURF  = F
+ /
+
