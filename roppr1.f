@@ -10,7 +10,7 @@
 !     * ********************************************************
 !
       include 'rcommons.h'
-      real  ITP, ITG, IT1, SBK, SBKoverPI
+      real  ITP, ITG, IT1, SBK, SBKoverPI,g11
       DIMENSION  PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
       integer kindex
 !     **************************************
@@ -21,11 +21,10 @@
 !       ITG                 = ANINT(100.*TGRND) - NLOW
 !       write(*,*) 'TAUL top of OPPR1',TAUL
 !
-!      
+!     
+      g11=g0(1,1)
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
-
-       ITG=ANINT(TGRND)
 !       write(*,*)'ITG,TGRND',ITG,TGRND
 !MTR        CALL GATHER(NIRP,PLTEMP1,PLANK(1,ITG),LTEMP)
         DO 100 L            =   NSOLP+1,NTOTAL
@@ -80,7 +79,6 @@
 !           NOTE: IF YOU FORCE SLOPE=0, THEN YOU HAVE ISOTHERMAL
 !           LAYERS WITH TT(J) CORRESPONDING TO AVERAGE TEMPERATURE
 !           OF LAYER AND TT(NLAYER) SHOULD BE SET TO TGRND.
-            
 !            write(*,*) 'KINDEX',KINDEX
 !            write(*,*) 'J',J
             DO 200 L        = NSOLP+1,NTOTAL
@@ -96,7 +94,6 @@
  200        CONTINUE
  300     CONTINUE
 !                   write(*,*) 'TAUL line88',TAUL 
-         
 !         DO 450 L            =   NSOLP+1,NTOTAL
 !               SLOPE(L,1)   = 0
 !               SLOPE(L,NLAYER)=0
@@ -114,8 +111,7 @@
 !         DO J=1,NLAYER
 !        write(*,*)'TAUL',J,TAUL(2,J)
 !         ENDDO
-
-
+          G0(1,1)=g11
 !         write(*,*) 'TAU bottom of OPPR1',TAUL
       RETURN
       END

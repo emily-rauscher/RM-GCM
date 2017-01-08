@@ -129,7 +129,7 @@ C
        NAMELIST/INSIMPRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,FLXLIMDIF,SURFEMIS,
      & RAYSCAT, RAYSCATLAM,AEROSOLS,ABSSW,ABSLW, ALBSW, NEWTB, NEWTE
-
+c
 C Switch to enable proper sub-layer calculation in LW scheme given log(P) 
 C distribution of vertical levels
        LPLOTLEV=.FALSE.

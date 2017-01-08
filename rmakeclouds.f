@@ -1,24 +1,40 @@
-      SUBROUTINE MAKECLOUDS(poslats,mg,jg,nl,p0,sigma,tauaerosol)
-
+      SUBROUTINE MAKECLOUDS(poslats,p0,sigma)
+!      SUBROUTINE MAKECLOUDS(poslats,mg,jg,nl,p0,sigma)
 !      *****************************************************************
 !      * This routine generates an array of aerosol optical depths.    *
 !      * It returns this (layer x lon x hem x lat) array and writes it *
 !      * to file (fort.60). The file also includes pi0 and asymmetry   *
 !      * parameter at both short wave and long wave channels.          *
 !      *****************************************************************
-
+       include 'params.i'
+ 
        REAL PRESSURE(NL+1),PABSDIF1(NL+1),PABSDIF2(NL+1),
      &     VERTPROF(NL+1),PSIGMA(NL),LONGYS(MG),LATYS(JG),THELAT,TheTAU,
-     &     TOTAL,TAUPA,TAUPB,TAUAEROSOL(nl+1,mg,2,jg),TAUC,SIGC,
+     &     TOTAL,TAUPA,TAUPB,TAUC,SIGC,XFACTSW,XFACTLW,nightedge,TAUpaN,
      &     deltalonc,deltalonc360,SIGMA(NL),themin(1),POSLATS(JG)
        INTEGER PINDEXBOTC,PINDEXTOPC,NLAT,NLON,NLEV,NHEM
      &         ,IHEM, ILAT,ILEV,IL,ILON,TheCounter,LD
 
+       CHARACTER(30) :: AEROSOLMODEL
+       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1)
+       LOGICAL DELTASCALE
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
-       CHARACTER(20) :: AEROSOLMODEL
-       LOGICAL DELTASCALE 
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
+
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL
+!       CHARACTER(20) :: AEROSOLMODEL
+!       REAL TAUAEROSOL(nl+1,mg,2,jg)
+!       LOGICAL DELTASCALE
+
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF,
+!     &   TAUAEROSOL(nl+1,mg,2,jg)                             
+!       CHARACTER(20) :: AEROSOLMODEL
+!       LOGICAL DELTASCALE
 
        NAMELIST/INCLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &  CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,
@@ -31,7 +47,7 @@
        nlat     =  jg
        nlon     =  mg
        nlev     =  nl+1 !To define the layer above the top boundary 
-       nhem     =   2
+!       nhem     =   2
        psigma   = sigma*P0
        ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
              DO LD    = 1,NL-1
@@ -98,9 +114,8 @@
        tauc=AERTOTTAU
        sigc=SIG_AREA
        deltalonc=360.+(-PHI_LON)
-       dellonc360=deltalonc+360.
-       
- 
+       dellonc360=deltalonc-360.
+       nightedge =360.-90.
 
 !      PREPARE TO WRITE THIS CLOUD INFORMATION TO FILE FOR THE RECORD, THOUGH
 !      NOT FOR THE SUBSEQUENT COMPUTATIONS. FILE WILL BE FORT.61 
@@ -169,6 +184,8 @@
      & *EXP(-(((LONGYS(ILON)-DELTALONC)*(LONGYS(ILON)-DELTALONC))
      &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
 ! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
+                 TAUpb=0.0
+!             write(*,*) (LONGYS(ILON)-DELTALONC),lONGYS(ILON),DELTALONC
                 TAUpb=(TAUC
      & *EXP(-(((LONGYS(ILON)-DELLONC360)*(LONGYS(ILON)-DELLONC360))
      &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
@@ -190,6 +207,26 @@
                        IF(LONGYS(ILON).LE.270.) THEN
                           TheTAU=TAUC*VERTPROF(ILEV)
                        ENDIF 
+                    ENDIF
+!               END OF THE NIGHTSIDE
+!               NOW NIGHTSIDE, BUT WITH A GENTLER TRANSITION
+
+                ELSE IF (AEROSOLMODEL.EQ.'Nightside_soft') THEN
+                  IF (thecounter.EQ.0) THEN
+                    WRITE(*,*) 'Using Cloudmodel: Nightside_soft'
+                   thecounter=1.
+                  ENDIF
+
+                    IF(LONGYS(ILON).GE.90.) THEN
+                       IF(LONGYS(ILON).LE.270.) THEN
+
+                   DELTALONC = 180.
+                   SIGC=45.
+                   TAUpa=(TAUC
+     & *EXP(-(((LONGYS(ILON)-DELTALONC)*(LONGYS(ILON)-DELTALONC))
+     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
+                   TheTAU=taupa
+                       ENDIF
                     ENDIF
            
 !               END ELSE NIGHTSIDE CLOUDS
@@ -225,16 +262,20 @@
                      ENDIF
 
 ! OK, now replace the night side completely
-                    IF(LONGYS(ILON).GE.90.) THEN
-                       IF(LONGYS(ILON).LE.270.) THEN
-                          TheTAU=TAUC*VERTPROF(ILEV)
-                       ENDIF
-                    ENDIF
+!                    IF(LONGYS(ILON).GE.90.) THEN
+!                       IF(LONGYS(ILON).LE.270.) THEN
+!                          TheTAU=TAUC*VERTPROF(ILEV)
+                   TAUpaN=(TAUC
+     & *EXP(-(((LONGYS(ILON)-180.)*(LONGYS(ILON)-180.))
+     &     +(THELAT*THELAT))/(2.*45.*45.)))*VERTPROF(ILEV)
+                   TheTAU=min(TaupaN+TheTau,tauc)
+!                       ENDIF
+!                    ENDIF
 ! Finally, now remove a chunk for the antisymmetric western limb of
 ! night side.
                   TAUpa=(TAUC
-     & *EXP(-(((LONGYS(ILON)-DELTALONC+180.)*
-     &         (LONGYS(ILON)-DELTALONC+180.))
+     & *EXP(-(((LONGYS(ILON)-nightedge+180.)*
+     &         (LONGYS(ILON)-nightedge+180.))
      &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
 ! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
 !                TAUpb=(TAUC
@@ -243,12 +284,12 @@
 !     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV) 
 
 ! Subtract this shifted cloud from the night side                   
-                    IF(LONGYS(ILON).GE.90.) THEN
-                       IF(LONGYS(ILON).LE.270.) THEN
-                          TheTAU=TheTau-TAUpa*2.0
+!                    IF(LONGYS(ILON).GE.90.) THEN
+!                       IF(LONGYS(ILON).LE.270.) THEN
+                          TheTAU=TheTau-TAUpa!*1.2
                           TheTAU=MAX(TheTAU,0.0)
-                       ENDIF
-                    ENDIF
+!                       ENDIF
+!                    ENDIF
                        
 
 !          NOTHING SPECIFIED 
@@ -259,10 +300,19 @@
 
 !          HERE WE WRITE THE CLOUD ARRAY TO MEMORY 
              TAUAEROSOL(ILEV,ILON,IHEM,ILAT)=TheTAU
-
 !          AND WRITE IT TO FILE FORT.61
-             WRITE(61,212) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW,ASYMSW,
-     &                         TheTAU*EXTFACTLW,PI0AERLW,ASYMLW
+             XFACTSW = 1.0
+             XFACTLW = 1.0
+             IF (TheTAU.LT.1e-10) THEN 
+             XFACTSW = 0.0 
+             ENDIF
+             IF (TheTAU*EXTFACTLW.LT.1e-6) THEN
+             XFACTLW = 0.0
+             ENDIF             
+
+             WRITE(61,212) PRESSURE(ILEV)*1E-5,TheTAU,PI0AERSW*XFACTSW,
+     &                     ASYMSW*XFACTSW,TheTAU*EXTFACTLW,
+     &                     PI0AERLW*XFACTLW,ASYMLW*XFACTLW
  212       FORMAT(2X,F11.6,3X,F12.7,3X,F7.4,3X,F7.4,3X,F11.6
      &             ,3X,F7.4,3X,F7.4)
                 ENDDO  
@@ -270,21 +320,21 @@
              ENDDO
           ENDDO
        ENDDO
-       
 !      WRITE TO FORT.60 FOR ALL INCLUSIVE RADIATIVE TRANSFER SUMMARY
-       WRITE(60,*) 'NAMELIST/INCLOUDY/'
-       WRITE(60,*) 'AEROSOLMODEL',AEROSOLMODEL
-       WRITE(60,*)'AERTOTTAU',AERTOTTAU
-       WRITE(60,*)'CLOUDBASE',CLOUDBASE
-       WRITE(60,*) 'CLOUDTOP',CLOUDTOP
-       WRITE(60,*) 'AERHFRAC',AERHFRAC
-       WRITE(60,*) 'PI0AERSW',PI0AERSW
-       WRITE(60,*)'ASYMSW',ASYMSW
-       WRITE(60,*)'EXTFACTLW',EXTFACTLW
-       WRITE(60,*)'PI0AERLW',PI0AERLW
-       WRITE(60,*)'ASYMLW',ASYMLW
-       WRITE(60,*)'DELTASCALE',DELTASCALE
-       WRITE(60,*)'SIG_AREA',SIG_AREA
-       WRITE(60,*)'PHI_LON',PHI_LON
-
+!       write(*,*) 'where is this writing?'
+!       write(60,*) 'ok'
+!       WRITE(60,*) 'NAMELIST/INCLOUDY/'
+!       WRITE(60,*) 'AEROSOLMODEL',AEROSOLMODEL
+!       WRITE(60,*)'AERTOTTAU',AERTOTTAU
+!       WRITE(60,*)'CLOUDBASE',CLOUDBASE
+!       WRITE(60,*) 'CLOUDTOP',CLOUDTOP
+!       WRITE(60,*) 'AERHFRAC',AERHFRAC
+!       WRITE(60,*) 'PI0AERSW',PI0AERSW
+!       WRITE(60,*)'ASYMSW',ASYMSW
+!       WRITE(60,*)'EXTFACTLW',EXTFACTLW
+!      WRITE(60,*)'PI0AERLW',PI0AERLW
+!       WRITE(60,*)'ASYMLW',ASYMLW
+!       WRITE(60,*)'DELTASCALE',DELTASCALE
+!       WRITE(60,*)'SIG_AREA',SIG_AREA
+!       WRITE(60,*)'PHI_LON',PHI_LON
        END

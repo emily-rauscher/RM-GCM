@@ -10,7 +10,6 @@
 !    * ****************************************************************
 !
       include 'rcommons.h'
-!
        DO 10 L    =  LLS,LLA
           if( L .LE. NSOLP )then
             U1I(L) = SQ3  !2.d0 !SQ3
@@ -21,10 +20,9 @@
 !       write(*,*) 'U1S',U1S
 !       write(*,*) 'U1I',U1I 
 !       write(*,*) 'W0',W0
-!       write(*,*) 'G0',G0
 !       write(*,*) 'U1I',U1I
 !       write(*,*)'U1S',U1S  
-!    
+!       stop
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
 !      NEEDED FOR MATRIX.

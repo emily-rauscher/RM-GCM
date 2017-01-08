@@ -73,7 +73,7 @@
       TABOVE_AERAD=TT(1)
 !      write(*,*)'TGRND',TGRND   
 !     WATER VAPOR (G / CM**2)
-!
+!     
 
 !M      DO 10 J = 2, NLAYER
 !M         RDH2O(J)   = Q(J-1) * DPG(J-1)
@@ -154,14 +154,13 @@
 !        write(*,*) 'called OPPR'
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
-!
+        
 !       write(*,*)'TUAL pre OPPR1',TAUL
 !        write(*,*) ' calling OPPR1'
         IF(IR .NE. 0) THEN
            CALL OPPR1
         ENDIF
 !       write(*,*)'TAUL AFTER OPPR1',TAUL
-      
 !        write(*,*) 'PTEMP',PTEMP
 !        write(*,*) 'SLOPE', SLOPE
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF

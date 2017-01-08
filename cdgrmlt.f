@@ -1,7 +1,7 @@
 C**********************************************************               
 C             SUBROUTINE DGRMLT                                           
 C**********************************************************               
-      SUBROUTINE DGRMLT                                                   
+      SUBROUTINE DGRMLT(IH)                                                   
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -292,7 +292,7 @@ C
       IF(LVD) CALL VDIFF
       IF(LCR) CALL CONVEC            
       IF(LLR) CALL LSCRN
-      IF(LRD) CALL RADIATION(TROPHT)
+      IF(LRD) CALL RADIATION(TROPHT,IH)
 !      IF(LRD) CALL RADN(TROPHT)                                           
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
 C                                                                         

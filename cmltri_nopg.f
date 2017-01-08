@@ -234,15 +234,24 @@ C-----------------------------------------------------------------------
      & ALBSW, NEWTB, NEWTE,RAYPERBARCONS
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
-      
+
+       CHARACTER(30) :: AEROSOLMODEL
+       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(nl+1)
+       LOGICAL DELTASCALE
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF
-       CHARACTER(20) :: AEROSOLMODEL       
-       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1) 
-       LOGICAL DELTASCALE
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
+     
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF,
+!     &   TAUAEROSOL
+!       CHARACTER(20) :: AEROSOLMODEL       
+!       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1)
+!       REAL TAUAEROSOL(nl+1,mg,2,jg) 
+!       LOGICAL DELTASCALE
 
-       REAL TAUAEROSOL(nl+1,mg,2,jg)
+!       REAL TAUAEROSOL(nl+1,mg,2,jg)
 
       NAMELIST/COMMENT/THECOMMENT
       CHARACTER(70) :: THECOMMENT
@@ -299,7 +308,8 @@ C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
            DO JH=1,JG
            poslats(JH)=alat(JH)
            ENDDO
-          CALL MAKECLOUDS(poslats,mg,jg,nl,p0,sigma,tauaerosol)
+          CALL MAKECLOUDS(poslats,p0,sigma)
+!          CALL MAKECLOUDS(poslats,mg,jg,nl,p0,sigma)
           ELSE
           PI0AERSW   =  0.0
           ASYMSW     =  0.0
@@ -750,9 +760,17 @@ C         The loop for the radiative transfer code is as follows:
 !            ENDDO_HEMLOOP
 !        ENDDO_LATLOOP
 !
-       IF(AEROSOLS) THEN
-       AERO4LAT=TAUAEROSOL(:,:,:,IH) 
-       ENDIF
+!       IF(AEROSOLS) THEN
+!       AERO4LAT=TAUAEROSOL(:,:,:,IH) 
+!       ENDIF
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,1,16)
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,10,16)
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,20,16)
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,30,16)
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,40,16)
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,50,16)
+!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,60,16)
+!         write(*,*) tauaerosol
 C                                                                         
 C        Go from spectral space to grid point space using                 
 C        inverse Legendre and Fourier transforms                          
@@ -773,7 +791,7 @@ CC!$omp end parallel
 C                                                                         
 C        Calculate diabatic terms                                         
 C                                                                         
-            CALL DGRMLT                                                   
+            CALL DGRMLT(IH)                                                   
 C                                                                         
 C        Write accumulated diagnostics to history file.                   
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad                        

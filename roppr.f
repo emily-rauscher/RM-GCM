@@ -40,9 +40,7 @@
 !
 !   NOTE: THIS IS DOUBLE GRAY SPECIFIC; WOULD REQUIRE GENERALIZATION
          
-
 !  110   CONTINUE
-
       DO 200  J          =   1,NLAYER
 !       DO 130 L          = 1,NTOTAL
 !    VIS
@@ -144,7 +142,7 @@
 !      write(*,*) 'W0',J,W0(1,J)
 !      ENDDO 
 !      DO J = 1,NLAYER
-!     write(*,*) 'G0',J,G0(1,J)
+!      write(*,*) 'G0',J,G0(1,J)
 !      ENDDO
 !      DO J = 1,NLAYER
 !      write(*,*) 'WOL',J,WOL(1,J)
@@ -156,7 +154,7 @@
 !      write(*,*) 'TAURAY',J,TAURAY(1,J)
 !      ENDDO
 !      DO J = 1,NLAYER
-!      write(*,*) 'TAUAER',J,TAUAER(1,J)
+!      write(*,*) 'TAUAER',J,TAUAER(2,J)
 !      ENDDO
 !      DO J = 1,NLAYER
 !      write(*,*) 'TAUGAS',J,TAUGAS(1,J)
