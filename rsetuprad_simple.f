@@ -524,6 +524,10 @@
 320      CONTINUE
       ENDIF
 
+
+!            do j  = 1,nlayer
+!            write(*,*)'j,Tauray/Taugas',j,TAURAY(1,J)/TAUGAS(1,J)
+!            enddo
 ! @@@@@@@@@@@ END OF RAYLEIGH SCATTERING CONDITIONAL @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 !     WE DO NOT INCLUDE RAYLEIGH SCATTERING IN INFRARED
 !

@@ -128,8 +128,9 @@
 
 !         call interpol( albedoa, wavea, wave(nprob(L)), 
 !     &    nwave_alb, 1, rsfx(L) )
-        if( wave(nprob(L)) > wavea(nwave_alb) ) 
-     &        rsfx(L) = albedoa(nwave_alb)
+        if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
+         rsfx(L) = albedoa(nwave_alb)
+        endif
          EMIS(L) = 1.0 - RSFX(L)
 !         print*, L, wave(nprob(L)), rsfx(L), emis(l)
  30   CONTINUE
@@ -400,7 +401,9 @@
               fupbs(j) = fupbs(j) + fp
               fdownbs2(j) = fdownbs2(J) + fm
               fnetbs(j) = fnetbs(j) + fnet(L,j)
-              if (L.eq.nsolp) fdownbs(J) = fupbs(j) - fnetbs(j)
+              if (L.eq.nsolp) then 
+              fdownbs(J) = fupbs(j) - fnetbs(j)
+              endif
 !              write(*,*),j,fupbs(j),fdownbs2(j)
 !              write(*,*),j,fnetbs(j),DIRECT(1,J)
  510      CONTINUE
@@ -412,6 +415,24 @@
  508      continue
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
+!          write(*,*) 'alb_toai',alb_toai
+          if ((alb_toai.gt.1.0) .or. (alb_toai.lt.0.0)) then
+          write(*,*) 'alb_toai crazy!!!',alb_toai
+          write(*,*) 'aeroprof',aeroprof
+          write(*,*) 'w0',w0
+          write(*,*)  'G0',G0
+          write(*,*)  'TAUL',TAUL
+          write(*,*) 'OPD',OPD 
+          write(*,*) 'PSOL_aerad',PSOL_aerad
+          write(*,*) 'u0_aerad',u0_aerad
+          write(*,*) 'alat',alat
+          write(*,*) 'alon',alon
+          write(*,*) 'fnet',fnet
+!          CALL ADD
+          write(*,*) 'fnet',fnet          
+          stop
+          endif
+
 !          write(*,*) 'psol_aerad raddtran',psol_aerad
 !          write(*,*) 'u0_aerad raddtran',u0_aerad
 !         write(*,*) 'alb_tomi',alb_tomi

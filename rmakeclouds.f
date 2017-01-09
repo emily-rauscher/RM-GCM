@@ -173,6 +173,11 @@
 !    HERE'S WHERE THE CHOICE OF MODEL SPECIFIED IN FORT.7 IS
 !    USED TO CALCULATE THE CLOUD SPATIAL COVERAGE
                
+!CASE #
+!#########
+!#########
+!CAS1
+
 !         KEPLER 7B DAYSIDE CLOUDS
                 IF(AEROSOLMODEL.EQ.'Kepler7b') THEN
                 
@@ -196,6 +201,10 @@
                      ENDIF
               
 !                ENDIF FIRST CONDITIONAL, KEPLER 7B
+
+
+!#########
+!CASE 2
 !          NOW NIGHTSIDE CLOUDS
                 ELSE IF (AEROSOLMODEL.EQ.'Nightside') THEN
                   IF (thecounter.EQ.0) THEN   
@@ -209,6 +218,11 @@
                        ENDIF 
                     ENDIF
 !               END OF THE NIGHTSIDE
+
+
+
+!##########
+!CASE 3
 !               NOW NIGHTSIDE, BUT WITH A GENTLER TRANSITION
 
                 ELSE IF (AEROSOLMODEL.EQ.'Nightside_soft') THEN
@@ -230,6 +244,10 @@
                     ENDIF
            
 !               END ELSE NIGHTSIDE CLOUDS
+
+
+!##########
+!CASE 4
 !          GLOBAL CLOUD COVERAGE
                 ELSE IF (AEROSOLMODEL.EQ.'Global') THEN
                       IF (thecounter.EQ.0) THEN
@@ -240,6 +258,10 @@
                           TheTAU=TAUC*VERTPROF(ILEV)
 
 !               END ELSE GLOBAL CLOUDS
+
+
+!###########
+!CASE 5
 !            MUNOZ K7B + NIGHSIDE
                 ELSE IF (AEROSOLMODEL.EQ.'Kepler7b_nightside') THEN
                      IF (thecounter.EQ.0) THEN
@@ -290,7 +312,24 @@
                           TheTAU=MAX(TheTAU,0.0)
 !                       ENDIF
 !                    ENDIF
-                       
+               
+
+
+
+
+!###############
+!CASE 6
+!
+!            UNIFORM... AEROSOLS AT ALL HEIGHTS AND LOCATIONS
+                ELSE IF (AEROSOLMODEL.EQ.'Uniform') THEN
+                     IF (thecounter.EQ.0) THEN
+                      WRITE(*,*) 'Using Cloudmodel: Uniform'
+                       thecounter=1.
+                     ENDIF       
+                         TheTAU=TAUC   !all heights
+
+!#############
+!NO CASE
 
 !          NOTHING SPECIFIED 
                 ELSE                 

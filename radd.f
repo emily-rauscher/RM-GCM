@@ -1,4 +1,5 @@
       SUBROUTINE ADD
+
 !
 !     ***************************************************************
 !     *  Purpose             :  Defines source terms, form matrix   *
@@ -47,7 +48,7 @@
                X3          =  OPD(L,J)*DU0
                EL3(L,J)    =  EXP(-X3)*SOL(L)
 !              write(*,*) 'DU0',DU0
-!               write(*,*) 'SOL',SOL
+!               write(*,*) 'SOL*u0',SOL*u0
 !               write(*,*) 'OPD',OPD
 !               write(*,*)'X2',J,X2
 !               write(*,*)'X3',X3
@@ -55,9 +56,13 @@
 !               write(*,*) 'xc,el3',x3,EL3(1,J)
                DIRECT(L,J) = U0*EL3(L,J)
                C1          =  B1(L,J) - DU0
-               if( ABS(C1).lt.EPSILON ) c1 = SIGN(EPSILON,C1)
+               if( ABS(C1).lt.EPSILON ) THEN
+               c1 = SIGN(EPSILON,C1)
+               endif
                C2          =  AK(L,J)*AK(L,J) - DU0*DU0
-               if( ABS(C2) .le. EPSILON ) c2 = EPSILON
+               if( ABS(C2) .le. EPSILON ) then
+               c2 = EPSILON
+               endif
                CP1         =  W0(L,J)*(B3(L,J)*C1+B4*B2(L,J))/C2
                CPB(L,J)    =  CP1 * EL3(L,J)
                if( j .ne. 1 ) then
@@ -221,7 +226,8 @@
 !      write(*,*) 'CMB',J,CMB(1,J)
 !      ENDDO
 !      DO J = 1,NLAYER
-!      write(*,*) 'FNET',J,FNET(1,J)
+!       write(*,*) 'FNET',FNET(1,1)
+!       write(*,*) (SOL(1)*U0+FNET(1,1))/(SOL(1)*U0)
 !      ENDDO
 
 !         STOP
