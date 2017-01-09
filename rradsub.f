@@ -34,7 +34,7 @@
       clearheat_file_suffix = '.dat'
       ibinm = ibinmin
       ifsetup = 0
-      if( iffirst == 1 ) ifsetup = 1
+      if( iffirst.eq. 1 ) ifsetup = 1
 !      GRAV = 980.6d+0
 !      RGAS = 8.31430d+07
 !      WTMOL_AIR = 28.966d+0
@@ -199,20 +199,51 @@ C ER modif for non-zero obliquity
          ENDIF
       ENDIF    
 !End CNIKOS lines
-      u0_aerad = max( 0.*ONE, AMU0 )  
+      if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
+       AMU0 = 0.0
+      endif
+  
+!     write(*,*) 'AMU0',AMU0
+!      u0_aerad = max( 0.*ONE, AMU0 )  
+      u0_aerad = max(0*ONE, AMU0 ) 
+!      write(*,*) 'u0_aerad',u0_aerad
       PSOL_aerad=PSOL
+!      if ((u0_aerad.lt.1e-6) .and. (u0_aerad.gt.0)) then
+!      write(*,*) 'tiny mu0_aerad',u0_aerad
+!      write(*,*) 'AMU0',AMU0
+!      write(*,*) 'alat',alat,'dfac',dfac
+!      write(*,*) '1-dfac',1.0-dfac
+!      write(*,*) 'one-dfac',one-dfac
+!      write(*,*) 'pi2',PI2
+!      write(*,*) 'ALAT,ALON',ALAT,ALON
+!      WRITE(*,*) 'U0_AERAD,PSOL_AERAD',u0_aerad,PSOL_AERAD
+!      write(*,*) 'ALON-SSLON',ALON-SSLON
+!      write(*,*) 'recomputed'
+!      write(*,*) (1.0-DFAC)*1.0
+!     &              +DFAC*MAX(0.0,SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)
+!     &                           +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)
+!     &                           *COS((ALON-SSLON)/360.*PI2))
+!      write(*,*) (1.0-DFAC)*1.0
+!      write(*,*)     DFAC*MAX(0.0,SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)
+!     &                           +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)
+!     &                           *COS((ALON-SSLON)/360.*PI2))
+
+
+!      stop
+!      endif
 !      write(*,*) 'u0_aerad radsub',u0_aerad
 !      write(*,*) 'PSOL_aerad', PSOL_aerad
 
       do_mie_aerad = .false.
-         IF (AMU0.GT.0) THEN
+!         IF (AMU0.GT.0) THEN
+         IF (AMU0.GT.EPSILON) THEN
            isl_aerad=1
          ELSE 
            isl_aerad=0
          ENDIF
       ir_aerad = 1
       ntime = 1
-      if( if_diurnal == 1 ) ntime = 24
+      if( if_diurnal.eq.1 ) ntime = 24
 
       itime1 = 12
       do itime = 1, ntime
@@ -363,7 +394,9 @@ C ER modif for non-zero obliquity
 
       enddo
 
-      if( if_diurnal == 1 ) then
+      if( if_diurnal.eq. 1 ) then
+        write(*,*)'if_diurnal ==1'
+        write(*,*)'ntime',ntime
         heats_aerad_tot = heats_aerad_tot / ntime
         heati_aerad_tot = heati_aerad_tot / ntime
         radheat_tot = radheat_tot / ntime

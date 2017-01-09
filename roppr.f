@@ -74,6 +74,10 @@
  200  CONTINUE
 
 
+!            do j  = 1,nlayer
+!            write(*,*)'j,Tauray/Taugas',j,TAURAY(1,J)/TAUGAS(1,J)
+!            enddo
+
 !     iradgas = 0: no gas in radiative xfer!
       iradgas = 1     
 
@@ -89,24 +93,36 @@
 !              MODEL SO I AM OMMITTING TAUCLD, W0CLD, GCLD, ETC
 
               TAUL(L,J)   = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
-             if (iradgas.eq.0) tauL(L,j) = tauaer(L,j)
-             if( TAUL(L,J) .lt. EPSILON ) TAUL(L,J) = EPSILON
+             if (iradgas.eq.0) then
+             tauL(L,j) = tauaer(L,j)
+             endif
+
+             if( TAUL(L,J) .lt. EPSILON ) then
+             TAUL(L,J) = EPSILON
+             endif
 
              utauL(L,j)  = TAUL(L,J)
              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-             if (iradgas.eq.0) wot = woL(L,j)
-
+             if (iradgas.eq.0) then
+              wot = woL(L,j)
+             endif
+ 
              WOT         = min(1.-EPSILON,WOT)
              uw0(L,j)    = WOT
+!             write(*,*) 'WOT',WOT
              DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
-             if( DENOM .LE. EPSILON ) DENOM = EPSILON
+             if( DENOM .LE. EPSILON ) then 
+             DENOM = EPSILON then
+             endif
              if( DENOM .GT. EPSILON ) then
                GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
 !       print*, j, L, GCLD(l,j), gol(l,j),wol(l,j),got
              else
                GOT = 0.
              endif
-             if (iradgas.eq.0) GOT = goL(L,j)
+             if (iradgas.eq.0) then
+             GOT = goL(L,j)
+             endif
              ug0(L,j)    = GOT
              uOPD(L,J)   = 0.0
              uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
@@ -125,8 +141,11 @@
                  OPD(L,J)= uOPD(L,J)
              ENDIF 
              
-       if( taul(L,j) < 0. ) stop
-                             
+       if( taul(L,j).lt.0. ) then
+       write(*,*) 'taul lt 0'
+       stop
+       endif
+                       
  400        CONTINUE
            
           IF(IR .EQ. 1) THEN
@@ -168,5 +187,4 @@
 !         stop
       RETURN
       END
-
 
