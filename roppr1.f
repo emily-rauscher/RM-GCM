@@ -24,7 +24,7 @@
 !     
 
      
-      g11=g0(1,1)
+!      g11=g0(1,1)
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
 !       write(*,*)'ITG,TGRND',ITG,TGRND
@@ -122,7 +122,8 @@
 !         DO J=1,NLAYER
 !        write(*,*)'TAUL',J,TAUL(2,J)
 !         ENDDO
-          G0(1,1)=g11
+
+!          G0(1,1)=g11
 !         write(*,*) 'TAU bottom of OPPR1',TAUL
       RETURN
       END

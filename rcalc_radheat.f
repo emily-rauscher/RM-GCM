@@ -197,6 +197,8 @@ C     ER Modif: output pressures in bar instead of mbar
           END DO
           WRITE(62,*) ''
 !         ENDING WRITE TO FILE 62
+       write(*,*) 'stopping at end of calcrad'
+       stop
       ENDIF 
       end
 
