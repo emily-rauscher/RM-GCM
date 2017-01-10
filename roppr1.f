@@ -22,44 +22,55 @@
 !       write(*,*) 'TAUL top of OPPR1',TAUL
 !
 !     
+
+     
       g11=g0(1,1)
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
 !       write(*,*)'ITG,TGRND',ITG,TGRND
 !MTR        CALL GATHER(NIRP,PLTEMP1,PLANK(1,ITG),LTEMP)
-        DO 100 L            =   NSOLP+1,NTOTAL
-           PTEMPG(L)        =  ITG*ITG*ITG*ITG*SBKoverPI! PLTEMP1(L-NSOLP)*WEIGHT(L)
-!           write(*,*) 'product', ITG*ITG*ITG*ITG*5.67E-8
-  100   CONTINUE
-          PTEMPG=ITG*ITG*ITG*ITG*SBKoverPI
+!NOTE TO ERIN: 
+! Here is where the ground temperature is treated seperately, currently
+! comented out since it is not defined seperately. 
+! ITG --  temperature at the ground, and L is the index over wavelength bins
+! (ntotal = 2 bins, Nsolp = number of solar bins i.e.1)
+! PTEMPG -- Plank temperature of the ground layer (i.e. sigma T^4 /pi)
+
+!        DO 100 L            =   NSOLP+1,NTOTAL
+!           PTEMPG(L)        =  ITG*ITG*ITG*ITG*SBKoverPI! PLTEMP1(L-NSOLP)*WEIGHT(L)
+!  100   CONTINUE
+!          PTEMPG=ITG*ITG*ITG*ITG*SBKoverPI
 !
-      if( iblackbody_above .ne. 0 )then
+
+! THE CODE BELOW IS A MESS. IT DEALS WITH THE 
+!      if( iblackbody_above .ne. 0 )then
 !
 !       CALCULATE THE WAVELENGTH DEPENDENT PLANK FUNCTION AT THE TOP 
-!       OF THE MODEL.
+!       OF THE MODEL, BUT I SIMPLY SET IT UP SO THE LOOPS BELOW ARE
+!       SUFFICIENT.
 !MTR         ITP                 = ANINT(100.*t_above) - NLOW
 !
-         ITP =  ANINT(T_ABOVE)
+!         ITP =  ANINT(T_ABOVE)
 !MTR         CALL GATHER(NIRP,PLTEMP1,PLANK(1,ITP),LTEMP)
 !         write(*,*),'NSOLP+1,NTOTAL',NSOLP+1,NTOTAL
-         DO 400 L            =   NSOLP+1,NTOTAL
+!         DO 400 L            =   NSOLP+1,NTOTAL
 !            PTEMPT(L)        =   PLTEMP1(L-NSOLP)*WEIGHT(L)
-             PTEMPT(L)= ITP*ITP*ITP*ITP*SBKoverPI
-             PTEMP(L,1)=PTEMPT(L)
-             PTEMPG(L)=ITG*ITG*ITG*ITG*SBKoverPI
- 400     CONTINUE
+!             PTEMPT(L)= ITP*ITP*ITP*ITP*SBKoverPI
+!             PTEMP(L,1)=PTEMPT(L)
+!             PTEMPG(L)=ITG*ITG*ITG*ITG*SBKoverPI
+! 400     CONTINUE
 !
 !            write(*,*) 'PTEMP(L,1)',PTEMP(L,1)
 !            write(*,*) 'PTEMP(L,NLAYER)',PTEMP(L,NLAYER)  
-      endif
+!      endif
 !
 !          write(*,*) 'TAUL line52',TAUL
 !          write(*,*) 'PTEMP',PTEMP
 !          write(*,*) 'IT1',IT1
-          PTEMP(L,1)=PTEMPT(L)
+!          PTEMP(L,1)=PTEMPT(L)
 !          write(*,*) 'NLAYER:',NLAYER
-             PTEMPT(L)= ITP*ITP*ITP*ITP*SBKoverPI
-             PTEMP(L,1)=PTEMPT(L)
+!             PTEMPT(L)= ITP*ITP*ITP*ITP*SBKoverPI
+!             PTEMP(L,1)=PTEMPT(L)
 !MTR             PTEMP(L,NLAYER)=ITG*ITG*ITG*ITG*5.67E-8
 !          write(*,*) 'TAUL line60',TAUL            
 !MTRXXX             write(*,*) 'PTEMPG',PTEMPG
