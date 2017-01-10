@@ -80,6 +80,9 @@
 !         write(*,*)'AF',AF
 !         write(*,*)'BF',BF
 !         write(*,*)'EF',EF
+!      write(*,*) 'w0',w0
+!      write(*,*) 'g0',w0
+
       RETURN
       END
 

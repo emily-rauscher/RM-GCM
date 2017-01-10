@@ -452,8 +452,16 @@
 !         write(*,*) 'PM', PM 
 !         write(*,*) 'ABSCOEFF',ABSCOEFF
 !         write(*,*) 'OPACIR_REFPRES',OPACIR_REFPRES
-!         write(*,*) 'PRESS(J)',PRESS(J)   
-         DO 306 L    =   1,NTOTAL
+!         write(*,*) 'PRESS(J)',PRESS(J)  
+!         DO 306 L    =   1,NTOTAL  !!! INSTEAD OF LOOPING
+!         SIMPLY COMPUTE SW AND LW CASES...
+!        THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
+!        
+!       SHORTWAVE: 
+         L=1
+         TAUGAS(L,J) = ABSCOEFF(L)*PM
+!       LONGWAVE: 
+         L=2
          IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
                        TAUGAS(L,J)=ABSCOEFF(L)*PM
                      ELSE IF (OPACIR_POWERLAW.eq.1) THEN
