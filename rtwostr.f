@@ -23,6 +23,8 @@
 !       write(*,*) 'U1I',U1I
 !       write(*,*)'U1S',U1S  
 !       stop
+
+ 
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
 !      NEEDED FOR MATRIX.

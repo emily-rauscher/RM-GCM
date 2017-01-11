@@ -30,9 +30,10 @@
 !      write(*,*) 'W0', W0
 !      write(*,*) 'SQ3',SQ3
 !      write(*,*) 'SOL',SOL
-!      write(*,*) 'u0',U0
-   
+!      write(*,*) 'u0',U0   
 !      write(*,*)'stopping add'
+       
+      
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *
 !     ******************************
@@ -124,7 +125,7 @@
       J                =  0
       DO 42 JD         =  2,JN,2
          J             =  J + 1
-         DO 42 L       = 1! LLS,LLA
+         DO 42 L       =  LLS,LLA
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -  
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
@@ -145,14 +146,19 @@
          DS(L,JDBLE) = DF(L,JDBLE)/BF(L,JDBLE)
   44     AS(L,JDBLE) = AF(L,JDBLE)/BF(L,JDBLE)
          
-!       write(*,*)'DS',DS
-!       write(*,*)'AS',AS
+
+
+!
+!     (Where the magic happens...)
+!
 !     ********************************************
 !     *     WE SOLVE THE TRIDIAGONAL EQUATIONS   *
 !     ********************************************
 !
+!
+
       DO 46 J               = 2, JDBLE
-         DO 46 L            = LLS,LLA
+         DO 46 L            = LLS,LLAN SOLP+1,NTOTAL
             X               = 1./(BF(L,JDBLE+1-J) -  
      &                         EF(L,JDBLE+1-J)*AS(L,JDBLE+2-J))
             AS(L,JDBLE+1-J) = AF(L,JDBLE+1-J)*X
@@ -199,6 +205,11 @@
      &                   CPB(L,J) + CMB(L,J) )                             
         enddo
       enddo
+!
+!
+!
+
+    
 !      write(*,*)'FNET',FNET
 !      write(*,*)'TMI',TMI
 !      DO J = 1,NLAYER 

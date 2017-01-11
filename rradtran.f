@@ -74,6 +74,9 @@
 !      write(*,*)'TGRND',TGRND   
 !     WATER VAPOR (G / CM**2)
 !     
+!      write(*,*) 'T',T
+!      write(*,*) 'TT',TT
+
 
 !M      DO 10 J = 2, NLAYER
 !M         RDH2O(J)   = Q(J-1) * DPG(J-1)
@@ -416,22 +419,22 @@
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
 !          write(*,*) 'alb_toai',alb_toai
-          if ((alb_toai.gt.1.0) .or. (alb_toai.lt.0.0)) then
-          write(*,*) 'alb_toai crazy!!!',alb_toai
-          write(*,*) 'aeroprof',aeroprof
-          write(*,*) 'w0',w0
-          write(*,*)  'G0',G0
-          write(*,*)  'TAUL',TAUL
-          write(*,*) 'OPD',OPD 
-          write(*,*) 'PSOL_aerad',PSOL_aerad
-          write(*,*) 'u0_aerad',u0_aerad
-          write(*,*) 'alat',alat
-          write(*,*) 'alon',alon
-          write(*,*) 'fnet',fnet
+!          if ((alb_toai.gt.1.0) .or. (alb_toai.lt.0.0)) then
+!          write(*,*) 'alb_toai crazy!!!',alb_toai
+!          write(*,*) 'aeroprof',aeroprof
+!          write(*,*) 'w0',w0
+!          write(*,*)  'G0',G0
+!          write(*,*)  'TAUL',TAUL
+!          write(*,*) 'OPD',OPD 
+!          write(*,*) 'PSOL_aerad',PSOL_aerad
+!         write(*,*) 'u0_aerad',u0_aerad
+!          write(*,*) 'alat',alat
+!          write(*,*) 'alon',alon
+!          write(*,*) 'fnet',fnet
 !          CALL ADD
-          write(*,*) 'fnet',fnet          
-          stop
-          endif
+!          write(*,*) 'fnet',fnet          
+!          stop
+!          endif
 
 !          write(*,*) 'psol_aerad raddtran',psol_aerad
 !          write(*,*) 'u0_aerad raddtran',u0_aerad
