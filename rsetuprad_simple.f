@@ -460,6 +460,9 @@
 !       SHORTWAVE: 
          L=1
          TAUGAS(L,J) = ABSCOEFF(L)*PM
+         FNET(L,J)   = 0.0
+         TMI(L,J)    = 0.0
+         DIRECT(L,J) = 0.0
 !       LONGWAVE: 
          L=2
          IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
@@ -480,6 +483,9 @@
                        TAUGAS(L,J)=ABSCOEFF(L)*PM
      & *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
           ENDIF
+         FNET(L,J)    =  0.0
+         TMI(L,J)     =  0.0
+         DIRECT(L,J)  =  0.0
 !      write(*,*)'L,J,TAUGAS',L,J,TAUGAS(L,J)
  306  CONTINUE
  308  CONTINUE

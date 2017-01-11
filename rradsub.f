@@ -202,7 +202,8 @@ C ER modif for non-zero obliquity
       if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
        AMU0 = 0.0
       endif
-  
+      
+
 !     write(*,*) 'AMU0',AMU0
 !      u0_aerad = max( 0.*ONE, AMU0 )  
       u0_aerad = max(0*ONE, AMU0 ) 
@@ -235,6 +236,7 @@ C ER modif for non-zero obliquity
 !      write(*,*) 'PSOL_aerad', PSOL_aerad
 
       do_mie_aerad = .false.
+!         DAY/NIGHT SW CONDITIONAL
 !         IF (AMU0.GT.0) THEN
          IF (AMU0.GT.EPSILON) THEN
            isl_aerad=1

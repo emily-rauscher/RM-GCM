@@ -231,8 +231,8 @@
                    thecounter=1.
                   ENDIF
 
-                    IF(LONGYS(ILON).GE.90.) THEN
-                       IF(LONGYS(ILON).LE.270.) THEN
+                    IF(LONGYS(ILON).GT.90.) THEN
+                       IF(LONGYS(ILON).LT.270.) THEN
 
                    DELTALONC = 180.
                    SIGC=45.
