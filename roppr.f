@@ -93,6 +93,7 @@
 !              MODEL SO I AM OMMITTING TAUCLD, W0CLD, GCLD, ETC
 
               TAUL(L,J)   = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
+             
              if (iradgas.eq.0) then
              tauL(L,j) = tauaer(L,j)
              endif
@@ -140,8 +141,9 @@
                 TAUL(L,J)= utaul(L,J)
                  OPD(L,J)= uOPD(L,J)
              ENDIF 
-             
-       if( taul(L,j).lt.0. ) then
+!!!!!!!!!!!!!!!!HERE'S WHERE YOU CAN HARDWIRE VALUES!!!!!!!!!
+ 
+             if( taul(L,j).lt.0. ) then
        write(*,*) 'taul lt 0'
        stop
        endif
