@@ -207,8 +207,11 @@ C ER modif for non-zero obliquity
 !     write(*,*) 'AMU0',AMU0
 !      u0_aerad = max( 0.*ONE, AMU0 )  
       u0_aerad = max(0*ONE, AMU0 ) 
-!      write(*,*) 'u0_aerad',u0_aerad
       PSOL_aerad=PSOL
+
+
+!      u0_aerad = 0.5
+!      psol_aerad = 3.14159
 !      if ((u0_aerad.lt.1e-6) .and. (u0_aerad.gt.0)) then
 !      write(*,*) 'tiny mu0_aerad',u0_aerad
 !      write(*,*) 'AMU0',AMU0
