@@ -263,14 +263,14 @@
 !###########
 !CASE 5
 !            MUNOZ K7B + NIGHSIDE
-                ELSE IF (AEROSOLMODEL.EQ.'Kepler7b_nightside') THEN
+                ELSE IF (AEROSOLMODEL.EQ.'Kepler7b_nightsidex') THEN
                      IF (thecounter.EQ.0) THEN
-                      WRITE(*,*) 'Using Cloudmodel: Kepler7b_nightside'
+                      WRITE(*,*) 'Using Cloudmodel: Kepler7b_nightsidex'
                        thecounter=1.
                      ENDIF
 
 ! For this case, first create the Munoz distribution
-                  TAUpa=(TAUC
+                TAUpa=(TAUC
      & *EXP(-(((LONGYS(ILON)-DELTALONC)*(LONGYS(ILON)-DELTALONC))
      &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
 ! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
@@ -282,23 +282,32 @@
                      IF (LONGYS(ILON).EQ.360) THEN
                      TheTAU=TAUpb
                      ENDIF
-
 ! OK, now replace the night side completely
-!                    IF(LONGYS(ILON).GE.90.) THEN
-!                       IF(LONGYS(ILON).LE.270.) THEN
+                    IF(LONGYS(ILON).GT.90.) THEN
+                       IF(LONGYS(ILON).LE.DELTALONC) THEN
 !                          TheTAU=TAUC*VERTPROF(ILEV)
-                   TAUpaN=(TAUC
-     & *EXP(-(((LONGYS(ILON)-180.)*(LONGYS(ILON)-180.))
-     &     +(THELAT*THELAT))/(2.*45.*45.)))*VERTPROF(ILEV)
-                   TheTAU=min(TaupaN+TheTau,tauc)
-!                       ENDIF
-!                    ENDIF
+!                   TAUpaN=(TAUC
+!     & *EXP(-(((LONGYS(ILON)-180.)*(LONGYS(ILON)-180.))
+!     &     +(THELAT*THELAT))/(2.*40.*40.)))*VERTPROF(ILEV)
+!                   TheTAU=min(TaupaN+TheTau,tauc)
+                    TheTau=(TAUC
+     & *EXP(-(THELAT*THELAT)/(2.*SIGC*SIGC)))*VERTPROF(ILEV)   
+!     &     +(TAUC
+!     & *EXP(-(((270.-DELLONC360)*(270-DELLONC360))
+!     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV) 
+                       ENDIF
+                    ENDIF
 ! Finally, now remove a chunk for the antisymmetric western limb of
 ! night side.
                   TAUpa=(TAUC
      & *EXP(-(((LONGYS(ILON)-nightedge+180.)*
      &         (LONGYS(ILON)-nightedge+180.))
      &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
+
+!                  TAUpa=(TAUC
+!     & *EXP(-(((LONGYS(ILON)-nightedge+180.)*
+!     &         (LONGYS(ILON)-nightedge+180.))
+!     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
 ! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
 !                TAUpb=(TAUC
 !     & *EXP(-(((LONGYS(ILON)-DELLONC360+180.)*
@@ -306,12 +315,12 @@
 !     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV) 
 
 ! Subtract this shifted cloud from the night side                   
-!                    IF(LONGYS(ILON).GE.90.) THEN
-!                       IF(LONGYS(ILON).LE.270.) THEN
-                          TheTAU=TheTau-TAUpa!*1.2
+                    IF(LONGYS(ILON).GE.90.) THEN
+                       IF(LONGYS(ILON).LE.270.) THEN
+                          TheTAU=TheTau-TAUpa
                           TheTAU=MAX(TheTAU,0.0)
-!                       ENDIF
-!                    ENDIF
+                       ENDIF
+                    ENDIF
                
 
 
