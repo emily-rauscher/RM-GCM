@@ -320,10 +320,10 @@
       do k = 1,NZ
 !        p(k) = p_aerad(k)
         press(k)=p_aerad(k)*10.
-!        write(*,*),'k,p(k)',k,p(k)
+!        write(*,*),'k,p(k)',k,p_aerad(k)
       enddo
 !      write(*,*) 'line 355'
- 
+!       stop 
 
 !     The layer thickness in pressure should be the difference between
 !     the top and bottom edge of the layer.  Eg. So for layer 3, the layer thickness

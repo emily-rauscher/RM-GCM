@@ -74,10 +74,27 @@
 !      write(*,*)'TGRND',TGRND   
 !     WATER VAPOR (G / CM**2)
 !     
-!      write(*,*) 'T',T
-!      write(*,*) 'TT',TT
+!      write(*,*) NVERT
+!      write(*,*) NLAYER
+!      write(*,*) 'T'
+!      do j=1,nlayer
+!      write(*,*) ,T(j)
+!      enddo
+!      write(*,*) 'TT'
+!      do j=1,nlayer
+!      write(*,*) ,TT(j)
+!      enddo
+!      write(*,*) 'P'
+!      do j=1,nlayer
+!      write(*,*) ,P(j)
+!      enddo
+!      write(*,*) 'Press'
+!      do j=1,nlayer
+!      write(*,*) ,Press(j)
+!      enddo
 
 
+!      stop
 !M      DO 10 J = 2, NLAYER
 !M         RDH2O(J)   = Q(J-1) * DPG(J-1)
 !M   10 CONTINUE
@@ -188,7 +205,16 @@
 !        write(*,*) 'HEATI',HEATI
          CALL NEWFLUX1
 !        write(*,*) 'HEATI',HEATI
-          
+         
+!        NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
+!        FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
+!        CLEAR SKY AND COMBINE IN A WEIGHTED AVERAGE ASSUMING MAXIMUM OVERLAP. 
+
+        IF((AEROSOLS).AND.(CLDFRCT.LT.1.0)) THEN 
+           IF(SUM(AEROPROF).GT.1E-8) THEN
+           CALL CLOUDFRACTER  
+           ENDIF 
+        ENDIF
           IF(FLXLIMDIF) THEN 
             IF(OPD(2,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
             CALL FLUXLD
