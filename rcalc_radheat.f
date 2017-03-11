@@ -168,7 +168,50 @@ C     ER Modif: output pressures in bar instead of mbar
  2020       FORMAT(2X,F12.6,19X,E12.5,3X,E12.5,3x,E12.5)   
          END DO
          WRITE(63,*)
+         
+!     TEMPORARY DIAGNOSTIC WRITE FILE
+c      IF (ALON.EQ.0) THEN 
+c        IF ((ALAT1.GT.-6).AND.(ALAT1.LT.1)) THEN
+c          WRITE(631,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
+c          WRITE(631,2010)'1)P(Bars)',
+c     $        'FLUXES(Wm-2): 2)LW UP','3)LW DOWN',
+c     $        '4)LW NET',
+c     $        '5)SW UP','6)SW DOWN',
+c     $        '7)SW NET'
 
+C     ER Modif: output pressures in bar instead of mbar
+C         DO ILAY=NLAYER,1,-1                                                  
+C          WRITE(631,2013),P_FULL(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),                            
+C     $    FIR_DN_AERAD(ILAY),FIR_NET_AERAD(ILAY),
+c     $    FSL_UP_AERAD(ILAY),FSL_DN_AERAD(ILAY),FSL_NET_AERAD(ILAY)                         
+C         END DO                                                             
+!
+c         WRITE(631,2023)'PRESSURE (Bars)','HEATING RATES: SW (K/DAY)'          
+C     $        ,'LW (K/DAY)','TOTAL (K/DAY)'                                                 
+C         DO LHT=NLAYER,1,-1                                                  
+C         WRITE(631,2020) PR(NLAYER-LHT+1)*1e-5,HTSW(LHT),HTLW(LHT),
+C     $          HTSW(LHT)+HTLW(LHT)
+C         END DO
+C         WRITE(631,*)'Temperatures'
+c         DO LHT=NLAYER,1,-1                                                  
+c         WRITE(631,*) T(LHT)
+c         END DO
+c         WRITE(631,*)''
+
+
+!         WRITE(63,2023)'PRESSURE (Bars)','HEATING RATES: SW
+!(K/DAY)'          
+!     $        ,'LW (K/DAY)','TOTAL (K/DAY)'                                                 
+! 2023    FORMAT(2X,A15,2X,A25,4x,A10,4x,A13)                                        
+!         DO LHT=NLAYER,1,-1                                                  
+!         WRITE(63,2020) PR(NLAYER-LHT+1)*1e-5,HTSW(LHT),HTLW(LHT),
+!     $          HTSW(LHT)+HTLW(LHT)
+!     $
+! 2020       FORMAT(2X,F12.6,19X,E12.5,3X,E12.5,3x,E12.5)
+!         END DO
+!         WRITE(63,*)
+c       ENDIF
+c      ENDIF
 !  HERE WE WRITE TO FILE 62 ADDTIONAL RADIATIVE TRANSFER BY PRODUCTS
          WRITE(62,*)'LATITUDE, LONGITUDE:',ALAT1,ALON
          WRITE(62,*)'  Cosine of the incidencd angle, mu0:',U0
