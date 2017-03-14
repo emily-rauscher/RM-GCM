@@ -348,6 +348,7 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
        write(60,*)'DOLWRAD',DOLWRAD
        write(60,*)'LWSCAT',LWSCAT
        write(60,*)'FLXLIMDIF',FLXLIMDIF
+       write(60,*)'FLD TAULIMIT',TAULIMIT
        write(60,*)'SURFEMIS',SURFEMIS
        write(60,*)'RAYSCAT',RAYSCAT
        write(60,*)'RAYSCATLAM',RAYSCATLAM
