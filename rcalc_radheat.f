@@ -243,5 +243,18 @@ c      ENDIF
           WRITE(62,*) ''
 !         ENDING WRITE TO FILE 62
       ENDIF 
+!     TEMPORARY DIAGNOSTIC WRITE FILE
+!  If you want to write to file the temperature profile at a given
+!  location every single timestep, then uncomment the following 9 lines
+!                IF ((ALON.GT.344).AND.(ALON.LT.346)) THEN
+!        IF ((ALAT1.GT.(-6.)).AND.(ALAT1.LT.1.)) THEN
+!          WRITE(631,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
+!               DO LHT=NLAYER,1,-1                                                 
+!         WRITE(631,2021) PR(NLAYER-LHT+1)*1e-5,HTLW(LHT),T(NLAYER-LHT+1)
+! 2021      FORMAT(2X,F12.6,10X,E12.5,3X,E12.5)
+!         END DO
+!        ENDIF
+!       ENDIF 
+! END OF TEMPORARY DIAGNOSTIC FILE
       end
 

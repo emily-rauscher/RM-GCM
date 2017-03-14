@@ -295,46 +295,6 @@ C     &&&&&&&&&&&&&MODIFIED START &&&&&&&&&&&&&&
             DTE(I)=0.0       
          ENDDO               
  
-!      HERE WE MAKE OR READ IN THE AEROSOLS     
-!      CALL READ_AEROSOLS
-!           IF (AEROSOLS) THEN
-!         DO      L  = 1, NL
-!          DO     I  = 1, MG
-!           DO    JH = 1, JG
-!            DO   IHEM = 1,NHEM
-!         READ(71,*)  CLAT,CLAY,CHEM,CLON,TAUVAL
-C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
-          IF(AEROSOLS) THEN
-           DO JH=1,JG
-           poslats(JH)=alat(JH)
-           ENDDO
-          CALL MAKECLOUDS(poslats,p0,sigma)
-!          CALL MAKECLOUDS(poslats,mg,jg,nl,p0,sigma)
-          ELSE
-          PI0AERSW   =  0.0
-          ASYMSW     =  0.0
-          EXTFACTLW  =  0.0
-          PI0AERLW   =  0.0
-          ASYMLW     =  0.0
-          ENDIF
-C         The loop for the radiative transfer code is as follows:
-!        DO_LATLOOP (below in cmltr_nopg.f)
-!            DO_HEMLOOP (in rradiation.f aka formally cmorc)
-!              {START PARALLEL}
-!                 DO_LONLOOP (inrradiation.f)
-!                      DO_VERTLOOP (actually matrix inversion)
-!                          RADIATIVE TRANSFER
-!                      ENDDO_VERTLOOP
-!                 ENDDO_LONLOOP
-!               {END PARALLEL}
-!            ENDDO_HEMLOOP
-!        ENDDO_LATLOOP
-!        So for speed, innermost is leftmost (and should ideally be
-!        smallest)  
-!        THEREFORE, INDEX ORDER SHOULD BE: TAUAER(NL,MG,IHEM,JH)
-
-
-C                 
 C     Main loop over latitudes ( so says previous author, but it's NOT so for radiation  ~mtr)
 C
          JL=1
@@ -412,6 +372,48 @@ C     ER modif for output management
       ITSOUT=2600
       IFTOUT=5000
       ISFOUT=6400
+
+
+!      HERE WE MAKE OR READ IN THE AEROSOLS     
+!      CALL READ_AEROSOLS
+!           IF (AEROSOLS) THEN
+!         DO      L  = 1, NL
+!          DO     I  = 1, MG
+!           DO    JH = 1, JG
+!            DO   IHEM = 1,NHEM
+!         READ(71,*)  CLAT,CLAY,CHEM,CLON,TAUVAL
+C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
+          IF(AEROSOLS) THEN
+           DO JH=1,JG
+           poslats(JH)=alat(JH)
+           ENDDO
+          CALL MAKECLOUDS(poslats,p0,sigma)
+!          CALL MAKECLOUDS(poslats,mg,jg,nl,p0,sigma)
+          ELSE
+          PI0AERSW   =  0.0
+          ASYMSW     =  0.0
+          EXTFACTLW  =  0.0
+          PI0AERLW   =  0.0
+          ASYMLW     =  0.0
+          ENDIF
+C         The loop for the radiative transfer code is as follows:
+!        DO_LATLOOP (below in cmltr_nopg.f)
+!            DO_HEMLOOP (in rradiation.f aka formally cmorc)
+!              {START PARALLEL}
+!                 DO_LONLOOP (inrradiation.f)
+!                      DO_VERTLOOP (actually matrix inversion)
+!                          RADIATIVE TRANSFER
+!                      ENDDO_VERTLOOP
+!                 ENDDO_LONLOOP
+!               {END PARALLEL}
+!            ENDDO_HEMLOOP
+!        ENDDO_LATLOOP
+!        So for speed, innermost is leftmost (and should ideally be
+!        smallest)  
+!        THEREFORE, INDEX ORDER SHOULD BE: TAUAER(NL,MG,IHEM,JH)
+
+
+
 
 !@@@@@ HERE IS WHERE THE TIME STEP ITERATION LOOP BEGINS @@@@@@@@@@@@@@
 !@@@@@                                                   @@@@@@@@@@@@@@
