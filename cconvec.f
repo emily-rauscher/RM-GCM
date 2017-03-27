@@ -128,7 +128,6 @@ c
       LTOP=NL-NLCR      !  NLCR gives highest level for which             
                         !  convection is attempted.                       
 
-!      write(*,*) 'Entering Convection Routine'
 
 
       DO 800 IHEM=1,NHEM                                                  
@@ -200,7 +199,7 @@ C     DRY CONVECTION - CONTINUE PARCEL CURVE UP
 C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW         
           IF(LCDRY) THEN                                                  
             NCRT=L+1            
-!!       write(*,*) 'Calling Dry Convection between levels:',NCRB,NCRT     
+!      write(*,*) 'Calling Dry Convection between levels:',NCRB,NCRT     
             CALL DRYADJ(NCRB,NCRT,J,IHEM)                                 
           ENDIF                                                           
           IF(L.GT.LTOP) GOTO 20                                           

@@ -73,7 +73,26 @@
       TABOVE_AERAD=TT(1)
 !      write(*,*)'TGRND',TGRND   
 !     WATER VAPOR (G / CM**2)
-!     
+!    
+!     create a T array for the double resolution IR by combinging the
+!     layer center and edge temperatures 
+      
+                 K  =  1
+      DO 46 J  = 1, NDBL-1,2
+!         write(*,*) 'j',j
+                 L  =  J
+!         write(*,*) 'L',L
+         TTsub(L) = TT(K)
+!         write(*,*) L,TTsub(L)
+                 L  =  L+1
+         TTsub(L) = T(K)
+!          write(*,*) L,TTsub(L)
+                 K  =  K+1
+!         write(*,*) 'PRESSMID(K)',k,PRESSMID(K)
+!         write(*,*) 'PRESS(K)',k,PRESS(K)
+ 46    CONTINUE
+
+ 
 !      write(*,*) NVERT
 !      write(*,*) NLAYER
 !      write(*,*) 'T'
@@ -169,7 +188,6 @@
         ENDIF
 !
 !     CALCULATE THE OPTICAL PROPERTIES
-!
 !        write(*,*) ' calling OPPR'
         CALL OPPR
 !        write(*,*) 'called OPPR'
@@ -181,9 +199,6 @@
         IF(IR .NE. 0) THEN
            CALL OPPR1
         ENDIF
-!       write(*,*)'TAUL AFTER OPPR1',TAUL
-!        write(*,*) 'PTEMP',PTEMP
-!        write(*,*) 'SLOPE', SLOPE
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF
 !     SOLAR INTERVALS
 !
@@ -198,23 +213,51 @@
           CALL TWOSTR
           CALL ADD
         ENDIF
+          
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
-!        write(*,*) 'FNET(radtran)',FNET       
         IF(IR .NE. 0) THEN
 !        write(*,*) 'HEATI',HEATI
          CALL NEWFLUX1
 !        write(*,*) 'HEATI',HEATI
-         
+    
+
+         !CLOUD FRACTION     
 !        NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
 !        FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
 !        CLEAR SKY AND COMBINE IN A WEIGHTED AVERAGE ASSUMING MAXIMUM OVERLAP. 
 
-        IF((AEROSOLS).AND.(CLDFRCT.LT.1.0)) THEN 
-           IF(SUM(AEROPROF).GT.1E-8) THEN
-           CALL CLOUDFRACTER  
-           ENDIF 
-        ENDIF
+!        HERE WE TAKE THE DOUBLE RESOLUTION FLUXES AND EXTRACT JUST
+!        THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
+!        LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
+!        WITHOUT DOUBLING
+                      K     =  1
+            DO        J     =  1,NLAYER
+             FNET(2,J)      =  DIRECTU(2,k)-DIREC(2,k)  
+             DIRECTU(2,J)   =  DIRECTU(2,K)
+             DIREC(2,J)     =  DIREC(2,K)
+             OPD(2,J)       =  OPD(2,K)
+             TAUL(2,J)      =  TAUL(2,K)
+             W0(2,J)        =  W0(2,K)
+             G0(2,J)        =  G0(2,K)
+             ug0(2,J)       =  ug0(2,K)
+             uOPD(2,J)      =  uOPD(2,K)
+             uTAUL(2,j)     =  uTAUL(2,K)
+             uW0(2,J)       =  uW0(2,k)
+             TMIU(2,J)      =  TMIU(2,k)
+             TMID(2,J)      =  TMID(2,k)
+                      K     =  K+2.  
+            ENDDO
+!            DO J = 1,NLAYER
+!            write(*,*),PRESS(J), FNET(2,J)
+!            ENDDO
+         
+!            write(*,*) 'that was before FLD'
+!MTR        IF((AEROSOLS).AND.(CLDFRCT.LT.1.0)) THEN 
+!MTR           IF(SUM(AEROPROF).GT.1E-8) THEN
+!MTR           CALL CLOUDFRACTER  
+!MTR           ENDIF 
+!MTR        ENDIF
           IF(FLXLIMDIF) THEN 
             IF(OPD(2,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
             CALL FLUXLD
@@ -235,6 +278,12 @@
 !      HERE WE DERIVE THE UPWARD FLUX FROM THE NET FLUX, SELF CONSISTENT
 !      WITH BOTTOM BOUNDARY CONDITION
          DIRECTU(2,NLAYER)    =  FBASEFLUX+DIREC(2,NLAYER)
+  
+!            DO 55 J = 1,NLAYER
+!         write(*,*) PRESS(J),FNET(1,J),FNET(2,J) 
+!666      FORMAT(F14.6,6x, E14.6, 6X, E14.6, 6X, E14.6) 
+!55    continue
+
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
 !          write(*,*), NSOLP
@@ -248,6 +297,7 @@
 !        ENDDO
 !         write(*,*)'PSOL_aerad*u0_aerad', PSOL_aerad*u0_aerad
 !         write(*,*)'Index,Mass factor, Flux Divergence'
+
            DO 500 J      =  1,NVERT !!MTRNVERT
            HEATS(J)   =  0.0
            HEATI(J)   =  0.0
@@ -261,21 +311,22 @@
 !               write(*,*)'FNET',(FNET(L,J+1),FNET(L,J))
  480         CONTINUE
            ENDIF
-!           write(*,*) 'IR= ',IR
+
            IF(IR .NE. 0) THEN
 !             write(*,*) 'IR.NE.0'
              DO 490 L     =  NSOLP+1,NTOTAL
-                HEATI(J)  =  HEATI(J)+( DIRECTU(L,J+1)-DIREC(L,J+1)    
-     &                        -(DIRECTU(L,J)-DIREC(L,J)) )*TERM1
-   
+!                HEATI(J)  =  HEATI(J)+( DIRECTU(L,J+1)-DIREC(L,J+1)    
+!     &                        -(DIRECTU(L,J)-DIREC(L,J)) )*TERM1
+               HEATI(J)   =  HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1   
+
 !MTR      HERE'S WHERE YOU WOULD CALL FLUX LIMITED DIFFUSION CODE
 !MTR                write(*,*) 'HEATI(J)',HEATI(J)
 !MTR                 write(*,*) ' DIRECTU(L,J+1)', DIRECTU(L,J+1)
-!MTR                 write(*,*) ' DIRECTU(L,J)', DIRECTU(L,J)
 !MTR                 write(*,*) ' DIREC(L,J+1)', DIREC(L,J+1)
 !MTR                 write(*,*) ' DIREC(L,J)', DIREC(L,J)
 
  490         CONTINUE
+
 !MTR                    write(*,*) 'PRESS', PRESS
 !MTR                    write(*,*)'Player',PLAYER
 !MTR                    write(*,*) 'OPD',OPD
@@ -303,6 +354,8 @@
 !           write(*,*) '     ',DIRECTU(2,IJ),DIREC(2,IJ)
 !            write(*,*) 'FNETS(IJ+1,IJ)',IJ,FNET(1,IJ+1),FNET(1,IJ)
 ! 502   CONTINUE        
+
+
  
 !     Here we Calculate (4 * pi * mean_intensity) for the IR.
 !

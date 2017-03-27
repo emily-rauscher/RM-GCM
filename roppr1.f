@@ -12,6 +12,7 @@
       include 'rcommons.h'
       real  ITP, ITG, IT1, SBK, SBKoverPI,g11
       DIMENSION  PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
+      DIMENSION  T(NLAYER)
       integer kindex
 !     **************************************
 !     * CALCULATE PTEMP AND SLOPE          *
@@ -27,6 +28,8 @@
 !      g11=g0(1,1)
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
+
+      T=t_aerad
 !       write(*,*)'ITG,TGRND',ITG,TGRND
 !MTR        CALL GATHER(NIRP,PLTEMP1,PLANK(1,ITG),LTEMP)
 !NOTE TO ERIN: 
@@ -75,14 +78,14 @@
 !          write(*,*) 'TAUL line60',TAUL            
 !MTRXXX             write(*,*) 'PTEMPG',PTEMPG
 
-        DO 300 J            =   1,NLAYER ! MTR
+        DO 300 J            =   1,NDBL ! NLAYER ! MTR
 !                kindex = j-1
            kindex          = max( 1, j-1 )
 !MTR             IT1             = ANINT(100.*TT(J)) - NLOW
 !MTR             CALL GATHER(NIRP,PTEMP2,PLANK(1,IT1),LTEMP)
 !
-!
-            IT1 = TT(J)*TT(J)*TT(J)*TT(J)*SBKoverPI
+            IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI  
+!            IT1 = TT(J)*TT(J)*TT(J)*TT(J)*SBKoverPI
 !MTRXXX            write(*,*) 'IT1',IT1
 !           KINDEX MAKES AS DEFINED ABOVE MAKES THE TOP LAYER ISOTHERMAL;
 !           BELOW THE TOP SLOPE IS REDIFINED USING THE EXTRAPOLATED
@@ -101,6 +104,7 @@
 !               write(*,*)'indices',J,KINDEX
               SLOPE(L,J)   = (PTEMP(L,J)-PTEMP(L,KINDEX))/TAUL(L,J)
 !               write(*,*)' SLOPE(L,J)',Slope(L,J)
+!              SLOPE(L,J)   = 0.0
                if( TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
  200        CONTINUE
  300     CONTINUE
