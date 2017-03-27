@@ -139,7 +139,7 @@
 !         stop
 C ER Modif: only write fort.63 every kountp timesteps
 C     (kountp-1 b/c in cmorc nikos called when mod(kount,ntstep).eq.1)
-      IF ((LFLUXDIAG).AND.(KOUTP.EQ.KOUNTP-1)) THEN
+      IF ((LFLUXDIAG).AND.(KOUTP.EQ.KOUNTP-1)) THEN !-1)) THEN
          WRITE(63,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
          WRITE(63,2010)'1)P(Bars)',
      $        'FLUXES(Wm-2): 2)LW UP','3)LW DOWN',         
@@ -246,12 +246,20 @@ c      ENDIF
 !     TEMPORARY DIAGNOSTIC WRITE FILE
 !  If you want to write to file the temperature profile at a given
 !  location every single timestep, then uncomment the following 9 lines
-!                IF ((ALON.GT.344).AND.(ALON.LT.346)) THEN
-!        IF ((ALAT1.GT.(-6.)).AND.(ALAT1.LT.1.)) THEN
+!                IF ((ALON.GT.-10).AND.(ALON.LT.10)) THEN
+!        IF ((ALAT1.GT.(58.)).AND.(ALAT1.LT.61.)) THEN
 !          WRITE(631,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
-!               DO LHT=NLAYER,1,-1                                                 
+!               DO ILAY=NLAYER,1,-1                                                 
 !         WRITE(631,2021) PR(NLAYER-LHT+1)*1e-5,HTLW(LHT),T(NLAYER-LHT+1)
+!          WRITE(631,2053),P_FULL(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),                            
+!     $    FIR_DN_AERAD(ILAY),FIR_NET_AERAD(ILAY),
+!     $    TT(NLAYER-ILAY+1),T(NLAYER-ILAY+1),HTLW(ILAY)
+!     $
+! 2053       FORMAT(2X,F12.6,3X,E12.5,3X,E12.5,3X,E12.5,3X,E12.5
+!     $             ,3X,E12.5,3X,E12.5)
+
 ! 2021      FORMAT(2X,F12.6,10X,E12.5,3X,E12.5)
+ 
 !         END DO
 !        ENDIF
 !       ENDIF 

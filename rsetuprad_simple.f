@@ -91,7 +91,9 @@
 !
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
+      JDBLEDBLE = 2*JDBLE
       JN      =   JDBLE-1
+      JN2     =   2*JDBLE-1
       TPI     =   2.*PI
       CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K 
       FDEGDAY =   1.0E-4*G*SCDAY/CPCON
@@ -336,10 +338,12 @@
 !     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
 !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR 
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
-
+!     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
+      
 !      write(*,*) 'G in rsetuprad',G
 !      write(*,*) 'NLAYER',NLAYER
 !      write(*,*) 'NL',NL
+      PRESSMID=PLAYER*10.
       PRESS=P_aerad*10.
       PBAR(1)  = P_AERAD(1)*1e-5
       DPG(1)= PRESS(1)/G
@@ -347,6 +351,26 @@
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
          DPG(J) = (PRESS(J)-PRESS(J-1)) / G
  45    CONTINUE
+                 K  =  1
+      DO 46 J  = 2, NDBL,2
+!         write(*,*) 'j',j
+                 L  =  J
+!         write(*,*) 'L',L
+         PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
+!         write(*,*) 'PRESSMID(K)',k,PRESSMID(K)
+!         write(*,*) 'PRESS(K)',k,PRESS(K)
+         DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
+                 K  =  K+1
+                 L  =  L+1
+         PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
+         DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
+!         write(*,*) 'PRESSMID(K)',k,PRESSMID(K)
+!         write(*,*) 'PRESS(K)',k,PRESS(K)
+ 46    CONTINUE 
+
+         PBARsub(1) = PBAR(1) 
+         DPGsub(1)  = DPG(1)        
+!         stop
 !        Here we are saying that the top layer has a thickness that
 !        extends from the top of the atmosphere (pressure = 0) down to
 !        the interface ABOVE the top sigma levels. The atmosphere
@@ -370,7 +394,6 @@
 !         write(*,*),'PRESS(J)',PRESS
 !         write(*,*),'DPG(J)',DPG
 !         write(*,*),'G', G
-             
 !         print*, 'j p dpg: ', j, press(j)/1.e3, dpg(j-1)
 ! 45   CONTINUE
 !      PBAR(NLAYER)  = P(NVERT)/1.0E6
@@ -400,7 +423,7 @@
 !
 !     CALCULATE CLOUD AND AEROSOL OPACITY.
 !
-      DO 100  J             = 1,NLAYER
+      DO 100  J             = 1,NDBL !NLAYER
           DO 50 L           = 1,NTOTAL
                TAUAER(L,J)  = 0.
                TAUCLD(L,J)  = 0.
@@ -416,7 +439,7 @@
 !         LTEMP(L-NSOLP)  =   NPROB(L) - NSOL
 ! 120  CONTINUE
 !
-      X                  =   ALOS/AVG
+!      X                  =   ALOS/AVG
 !
 !
 !     CALCULATE ABSORPTION COEFFICIENTS
@@ -447,7 +470,9 @@
 !           ENDIF     
 !  305  CONTINUE
 !
-      DO 308   J     =   1,NLAYER
+     
+
+      DO 306   J     =   1,NLAYER
          PM          =   DPG(J) 
 !         write(*,*) 'PM', PM 
 !         write(*,*) 'ABSCOEFF',ABSCOEFF
@@ -463,8 +488,41 @@
          FNET(L,J)   = 0.0
          TMI(L,J)    = 0.0
          DIRECT(L,J) = 0.0
-!       LONGWAVE: 
+!       LONGWAVE:
+306     continue
+ 
+!M         L=2
+!M         IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
+!M                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+!M                     ELSE IF (OPACIR_POWERLAW.eq.1) THEN
+!M                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+!M     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!M                     ELSE IF (OPACIR_POWERLAW.eq.2) THEN
+!M                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+!M     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!M     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!M                     ELSE IF (OPACIR_POWERLAW.eq.3) THEN
+!M                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+!M     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!M     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!M     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!M                     ELSE
+!M                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+!M     & *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
+!M          ENDIF
+!M         FNET(L,J)    =  0.0
+!M         TMI(L,J)     =  0.0
+!M         DIRECT(L,J)  =  0.0
+!      write(*,*)'L,J,TAUGAS',L,J,TAUGAS(L,J)
+!M  306  CONTINUE
+  
+!      IF(IRDOUBLE) THEN
+
+!       write(*,*) 'TAUGAS',TAUGAS
          L=2
+      DO 308   J     =   1,NDBL
+         PM          =   DPGsub(J)
+!         write(*,*)'PM',PM
          IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
                        TAUGAS(L,J)=ABSCOEFF(L)*PM
                      ELSE IF (OPACIR_POWERLAW.eq.1) THEN
@@ -486,9 +544,13 @@
          FNET(L,J)    =  0.0
          TMI(L,J)     =  0.0
          DIRECT(L,J)  =  0.0
-!      write(*,*)'L,J,TAUGAS',L,J,TAUGAS(L,J)
- 306  CONTINUE
- 308  CONTINUE
+
+
+  308  CONTINUE
+!M
+
+!      write(*,*) 'TAUGAS',TAUGAS
+
 
       DO  L           =   NSOLP+1,NTOTAL
           TAUCONST(L)=ABSCOEFF(L)/GA/100.

@@ -391,9 +391,9 @@ C
         UNLG(J,L)=UNLG(J,L)+UTVD(J,L)                                     
         VNLG(J,L)=VNLG(J,L)+VTVD(J,L)                                     
         TNLG(J,L)=TNLG(J,L)+TTVD(J,L)+TTCR(J,L)+TTLR(J,L)+TTRD(J,L)       
-        QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)                 
+        QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)  
   200 CONTINUE                                                            
-C                                                                         
+C                                                                        
       IF (LFLUX) THEN                                                     
 C        Convert to volume mixing ratio from mass mixing ratio.           
          DO 211 L=1,NL                                                    

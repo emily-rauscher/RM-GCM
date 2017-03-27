@@ -246,10 +246,13 @@ C loop over hemispheres
 C
                                                                          
       DO 800 ihem=1,nhem                                                  
-                                                                          
+!          write(*,*) 'kount',kount
+!          write(*,*) 'ntstep',ntstep
+!         write(*,*) mod(kount,ntstep)          
+!          write(*,*) 'Starting Radiation scheme'                                                                
 c calculates heating rates every ntstep time steps                        
          IF (mod(kount,ntstep).eq.1) then                                   
-
+!          write(*,*) mod(kount,ntstep)          
 !          write(*,*) 'Starting Radiation scheme'
 C                                                                         
 C  Does do Radn scheme                                                    
@@ -504,7 +507,7 @@ C ER Modif to turn off radiative heating for first 1 days (if not 1D and not POR
                      ELSE
                         htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
                      ENDIF
-
+!                        write(*,*) l,htlw(l+1),htsw(l+1)
 !KM To force net heating of bottom atmosphere layer to relax to flux temperature
 C           if(ld.eq.nl) htnet(ihem,jh,i,ld)=(T(1)-T(2))/BOTRELAXTIME
 
@@ -512,15 +515,15 @@ C           if(ld.eq.nl) htnet(ihem,jh,i,ld)=(T(1)-T(2))/BOTRELAXTIME
 !  if  BOTRELAXTIME < 0
 C           if(ld.eq.nl.AND.BOTRELAXTIME.LT.0.0) 
 C     &          htnet(ihem,jh,i,ld)=htnet(ihem,jh,i,ld-1)
-                                                                          
-c sets this heating rate                                                  
+
+c sets this heating rate                                                 
                      TTRD(IM,LD)=(HTNETO                                            
      $                    +HTNET(IHEM,JH,I,LD))/(CHRF*2.)                               
-                                                                          
+!                     write(*,*) 'IM,LD,TTRD',IM,LD,TTRD(IM,LD)                                                     
 c  put in linear interpolation of heating rates between this              
 c  longitude and last one calculated (i-nskip)                            
                      IF ((i-ilast.gt.1).and.(nskip.gt.0)) then                                         
-c                        write(*,*),i,last
+                        write(*,*),i,last
                         DO j=ilast+1,i-1                                              
                            a=REAL(j-ilast)/REAL(i-ilast)                               
                            b=1.-a
@@ -535,7 +538,8 @@ c                           write(*,*),HTNET(IHEM,JH,J,LD)
                            im=j+iofm                                                   
                            TTRD(IM,LD)=(HTNETO                                         
      $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)                  
-                           IF (l.eq.nl) then                                           
+!                    write(*,*)'TTRD',LD,TTRD(IM,LD)
+                            IF (l.eq.nl) then                                           
                               pnet(im,jh)=a*pnet(i+iofm,jh)+                            
      $                             b*pnet(ilast+iofm,jh)                          
                               snet(im,jh)=a*snet(i+iofm,jh)+                            
@@ -547,8 +551,8 @@ c                           write(*,*),HTNET(IHEM,JH,J,LD)
                            ENDIF                                                       
                         ENDDO                                                         
                      ENDIF                                                          
-                  ENDDO                                                           
-
+                  ENDDO                 
+!                  stop                                          
                   ilast=i                                                         
 C end of conditional execution of morcrette code                          
                ENDIF 
@@ -572,7 +576,6 @@ c sometimes different?
             ELSE
                 ilast=mg
             ENDIF
-
             IF (ilast.ne.mg) then                                             
 c               write(*,*) 'ilast',ilast
 Cm                stop
@@ -588,7 +591,9 @@ c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
                      htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
      $                    b*htnet(ihem,jh,ilast,ld)                  
                      TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             
-     $                    +HTNETO)/(CHRF*2.)                              
+     $                    +HTNETO)/(CHRF*2.)   
+                   write(*,*) 'Now to the print statement'           
+!                   write(*,*)'TTRD',LD,TTRD(IM,LD)                
                      IF (l.eq.nl) then                                            
                         pnet(im,jh)=a*pnet(1+iofm,jh)+                             
      $                       b*pnet(ilast+iofm,jh)                          
@@ -599,7 +604,8 @@ c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
      $                          +b*rrflux(ilast+iofm,jh,k)                
                         ENDDO                                                      
                      ENDIF                                                        
-                  ENDDO                                                          
+                  ENDDO                              
+!           stop                            
                ENDDO                                                            
             ENDIF                                                             
 c       if (ihem.eq.2) print *, 'rad ',jh,(pnet(im1,jh),im1=1,IGC)        
@@ -612,8 +618,8 @@ Cm           write(*,*) 'Ilast,mg',ilast,mg
 Cm               write(*,*) 'line 691'                                                        
                DO LD=1,NL                                                     
                   im=i+IOFM                                                    
-                  TTRD(im,LD)=(htnet(ihem,jh,i,ld))/CHRF                        
-               ENDDO                                                          
+                  TTRD(im,LD)=(htnet(ihem,jh,i,ld))/CHRF  
+               ENDDO
             ENDDO                                                            
          ENDIF                                                              
          IOFM=MGPP                                                          

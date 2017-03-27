@@ -91,7 +91,7 @@
 !     ******************************
 !
       IF(IRS .NE. 0)  THEN
-        DO 30 J           =   1,NLAYER
+        DO 30 J           =   1,NDBL
            KINDEX         = max(1,J-1)
            DO 30 L        = NSOLP+1,NTOTAL
               B3(L,J)     = 1.0/(B1(L,J)+B2(L,J))
@@ -125,7 +125,7 @@
       J                =  0
       DO 42 JD         =  2,JN,2
          J             =  J + 1
-         DO 42 L       =  LLS,LLA
+         DO 42 L       =  LLS,NSOLP
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -  
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
@@ -135,17 +135,38 @@
     
 
   42  CONTINUE
+
+
+!     AGAIN FOR THE IR
+      J                =  0
+      DO 43 JD         =  2,JN2,2
+         J             =  J + 1
+         DO 43 L       =  NSOLP+1,LLA
+!           HERE ARE THE EVEN MATRIX ELEMENTS
+            DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -
+     &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
+!           HERE ARE THE ODD MATRIX ELEMENTS EXCEPT FOR THE TOP.
+            DF(L,JD+1) =  EL2(L,J) * (CP(L,J+1)-CPB(L,J)) +
+     &                    EL1(L,J) * (CMB(L,J) - CM(L,J+1))
+
+   43  CONTINUE 
 !     HERE ARE THE TOP AND BOTTOM BOUNDARY CONDITIONS AS WELL AS THE
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME NO
 !     DIFFUSE RADIATION IS INCIDENT AT THE TOP.
 !     
-
-      DO 44 L        = LLS,LLA
+!VIS
+      DO 44 L        = LLS,NSOLP
          DF(L,1)     = -CM(L,1)
          DF(L,JDBLE) = SFCS(L)+RSFX(L)*CMB(L,NLAYER)-CPB(L,NLAYER)
          DS(L,JDBLE) = DF(L,JDBLE)/BF(L,JDBLE)
   44     AS(L,JDBLE) = AF(L,JDBLE)/BF(L,JDBLE)
-         
+!IR         
+      DO 45 L        = NSOLP+1,LLA
+         DF(L,1)     = -CM(L,1)
+         DF(L,JDBLEDBLE) = SFCS(L)+RSFX(L)*CMB(L,NDBL)-CPB(L,NDBL)
+         DS(L,JDBLEDBLE) = DF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
+  45     AS(L,JDBLEDBLE) = AF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
+
 
 
 !
@@ -156,19 +177,39 @@
 !     ********************************************
 !
 !
+!       write(*,*)'JDBLEDBLE',JDBLEDBLE
+!       write(*,*)'JDBLE',JDBLE
+!       write(*,*)'LLA',LLA
 
       DO 46 J               = 2, JDBLE
-         DO 46 L            = LLS,LLAN SOLP+1,NTOTAL
+         DO 46 L            = LLS,NSOLP
+!       write(*,*) 'BF(L,JDBLE+1-J)',JDBLE+1-J,BF(L,JDBLE+1-J)
             X               = 1./(BF(L,JDBLE+1-J) -  
      &                         EF(L,JDBLE+1-J)*AS(L,JDBLE+2-J))
             AS(L,JDBLE+1-J) = AF(L,JDBLE+1-J)*X
             DS(L,JDBLE+1-J) = (DF(L,JDBLE+1-J) - EF(L,JDBLE+1-J)  
      &                         *DS(L,JDBLE+2-J))*X
   46  CONTINUE
-!           
-!MTR             write(*,*) 'EF',EF
-!MTR             write(*,*) 'X',X
-!MTR             write(*,*) 'BF',BF
+
+
+!   NOW IR
+      DO 47 J               = 2, JDBLEDBLE
+         DO 47 L            = NSOLP+1,LLA
+!       write(*,*)'BF(L,JDBLEDBLE+1-J)',JDBLEDBLE+1-J,BF(L,JDBLEDBLE+1-J)
+!            write(*,*) 'AS(L,JDBLEDBLE+2-J)',AS(L,JDBLEDBLE+2-J)
+            X               = 1./(BF(L,JDBLEDBLE+1-J) -
+     &                         EF(L,JDBLEDBLE+1-J)*AS(L,JDBLEDBLE+2-J))
+            AS(L,JDBLEDBLE+1-J) = AF(L,JDBLEDBLE+1-J)*X
+        DS(L,JDBLEDBLE+1-J) = (DF(L,JDBLEDBLE+1-J) - EF(L,JDBLEDBLE+1-J)
+     &                         *DS(L,JDBLEDBLE+2-J))*X
+  47  CONTINUE
+!              stop
+
+       
+!             write(*,*) 'AF',AF           
+!             write(*,*) 'EF',EF
+!             write(*,*) 'X',X
+!             write(*,*) 'BF',BF
 
       DO 48 L       = LLS,LLA
   48     XK(L,1)    = DS(L,1)
@@ -177,13 +218,20 @@
          DO 50 L    = LLS,LLA
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
   50  CONTINUE
+
+      DO 51 J       = 2, JDBLEDBLE
+         DO 51 L    = NSOLP+1,LLA
+            XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
+  51  CONTINUE
+
+
 !
 !  ***************************************************************
 !     CALCULATE LAYER COEFFICIENTS, NET FLUX AND MEAN INTENSITY
 !  ***************************************************************
 !
       do J = 1,NLAYER
-        do L = LLS,LLA
+        do L = LLS,NSOLP
           CK1(L,J)   = XK(L,2*J-1)                                         
           CK2(L,J)   = XK(L,2*J)   
 !          write(*,*) 'L,J',L,J
@@ -205,7 +253,36 @@
      &                   CPB(L,J) + CMB(L,J) )                             
         enddo
       enddo
-!
+
+!  AND AGAIN FOR IR
+
+      do J = 1,NDBL
+        do L = NSOLP+1,NTOTAL
+          CK1(L,J)   = XK(L,2*J-1)                                         
+          CK2(L,J)   = XK(L,2*J)
+!          write(*,*) 'L,J',L,J
+!          write(*,*)'CK1(L,J)',CK1(L,J) 
+!           write(*,*)'CK2(L,J)',CK2(L,J)          
+!             write(*,*)'CMB(L,J)',CMB(L,J)          
+!             write(*,*)'CPB(L,J)',CPB(L,J)  
+!             write(*,*)'EL1(L,J)',EL1(L,J) 
+!             write(*,*)'EL2(L,J)',EL2(L,J)
+!             write(*,*)'EM1(L,J)',EM1(L,J)
+!            write(*,*)'EM2(L,J)',EM2(L,J)       
+          FNET(L,J)  = CK1(L,J)  *( EL1(L,J) -EL2(L,J))   +
+     &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
+     &                  CMB(L,J) - DIRECT(L,J)
+!                                                            
+          TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
+     &                  ( EL1(L,J) + EL2(L,J))   +
+     &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
+     &                   CPB(L,J) + CMB(L,J) )                             
+        enddo
+      enddo
+
+
+
+
 !
 !
 
