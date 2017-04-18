@@ -139,6 +139,8 @@
 !         stop
 C ER Modif: only write fort.63 every kountp timesteps
 C     (kountp-1 b/c in cmorc nikos called when mod(kount,ntstep).eq.1)
+
+      write(*,*) 'KOUTP', KOUTP,'KOUNTP-1',KOUNTP-1
       IF ((LFLUXDIAG).AND.(KOUTP.EQ.KOUNTP-1)) THEN !-1)) THEN
          WRITE(63,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
          WRITE(63,2010)'1)P(Bars)',
