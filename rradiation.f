@@ -398,7 +398,7 @@ c ----------------------------------------------------- And alat1
                                                                           
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
 c                  IF (KOUTP.EQ.KOUNTP-1) THEN
-                  IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.10)) THEN  
+                  IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.NTSTEP_IN)) THEN
                      IF(JH.EQ.1.AND.IHEM.EQ.1.AND.I.EQ.1) THEN
                         REWIND(63) !! Rewind file for fluxes in nikosrad
                         REWIND(62) ! rwnd file for ancillary RT results 
