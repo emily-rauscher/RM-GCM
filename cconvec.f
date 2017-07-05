@@ -208,18 +208,18 @@ C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW
 !          GOTO 900
 C                                                                         
 C     MOIST CONVECTION                                                    
-C                                                                         
+C         
           L=NL                                                            
 C         BEGIN NEW PARCEL CURVE                                          
   100     NCRB=L                                                          
-          LCWET=.FALSE.                                                   
+          LCWET=.FALSE. 
           IF ( (SIGMA(NCRB)*PLG(J)).LT.PRESSMIN ) THEN                    
-            L=LTOP                                                        
+            L=LTOP
             GOTO 150                                                      
           ELSEIF ( TG(J,NCRB).LT.TMIN ) THEN                              
             L=L-1                                                         
             GOTO 100                                                      
-          ENDIF                                                           
+          ENDIF 
           TC(L)=TG(J,L)                                                   
           QC(L)=QG(J,L)                                                   
 C     UP ONE LEVEL - DRY ADIABAT AS FIRST GUESS                           
@@ -227,7 +227,7 @@ C     UP ONE LEVEL - DRY ADIABAT AS FIRST GUESS
           L=L-1                                                           
           IF(L.LT.LTOP) GOTO 150                                          
           TC(L)=TC(LP)*SK(L)                                              
-          QC(L)=QC(LP)                                                    
+          QC(L)=QC(LP)
           QSL=ESCON(L)*PQSAT(TC(L))                                       
 C     IF SATURATED MAY BE MOIST CONVECTION                                
           IF(QC(L).GE.QSL) GOTO 120                                       
@@ -254,7 +254,6 @@ C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW
           IF(LCWET) THEN                                                  
             NCRT=LP    
 
-            write(*,*) 'MOIST CONVECTION!!!'
             IF(NCRT.LT.NCUTOP) THEN                                       
               IF(.NOT.LCBADJ) CALL CBCON(NCRB,NCRT,J,IHEM)                
               IF(LCBADJ)      CALL CBADJ(NCRB,NCRT,J,IHEM)                
