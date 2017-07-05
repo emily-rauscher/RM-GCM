@@ -360,7 +360,8 @@ C
 C call nikos LW scheme                                                    
       CALL IRRAD(GAS,CKD,NLEV,PRES,PFLUX,TEMP,MMR,CL,ACL,LWCCL,           
      $          BASCL,TOPCL,FUP,FDWN,FNET,PDP,LLBLM,GA,TLEV)                   
-                                                                          
+     
+!      GOTO 769 !SKIP FLUX LIMITED DIFFUSION as Test                                                                           
 !     ER hack for flux diffusion at large tau (replace FNETs)
       DO LHT=1,MXLEV
 !     ABSLW1 in cm^2/g, GA in m/s^2, PFLUX in mbar (=1e3 g/cm/s^2)
@@ -459,14 +460,14 @@ C     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
                   IF (OPACIR_POWERLAW.EQ.0) THEN
                    EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
                   ELSEIF (OPACIR_POWERLAW.EQ.1) THEN
-                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+                   EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES) 
                   ELSEIF (OPACIR_POWERLAW.EQ.2) THEN
-                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+                   EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
                   ELSEIF (OPACIR_POWERLAW.EQ.3) THEN
-                   EXPCORR=TAUCONST*1.E6*0.5*PRES(LHT)
+                   EXPCORR=TAUCONST*1.E6*0.5*(PRES(LHT)-PRES(LHT+1))
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)
      &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)                     
@@ -513,6 +514,8 @@ C            FNET(LHT)=FNETDIFF
          ENDIF
          ENDIF
       END DO
+! 769  CONTINUE  ! END OF FLUX LIMITED DIFFUSION SKIP
+
 !     IF (LHT.EQ.0) THEN FNET(LHT)=FBASEFLUX+FLS(1)/(1.0-SWALB)+FDWN(0)
       FNET(0)=FBASEFLUX+FLS(1)/(1.0-SWALB)
 C      FNET(0)=FBASEFLUX+FLS(1)/(1.0-SWALB)+FDWN(0)
@@ -525,8 +528,7 @@ C Setup SW code
       ELSE
         SOLC=SOLC_IN*(1.0-TOAALB)
       ENDIF
-          
-!      LDIUR=.TRUE.   !Diurnally averaged if false                        
+C      LDIUR=.TRUE.   !Diurnally averaged if false                        
 C      LDIUR=.FALSE.   !Diurnally averaged if false
 C                                                                         
 C       YCLOCK=3.14159      !time of day in radians                        
@@ -538,7 +540,7 @@ C     globally averaged solar constant, vertical rays
       AMU0=1.0            
       PSOL=SOLC/4.             
       IF(.NOT.L1DZENITH) THEN 
-         DDAY=FORCE1DDAYS 
+         DDAY=FORCE1DDAYS
 CC       DDAY is rampup time from uniform to full heating
 C        (1D for DDAYs, then linear to full in another DDAYs)
          IF(DAY.GT.DDAY) THEN
@@ -549,7 +551,7 @@ CC Modif for hemispheric forcing of Hot Jupiters
      &              +DFAC*MAX(0.0,SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)
      &                           +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)
      &                           *COS((ALON-SSLON)/360.*PI2))
-               PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC 
+               PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC
             ELSE
 CC ER modif for diurnal forcing (a la Liu & Schneider 2010)
 C               PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC/PI*COS(ALAT/360.*PI2)
@@ -575,7 +577,7 @@ C      ZSCT=SOLC*CDISSEM   ! Solar const * earth-sun distance
 C      PSOL=ZSCT*RDAYL     ! * fractional day length                       
 C      ENDIF
 
-c CALL SW scheme                                                          
+c CALL SW scheme 
       ZCARDI=MMR(2,1)                                                     
       CALL RADSW(T,H2O,O3,PCLFR,PQLWP,AMU0,                               
      :              ZCARDI,PSOL,SWDP,PFLUX,SWALB,FLS,GA,GASCON)           
@@ -600,15 +602,13 @@ C LW
 C OUTPUT                                                                  
                                                                           
       GRCP=(GA/CPD)*24*3600 ! g/Cp *24*3600                               
-                                                                          
 C Calculate heating rates                                                 
 C ER Modif: HTSW(LHT) should be FLS(LHT)-FLS(LHT-1), changed to that
                                                                           
       DO LHT=2,NRLEV         ! from bottom-most full sigma level to top                
-C         HTSW(LHT)=GRCP*(FLS(LHT+1)-FLS(LHT))/SWDP(LHT)                   
-         HTSW(LHT)=GRCP*(FLS(LHT)-FLS(LHT-1))/SWDP(LHT)                   
+         HTSW(LHT)=GRCP*(FLS(LHT+1)-FLS(LHT))/SWDP(LHT)                   
          HTLW(LHT)=-GRCP*(FNET(LHT-1)-FNET(LHT-2))/SWDP(LHT)              
-      END DO                                                              
+      END DO  
       IF (.NOT.(NEWTB.EQ.NEWTE)) THEN
          DO LHT=NEWTB,NEWTE
             LEV=NRLEV+1-LHT
@@ -617,6 +617,10 @@ C         HTSW(LHT)=GRCP*(FLS(LHT+1)-FLS(LHT))/SWDP(LHT)
          ENDDO
       ENDIF
 
+!         DO ILAY=NLEV,0,-1                                                  
+!            WRITE(*,2013)PFLUX(ILAY)/1.e3,FUP(ILAY),                            
+!     $           FDWN(ILAY),FNET(ILAY),FLS(ILAY+1)  
+!         ENDDO
 !!      LFLUXDIAG=.TRUE. !! Switch on or off diagnostics in fort.63 below
 C ER Modif: only write fort.63 every kountp timesteps
 C     (kountp-1 b/c in cmorc nikos called when mod(kount,ntstep).eq.1)
@@ -630,8 +634,8 @@ C     ER Modif: output pressures in bar instead of mbar
          DO ILAY=NLEV,0,-1                                                  
             WRITE(63,2013)PFLUX(ILAY)/1.e3,FUP(ILAY),                            
      $           FDWN(ILAY),FNET(ILAY),FLS(ILAY+1)                          
-     $           
- 2013       FORMAT(2X,F12.3,5X,E12.5,10X,E12.5,10X,E12.5,10X,E12.5)         
+     $        
+ 2013       FORMAT(2X,F12.5,5X,E12.5,10X,E12.5,10X,E12.5,10X,E12.5)         
          END DO                                                             
          
          WRITE(63,2023)'PRESSURE (bar)','HEATING RATES: SW (K/DAY)'          
@@ -639,11 +643,10 @@ C     ER Modif: output pressures in bar instead of mbar
  2023    FORMAT(1X,A18,1X,A30,x,A10)                                        
          DO LHT=NRLEV,1,-1                                                  
             WRITE(63,2020) PR(LHT)/100.0/1.e3,HTSW(LHT),HTLW(LHT)                
- 2020       FORMAT(5X,F10.3,X,E12.5,X,E12.5)                                
+ 2020       FORMAT(5X,F12.5,5X,E12.5,5X,E12.5)                                
          END DO               
          WRITE(63,*)
-      ENDIF                                                                    
-                                                                          
+      ENDIF                                                                                                                                       
       RETURN                                                              
       END                                                                 
 
