@@ -167,6 +167,12 @@ C--- erin for binary flux output
 
       LOGICAL LBIN
 
+      REAL TSURFACE(mg,jg*nhem)
+      COMMON/SURFACE/CSURF,RHOSURF,DELTAZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
+     & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+
+       LOGICAL LSURF
+
 C PGPLOT map variables
 C      REAL*4 TRMAT(6)
 C      REAL*4 BRIGHT
@@ -480,11 +486,17 @@ C      ENDIF
 !        BINFLUX=0.0
         call BinaryFlux(BINFLUX,KOUNT,ITSPD)
         write(89,2016) KOUNT, BINFLUX
-      ELSE
-        write(88,2017) SOLC_IN, KOUNT
+!      ELSE
+!        write(88,2017) SOLC_IN, KOUNT
       ENDIF
 
-  
+      IF (LSURFACE) THEN
+         WRITE (30,106) JG*2,MG,NL
+         WRITE (30,*),TSURFACE
+         WRITE (30,105), DAY, SSLON, SSLAT
+      ENDIF
+         
+ 
       RETURN                                                              
       END                                                                 
                                                                           

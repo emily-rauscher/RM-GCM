@@ -1,1 +1,334 @@
 This file will hold notes as I update the code.
+
+----------------
+VARIOUS COUNTERS
+----------------
+levels in atmosphere:
+       NLAYER -- layer boundaries?? (max # of layer boundaries)
+       	  **NLAYER=NVERT+1 (set in rglobrad.h)       	             	      
+       NVERT -- layers (max # of layers). comes directly from NL in params.i
+       NDBL -- twice the max # of layer boundaries
+       	  **NDBL=2*NLAYER
+
+radiation counters:
+       NIRP: number of infrared probability intervals -- i.e. number of IR bins
+       	     =1
+       NSOLP: number of solar probability intervals (???)
+       	      	     ----> I think this just uses SOLAR to mean VISIBLE or SHORT WAVE
+       	      also listed as number of solar bins (i.e. 1?)
+       	      =1
+       NTOTAL: number of bins in radiation scheme
+       	       currently 2 bins... SW and LW
+   	       =NSOLP+NIRP
+
+Dimensions:
+	IH:	Latitude COUNTER
+		runs from 1 to JG where JG is the # of latitude points from params.i
+		     	  (JG is half of the standard # of grid points in latitude, one hem.)
+
+	IGA:	=NWJ2*NHEM
+		NHEM = number of hemispheres
+		NWJ2 = from params.i ?
+
+	IGB:	=IDB*NHEM       =NWJ2*NL*NHEM
+		IDB=NWJ2*NL
+		TT has this dimension?
+
+	IGC:    Some kind of Longitude counter?
+                =MGPP*NHEM
+                where MGPP=MG+2
+                NHEM is from params.i (Number of Hemispheres, 2)
+                and MG is the # of longitude points from params.i
+
+	IGD: 	=IDD*NHEM
+		IDD=MGPP*NL=(MG+2)*NL
+
+	NTGW:	(NTRGW-1)/NCRAY  
+		NTRGW=NFTGW*NHEM
+		NFTGW=(6+3*NTRAC)*NL+2	=> 9*NL+2
+		NTRAC=1	 (params.i)
+		NCRAY=set in params.i
+
+-------------------------------
+  IMPORTANT VARIABLES/ARRAYS
+-------------------------------
+RFLUXES_aerad	---	Array to hold fluxes at the top and bottom of the atmopshere
+			(i,j,k) i= flux bin, 	1=SW 	2=LW
+				j= direction,	1=DN	2=UP
+				k= vertical,	1=TOP	2=SURFACE
+			DOES NOT HOLD FLUXES IN THE REST OF THE ATMOSPHERE
+			
+SOLC		---		
+
+TROPHT		---     Holds Tropopause height? Dimensions (MG,NHEM,JG)
+			where MG= longitude points, JG = latitude points, NHEM=2
+
+RRFLUX(IGC,JG,6)---	IGC=MGPP*NHEM= (MG+2)*NHEM == longitude * number of hemispheres
+			JG = number of latitude points
+
+DPG		---	Mass of layer g/cm**2
+			
+
+--------------- 
+   FILES
+---------------
+radd.f		---	defines source terms. forms matrix for multiple layers.
+			solves tridiagonal equations to obtain mean I and net F.
+			NO CHANGES. Depends on inputs
+raerad.h	---	interface between aerosol microphysics and radtransfer
+			NO CHANGES.
+ranf.f		---	random number generator 
+			NO CHANGES.
+rcalc_radheat.f	---	calculates rad heating rate profiles and vertical wind speeds	
+			calls: radsub
+			ADD HEATING RATE OF SURFACE HERE? or in rradtran?
+rcommons.h	---	defines constants and calls common blocks
+			ADD COMMON BLOCK FOR SURFACE CONSTANTS
+			    (heat capacity, surface height, etc.)
+rfluxld.f	---	checks IR flux for Flux-limited diffusion conditions. From cnikos.f
+			NO CHANGES.
+rglobrad.h	---	defines constants, does setup
+			included in rcommons to be then included in other files
+			!! VERY HELPFUL
+rinterpol.f	---	linear interpolation routine. used to interpolate Temps?
+			NO CHANGES
+rmakeclouds.f	---	makes clouds! aerosol optical depths
+			NO CHANGES
+rmiess.f	---	mie scattering by a stratified sphere
+			NO CHANGES
+rnewflux1.f	---	calculates upward and downward intensities and fluxes
+			guass quadrature angles and weights -- numerical integrator
+roppr1.f	---	planck function and derivative at all layers.
+			NOTE TO ERIN in this routine. Ground temperature needs proper treatment
+			ADD proper treatment of ground temp here for emission
+roppr.f		---	optical properties (albedo, asymmetry parameter) case dependent?
+rplnk.f		---	planck function. different from roppr1??
+rprecision.h	---	set up file
+rradiation.f	---	RADIATION SCHEME from cmorc.f and toon
+			line 395: could set to ground temperature
+rradout.f	---	prints out results. will want to add stuff here
+rradsub.f	---	returns fluxes. 
+			obliquity calculations
+			TOA flux based on latitude
+rradtran.f	---	main driver routine for radiative transfer
+rsetuprad.f	---	set up routine, deinfes constants. calcs pressure avg absorption coeff
+rsetuprad_simp	---	simpler version of above
+rtwostr.f	---	defines matrix properties
+
+
+-----------------------------------------------------------------
+----7/17/17
+figuring out new radiative transfer files
+RRADTRAN.f -- main radiative transfer driver
+           TT=temperature array. Layer=1 is TOA, Layer=NLAYER is BOA
+
+?difference between NLAYER and NVERT -- which is edges and which is slabs?
+            appears PRESS array goes with layers and P array goes with vert
+                    TT array goes with layers, T array goes with vert
+                    ==> TT calcualtes Temps at boundaries,
+                        T calcuclates temps in centers of slabs
+
+CURRENTLY: Surface temperaute calculated in line 66 of rradtran.f.
+           can also define a TGRND at line 72. This will be calucalted from
+           heat equation and used to calculate upwards lw flux
+
+           LINE 272: FNET(2,NLAYER)=FBASEFLUX
+                2--IR?
+                NLAYER--BOA
+                set to a base flux from fort.7 -- THIS WILL NEED CHANGING
+                    will be sigma*TSURF**4.
+
+?DIRECTU & DIREC. Also in rnewflux1 and rglobrad. Something to do with fluxes
+         ANSWER: DIREC IS DOWNWARD FLUX at a specific level
+                 DIRECTU IS UPWARD FLUX at a specific level
+         DIMENSIONS (L,J).
+                    L ranges from NSOLP+1 to NTOTAL
+                      this doesn't make sense? nsolp+1=2 and ntotal=2??
+                      somewhere else there is a note that this is a loop over
+                      IR bins only, so this would give you one IR bin??
+                    J from 1 to NDBL
+? RFLUXES arrays also hold fluxes?
+          (a,b,c)
+          a: 1=SW, 2=LW
+          b: 1=DN, 2=UP
+          c: 1=top, 2=Surface
+          WHAT DOES _aerad MEAN?
+          saved array from f(ir/sl)_(dn/up)_aerad arrays
+          SEE END OF RRADTRAN.F
+
+          THERE WILL BE CHANGES MADE TO THIS as the surface changes
+          absorption and reflection+emission
+
+---- 7/18/17
+CHANGES TO RRADTRAN.
+	RFLUXES_aerad: SW/LW UP/DN fluxes at TOP/BOTTOM of the atmosphere.
+	will need to consider new absorption/reflection/emission of the atmosphere
+
+	****currently:
+	C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere   
+	C     1st index - flux 1=SW, 2=LW  
+	C     2nd index - Direction 1=DN, 2=UP 
+	C     3rd index - Where 1=TOP, 2=SURFACE   
+	RFLUXES_aerad(1,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top   
+	RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom   
+      	RFLUXES_aerad(1,2,1)=fsl_up_aerad(NLAYER)  ! SW up top  
+	RFLUXES_aerad(1,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom  
+
+	RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+	RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom  
+	RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top  
+	RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom 
+
+	****changes that need to be made:
+	SW DN TOP: no changes needed
+	SW DN BTM: why is it divided by 1-albedo??. 
+	      	   This value will need to be taken to a new file to calculate surface heating.
+	SW UP TOP: no changes needed
+	SW UP BTM: reflection (already). This doesn't need a change
+	
+	LW DN TOP: no changes needed
+	LW DN BTM: Reflection of LW radiation required. Define a surface albedo for IR
+	      	   This value will need to be taken to a new file to calculate surface heating
+	LW UP TOP: no changes needed
+	LW UP BTM: reemission from surface needed + reflection from LW DN BTM
+
+	----------------------------------------
+	TRACEING HOW THESE ARRAYS ARE CALCUALTED:
+	----------------------------------------
+	****Rflux arrays are saved from the following arrays:
+	fupbi	  ---	 bi ==> IR? fup ==> Flux up. These arrays are 1=top, nlayer=bottom.
+	fdownbi	  ---
+	fnetbi	  ---
+	fupbs	  ---	 bs ==> Visible? 
+	fdownbs	  ---
+	fnetbs	  ---
+	
+	these areas are caluclated from.....
+	DIRECTU/DIREC arrays (up flux and down flux)
+		      (this is done in rradtran)	
+
+	and reset to zero for each column/timestep
+
+	--> written out to fort.9  (rradout handles output)
+
+	**** DIRECTU/DIREC calculations
+	done in rnewflux1. passed to rradtran to generate above flux arrays. 
+	     I think this is just an integration, no changes needed? 
+
+
+---- 8/4/17
+Tracing through how calculations are done in lat/long/lev space
+	In CMLTRI_NOPG:
+	   CALL: DGRMLT(IH)						where IH is a latitude counter
+	   	 CALL: RADIATION(TROPHT, IH)  	      	       		where tropht holds tropopause height(?) and IH is a latitude counter
+		       			 				      tropht not actually used in rradiation??
+		 	DO ihem=1, nhem (1 to 2)			NHEM=2 is number of hemisphere. Explains why latitude # is half
+			   DO i=1, mg	(loop over longitude grid)
+			      DO LD=1, NL   (loop over column)			line 385, then sets up Pres, Temp arrays
+			      CALL: CALC_RADHEAT(pr,t, prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
+			      			 pr:			pressure at sigma levels and bottom boundary	
+						 t:			temo at sigmal elvels and bottom boundary
+						 prflux:		pressures of layer edges at which fluxes are computed
+						 alat1:			alat(JH)*(-ihem*2.)+3.),  alat(J)=arctan(si(J)/cs(J))*180./pi
+						 alon:			(i-1)/mg*360	(longitude in degrees)
+						 htlw:			array, NL+1 in size
+						 htsw:			array, NL+1 in size
+						 DOY:			time counter (day #?)
+						 cf:			cloud fraction 
+						 ic:			something else for clouds
+						 fluxes:		fluxes at top/bottom of atmosphere (SW/LW,DN/UP,TOP/SURF)
+						 swalb:			short wave albedo
+						 kount:			time counter
+						 itspd:			time counter	(ndays=KOUNT/ITSPD) where itspd=NINT(TSPD)
+					CALL: RADSUB(iffirst,pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD)
+							iffirst:		1	(what is this?)
+							pr:			pressure at sigma levels and bottom boundary
+							p_full:			same as prflux==layer edge pressures
+							t_full:			same as t	      temp at sigma levels and bottom boundary
+							qh2o_full:		something with water, unused I think
+							radheat:		array with dimension NZ=NL+1
+							htlw:			array, NL+1
+							htsw:			array, NL+1
+							rfluxes:		=fluxes
+							alat1:			latitude grid
+							alon:			longitude current
+							KOUNT:			timestep counter
+							ITSPD:			number of timesteps per day
+						p_full and t_full become p_aerad and t_aerad
+						       pressures are now in dyne/cm2
+						       PRESS array=p_aread
+						CALL: SETUPRAD_SIMPLE
+						CALL: RADTRAN
+							loop through levels and set up t and p array(centers) (from t_aerad and player(=pr))
+							loop through levels and calculate TT array (boundary temps) by interpolating
+							THIS IS WHERE SURFACE TEMP WILL NEED TO BE TAKEN INTO ACCOUNT (TGRND)
+							     ---could place surface temp calculation here. But fluxes are calcualted later?
+							     	      are the fluxes then just used for the next time step?
+						      CALL: OPPR1
+						      	    currently treats ground temp differently for caluclating planck function
+							    In here: set ITG=TGRND
+						      CALL: TWOSTR   	 --for scattering. not needed
+						      CALL: ADD		 --for scattering. not needed
+						      CALL: NEWFLUX1
+						Loop over levels and save heating rates from radtran (saved to htlw and htsw)
+					Bunch of writing happens
+				fluxes saved to rrflux array
+				TTRD is the non dimensional gridpoint temperature tendency		
+						DO: iz=1, NZ		(NZ=NL+1)
+						    jz=NZ+1-iz		(used to flip array)
+						    Calculate heating rates
+
+
+	temperature is updated in the following way:
+	in RADIATION: T=TG*CT							CT returns dimensions to TG
+		TG initially comes from cdgrmlt.f line 241: TG=TG+T0			T0 is an initial temperature array
+		in XSECT2 line 232, TG=TG1
+
+	nondimensional temperature tendency (TTRD) is calculated from the heating rates
+	TNLG=TNLG+TTVD+TTCR+TTLR+TTRD
+		TNLG:	grided heating
+
+	TTRDZ=SSUM(MG,TTRD(IOF,L),1)*1/MG
+
+---- 8/14/17
+Tracing how variables are passed and when names change
+
+TEMP ARRAY (T,TG ==> Temperature in Spectral and Grid space respectively)
+     in cdgrmlt --- in grid space, line 234 TG=TG+T0		temp arrays are temp annomalies
+     **Grid temperatures are calculated in radiation scheme, but T is used to denote these arrays.
+     in rradiation: T(LD)=TG(im,ld)*CT	   	     	     	 CT redimensionalizes. ld=levels, im=longitude. rradiation is called for each lat
+     		    						 here T is an NL+1 array, so only levels. This part is done individually for each long
+								 **T(NL+1) is set from base flux+upgoing bottom IR flux /sigma **1/4.
+								 ** THIS WILL BE SURFACE FOR THE CODE, means I don't need to add a new matrix.
+
+FLUX ARRAYS 
+     in rradiation: fed to calc_radheat as 'fluxes'. Actually want to use rrfluxes arrays. put into rflux in cdgrmlt. called fluxes inside radiation scheme.
+
+
+ADDITIONS TO FORT.7
+INSURFACE
+csurf in J/(kg*K) = specific heat of surface
+rhosurf in g/cm3   = density of surface
+deltaz in cm	   = thickness of surface
+alblw  	  	   = LW albedo
+emissir		   = surface emissivity
+
+ALBSW in insimprad is the sw albedo at the BOA
+GASCON = specific gas constant of air (J/kg*K)
+
+
+Calculating mass: (from xsect2.f)
+	 SEC=ALAT(J)/57.29578						alat to degrees (57.29578 is 180/pi)                                                               
+         DMASSJ=RADEA*RADEA*COS(SEC)*(PI2/MG)*(PI/2./JG)/GA		radius^2*cos(lat)*(2pi/long)*(pi/2*lat)/gravity
+	 DO L=1,NL                                                                                                                              
+            DMASS=DMASSJ*DSIGMA(L)
+
+
+
+*** in rradiation, T(NL+1) will be set to be the surface temperature.  
+    in rradtran, is where calc will happen, TT(NL) is the surface
+
+---- 8/15/17
+rsurface.f has correct temps, press, mass&density, and flux arrays. Need to double check winds and how they're passed through the code
+
+need to update fluxes in rradtran with the appropriate values from surface reflection and emission. figure out if that should be done inside of rsurface to then feed those values into rnewflux. basically just track how fluxes are updated/calculated

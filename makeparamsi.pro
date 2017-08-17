@@ -94,7 +94,7 @@ If Tnum eq 'T5' then begin
 
    if L eq 'L20' then begin
 printf,filnum,'C T5 L20  full sphere'
-printf,filnum,'     PARAMETER(NN=5,MM=5,NHEM=2 ,NL=2 0,MOCT=1,MG=16,JG=4,NWJ2=9        
+printf,filnum,'     PARAMETER(NN=5,MM=5,NHEM=2 ,NL=2 0,MOCT=1,MG=16,JG=4,NWJ2=9'        
 printf,filnum,'   +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'  
 goto,quit
    endif
@@ -147,7 +147,7 @@ goto,quit
 endif
 	
 ;;;############ T21 #########
-If Tnum eq 'T20' then begin
+If Tnum eq 'T21' then begin
 	if L eq 'L5' then begin
 printf,filnum,'C T21 L5  full sphere'
 printf,filnum,'     PARAMETER(NN=2 1,MM=2 1,NHEM=2 ,NL=5,MOCT=1,MG=64,JG=16,NWJ2=121'       

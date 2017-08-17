@@ -242,6 +242,12 @@ C-----------------------------------------------------------------------
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
      
+
+       REAL TSURFACE(mg,jg*nhem)
+       COMMON/SURFACE/CSURF,RHOSURF,DELTAZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
+     & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+       LOGICAL LSURF
+
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
 !     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF,
@@ -396,6 +402,18 @@ C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
           PI0AERLW   =  0.0
           ASYMLW     =  0.0
           ENDIF
+
+!     For a surface, set up the Surface Temp Matrix
+          IF (LSURFACE) THEN
+             DELTAT=(PI2/WW)/TSPD
+             DO i=1,mg
+                DO j=i,jg*nhem
+                   TSURFACE(i,j)=TGRND0
+                ENDDO
+             ENDDO
+          ENDIF
+
+
 C         The loop for the radiative transfer code is as follows:
 !        DO_LATLOOP (below in cmltr_nopg.f)
 !            DO_HEMLOOP (in rradiation.f aka formally cmorc)
