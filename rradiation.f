@@ -135,6 +135,13 @@ C
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
 
+
+       REAL TSURFACE(mg,jg*nhem)
+       COMMON/SURFACE/CSURF,RHOSURF,DELTAZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
+     & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+
+       LOGICAL LSURF
+
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
 !     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
@@ -392,7 +399,12 @@ c --------------------------------------- Now set rest of column.
                      AEROPROF(NL+1)=0.0
                    PRB2T(1)=PLG(im)*P0
                    PR(NL+1)=PLG(im)*P0
-                   T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
+                   IF (LSURF) THEN
+                      T(NL+1)=TGRND0
+                   ELSE
+                      T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)
+     &                     **0.25
+                   ENDIF
 ! This could also just be the ground temperature... decision to be made
 c ----------------------------------------------------- And alat1         
                                                                           
@@ -465,6 +477,19 @@ C Call radiation scheme
             
 !            write(*,*) 'TAUAEROSOL IN RRAD',TAUAEROSOL 
             ENDIF
+
+!  sets flux,wind, and tgrnd at bottom from previous timestep for this lat/long 
+            IF (LSURF) THEN
+               IF (ihem.eq.1) THEN
+                  TGRND0=TSURFACE(i,jh)
+               ELSE
+                  TGRND0=TSURFACE(0,jg*nhem-(jh-1))
+               ENDIF
+               FSWD=(1.-ALBSW)*RRFLUX(im,jh,1)
+               FLWD=(1.-ALBLW)*RRFLUX(im,jh,3)
+               BOAWIND=UG(IM,NL)
+            ENDIF
+ 
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
                                  
@@ -492,8 +517,17 @@ c store net flux in PNET
                   rrflux(im,jh,3)=fluxes(2,1,2)                                   
                   rrflux(im,jh,4)=fluxes(2,2,2)                                   
                   rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
-                  rrflux(im,jh,6)=fluxes(2,2,1)                                   
-                                                                          
+                  rrflux(im,jh,6)=fluxes(2,2,1)                     
+
+!  updating surface values
+                  IF (LSURF) THEN
+                     IF (ihem.eq.1) THEN
+                        TSURFACE(i,jh)=TGRND0
+                     ELSE
+                        TSURFACE(i,jg*nhem-(jh-1))=TGRND0
+                     ENDIF
+                  ENDIF
+                                                        
                   DO l=nl,1,-1                                                    
 c  bottom heating rate is zero in morecret                                
                      LD=NL+1-L                                                      

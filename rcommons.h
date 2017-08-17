@@ -44,6 +44,12 @@ C
 
       LOGICAL LBIN
 
+! need this for the logical switch for if surface or not.
+      REAL TSURFACE(mg,jg*nhem)
+      COMMON/SURFACE/CSURF,RHOSURF,DELTAZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
+     & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+
+      LOGICAL LSURF
 
       INTEGER MXGAS,MXLEV,MXBAND,MXCL                                     
                                                                           

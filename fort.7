@@ -3,26 +3,26 @@
  THECOMMENT= 'This comment prints to screen or notification email'
  /
  &INPPL      
- GA = 4.1687, 
- GASCON  =   3523.,
- RADEA   =   1.12836e8,
+ GA = 19.167, 
+ GASCON  =   287.1,
+ RADEA   =   1.019e7,
  AKAP    =  0.2860000000000,
- WW      =  1.48853e-5,
- P0      =   1.0E+7     ,
+ WW      =  7.292e-5,
+ P0      =   2.0E+5     ,
  RV      =   461.510000000000     ,
  CLATNT  =   2500000.00000000     
  /
  &INPRN
- KRUN    =           48000.,
+ KRUN    =           2920000.,
  BEGDAY  =  0.000000000000000E+000,
- TSPD    =   4800.,
+ TSPD    =   800.,
  KITS    =           3,
  PNU     =  2.000000000000000E-002,
  TDISS   =  0.005,
  LFLUX   = T,
  BEGDOY  =  0.000000000000000E+000,
  NDEL    =           8,
- T0      = 30*1700.00,
+ T0      = 30*300.00,
  LRSTRT  = F,
  LSTRETCH    = F,
  LSHORT  = F,
@@ -44,7 +44,7 @@
  RNTAPE  =  0.000000000000000E+000,
  KOUNTH  =           48000,
  KOUNTR  =           48000,
- KOUNTP  =           4800,
+ KOUNTP  =           800,
  KOUNTE  =           0,
  NCOEFF  =           0,
  NLAT    =          4,
@@ -63,13 +63,13 @@ RFCOEFF_IN	= 0.0e-0,
 NTSTEP_IN	= 8, 
 NSKIP_IN	= 0, 
 BOTRELAXTIME	= 1.0, 
-FBASEFLUX	= 2325.2, 
+FBASEFLUX	= 0.087, 
 FORCE1DDAYS	= 0.0e0, 
 OPACIR_POWERLAW	= 0.0,
 OPACIR_REFPRES	= 1.0e5, 
-SOLC_IN		= 1.58923e6,
-TOAALB		= 0.0, 
-PORB		= 1.0, 
+SOLC_IN		= 1370,
+TOAALB		= 0.3, 
+PORB		= 365., 
 OBLIQ		= 0.0, 
 ECCEN		= 0.0
 /
@@ -128,11 +128,12 @@ STTEMP2=3357
  &INPRSIJ
  TFRC    = 30*0.,
  RESTIM  = 30*1e30,
- RESTTT = 1523.53 , 1527.07 , 1532.22 , 1539.66 , 1550.34 , 1565.51, 
-      1586.80 , 1616.12 , 1655.60 ,1707.21,  1772.33,  1851.11, 
-      1941.88 , 2040.59 , 2140.60 , 2233.03 , 2308.34,  2359.67,
-      2387.26 , 2399.42 , 2406.78 , 2415.55 , 2428.12,  2446.22, 
-      2472.07 , 2508.62 , 2559.53 , 2629.16 , 2722.31,  2843.80
+ RESTTT = 362.354, 362.366, 362.384, 362.410, 362.448, 362.505, 362.587, 
+	362.708, 362.886, 363.145, 363.523, 364.074, 364.874,
+	366.029, 367.685, 370.033, 373.314, 377.804, 383.778, 
+	391.426, 400.736, 411.341, 422.407, 432.672, 440.755, 
+	445.784, 448.000, 448.595, 448.683, 448.707,
+
  REDTEP = 30*0.,
  DTNS    =  0.0000000E+00,
  DTEP    =   300.00000    ,
@@ -145,7 +146,7 @@ STTEMP2=3357
  &INSIMPRAD
  LLOGPLEV        = F,
  LFLUXDIAG       = T,
- L1DZENITH       = F,
+ L1DZENITH       = T,
  LDIUR           = F,
  JSKIPLON        = 1,
  JSKIPLAT        = 1,
@@ -159,7 +160,7 @@ STTEMP2=3357
  AEROSOLS        = F,
  ABSSW           = 0, 
  ABSLW           = 1.08E-2,
- ALBSW           = 1.0,
+ ALBSW           = 0.3,
  NEWTB           = 0,
  NEWTE           = 0
  /
@@ -177,6 +178,15 @@ STTEMP2=3357
  DELTASCALE      = F,
  SIG_AREA        = 25.,
  PHI_LON         = 75. 
+/
+ &INSURFACE
+ LSURF		 = T,
+ CSURF		 = 528.99,
+ RHOSURF	 = 3.5,
+ DELTAZ	         = 100.,
+ ALBLW		 = 0.3,
+ SURF_EMIS	 = 0.6,
+ TGRND0		 = 450.,
 /
  &INQ
  LRH     = T,
