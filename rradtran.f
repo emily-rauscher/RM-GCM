@@ -64,7 +64,7 @@
       TT(1)=((T(1)-TT(2))/log(P(1)/PRESS(2)))*log(PRESS(1)/P(1))+T(1)
 !     BOTTOM
       IF (LSURF) THEN
-         call SURFACETEMP(T,P)
+         call SURFACETEMP(T(NL),P(NL))
          TT(NLAYER)=TGRND0
       ELSE
          TT(NLAYER)=T(NVERT) * (PRESS(NLAYER)/P(NVERT)) **
@@ -166,7 +166,11 @@
  20   CONTINUE
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
-         EMIS(L) =  EMISIR
+         IF (LSURF) THEN
+            EMIS(L)=SURF_EMIS
+         ELSE
+            EMIS(L) =  EMISIR
+         ENDIF
          RSFX(L) = 1.0 - EMIS(L)
 
 !         call interpol( albedoa, wavea, wave(nprob(L)), 

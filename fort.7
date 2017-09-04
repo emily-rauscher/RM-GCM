@@ -93,6 +93,15 @@ STRAD2=0.3506,
 STTEMP1=5636
 STTEMP2=3357
 /
+ &INSURFACE
+ LSURF           = T,
+ CSURF           = 528.99,
+ RHOSURF         = 3.5,
+ GRNDZ          = 100.,
+ ALBLW           = 0.4,
+ SURF_EMIS       = 0.6,
+ TGRND0          = 450.,
+/
  &INPHYS
  LBL     = F,
  LVD     = F,
@@ -146,20 +155,20 @@ STTEMP2=3357
  &INSIMPRAD
  LLOGPLEV        = F,
  LFLUXDIAG       = T,
- L1DZENITH       = T,
- LDIUR           = F,
+ L1DZENITH       = F,
+ LDIUR           = T,
  JSKIPLON        = 1,
  JSKIPLAT        = 1,
  DOSWRAD         = T,
  DOLWRAD         = T,
  LWSCAT          = T,
  FLXLIMDIF       = T,
- SURFEMIS        = 1.,
+ SURFEMIS        = 0.6,
  RAYSCAT         = F,
  RAYSCATLAM      = 0.3812,
  AEROSOLS        = F,
- ABSSW           = 0, 
- ABSLW           = 1.08E-2,
+ ABSSW           = 8.14E-4, 
+ ABSLW           = 1.49E-2,
  ALBSW           = 0.3,
  NEWTB           = 0,
  NEWTE           = 0
@@ -178,15 +187,6 @@ STTEMP2=3357
  DELTASCALE      = F,
  SIG_AREA        = 25.,
  PHI_LON         = 75. 
-/
- &INSURFACE
- LSURF		 = T,
- CSURF		 = 528.99,
- RHOSURF	 = 3.5,
- DELTAZ	         = 100.,
- ALBLW		 = 0.3,
- SURF_EMIS	 = 0.6,
- TGRND0		 = 450.,
 /
  &INQ
  LRH     = T,
