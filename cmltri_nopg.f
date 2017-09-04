@@ -244,7 +244,7 @@ C-----------------------------------------------------------------------
      
 
        REAL TSURFACE(mg,jg*nhem)
-       COMMON/SURFACE/CSURF,RHOSURF,DELTAZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
+       COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
      & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
        LOGICAL LSURF
 
@@ -379,7 +379,6 @@ C     ER modif for output management
       IFTOUT=5000
       ISFOUT=6400
 
-
 !      HERE WE MAKE OR READ IN THE AEROSOLS     
 !      CALL READ_AEROSOLS
 !           IF (AEROSOLS) THEN
@@ -404,13 +403,15 @@ C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
           ENDIF
 
 !     For a surface, set up the Surface Temp Matrix
-          IF (LSURFACE) THEN
-             DELTAT=(PI2/WW)/TSPD
+          IF (LSURF) THEN
+!             write(*,*) 'Surface is on'
+             DELTAT=(PI2/WW)/ITSPD
              DO i=1,mg
-                DO j=i,jg*nhem
+                DO j=1,jg*nhem
                    TSURFACE(i,j)=TGRND0
                 ENDDO
              ENDDO
+!             write(*,*) TSURFACE
           ENDIF
 
 
@@ -563,7 +564,7 @@ C
 C      IF (KKOUT.EQ.0.AND.NLAT.GT.0) REWIND 24                            
 C                                                                         
 C     First timestep - output history and diagnostics                     
-C                                                                         
+C                           
       IF (KOUNT.EQ.0) THEN                                                
 c         REWIND 9                                                        
          RKOUNT=KOUNT                                                     
@@ -811,7 +812,7 @@ CC!$omp end parallel
 C                                                                         
 C        Calculate diabatic terms                                         
 C                                                                         
-            CALL DGRMLT(IH)                                                   
+            CALL DGRMLT(IH)   
 C                                                                         
 C        Write accumulated diagnostics to history file.                   
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad                        

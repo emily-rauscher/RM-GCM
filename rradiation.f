@@ -137,7 +137,7 @@ C
 
 
        REAL TSURFACE(mg,jg*nhem)
-       COMMON/SURFACE/CSURF,RHOSURF,DELTAZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
+       COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
      & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
 
        LOGICAL LSURF
@@ -399,6 +399,7 @@ c --------------------------------------- Now set rest of column.
                      AEROPROF(NL+1)=0.0
                    PRB2T(1)=PLG(im)*P0
                    PR(NL+1)=PLG(im)*P0
+
                    IF (LSURF) THEN
                       T(NL+1)=TGRND0
                    ELSE
@@ -483,11 +484,11 @@ C Call radiation scheme
                IF (ihem.eq.1) THEN
                   TGRND0=TSURFACE(i,jh)
                ELSE
-                  TGRND0=TSURFACE(0,jg*nhem-(jh-1))
+                  TGRND0=TSURFACE(i,jg*nhem-(jh-1))
                ENDIF
-               FSWD=(1.-ALBSW)*RRFLUX(im,jh,1)
-               FLWD=(1.-ALBLW)*RRFLUX(im,jh,3)
-               BOAWIND=UG(IM,NL)
+               FSWD=(1E3)*(1.-ALBSW)*RRFLUX(im,jh,1)
+               FLWD=(1E3)*(1.-ALBLW)*RRFLUX(im,jh,3)
+               BOAWIND=100.*ABS(UG(IM,NL))
             ENDIF
  
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
@@ -514,13 +515,14 @@ c store net flux in PNET
      $                 fluxes(2,2,2)                                                  
                   rrflux(im,jh,1)=fluxes(1,1,2)                                   
                   rrflux(im,jh,2)=fluxes(1,2,2)                                   
-                  rrflux(im,jh,3)=fluxes(2,1,2)                                   
+                  rrflux(im,jh,3)=fluxes(2,1,2)
                   rrflux(im,jh,4)=fluxes(2,2,2)                                   
                   rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
                   rrflux(im,jh,6)=fluxes(2,2,1)                     
 
 !  updating surface values
                   IF (LSURF) THEN
+!                     write(*,*) KOUNT, i, jh, TGRND0
                      IF (ihem.eq.1) THEN
                         TSURFACE(i,jh)=TGRND0
                      ELSE
