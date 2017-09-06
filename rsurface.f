@@ -4,7 +4,7 @@
 !     Takes boundary fluxes and calculates a surface temperature
 !     based on the 1D heat equation, assumes no horizontal heat transport
 !
-!     done in rradiation, using current fluxes. Is recalculated before 
+!     done in rradtran, using current fluxes. Is recalculated before 
 !     fluxes are redone in rnewflux1. 
 !
 !     relevant fluxes are added to arrays in rradtran at end (reflected and re-emitted fluxes)

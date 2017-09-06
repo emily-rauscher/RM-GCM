@@ -137,13 +137,17 @@ C              ddamp(l) is set as 1./(2.*pi*restim)
                DO 22 L=1,NL                                                     
                   I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
                   DO 23 J=1,NWJ2                                                
-                     TT(I+J)=TT(I+J)-DDAMP(L)*(T(I+J)-TTRES(I+J))               
+                     TT(I+J)=TT(I+J)-DDAMP(L)*(T(I+J)-TTRES(I+J))
+     &                        +((TFRC(L)*TFRC(L))*(Z(I+J)*Z(I+J)
+     &                        +D(I+J)*D(I+J)))/(2.*CPD)                
                      ZT(I+J)=ZT(I+J)-TFRC(L)*Z(I+J)                             
                      DT(I+J)=DT(I+J)-TFRC(L)*D(I+J)                             
  23               CONTINUE                                                       
  22            CONTINUE                                                         
  21         CONTINUE                                         
          ENDIF
+C
+C EMM   Added Heating from momentum dissipation to TT
 C                                                                         
 C       No friction on planetary vorticity                                
 C                                                                         
