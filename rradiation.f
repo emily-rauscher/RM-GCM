@@ -407,6 +407,7 @@ c --------------------------------------- Now set rest of column.
      &                     **0.25
                    ENDIF
 ! This could also just be the ground temperature... decision to be made
+!em-- In the case of a surface, T(NL+1) is set to the ground temperature
 c ----------------------------------------------------- And alat1         
                                                                           
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
@@ -488,7 +489,8 @@ C Call radiation scheme
                ENDIF
                FSWD=(1E3)*(1.-ALBSW)*RRFLUX(im,jh,1)
                FLWD=(1E3)*(1.-ALBLW)*RRFLUX(im,jh,3)
-               BOAWIND=100.*ABS(UG(IM,NL))
+               BOAWIND=100.*(ABS(UG(IM,NL))*ABS(UG(IM,NL))
+     &            +ABS(VG(IM,NL))*ABS(VG(IM,NL)))**(1./2.)
             ENDIF
  
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           

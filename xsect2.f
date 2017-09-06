@@ -491,9 +491,9 @@ C      ENDIF
       ENDIF
 
       IF (LSURF) THEN
-         WRITE (30,106) JG*2,MG,NL
+!         WRITE (30,106) JG*2,MG
          WRITE (30,*),TSURFACE
-         WRITE (30,105), DAY, SSLON, SSLAT
+!         WRITE (30,105), DAY, SSLON, SSLAT
       ENDIF
          
  
