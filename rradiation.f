@@ -492,7 +492,7 @@ C Call radiation scheme
                BOAWIND=100.*(ABS(UG(IM,NL))*ABS(UG(IM,NL))
      &            +ABS(VG(IM,NL))*ABS(VG(IM,NL)))**(1./2.)
             ENDIF
- 
+            
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
                                  
