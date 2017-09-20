@@ -283,7 +283,7 @@ C  Convert from volume mixing ratio to mass mixing ratio.
      +        CALL SFCT(PLG,JH,IFIRST,TROPHT)                              
          IF (JH.EQ.JG) IFIRST=0                                             
       ENDIF                                                               
-C                                                                         
+C                                        
       if (LOLDBL) then                                                    
          if (LBL) call BLAYER                                             
       else                                                                
@@ -294,8 +294,8 @@ C
       IF(LLR) CALL LSCRN
       IF(LRD) CALL RADIATION(TROPHT,IH)
 !      IF(LRD) CALL RADN(TROPHT)                                           
-      if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
-C                                                                         
+      if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM
+C                                                                        
       do j=1,igc                                                          
          sfld(j,1)=salb(j,jh)                                             
          sfld(j,2)=tstar(j,jh)                                            

@@ -300,7 +300,7 @@ C     &&&&&&&&&&&&&MODIFIED START &&&&&&&&&&&&&&
             TT(I)=0.0        
             DTE(I)=0.0       
          ENDDO               
- 
+
 C     Main loop over latitudes ( so says previous author, but it's NOT so for radiation  ~mtr)
 C
          JL=1
@@ -366,7 +366,7 @@ C        &&&&&&&&&&&&&&& END MODIFIED START &&&&&&&&&&&&&&&
       ENDIF
 
       kflag=0                                                             
-      CALL INITAL                                                         
+      CALL INITAL                      
 C     ER modif for output management
       FDAY=KRUN/ITSPD
       IDAYS(1)=5
@@ -468,7 +468,7 @@ C
 C                                                                         
 C        Calculate restoration arrays                                     
 C                                                                         
-         IF (.NOT. LRESTIJ) CALL SETRES                                   
+         IF (.NOT. LRESTIJ) CALL SETRES
 C                                                                         
       ENDIF                                                               
 C                                                                         
@@ -494,7 +494,7 @@ C
 C        Go from spectral space to grid point space using                 
 C        inverse Legendre and Fourier transforms                          
 C                                                                         
-         CALL LTI                                                         
+         CALL LTI           
 
 CC!$omp parallel default(shared) private(I,WORK) 
 CC!$omp do
@@ -510,7 +510,7 @@ CC!$omp end parallel
 C                                                                         
 C        Calculate nonlinear terms                                        
 C                                                                         
-         CALL MGRMLT                                                      
+         CALL MGRMLT        
 C                                                                         
 C        Save grid point fields for use in XSECT                          
 C                                                                         
@@ -559,7 +559,7 @@ C
             CALL ENERGY                                                   
             GO TO 1                                                       
          ENDIF                                                            
-      ENDIF                                                               
+      ENDIF                 
 C                                                                         
 C      IF (KKOUT.EQ.0.AND.NLAT.GT.0) REWIND 24                            
 C                                                                         
@@ -596,7 +596,7 @@ C           write (*,*) IODSIZE,5+IGO+IGP*(3+NTRAC)
          CALL ENERGY                                                      
       ELSE IF (KOUNT.EQ.KSTART) THEN                                      
          CALL ENERGY                                                      
-      ENDIF                                                               
+      ENDIF              
       IF (LRESTIJ) THEN                                                   
 C                                                                         
 C        Write a restoration record                                       
@@ -606,7 +606,7 @@ C
             WRITE(13)RKOUNT,RNTAPE,DAY,DOY,TTRES,RNTAPE                   
             WRITE(2,2020)13,RKOUNT,RNTAPE,DAY,DOY                         
          ENDIF                                                            
-      ENDIF                                                               
+      ENDIF              
 C                                                                         
 C     Write a restart record                                              
 C                                                                         
@@ -694,7 +694,7 @@ C     ER modif for 90 outputs during last orbit of planet
          CALL ENERGY                                                      
          KOUTE=0                                                          
       ENDIF                                                               
-C                                                                         
+C                         
       IF (KOUNT.LT.KTOTAL) THEN                                           
          KOUTP=KOUTP+1                                                    
          KOUTE=KOUTE+1                                                    
@@ -711,7 +711,7 @@ C
 C                                                                         
 C Adiabatic part of timestep                                              
 C                                                                         
-         CALL TSTEP                                                       
+         CALL TSTEP       
 C                                                                         
 C Mass correction.                                                        
 C                                                                         
@@ -720,7 +720,7 @@ C
          ELSE IF(LRESTIJ) THEN                                            
 C Simple fix to maintain mass.                                            
             SP(1)=CMPLX(0.,0.)                                            
-         ENDIF                                                            
+         ENDIF               
 C                                                                         
 C Diabatic part of timestep. Preset tendencies to zero.                   
 C                                                                         
@@ -736,7 +736,7 @@ C
 C                                                                         
 C        Set parameters for optional Newtonian cooling.                   
 C                                                                         
-         IF (LRESTIJ) CALL SETTEE                                         
+         IF (LRESTIJ) CALL SETTEE
 C                                                                         
 C        Preset accumulated diagnostics.                                  
 C                                                                         
@@ -812,7 +812,7 @@ CC!$omp end parallel
 C                                                                         
 C        Calculate diabatic terms                                         
 C                                                                         
-            CALL DGRMLT(IH)   
+            CALL DGRMLT(IH)  
 C                                                                         
 C        Write accumulated diagnostics to history file.                   
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad                        
@@ -865,7 +865,7 @@ CC!$omp end parallel
      +                  1,MGPP,MG,NRSTGD,-1)                              
 C                                                                         
             CALL LTDDIA                                                   
-            JL=JL+JINC                                                    
+            JL=JL+JINC          
  260     CONTINUE                                                         
 C                                                                         
 C Write zonally averaged diagnostics and spectral heating                 
@@ -918,12 +918,12 @@ C      NAVWT=NTEMP
  300     CONTINUE                                                         
 C                                                                         
 C Apply dissipation and optional linear restoration.                      
-C                                                                         
+C
          CALL DIFUSE                                                      
 C                                                                         
 C Update spectral fields in the diabatic timestep.                        
 C                                                                         
-         CALL DSTEP                                                       
+         CALL DSTEP             
 C                                                                         
 C End of timestep                                                         
          DO J=1,IGB                                                       
