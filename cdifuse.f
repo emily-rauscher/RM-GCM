@@ -52,7 +52,7 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                
      +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT                           
-
+C                                                                         
 C                                                                         
 C     Array ordering in SPECTR must correspond to that in GRIDP.          
 C                                                                         
@@ -102,12 +102,11 @@ C
      & ALBSW, NEWTB, NEWTE,RAYPERBARCONS
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
-              
+
        REAL TSURFACE(mg,jg*nhem)
        COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
      & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
        LOGICAL LSURF
-
 C
 C
 C ER Modif
@@ -118,8 +117,8 @@ C ER Modif
       data ifirstrf /.true./                                              
 C                                                                         
 C Add newtonian cooling and surface Rayleigh friction.                    
-C                                                                    
-      IF (LRESTIJ) THEN     
+C                                                                         
+      IF (LRESTIJ) THEN                                                   
 C ER Modif, use Newtonian cooling with trad=0.1 days to set initial profiles,
 C     unless PORB EQ 0!
          IF (((KOUNT/ITSPD).LE.1).AND.(PORB.EQ.0)) THEN
@@ -128,12 +127,12 @@ C           (only do this if 3D run)
 C              ddamp(l) is set as 1./(2.*pi*restim)
                TDAMP=1./(PI2*0.1)
                DO 41 IHEM=1,NHEM                                                   
-                  DO 42 L=1,NL    
+                  DO 42 L=1,NL                                                     
                      I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
-                     DO 43 J=1,NWJ2
+                     DO 43 J=1,NWJ2                                                
                         TT(I+J)=TT(I+J)-TDAMP*(T(I+J)-TTRES(I+J))               
-!     &                        +((DELTAT/3600.)**2.)*((TFRC(L)*TFRC(L))
-!     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+     &                        +((DELTAT/3600.)**2.)*((TFRC(L)*TFRC(L))                                          
+     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
                         ZT(I+J)=ZT(I+J)-(DELTAT/3600.)*TFRC(L)*Z(I+J)                             
                         DT(I+J)=DT(I+J)-(DELTAT/3600.)*TFRC(L)*D(I+J)                             
  43                  CONTINUE                                                       
@@ -142,26 +141,24 @@ C              ddamp(l) is set as 1./(2.*pi*restim)
             ENDIF
          ELSE
             DO 21 IHEM=1,NHEM                                                   
-               DO 22 L=1,NL       
+               DO 22 L=1,NL                                                     
                   I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
-                  DO 23 J=1,NWJ2  
+                  DO 23 J=1,NWJ2                                                
                      TT(I+J)=TT(I+J)-DDAMP(L)*(T(I+J)-TTRES(I+J))
-!     &                        +((DELTAT/3600.)**2.)*((TFRC(L)*TFRC(L))
-!     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+     &                        +((DELTAT/3600.)**2.)*((TFRC(L)*TFRC(L))                                          
+     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)               
                      ZT(I+J)=ZT(I+J)-(DELTAT/3600.)*TFRC(L)*Z(I+J)                             
-                     DT(I+J)=DT(I+J)-(DELTAT/3600.)*TFRC(L)*D(I+J)
+                     DT(I+J)=DT(I+J)-(DELTAT/3600.)*TFRC(L)*D(I+J)                             
  23               CONTINUE                                                       
  22            CONTINUE                                                         
  21         CONTINUE                                         
          ENDIF
-C
-C EMM   Added Heating from momentum dissipation to TT
 C                                                                         
 C       No friction on planetary vorticity                                
 C                                                                         
       DO 24 L=1,NL                                                        
          I=(L-1)*IGA+1                                                    
-         ZT(I)=ZT(I)+(DELTAT/3600.)*TFRC(L)*EZ                                           
+         ZT(I)=ZT(I)+(DETLAT/3600.)*TFRC(L)*EZ                                           
  24   CONTINUE                                                            
       ELSE                                                                
       IF(DAMP.GT.0.0) THEN                                                

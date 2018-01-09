@@ -277,7 +277,11 @@
 !     MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
-         FNET(2,NLAYER)=FBASEFLUX  
+        IF(LSURF) THEN
+           FNET(2,NLAYER)=FNET(2,NLAYER)
+        ELSE
+           FNET(2,NLAYER)=FBASEFLUX
+        ENDIF
 !     SINCE WE ARE PLACING A CONSTRAINT ON THE NET FLUX AT THE BOTTOM OF
 !     THE MODEL (BY DEFINING  NET FLUX AT THE BASE TO EQUAL FBASEFLUX)
 !     TO BE SELF CONSISTENT, WE CAN REDIFINE THE UPWARD FLUX FROM THE
@@ -285,8 +289,8 @@
 
 !      HERE WE DERIVE THE UPWARD FLUX FROM THE NET FLUX, SELF CONSISTENT
 !      WITH BOTTOM BOUNDARY CONDITION
-         DIRECTU(2,NLAYER)    =  FBASEFLUX+DIREC(2,NLAYER)
-  
+        DIRECTU(2,NLAYER)=FNET(2,NLAYER)+DIREC(2,NLAYER)
+
 !            DO 55 J = 1,NLAYER
 !         write(*,*) PRESS(J),FNET(1,J),FNET(2,J) 
 !666      FORMAT(F14.6,6x, E14.6, 6X, E14.6, 6X, E14.6) 
@@ -312,11 +316,12 @@
 !           write(*,*)  'DPG' 
            TERM1      =  FDEGDAY/(DPG(J+1)*G)
 !           write(*,*) J,TERM1         
-!           write(*,*)'FNET',FNET
+!           write(*,*)'FNET',FNET(2,*)
            IF(ISL .NE. 0) THEN
              DO 480 L     =  1,NSOLP
                HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
-!               write(*,*)'FNET',(FNET(L,J+1),FNET(L,J))
+!               write(*,*)'FNET',(FNET(L,J+1)-FNET(L,J))
+!               write(*,*) ' HEATS', (FNET(L,J+1)-FNET(L,J))*TERM1
  480         CONTINUE
            ENDIF
 
@@ -629,7 +634,11 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top                           
       RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom                       
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          
-      RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom  
+!      IF (LSURF) THEN
+!         RFLUXES_aerad(2,2,2)=fir_up_aerad(1)+FLWE*1.0E-3
+!      ELSE
+      RFLUXES_aerad(2,2,2)=fir_up_aerad(1) ! LW up bottom  
+!      ENDIF
 !      write(*,*)'RFLUXES_aerad',rfluxes_aerad
       return
       END

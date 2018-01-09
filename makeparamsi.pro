@@ -1,4 +1,4 @@
-PRO makeparamsi,Tnum=Tnum,Lnum=Lnum
+PRO makeparamsi,Tnum=Tnum,L=Lnum
 
 ;PROGRAM TO GENERATE ABBREVIATED PARAMS.I FILE FOR EASE OF QUICKLY CHANGING RESOLUTIONS;
 ;This was written to assist with optimization ~ mtroman 8/7/15
@@ -296,7 +296,7 @@ goto,quit
 	endif
 endif
 
-if Tnum ne 'T2'  and Tnum ne 'T5' and Tnum ne 'T10' and Tnum ne 'T20' and Tnum ne 'T31' and Tnum ne 'T42'  $
+if Tnum ne 'T2'  and Tnum ne 'T5' and Tnum ne 'T10' and Tnum ne 'T21' and Tnum ne 'T31' and Tnum ne 'T42'  $
 and Tnum ne 'T63' and Tnum ne 'T85' and Tnum ne 'T170' and Tnum ne 'T213' then goto, YOUPICK
 
 YOUPICK:
