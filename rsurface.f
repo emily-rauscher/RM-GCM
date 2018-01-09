@@ -64,6 +64,7 @@
 
 !      write(*,*) '-------------> RSURFACE'
 !      write(*,*) FLWE,SHEAT,FLWD,FWSD
+!      write(*,*) 'WIND=', BOAWIND
 !      write(*,*) 'MASS=', mass_boa
 !      write(*,*) 'Density=', dens_boa
 !      write(*,*) 'Pressure=', pboa
@@ -74,7 +75,7 @@
 !      write(*,*) 'Fbase=', FBASEFLUX*1E3
 !      write(*,*) '-- POSITIVE FLUXES=', FLWD+FSWD+(FBASEFLUX)*(1E3)
 !      write(*,*) '-- NEGATIVE FLUXES=', FLWE+SHEAT
-!      write(*,*) tboa, TGRND0, trans_c, gascon
+!      write(*,*) tboa, TGRND0, CPD, gascon
 
 !      IF (ISNAN(FLWE)) THEN
 !         FLWE=0.

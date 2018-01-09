@@ -238,7 +238,7 @@ C
             TTLR(J,L)=0.0                                                     
             QTLR(J,L)=0.0                                                     
             TTRD(J,L)=0.0                                                     
-            TG(J,L)=TG(J,L)+T0(L)                                             
+            TG(J,L)=TG(J,L)+T0(L)
  20   CONTINUE                                                            
       DO 30 J=1,IGC                                                       
 C sets ICFLAG and CFRAC to ZERO at each timestep                          
