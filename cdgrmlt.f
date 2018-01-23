@@ -223,6 +223,7 @@ c
          ENDIF                                                             
       ENDIF                                                               
 C                                                                         
+         
       DO 20 L=1,NL                                                        
          DO 20 J=1,IGC                                                      
             UNLG(J,L)=0.0                                                     
@@ -239,7 +240,7 @@ C
             QTLR(J,L)=0.0                                                     
             TTRD(J,L)=0.0                                                     
             TG(J,L)=TG(J,L)+T0(L)
- 20   CONTINUE                                                            
+ 20   CONTINUE                           
       DO 30 J=1,IGC                                                       
 C sets ICFLAG and CFRAC to ZERO at each timestep                          
          DO L=1,5                                                          
@@ -387,7 +388,7 @@ c
       ENDIF ! IF(LSUM)                                                    
 C                                                                         
       DO 200 L=1,NL                                                       
-       DO 200 J=1,IGC                                                     
+       DO 200 J=1,IGC
         UNLG(J,L)=UNLG(J,L)+UTVD(J,L)                                     
         VNLG(J,L)=VNLG(J,L)+VTVD(J,L)                                     
         TNLG(J,L)=TNLG(J,L)+TTVD(J,L)+TTCR(J,L)+TTLR(J,L)+TTRD(J,L)       

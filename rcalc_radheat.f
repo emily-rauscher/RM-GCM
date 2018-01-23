@@ -107,7 +107,6 @@
          call radsub(iffirst, pr,p_full,t_full,qh2o_full,
      &               radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD)
         iffirst = 0
-      
 !         write(*,*) 'radheat',radheat
 !         write(*,*) 'htlw',htlw
 !         write(*,*) 'htsw',htsw

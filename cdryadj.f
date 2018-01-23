@@ -82,7 +82,7 @@ C swapped round VLNG and UNLG to check
      :         ,arflux(igc,6),asfld(igc,6),acld(igc,4)                    
      :         ,SSBL(IGC),SHBL(IGC),SLBL(IGC),RRCR(IGC),RRLR(IGC)         
      :         ,rflux(igc,6),sfld(igc,6),cld(igc,4)                       
-C                                                                         
+C                              
             COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
      :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)         
@@ -127,6 +127,15 @@ C ER Modif to set convective adjustment timescale
       SKINT=SDOT(NLEV,SKAP(NCRT),1,DSIGMA(NCRT),1)                        
       TINT=SDOT(NLEV,TG(J,NCRT),IGC,DSIGMA(NCRT),1)/SKINT                 
       QINT=SDOT(NLEV,QG(J,NCRT),IGC,DSIGMA(NCRT),1)/SINT                  
+!      write(*,*) '*****************'
+!      write(*,*) 'INSIDE CDRYADJ...'
+!      write(*,*) 'TG...', TG(J,NCRT)
+!      write(*,*) 'DSIGMAD...', DSIGMA(NCRT)
+!      write(*,*) 'IGC=', IGC, 'NLEV=', NLEV
+!      write(*,*) 'SINT=', SINT
+!      write(*,*) 'SKINT=', SKINT
+!      write(*,*) 'TINT=', TINT
+!      write(*,*) 'SKAP=', SKAP(NCRT), SKAP(NCRB)
       DO 10 L=NCRT,NCRB                                                   
         TL=SKAP(L)*TINT                                                   
         QL=QINT                                                           

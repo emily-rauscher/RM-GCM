@@ -923,7 +923,7 @@ C
 C                                                                         
 C Update spectral fields in the diabatic timestep.                        
 C                                                                         
-         CALL DSTEP             
+         CALL DSTEP
 C                                                                         
 C End of timestep                                                         
          DO J=1,IGB                                                       
