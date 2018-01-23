@@ -205,7 +205,7 @@
 !       write(*,*)'TUAL pre OPPR1',TAUL
 !        write(*,*) ' calling OPPR1'
         IF(IR .NE. 0) THEN
-           CALL OPPR1(KOUNT)
+           CALL OPPR1
         ENDIF
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF
 !     SOLAR INTERVALS
