@@ -1,4 +1,4 @@
-      SUBROUTINE OPPR1
+      SUBROUTINE OPPR1(KOUNT)
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *

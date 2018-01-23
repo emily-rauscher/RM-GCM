@@ -492,10 +492,8 @@ C Call radiation scheme
                BOAWIND=100.*(ABS(UG(IM,NL))*ABS(UG(IM,NL))
      &            +ABS(VG(IM,NL))*ABS(VG(IM,NL)))**(1./2.)
             ENDIF
-            
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
-                                 
 c                  call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
 c     $                 fluxes,swalb,alon,kount,itspd)
           
@@ -576,7 +574,7 @@ c                           write(*,*),HTNET(IHEM,JH,J,LD)
      $                          b*htnet(ihem,jh,ilast,ld)                  
                            im=j+iofm                                                   
                            TTRD(IM,LD)=(HTNETO                                         
-     $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)                  
+     $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)
 !                    write(*,*)'TTRD',LD,TTRD(IM,LD)
                             IF (l.eq.nl) then                                           
                               pnet(im,jh)=a*pnet(i+iofm,jh)+                            
@@ -630,8 +628,8 @@ c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
                      htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
      $                    b*htnet(ihem,jh,ilast,ld)                  
                      TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             
-     $                    +HTNETO)/(CHRF*2.)   
-                   write(*,*) 'Now to the print statement'           
+     $                    +HTNETO)/(CHRF*2.)  
+!                   write(*,*) 'Now to the print statement'           
 !                   write(*,*)'TTRD',LD,TTRD(IM,LD)                
                      IF (l.eq.nl) then                                            
                         pnet(im,jh)=a*pnet(1+iofm,jh)+                             

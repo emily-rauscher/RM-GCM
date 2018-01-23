@@ -131,10 +131,10 @@ C              ddamp(l) is set as 1./(2.*pi*restim)
                      I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
                      DO 43 J=1,NWJ2                                                
                         TT(I+J)=TT(I+J)-TDAMP*(T(I+J)-TTRES(I+J))               
-     &                        +((DELTAT/3600.)**2.)*((TFRC(L)*TFRC(L))                                          
-     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
-                        ZT(I+J)=ZT(I+J)-(DELTAT/3600.)*TFRC(L)*Z(I+J)                             
-                        DT(I+J)=DT(I+J)-(DELTAT/3600.)*TFRC(L)*D(I+J)                             
+!     &                        +((DELTAT/86400.)**2.)*((TFRC(L)*TFRC(L))                                          
+!     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+                        ZT(I+J)=ZT(I+J)-(1.0/PI2)*TFRC(L)*Z(I+J)                             
+                        DT(I+J)=DT(I+J)-(1.0/PI2)*TFRC(L)*D(I+J)                             
  43                  CONTINUE                                                       
  42               CONTINUE                                                         
  41            CONTINUE                               
@@ -143,12 +143,12 @@ C              ddamp(l) is set as 1./(2.*pi*restim)
             DO 21 IHEM=1,NHEM                                                   
                DO 22 L=1,NL                                                     
                   I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
-                  DO 23 J=1,NWJ2                                                
+                  DO 23 J=1,NWJ2                       
                      TT(I+J)=TT(I+J)-DDAMP(L)*(T(I+J)-TTRES(I+J))
-     &                        +((DELTAT/3600.)**2.)*((TFRC(L)*TFRC(L))                                          
-     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)               
-                     ZT(I+J)=ZT(I+J)-(DELTAT/3600.)*TFRC(L)*Z(I+J)                             
-                     DT(I+J)=DT(I+J)-(DELTAT/3600.)*TFRC(L)*D(I+J)                             
+!     &                        +((DELTAT/86400.)**2.)*((TFRC(L)*TFRC(L))                                          
+!     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+                     ZT(I+J)=ZT(I+J)-(1.0/PI2)*TFRC(L)*Z(I+J)                             
+                     DT(I+J)=DT(I+J)-(1.0/PI2)*TFRC(L)*D(I+J)                             
  23               CONTINUE                                                       
  22            CONTINUE                                                         
  21         CONTINUE                                         
@@ -158,7 +158,8 @@ C       No friction on planetary vorticity
 C                                                                         
       DO 24 L=1,NL                                                        
          I=(L-1)*IGA+1                                                    
-         ZT(I)=ZT(I)+(DETLAT/3600.)*TFRC(L)*EZ                                           
+         ZT(I)=ZT(I)+(1.0/PI2)*TFRC(L)*EZ
+
  24   CONTINUE                                                            
       ELSE                                                                
       IF(DAMP.GT.0.0) THEN                                                

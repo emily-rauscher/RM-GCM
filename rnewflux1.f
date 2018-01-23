@@ -68,7 +68,7 @@
                  CKP= CK1(L,J)+CK2(L,J)
                  CKM= CK1(L,J) -CK2(L,J)
                  Y1(L,I,J) =  CKP*YB+CKM*YA                    
-                 Y2(L,I,J) =  CKP*YA+ CKM*YB                   
+                 Y2(L,I,J) =  CKP*YA+ CKM*YB          
  325          CONTINUE
             ENDIF
  350     CONTINUE

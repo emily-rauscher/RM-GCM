@@ -96,7 +96,7 @@
 !         write(*,*) 'PRESS(K)',k,PRESS(K)
  46    CONTINUE
 
- 
+
 !      write(*,*) NVERT
 !      write(*,*) NLAYER
 !      write(*,*) 'T'
@@ -205,7 +205,7 @@
 !       write(*,*)'TUAL pre OPPR1',TAUL
 !        write(*,*) ' calling OPPR1'
         IF(IR .NE. 0) THEN
-           CALL OPPR1
+           CALL OPPR1(KOUNT)
         ENDIF
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF
 !     SOLAR INTERVALS
@@ -221,7 +221,7 @@
           CALL TWOSTR
           CALL ADD
         ENDIF
-          
+         
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
         IF(IR .NE. 0) THEN
@@ -277,8 +277,9 @@
 !     MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
+!EMM   IF there is a surface, boundary condition based on surface emission. unit conversion done here
         IF(LSURF) THEN
-           FNET(2,NLAYER)=FNET(2,NLAYER)
+           FNET(2,NLAYER)=(1E-3)*FLWE/PI
         ELSE
            FNET(2,NLAYER)=FBASEFLUX
         ENDIF
@@ -324,7 +325,6 @@
 !               write(*,*) ' HEATS', (FNET(L,J+1)-FNET(L,J))*TERM1
  480         CONTINUE
            ENDIF
-
            IF(IR .NE. 0) THEN
 !             write(*,*) 'IR.NE.0'
              DO 490 L     =  NSOLP+1,NTOTAL
