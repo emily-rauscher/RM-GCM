@@ -104,9 +104,9 @@ C
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
        REAL TSURFACE(mg,jg*nhem)
-       COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
-     & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
-       LOGICAL LSURF
+       COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
+     & TGRND0,TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+       LOGICAL LSURF, LENGY
 C
 C
 C ER Modif
@@ -131,8 +131,10 @@ C              ddamp(l) is set as 1./(2.*pi*restim)
                      I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
                      DO 43 J=1,NWJ2                                                
                         TT(I+J)=TT(I+J)-TDAMP*(T(I+J)-TTRES(I+J))               
-!     &                        +((DELTAT/86400.)**2.)*((TFRC(L)*TFRC(L))                                          
-!     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+                        IF(LENGY) THEN
+                           TT(I+J)=TT(I+J)+(((TFRC(L)/PI2)**2.)                                          
+     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+                        ENDIF
                         ZT(I+J)=ZT(I+J)-(1.0/PI2)*TFRC(L)*Z(I+J)                             
                         DT(I+J)=DT(I+J)-(1.0/PI2)*TFRC(L)*D(I+J)                             
  43                  CONTINUE                                                       
@@ -145,8 +147,10 @@ C              ddamp(l) is set as 1./(2.*pi*restim)
                   I=(IHEM-1)*NWJ2+(L-1)*IGA                                     
                   DO 23 J=1,NWJ2                       
                      TT(I+J)=TT(I+J)-DDAMP(L)*(T(I+J)-TTRES(I+J))
-!     &                        +((DELTAT/86400.)**2.)*((TFRC(L)*TFRC(L))                                          
-!     &                        *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+                     IF(LENGY) THEN
+                        TT(I+J)=TT(I+J)+(((TFRC(L)/PI2)**2.)                                                                                                        
+     &                     *(Z(I+J)*Z(I+J)+D(I+J)*D(I+J)))/(2.*CPD)
+                        ENDIF
                      ZT(I+J)=ZT(I+J)-(1.0/PI2)*TFRC(L)*Z(I+J)                             
                      DT(I+J)=DT(I+J)-(1.0/PI2)*TFRC(L)*D(I+J)                             
  23               CONTINUE                                                       

@@ -46,10 +46,9 @@ C
 
 ! need this for the logical switch for if surface or not.
       REAL TSURFACE(mg,jg*nhem)
-      COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,TGRND0,
-     & TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
-
-      LOGICAL LSURF
+      COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
+     & TGRND0,TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+      LOGICAL LSURF, LENGY
 
       INTEGER MXGAS,MXLEV,MXBAND,MXCL                                     
                                                                           
