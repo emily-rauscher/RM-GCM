@@ -206,7 +206,7 @@ C
       COMPLEX TTRESN
       REAL TMPLAT
 C     ER Modif to manage outputs
-      INTEGER IDAYS(6),ITSOUT,IFTOUT,ISFOUT
+      INTEGER IDAYS(6),ITSOUT,IFTOUT,ISFOUT,ISWOUT
       REAL FDAY
 C
 C-----------------------------------------------------------------------  
@@ -244,8 +244,9 @@ C-----------------------------------------------------------------------
      
 
        REAL TSURFACE(mg,jg*nhem)
+       REAL SURFES(mg,jg*nhem)
        COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
-     & TGRND0,TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+     & TGRND0,TSURFACE,SURFES,SURFEH,FSWD,FLWD,FLWE,BOAWIND,DELTAT
        LOGICAL LSURF, LENGY
 
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
@@ -378,6 +379,7 @@ C     ER modif for output management
       ITSOUT=2600
       IFTOUT=5000
       ISFOUT=6400
+      ISWOUT=6500
 
 !      HERE WE MAKE OR READ IN THE AEROSOLS     
 !      CALL READ_AEROSOLS
@@ -409,6 +411,7 @@ C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
              DO i=1,mg
                 DO j=1,jg*nhem
                    TSURFACE(i,j)=TGRND0
+                   SURFES(i,j)=0.0
                 ENDDO
              ENDDO
 !             write(*,*) TSURFACE
@@ -662,22 +665,22 @@ C
          CALL XSECT(INLAT)
          CALL XSECT2
          IF (INT(DAY).EQ.IDAYS(1)) THEN
-            CALL FILECOPY(31,41,81)
+            CALL FILECOPY(31,41,81,91)
          ENDIF
          IF (INT(DAY).EQ.IDAYS(2)) THEN
-            CALL FILECOPY(32,42,82)
+            CALL FILECOPY(32,42,82,92)
          ENDIF
          IF (INT(DAY).EQ.IDAYS(3)) THEN
-            CALL FILECOPY(33,43,83)
+            CALL FILECOPY(33,43,83,93)
          ENDIF
          IF (INT(DAY).EQ.IDAYS(4)) THEN
-            CALL FILECOPY(34,44,84)
+            CALL FILECOPY(34,44,84,94)
          ENDIF
          IF (INT(DAY).EQ.IDAYS(5)) THEN
-            CALL FILECOPY(35,45,85)
+            CALL FILECOPY(35,45,85,95)
          ENDIF
          IF (INT(DAY).EQ.IDAYS(6)) THEN
-            CALL FILECOPY(36,46,86)
+            CALL FILECOPY(36,46,86,96)
          ENDIF
 C        ER Modif for KE spectrum output
          CALL XSECT3
@@ -688,7 +691,8 @@ CC      call plotfields(0)
       ENDIF                                                               
 C     ER modif for 90 outputs during last orbit of planet
       IF (KOUNT.GT.(KTOTAL-ABS(PORB)*ITSPD)) THEN       ! Note: if porb=0, won't do this
-         CALL FINALORB(KOUNT,KTOTAL,ABS(PORB*ITSPD),ITSOUT,IFTOUT,ISFOUT)
+         CALL FINALORB(KOUNT,KTOTAL,ABS(PORB*ITSPD),ITSOUT
+     +        ,IFTOUT,ISFOUT,ISWOUT)
       ENDIF
       IF (KOUTE.EQ.KOUNTE) THEN                                           
          CALL ENERGY                                                      

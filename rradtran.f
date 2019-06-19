@@ -159,7 +159,11 @@
 !     &                  nwave_alb, 1, rsfx(L) )
 !         if( wave(nprob(L)) > wavea(nwave_alb) ) 
 !     &           rsfx(L) = albedoa(nwave_alb)
-         EMIS(L) =  1.0 - RSFX(L)
+         IF (LSURF) THEN
+            EMIS(L) = 0.0
+         ELSE
+            EMIS(L) =  1.0 - RSFX(L)
+         ENDIF
 !         print*, L, wave(nprob(L)), rsfx(L)
 !      write(*,*) 'L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)'
 !      write(*,*) L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)
@@ -279,7 +283,9 @@
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
 !EMM   IF there is a surface, boundary condition based on surface emission. unit conversion done here
         IF(LSURF) THEN
-           FNET(2,NLAYER)=(1E-3)*FLWE/PI
+!           FNET(2,NLAYER)=(1E-3)*FLWE-DIREC(2,NLAYER)
+!EMM 2/26/19 with surf cond. DIRECU is properly calculated, don't need FLWE here
+           FNET(2,NLAYER)=DIRECTU(2,NLAYER)-DIREC(2,NLAYER)
         ELSE
            FNET(2,NLAYER)=FBASEFLUX
         ENDIF
@@ -290,7 +296,8 @@
 
 !      HERE WE DERIVE THE UPWARD FLUX FROM THE NET FLUX, SELF CONSISTENT
 !      WITH BOTTOM BOUNDARY CONDITION
-        DIRECTU(2,NLAYER)=FNET(2,NLAYER)+DIREC(2,NLAYER)
+
+       DIRECTU(2,NLAYER)=FNET(2,NLAYER)+DIREC(2,NLAYER)
 
 !            DO 55 J = 1,NLAYER
 !         write(*,*) PRESS(J),FNET(1,J),FNET(2,J) 
@@ -634,10 +641,16 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top                           
       RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom                       
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          
+
 !      IF (LSURF) THEN
 !         RFLUXES_aerad(2,2,2)=fir_up_aerad(1)+FLWE*1.0E-3
 !      ELSE
       RFLUXES_aerad(2,2,2)=fir_up_aerad(1) ! LW up bottom  
+
+      IF (LSURF) THEN
+         FSWD=(1E3)*(1-ALBSW)*fsl_dn_aerad(1)                                                                                                                                                                                                              
+         FLWD=(1E3)*(1-ALBLW)*fir_dn_aerad(1) 
+      ENDIF
 !      ENDIF
 !      write(*,*)'RFLUXES_aerad',rfluxes_aerad
       return

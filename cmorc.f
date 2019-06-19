@@ -623,7 +623,9 @@ c store net flux in PNET
                   rrflux(im,jh,2)=fluxes(1,2,2)                                   
                   rrflux(im,jh,3)=fluxes(2,1,2)                                   
                   rrflux(im,jh,4)=fluxes(2,2,2)                                   
-                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
+!                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
+!     emm modifiy to save only outgoing SW in 5th element                                                                                            
+                  rrflux(im,jh,5)=fluxes(1,2,1)
                   rrflux(im,jh,6)=fluxes(2,2,1)                                   
                                                                           
                   DO l=nl,1,-1                                                    
