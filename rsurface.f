@@ -97,6 +97,9 @@
       
 !     FBASEFLUX*10E3
       Flux_sum=(FBASEFLUX*1E3)+FSWD+FLWD-FLWE-SHEAT
+      SURFES=Flux_sum   
+!     above saves Flux Sum as W/m2 in Surface to be writen to array later
+!     used to calculate the energy stored in surface
 !      write(*,*) 'FLUX_SUM=', Flux_sum
 
       deltaTs=DELTAT*(Flux_sum)/(1000.*CSURF*RHOSURF*GRNDZ)

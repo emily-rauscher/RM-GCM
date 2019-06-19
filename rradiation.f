@@ -137,8 +137,9 @@ C
 
 
        REAL TSURFACE(mg,jg*nhem)
+       REAL SURFES(mg,jg*nhem)
        COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
-     & TGRND0,TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+     & TGRND0,TSURFACE,SURFES,SURFEH,FSWD,FLWD,FLWE,BOAWIND,DELTAT
        LOGICAL LSURF, LENGY
 
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
@@ -486,10 +487,9 @@ C Call radiation scheme
                ELSE
                   TGRND0=TSURFACE(i,jg*nhem-(jh-1))
                ENDIF
-               FSWD=(1E3)*(1.-ALBSW)*RRFLUX(im,jh,1)
-               FLWD=(1E3)*(1.-ALBLW)*RRFLUX(im,jh,3)
-               BOAWIND=100.*(ABS(UG(IM,NL))*ABS(UG(IM,NL))
-     &            +ABS(VG(IM,NL))*ABS(VG(IM,NL)))**(1./2.)
+!               FSWD=(1E3)*(1-ALBSW)*(RRFLUX(im,jh,1))
+!               FLWD=(1E3)*(1-ALBLW)*(RRFLUX(im,jh,3)) 
+               BOAWIND=100.*(ABS(UG(IM,NL)))
             ENDIF
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
@@ -516,7 +516,9 @@ c store net flux in PNET
                   rrflux(im,jh,2)=fluxes(1,2,2)                                   
                   rrflux(im,jh,3)=fluxes(2,1,2)
                   rrflux(im,jh,4)=fluxes(2,2,2)                                   
-                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
+!                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
+!     emm modifiy to save only outgoing SW in 5th element
+                  rrflux(im,jh,5)=fluxes(1,2,1)
                   rrflux(im,jh,6)=fluxes(2,2,1)                     
 
 !  updating surface values
@@ -524,8 +526,10 @@ c store net flux in PNET
 !                     write(*,*) KOUNT, i, jh, TGRND0
                      IF (ihem.eq.1) THEN
                         TSURFACE(i,jh)=TGRND0
+                        SURFES(i,jh)=SURFEH
                      ELSE
                         TSURFACE(i,jg*nhem-(jh-1))=TGRND0
+                        SURFES(i,jg*nhem-(jh-1))=SURFEH
                      ENDIF
                   ENDIF
                                                         

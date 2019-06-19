@@ -30,12 +30,12 @@ PRO makeparamsi,Tnum=Tnum,L=Lnum
      print,'Syntax - ' + $
             'makeparamsi, T-resolution, # vertical layers'
      printf,filnum,'Assuming L30'
-     T=strtrim(string(T),2)
+     Tnum=strtrim(string(T),2)
      L='L30'
      endif 
      
     if (N_params() EQ 2)then begin
-	T=strtrim(string(Tnum),2)
+	Tnum=strtrim(string(Tnum),2)
 	L=strtrim(string(L),2)
 	endif
     if (N_params() GT 2)then goto, QUIT
@@ -211,6 +211,18 @@ endif
 
 ;;;############ T42 #########
 If Tnum eq 'T42'  then begin
+        if L eq 'L5' then begin
+printf,filnum,'C T42 L5  full sphere'
+printf,filnum,'     PARAMETER(NN=42,MM=42,NHEM=2 ,NL=5,MOCT=1,MG=128,JG=32,NWJ2=462'
+printf,filnum,'   +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+        if L eq 'L10' then begin
+printf,filnum,'C T42 L10  full sphere'
+printf,filnum,'     PARAMETER(NN=42,MM=42,NHEM=2 ,NL=10,MOCT=1,MG=128,JG=32,NWJ2=462'
+printf,filnum,'   +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
 	if L eq 'L15' then begin
 
 printf,filnum,'C T42 L15  full sphere'
@@ -229,29 +241,91 @@ printf,filnum,'C T42 L30  full sphere'
 printf,filnum,'     PARAMETER(NN=42,MM=42,NHEM=2 ,NL=30,MOCT=1,MG=128,JG=32,NWJ2=462'        
 printf,filnum,'   +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)' 
 goto,quit
-	endif
+        endif
+        if L eq 'L40' then begin
+printf,filnum,'C T42 L40  full sphere'
+printf,filnum,'     PARAMETER(NN=42,MM=42,NHEM=2 ,NL=40,MOCT=1,MG=128,JG=32,NWJ2=462'
+printf,filnum,'   +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+        if L eq 'L55' then begin
+printf,filnum,'C T42 L30  full sphere'
+printf,filnum,'     PARAMETER(NN=42,MM=42,NHEM=2 ,NL=55,MOCT=1,MG=128,JG=32,NWJ2=462'
+printf,filnum,'   +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+
 endif
  
 ;;;############ T63 #########
 If Tnum eq 'T63' then begin
+        if L eq 'L5' then begin
+
+printf,filnum,'C T63 L5  full sphere'
+printf,filnum,'     PARAMETER(NN=63,MM=63,NHEM=2 ,NL=5,MOCT=1,MG=192,JG=48'
+printf,filnum,'   +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+
+        if L eq 'L10' then begin
+
+printf,filnum,'C T63 L5  full sphere'
+printf,filnum,'     PARAMETER(NN=63,MM=63,NHEM=2 ,NL=10,MOCT=1,MG=192,JG=48'
+printf,filnum,'   +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+
 	if L eq 'L27' then begin
 
 printf,filnum,'C T63 L27  full sphere'
-printf,filnum,'     PARAMETER(NN=63,MM=63,NHEM=2 ,NL=2 7,MOCT=1,MG=192,JG=48'        
+printf,filnum,'     PARAMETER(NN=63,MM=63,NHEM=2 ,NL=27,MOCT=1,MG=192,JG=48'        
 printf,filnum,'   +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'  
 goto,quit
-	endif
+        endif
+
+
+        if L eq 'L30' then begin
+
+printf,filnum,'C T63 L30  full sphere'
+printf,filnum,'     PARAMETER(NN=63,MM=63,NHEM=2 ,NL=30,MOCT=1,MG=192,JG=48'
+printf,filnum,'   +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
 endif
 
 ;;;############ T85 #########
 If Tnum eq 'T85' then begin
+   
+        if L eq 'L5' then begin
+
+printf,filnum,'C T85 L5  full sphere'
+printf,filnum,'     PARAMETER(NN=85,MM=85,NHEM=2 ,NL=5 7,MOCT=1,MG=256,JG=64,NWJ2=1849'
+printf,filnum,'   +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+        if L eq 'L10' then begin
+
+printf,filnum,'C T85 L5  full sphere'
+printf,filnum,'     PARAMETER(NN=85,MM=85,NHEM=2 ,NL=10 7,MOCT=1,MG=256,JG=64,NWJ2=1849'
+printf,filnum,'   +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
+
 	if L eq 'L27' then begin
 
 printf,filnum,'C T85 L27  full sphere'
-printf,filnum,'     PARAMETER(NN=85,MM=85,NHEM=2 ,NL=2 7,MOCT=1,MG=256,JG=64,NWJ2=1849'      
+printf,filnum,'     PARAMETER(NN=85,MM=85,NHEM=2 ,NL=27,MOCT=1,MG=256,JG=64,NWJ2=1849'      
 printf,filnum,'   +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'  
 goto,quit
-	endif
+        endif
+
+        if L eq 'L30' then begin
+
+printf,filnum,'C T85 L30  full sphere'
+printf,filnum,'     PARAMETER(NN=85,MM=85,NHEM=2 ,NL=30,MOCT=1,MG=256,JG=64,NWJ2=1849'
+printf,filnum,'   +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+goto,quit
+        endif
 
 	if L eq 'L20' then begin
 printf,filnum,'C T85 L20  full sphere'
@@ -532,6 +606,27 @@ kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
+line1='T42 L5  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=5,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T42 L10  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=10,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+
 line1='T42 L15  full sphere'
 line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=15,MOCT=1,MG=128,JG=32,NWJ2=462'        
 line3='  +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'  
@@ -562,6 +657,46 @@ kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
+line1='T42 L40  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=40,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T42 L55  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=55,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T63 L5  full sphere'
+line2='   PARAMETER(NN=63,MM=63,NHEM=2 ,NL=5,MOCT=1,MG=192,JG=48'
+line3='  +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T63 L10  full sphere'
+line2='   PARAMETER(NN=63,MM=63,NHEM=2 ,NL=10,MOCT=1,MG=192,JG=48'
+line3='  +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
 line1='T63 L27  full sphere'
 line2='   PARAMETER(NN=63,MM=63,NHEM=2 ,NL=2 7,MOCT=1,MG=192,JG=48'        
 line3='  +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'  
@@ -572,8 +707,39 @@ kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
+line1='T63 L30  full sphere'
+line2='   PARAMETER(NN=63,MM=63,NHEM=2 ,NL=30,MOCT=1,MG=192,JG=48'
+line3='  +,NWJ2=1024,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+
+line1='T85 L5  full sphere'
+line2='   PARAMETER(NN=85,MM=85,NHEM=2 ,NL=5,MOCT=1,MG=256,JG=64,NWJ2=1849'
+line3='  +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T85 L10  full sphere'
+line2='   PARAMETER(NN=85,MM=85,NHEM=2 ,NL=10,MOCT=1,MG=256,JG=64,NWJ2=1849'
+line3='  +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
 line1='T85 L27  full sphere'
-line2='   PARAMETER(NN=85,MM=85,NHEM=2 ,NL=2 7,MOCT=1,MG=256,JG=64,NWJ2=1849'      
+line2='   PARAMETER(NN=85,MM=85,NHEM=2 ,NL=27,MOCT=1,MG=256,JG=64,NWJ2=1849'      
 line3='  +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'  
 
 print,line1
@@ -582,6 +748,19 @@ print,line3
 kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T85 L30  full sphere'
+line2='   PARAMETER(NN=85,MM=85,NHEM=2 ,NL=30,MOCT=1,MG=256,JG=64,NWJ2=1849'
+line3='  +,NCRAY=8,JGL=1,NTRAC=1,NLEVRF=1)'
+
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+
 
 line1='T170 L27  full sphere'
 line2='   PARAMETER(NN=170,MM=170,NHEM=2 ,NL=2 7,MOCT=1,MG=512,JG=128'
@@ -672,6 +851,29 @@ kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
+line1='T42 L5  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=5,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=1,JGL=JG)'
+
+print,line1
+print,line2
+print,line3
+
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T42 L10  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=10,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=1,JGL=JG)'
+
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
 line1='T42 L15  full sphere'
 line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=15,MOCT=1,MG=128,JG=32,NWJ2=462'        
 line3='  +,NCRAY=1,JGL=JG)'  
@@ -683,9 +885,31 @@ kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
-line1='T42 L40  full sphere'
-line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=40,MOCT=1,MG=128,JG=32,NWJ2=462'        
+line1='T42 L30  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=30,MOCT=1,MG=128,JG=32,NWJ2=462'        
 line3='  +,NCRAY=1,JGL=JG)'  
+
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T42 L40  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=40,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=1,JGL=JG)'
+
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
+
+line1='T42 L55  full sphere'
+line2='   PARAMETER(NN=42,MM=42,NHEM=2 ,NL=55,MOCT=1,MG=128,JG=32,NWJ2=462'
+line3='  +,NCRAY=1,JGL=JG)'
 
 
 ;;;############ T63 #########
@@ -707,6 +931,17 @@ kybrd=get_kbrd(/key_name)
 if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
 if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
+line1='T63 L30  full sphere'                             
+line2='   PARAMETER(NN=63,MM=63,NHEM=2 ,NL=30,MOCT=1,MG=192,JG=48                                                        
+line3='  +,NWJ2=1024,NCRAY=1,JGL=JG)'
+
+
+print,line1
+print,line2
+print,line3
+kybrd=get_kbrd(/key_name)
+if kybrd eq 'y' or kybrd eq 'Y' then goto, chosen
+if kybrd eq 'q' or kybrd eq 'Q' then goto, quit
 
 line1='T63 L40  full sphere' ; (seg faults on beehive with OMP, even with very large stacks)
 line2='   PARAMETER(NN=63,MM=63,NHEM=2 ,NL=40,MOCT=1,MG=192,JG=48        

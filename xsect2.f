@@ -157,6 +157,10 @@ C     TOUTT(L,*) are T at: sub,anti-stellar, E,W limb (at eqtr), N,S pole for L
       REAL*8  TOUTSP(JG*2,MG)
 C----- KM modif for OLR flux i fort.29      
       REAL*8 TOUTFLUX(MG,JG*2)
+c----- additional output for outgoing/incoming SW flux 
+      REAL*8 TOUTSWF(MG,JG*2)
+      REAL*8 TINSWF(MG,JG*2)
+      REAL*8 TOTALF(MG,JG*2)
 C------
       REAL SSLON,SSLAT
 C--- erin for binary flux output                                                                                                  
@@ -168,8 +172,9 @@ C--- erin for binary flux output
       LOGICAL LBIN
 
       REAL TSURFACE(mg,jg*nhem)
+      REAL SURFES(mg,jg*nhem)
       COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
-     & TGRND0,TSURFACE,FSWD,FLWD,FLWE,BOAWIND,DELTAT
+     & TGRND0,TSURFACE,SURFES,SURFEH,FSWD,FLWD,FLWE,BOAWIND,DELTAT
       LOGICAL LSURF, LENGY
 
 C PGPLOT map variables
@@ -207,11 +212,17 @@ C
       REWIND 26 
       REWIND 50
       REWIND 64
+      REWIND 65
+      REWIND 66
+
+      REWIND 38
 
            
       WRITE (26,106) JG*2,MG,NL
       WRITE (50,101) JG*2,MG
       WRITE (64,106) JG*2,MG,NL
+      WRITE (65,106) JG*2,MG,NL
+      WRITE (66,106) JG*2,MG,NL
  106  FORMAT(3I5)     
  101  FORMAT(2I5)
 
@@ -365,8 +376,12 @@ C 111              FORMAT(3E13.5)
 
            IF (IHEM.EQ.1) THEN
            TOUTFLUX(I,J)=RRFLUX(IM,J,6)
+           TOUTSWF(I,J)=RRFLUX(IM,J,5)
+           TOTALF(I,J)=PNET(IM,J)
            ELSE
            TOUTFLUX(I,2*JG-J+1)=RRFLUX(IM,J,6)
+           TOUTSWF(I,2*JG-J+1)=RRFLUX(IM,J,5)
+           TOTALF(I,2*JG-J+1)=PNET(IM,J)
            ENDIF
            
         ENDDO         
@@ -379,6 +394,8 @@ C 111              FORMAT(3E13.5)
         DO J=1,JG*2
            TOUTLAT=ALAT(J)
                   WRITE (64,109) TOUTLON,TOUTLAT, TOUTFLUX(I,J)
+                  WRITE (65,109) TOUTLON,TOUTLAT, TOUTSWF(I,J)
+                  WRITE (66,109) TOUTLON,TOUTLAT, TOTALF(I,J)
         ENDDO         
        ENDDO
 
@@ -477,6 +494,7 @@ C      ENDIF
       WRITE (26,105) DAY,SSLON,SSLAT
       WRITE (50,105) DAY,SSLON,SSLAT
       WRITE (64,105) DAY,SSLON,SSLAT
+      WRITE (65,105) DAY,SSLON,SSLAT
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
 
  2016 FORMAT(I8.3,E13.5)
@@ -491,7 +509,8 @@ C      ENDIF
 
       IF (LSURF) THEN
 !         WRITE (30,106) JG*2,MG
-         WRITE (30,*),TSURFACE
+         WRITE (37,*),TSURFACE
+         WRITE (38,*), SURFES
 !         WRITE (30,105), DAY, SSLON, SSLAT
       ENDIF
          
