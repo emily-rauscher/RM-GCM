@@ -110,12 +110,11 @@ C
          ELSE                                                             
             DDAMP(L)=0.0                                                  
          ENDIF                                                            
-! EMM: If you set TFRC with the new idl routine, this is not needed
-!         IF (TFRC(L).GT.0.0) THEN                                         
-!            TFRC(L)=1.0/(PI2*TFRC(L))                                     
-!         ELSE                                                             
-!            TFRC(L)=0.0                                                   
-!         ENDIF                                                            
+         IF (TFRC(L).GT.0.0) THEN                                         
+            TFRC(L)=1.0/(PI2*TFRC(L))                                     
+         ELSE                                                             
+            TFRC(L)=0.0                                                   
+         ENDIF                                                            
  22   CONTINUE                                                            
 C                                                                         
 C     Make temperatures dimensionless                                     

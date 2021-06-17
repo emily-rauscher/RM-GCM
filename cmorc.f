@@ -289,6 +289,11 @@ c                           N.B. Read in from global climatology.
                open (51,file='climdata/'//o3file2,status='old')                  
                open (53,file='climdata/'//h2ofile2,status='old')                 
             ENDIF                                                              
+            write(*,*) 'line 288 of cmorc.f'
+            write(*,*) 'j',j
+            write(*,*) 'nhem',nhem
+            write(*,*) 'mg', mg
+            Write(*,*) 'jg',jg                                                                 
             j =jh                                                              
             DO 796 ihem=1,nhem  ! start of loop over hemispheres           
                DO 798 i=1,mg    ! start of loop over longitude                
@@ -505,9 +510,11 @@ C             T(1)=0.0 +(SNET(IM,JH)/5.6704e-8)**0.25
 
 C      T(1)=((FBASEFLUX+(rrflux(IM,JH,1)+rrflux(IM,JH,3))*3.1416)
 C     &         /5.6704e-8)**0.25    !PI adjustment
+
 C      T(1)=((FBASEFLUX+rrflux(IM,JH,1)+rrflux(IM,JH,3))/5.6704e-8)**0.25
 C     ER Modif, to be consistent with cnikos.f (no downward flux if f-diff)
                   T(1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
+
 !          IF (IM.EQ.1.AND.JH.EQ.1.AND.MOD(KOUNT,ITSPD).EQ.1) 
 !     &   write(*,222) PNET(IM,JH),SNET(IM,JH), T(1)
 ! 222      FORMAT(' PNET, SNET, T(1):',2E13.5,F13.3)
@@ -609,11 +616,12 @@ C makes sure bottom cloud isn't in bottom level
 C cloud cf and ic passed. fluxes returned.                                
 C which is net flux at TOA in profile                                     
 C Call radiation scheme                                                   
-                  alon=REAL(i-1)/REAL(mg)*360.0  
-
+                  alon=REAL(i-1)/REAL(mg)*360.0                                   
                   call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
      $                 fluxes,swalb,alon,kount,itspd)
           
+c          write(*,*) "Just called Nikosrad"
+                                                                          
 c store net flux in PNET                                                  
                   PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-          
      $                 fluxes(2,2,1)                                                  
@@ -623,9 +631,7 @@ c store net flux in PNET
                   rrflux(im,jh,2)=fluxes(1,2,2)                                   
                   rrflux(im,jh,3)=fluxes(2,1,2)                                   
                   rrflux(im,jh,4)=fluxes(2,2,2)                                   
-!                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
-!     emm modifiy to save only outgoing SW in 5th element                                                                                            
-                  rrflux(im,jh,5)=fluxes(1,2,1)
+                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
                   rrflux(im,jh,6)=fluxes(2,2,1)                                   
                                                                           
                   DO l=nl,1,-1                                                    

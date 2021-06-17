@@ -118,7 +118,6 @@ C
       QTMC(NCRT)=QTMC(NCRT)+QTEND                                         
       TG(J,NCRT)=TG(J,NCRT)+DELT2C*TTEND                                  
       QG(J,NCRT)=QG(J,NCRT)+DELT2C*QTEND                                  
-C                                                                         
       DO 20 L=NCRT,NCRBM                                                  
    20 CTCR(L,IHEM)=CTCR(L,IHEM)+1.0                                       
 C                                                                         

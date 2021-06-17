@@ -83,7 +83,7 @@
 !       CALCULATE SFCS, THE SOURCE AT THE BOTTOM.
 !
         DO 20 L            =  1,NSOLP
-              SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
+          SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
   20  CONTINUE
       END IF
 !     ******************************

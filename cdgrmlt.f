@@ -223,7 +223,6 @@ c
          ENDIF                                                             
       ENDIF                                                               
 C                                                                         
-         
       DO 20 L=1,NL                                                        
          DO 20 J=1,IGC                                                      
             UNLG(J,L)=0.0                                                     
@@ -239,8 +238,8 @@ C
             TTLR(J,L)=0.0                                                     
             QTLR(J,L)=0.0                                                     
             TTRD(J,L)=0.0                                                     
-            TG(J,L)=TG(J,L)+T0(L)
- 20   CONTINUE                           
+            TG(J,L)=TG(J,L)+T0(L)                                             
+ 20   CONTINUE                                                            
       DO 30 J=1,IGC                                                       
 C sets ICFLAG and CFRAC to ZERO at each timestep                          
          DO L=1,5                                                          
@@ -284,7 +283,7 @@ C  Convert from volume mixing ratio to mass mixing ratio.
      +        CALL SFCT(PLG,JH,IFIRST,TROPHT)                              
          IF (JH.EQ.JG) IFIRST=0                                             
       ENDIF                                                               
-C                                        
+C                                                                         
       if (LOLDBL) then                                                    
          if (LBL) call BLAYER                                             
       else                                                                
@@ -295,8 +294,8 @@ C
       IF(LLR) CALL LSCRN
       IF(LRD) CALL RADIATION(TROPHT,IH)
 !      IF(LRD) CALL RADN(TROPHT)                                           
-      if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM
-C                                                                        
+      if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
+C                                                                         
       do j=1,igc                                                          
          sfld(j,1)=salb(j,jh)                                             
          sfld(j,2)=tstar(j,jh)                                            
@@ -388,12 +387,12 @@ c
       ENDIF ! IF(LSUM)                                                    
 C                                                                         
       DO 200 L=1,NL                                                       
-       DO 200 J=1,IGC
+       DO 200 J=1,IGC                                                     
         UNLG(J,L)=UNLG(J,L)+UTVD(J,L)                                     
         VNLG(J,L)=VNLG(J,L)+VTVD(J,L)                                     
         TNLG(J,L)=TNLG(J,L)+TTVD(J,L)+TTCR(J,L)+TTLR(J,L)+TTRD(J,L)       
-        QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)  
-  200 CONTINUE                                                            
+        QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)
+  200 CONTINUE  
 C                                                                        
       IF (LFLUX) THEN                                                     
 C        Convert to volume mixing ratio from mass mixing ratio.           

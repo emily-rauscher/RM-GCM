@@ -148,6 +148,8 @@
             TFAC=1.-EXP(-1.66*EXPCORR/43.7)
             FNET(L,ILEV)=(1.0-TFAC)*FNET(L,ILEV) + TFAC*FNETDIFF
        ENDIF
+
+        
 200   CONTINUE      
 100   CONTINUE
       RETURN

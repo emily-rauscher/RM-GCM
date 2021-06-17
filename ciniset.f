@@ -227,7 +227,7 @@ C      write(*,*) 'reading fort.7 in iniset'
       WRITE(2,INPPL)                                                      
 C      write(*,*) 'second read in iniset'
       READ(7,INPRN)                                                       
-      WRITE(2,INPRN)                                                     
+      WRITE(2,INPRN)                                                      
 C      write(*,*) 'third read in iniset'
       READ(7,INPOP)                                                       
       IF (RNTAPO.EQ.-999.0) RNTAPO=RNTAPE                                 

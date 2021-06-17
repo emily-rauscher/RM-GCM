@@ -1,7 +1,7 @@
 C**********************************************************               
 C             SUBROUTINE FILECOPY 
 C**********************************************************               
-      SUBROUTINE FILECOPY(ITS,IFT,ISF,ISW)
+      SUBROUTINE FILECOPY(ITS,IFT,ISF)
 
       REAL TLON,TLAT,TU,TV,TT,TSP,TF,DAY,SSLON
       INTEGER JG2,MG,NL,LL
@@ -9,7 +9,6 @@ C**********************************************************
       REWIND 26 
       REWIND 50
       REWIND 64
-      REWIND 65
 
       READ(26,106) JG2,MG,NL
       WRITE(ITS,106) JG2,MG,NL
@@ -17,8 +16,6 @@ C**********************************************************
       WRITE(IFT,101) JG2,MG
       READ(64,106) JG2,MG,NL
       WRITE(ISF,106) JG2,MG,NL
-      READ(65,106) JG2,MG,NL
-      WRITE(ISW,106) JG2,MG,NL
  106  FORMAT(3I5)     
  101  FORMAT(2I5)
 
@@ -32,8 +29,6 @@ C**********************************************************
                   WRITE(IFT,102) TLON,TLAT,TSP
                   READ(64,102) TLON,TLAT,TF
                   WRITE(ISF,102) TLON,TLAT,TF
-                  READ(65,102) TLON,TLAT,TF
-                  WRITE(ISW,102) TLON,TLAT,TF
                ENDIF
  22         CONTINUE         
  21      CONTINUE                 
@@ -47,14 +42,11 @@ C**********************************************************
       WRITE(IFT,105) DAY,SSLON,SSLAT
       READ(64,105) DAY,SSLON,SSLAT
       WRITE(ISF,105) DAY,SSLON,SSLAT
-      READ(65,105) DAY,SSLON,SSLAT
-      WRITE(ISW,105) DAY,SSLON,SSLAT
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
 
       CLOSE(ITS)
       CLOSE(IFT)
       CLOSE(ISF)
-      CLOSE(ISW)
 
       RETURN                                                              
       END                                                                 

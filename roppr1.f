@@ -39,16 +39,12 @@
 ! (ntotal = 2 bins, Nsolp = number of solar bins i.e.1)
 ! PTEMPG -- Plank temperature of the ground layer (i.e. sigma T^4 /pi)
 
-      IF (LSURF) THEN
-!        write(*,*) 'PRIOR', L, PTEMPG(L)
-        DO 100 L            =   NSOLP+1,NTOTAL
-           PTEMPG(L)        =  TGRND0*TGRND0*TGRND0*TGRND0*SBKoverPI! PLTEMP1(L-NSOLP)*WEIGHT(L)
-!           write(*,*) '  --> UPDATED', L, PTEMPG(L)
-  100   CONTINUE
-      ENDIF
-!          PTEMPG=TGRND0*TGRND0*TGRND0*TGRND0*SBKoverPI
+!        DO 100 L            =   NSOLP+1,NTOTAL
+!           PTEMPG(L)        =  ITG*ITG*ITG*ITG*SBKoverPI! PLTEMP1(L-NSOLP)*WEIGHT(L)
+!  100   CONTINUE
+!          PTEMPG=ITG*ITG*ITG*ITG*SBKoverPI
 !
-        
+
 ! THE CODE BELOW IS A MESS. IT DEALS WITH THE 
 !      if( iblackbody_above .ne. 0 )then
 !
@@ -102,7 +98,6 @@
             DO 200 L        = NSOLP+1,NTOTAL
 !               PTEMP(L,J)   = PTEMP2(L-NSOLP)*WEIGHT(L)
                PTEMP(L,J)=IT1
-!               write(*,*) L, J
 !               write(*,*)'IT1',IT1
 !               write(*,*)'PTEMP(L,J)',PTEMP(L,J)
 !               write(*,*)'TAUL(L,J)',TAUL(L,J)

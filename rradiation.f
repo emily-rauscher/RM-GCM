@@ -129,19 +129,13 @@ C
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
        CHARACTER(30) :: AEROSOLMODEL
-       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1)
+       CHARACTER(30) :: AEROSOLCOMP       
+       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
        LOGICAL DELTASCALE
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
-
-
-       REAL TSURFACE(mg,jg*nhem)
-       REAL SURFES(mg,jg*nhem)
-       COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
-     & TGRND0,TSURFACE,SURFES,SURFEH,FSWD,FLWD,FLWE,BOAWIND,DELTAT
-       LOGICAL LSURF, LENGY
-
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
+     &   MAXTAU,MAXTAULOC,TCON,AERSOLCOMP,MTLX,MOLEF,AERLAYERS
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
 !     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
@@ -253,14 +247,14 @@ C loop over hemispheres
 C
                                                                          
       DO 800 ihem=1,nhem                                                  
-!          write(*,*) 'kount',kount
+C          write(*,*) 'kount',kount
 !          write(*,*) 'ntstep',ntstep
 !         write(*,*) mod(kount,ntstep)          
 !          write(*,*) 'Starting Radiation scheme'                                                                
 c calculates heating rates every ntstep time steps                        
          IF (mod(kount,ntstep).eq.1) then                                   
 !          write(*,*) mod(kount,ntstep)          
-!          write(*,*) 'Starting Radiation scheme'
+C          write(*,*) 'Starting Radiation scheme'
 C                                                                         
 C  Does do Radn scheme                                                    
 C                                                                         
@@ -393,21 +387,14 @@ c --------------------------------------- Now set rest of column.
                      L=NL-LD+2  ! Reverse index (Morc goes bottom up).                     
                      PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure 
                      PRB2T(L)=PR(LD)                      
-                     T(LD)=TG(im,ld)*CT ! Temperature 
+                     T(LD)=TG(im,ld)*CT ! Temperature
                      AEROPROF(LD)=0.0 
                   ENDDO
                      AEROPROF(NL+1)=0.0
                    PRB2T(1)=PLG(im)*P0
                    PR(NL+1)=PLG(im)*P0
-
-                   IF (LSURF) THEN
-                      T(NL+1)=TGRND0
-                   ELSE
-                      T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)
-     &                     **0.25
-                   ENDIF
+                   T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
 ! This could also just be the ground temperature... decision to be made
-!em-- In the case of a surface, T(NL+1) is set to the ground temperature
 c ----------------------------------------------------- And alat1         
                                                                           
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
@@ -462,7 +449,12 @@ C Call radiation scheme
 !     centers + one layer for the bottom boundary. The top is n=1, the
 !     bottom is n=NL+1
 
-            IF(AEROSOLS) THEN
+
+! MTR: THE FOLLOWING LOOP IS ONLY FOR THE OLDER VERSION OF THE CODE
+! WHERE DISTRIBUTIONS ARE HARDWIRED (ROMAN & RAUSCHER 2017)
+
+            IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN 
+!            IF(AEROSOLS.AND.) THEN
 !           AEROSOLS TIME!
 !           Extract a single column from the array AER4LAT(NLEV,LON,HEM)
 !            AEROPROF=AERO4LAT(:,mg,ihem)
@@ -479,20 +471,9 @@ C Call radiation scheme
             
 !            write(*,*) 'TAUAEROSOL IN RRAD',TAUAEROSOL 
             ENDIF
-
-!  sets flux,wind, and tgrnd at bottom from previous timestep for this lat/long 
-            IF (LSURF) THEN
-               IF (ihem.eq.1) THEN
-                  TGRND0=TSURFACE(i,jh)
-               ELSE
-                  TGRND0=TSURFACE(i,jg*nhem-(jh-1))
-               ENDIF
-!               FSWD=(1E3)*(1-ALBSW)*(RRFLUX(im,jh,1))
-!               FLWD=(1E3)*(1-ALBLW)*(RRFLUX(im,jh,3)) 
-               BOAWIND=100.*(ABS(UG(IM,NL)))
-            ENDIF
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
+                                 
 c                  call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
 c     $                 fluxes,swalb,alon,kount,itspd)
           
@@ -514,39 +495,96 @@ c store net flux in PNET
      $                 fluxes(2,2,2)                                                  
                   rrflux(im,jh,1)=fluxes(1,1,2)                                   
                   rrflux(im,jh,2)=fluxes(1,2,2)                                   
-                  rrflux(im,jh,3)=fluxes(2,1,2)
+                  rrflux(im,jh,3)=fluxes(2,1,2)                                   
                   rrflux(im,jh,4)=fluxes(2,2,2)                                   
-!                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
-!     emm modifiy to save only outgoing SW in 5th element
-                  rrflux(im,jh,5)=fluxes(1,2,1)
-                  rrflux(im,jh,6)=fluxes(2,2,1)                     
-
-!  updating surface values
-                  IF (LSURF) THEN
-!                     write(*,*) KOUNT, i, jh, TGRND0
-                     IF (ihem.eq.1) THEN
-                        TSURFACE(i,jh)=TGRND0
-                        SURFES(i,jh)=SURFEH
-                     ELSE
-                        TSURFACE(i,jg*nhem-(jh-1))=TGRND0
-                        SURFES(i,jg*nhem-(jh-1))=SURFEH
-                     ENDIF
-                  ENDIF
-                                                        
+                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
+                  rrflux(im,jh,6)=fluxes(2,2,1)                                   
+                                                                          
                   DO l=nl,1,-1                                                    
 c  bottom heating rate is zero in morecret                                
                      LD=NL+1-L                                                      
                      IM=I+IOFM                                                      
                      HTNETO=HTNET(IHem,JH,I,LD)                                     
 C           htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
+
+C ER Modif to turn off radiative heating for first 1 days (if not 1D and
+C not PORB gt 0)
+c                     IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
+c                        IF (PORB.EQ.0) THEN
+c                           htnet(ihem,jh,i,ld)=0.
+c                        ENDIF
+c                     ELSE
+c                        htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
+c                     ENDIF
+
 C ER Modif to turn off radiative heating for first 1 days (if not 1D and not PORB gt 0)
-                     IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
-                        IF (PORB.EQ.0) THEN
-                           htnet(ihem,jh,i,ld)=0.
-                        ENDIF
-                     ELSE
-                        htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
-                     ENDIF
+c expanded by mike
+
+c            IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
+c                        IF (PORB.EQ.0) THEN
+c                           htnet(ihem,jh,i,ld)=0.
+c                        ENDIF
+        IF (((KOUNT/ITSPD).GE.0).AND.((KOUNT/ITSPD).LE.200)
+     &              .AND.(.NOT.L1DZENITH)) THEN
+               htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
+     &                               *((KOUNT/ITSPD))/200.
+            ELSE 
+               htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)   
+            END IF
+
+c                if ((htnet(ihem,jh,i,ld).LT.-1000000).OR. 
+c     &              (htnet(ihem,jh,i,ld).GT.1000000)) THEN 
+c                   write(*,*) 'htnet', htnet(ihem,jh,i,ld)
+C               htnet(ihem,jh,i,ld)= 
+C     &             min(max(htnet(ihem,jh,i,ld),-10000.),10000.)
+c                   write(*,*) 'htnet', htnet(ihem,jh,i,ld)                  
+c                   stop
+c                endif
+c               htnet(ihem,jh,i,ld)= 
+c     &                min(max(htnet(ihem,jh,i,ld),-1000000.),1000000.)
+c            ELSE IF (((KOUNT/ITSPD).GT.1).AND.((KOUNT/ITSPD).LE.100)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c            htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*(KOUNT/ITSPD)/100.
+
+
+
+
+c            ELSE IF (((KOUNT/ITSPD).GT.1).AND.((KOUNT/ITSPD).LE.5) 
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.001
+c            ELSE IF (((KOUNT/ITSPD).GT.5).AND.((KOUNT/ITSPD).LE.10)  
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.01
+c            ELSE IF (((KOUNT/ITSPD).GT.10).AND.((KOUNT/ITSPD).LE.20)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.1
+c            ELSE IF (((KOUNT/ITSPD).GT.20).AND.((KOUNT/ITSPD).LE.25)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.2
+c            ELSE IF (((KOUNT/ITSPD).GT.25).AND.((KOUNT/ITSPD).LE.30)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.3
+c            ELSE IF (((KOUNT/ITSPD).GT.30).AND.((KOUNT/ITSPD).LE.35)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.4 
+c            ELSE IF (((KOUNT/ITSPD).GT.35).AND.((KOUNT/ITSPD).LE.40)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.5
+c            ELSE IF (((KOUNT/ITSPD).GT.40).AND.((KOUNT/ITSPD).LE.45)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.6
+c            ELSE IF (((KOUNT/ITSPD).GT.45).AND.((KOUNT/ITSPD).LE.50)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.7
+c            ELSE IF (((KOUNT/ITSPD).GT.50).AND.((KOUNT/ITSPD).LE.55)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.8
+c            ELSE IF (((KOUNT/ITSPD).GT.55).AND.((KOUNT/ITSPD).LE.60)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
+c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.9
+c            ELSE 
+c                         htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)   
+c            END IF
 !                        write(*,*) l,htlw(l+1),htsw(l+1)
 !KM To force net heating of bottom atmosphere layer to relax to flux temperature
 C           if(ld.eq.nl) htnet(ihem,jh,i,ld)=(T(1)-T(2))/BOTRELAXTIME
@@ -577,7 +615,7 @@ c                           write(*,*),HTNET(IHEM,JH,J,LD)
      $                          b*htnet(ihem,jh,ilast,ld)                  
                            im=j+iofm                                                   
                            TTRD(IM,LD)=(HTNETO                                         
-     $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)
+     $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)                  
 !                    write(*,*)'TTRD',LD,TTRD(IM,LD)
                             IF (l.eq.nl) then                                           
                               pnet(im,jh)=a*pnet(i+iofm,jh)+                            
@@ -631,8 +669,8 @@ c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
                      htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
      $                    b*htnet(ihem,jh,ilast,ld)                  
                      TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             
-     $                    +HTNETO)/(CHRF*2.)  
-!                   write(*,*) 'Now to the print statement'           
+     $                    +HTNETO)/(CHRF*2.)   
+                   write(*,*) 'Now to the print statement'           
 !                   write(*,*)'TTRD',LD,TTRD(IM,LD)                
                      IF (l.eq.nl) then                                            
                         pnet(im,jh)=a*pnet(1+iofm,jh)+                             

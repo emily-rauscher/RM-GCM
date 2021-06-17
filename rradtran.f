@@ -63,13 +63,9 @@
 !     TOP
       TT(1)=((T(1)-TT(2))/log(P(1)/PRESS(2)))*log(PRESS(1)/P(1))+T(1)
 !     BOTTOM
-      IF (LSURF) THEN
-         call SURFACETEMP(T(NL),P(NL))
-         TT(NLAYER)=TGRND0
-      ELSE
-         TT(NLAYER)=T(NVERT) * (PRESS(NLAYER)/P(NVERT)) **
+      TT(NLAYER)=T(NVERT) * (PRESS(NLAYER)/P(NVERT)) **
      &              (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
-      ENDIF
+
 !     HERE, INSTEAD OF SPECIFYING THE GROUND AND TOP TEMPERATURES, WE
 !     USE THE EXTRAPOLATED VALUES TO DEFINE THESE; ALTERNATIVELY THEY
 !     MAY BE DEFINED HERE, WHERE THEY WILL BE PASSED TO THE MODEL
@@ -96,7 +92,7 @@
 !         write(*,*) 'PRESS(K)',k,PRESS(K)
  46    CONTINUE
 
-
+ 
 !      write(*,*) NVERT
 !      write(*,*) NLAYER
 !      write(*,*) 'T'
@@ -159,22 +155,14 @@
 !     &                  nwave_alb, 1, rsfx(L) )
 !         if( wave(nprob(L)) > wavea(nwave_alb) ) 
 !     &           rsfx(L) = albedoa(nwave_alb)
-         IF (LSURF) THEN
-            EMIS(L) = 0.0
-         ELSE
-            EMIS(L) =  1.0 - RSFX(L)
-         ENDIF
+         EMIS(L) =  1.0 - RSFX(L)
 !         print*, L, wave(nprob(L)), rsfx(L)
 !      write(*,*) 'L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)'
 !      write(*,*) L, wave(nprob(L)), rsfx(L),albedoa(nwave_alb)
  20   CONTINUE
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
-         IF (LSURF) THEN
-            EMIS(L)=SURF_EMIS
-         ELSE
-            EMIS(L) =  EMISIR
-         ENDIF
+         EMIS(L) =  EMISIR
          RSFX(L) = 1.0 - EMIS(L)
 
 !         call interpol( albedoa, wavea, wave(nprob(L)), 
@@ -200,8 +188,11 @@
         ENDIF
 !
 !     CALCULATE THE OPTICAL PROPERTIES
-!        write(*,*) ' calling OPPR'
-        CALL OPPR
+        IF(AEROSOLCOMP .EQ. 'All') THEN
+          CALL OPPRMULTI
+        ELSE 
+          CALL OPPR
+        ENDIF
 !        write(*,*) 'called OPPR'
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
@@ -225,7 +216,7 @@
           CALL TWOSTR
           CALL ADD
         ENDIF
-         
+          
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
         IF(IR .NE. 0) THEN
@@ -281,14 +272,7 @@
 !     MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
-!EMM   IF there is a surface, boundary condition based on surface emission. unit conversion done here
-        IF(LSURF) THEN
-!           FNET(2,NLAYER)=(1E-3)*FLWE-DIREC(2,NLAYER)
-!EMM 2/26/19 with surf cond. DIRECU is properly calculated, don't need FLWE here
-           FNET(2,NLAYER)=DIRECTU(2,NLAYER)-DIREC(2,NLAYER)
-        ELSE
-           FNET(2,NLAYER)=FBASEFLUX
-        ENDIF
+         FNET(2,NLAYER)=FBASEFLUX  
 !     SINCE WE ARE PLACING A CONSTRAINT ON THE NET FLUX AT THE BOTTOM OF
 !     THE MODEL (BY DEFINING  NET FLUX AT THE BASE TO EQUAL FBASEFLUX)
 !     TO BE SELF CONSISTENT, WE CAN REDIFINE THE UPWARD FLUX FROM THE
@@ -296,9 +280,8 @@
 
 !      HERE WE DERIVE THE UPWARD FLUX FROM THE NET FLUX, SELF CONSISTENT
 !      WITH BOTTOM BOUNDARY CONDITION
-
-       DIRECTU(2,NLAYER)=FNET(2,NLAYER)+DIREC(2,NLAYER)
-
+         DIRECTU(2,NLAYER)    =  FBASEFLUX+DIREC(2,NLAYER)
+  
 !            DO 55 J = 1,NLAYER
 !         write(*,*) PRESS(J),FNET(1,J),FNET(2,J) 
 !666      FORMAT(F14.6,6x, E14.6, 6X, E14.6, 6X, E14.6) 
@@ -307,7 +290,7 @@
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
 !          write(*,*), NSOLP
-!MTR          write(*,*) 'NLAYER',NLAYER
+!          write(*,*) 'NLAYER',NLAYER
 !        DO IJ=1,NLAYER 
 !           write(*,*) 'FNET',IJ,P_aerad(IJ),FNET(2,IJ)
 !        ENDDO 
@@ -324,14 +307,14 @@
 !           write(*,*)  'DPG' 
            TERM1      =  FDEGDAY/(DPG(J+1)*G)
 !           write(*,*) J,TERM1         
-!           write(*,*)'FNET',FNET(2,*)
+!           write(*,*)'FNET',FNET
            IF(ISL .NE. 0) THEN
              DO 480 L     =  1,NSOLP
                HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
-!               write(*,*)'FNET',(FNET(L,J+1)-FNET(L,J))
-!               write(*,*) ' HEATS', (FNET(L,J+1)-FNET(L,J))*TERM1
+!               write(*,*)'FNET',(FNET(L,J+1),FNET(L,J))
  480         CONTINUE
            ENDIF
+
            IF(IR .NE. 0) THEN
 !             write(*,*) 'IR.NE.0'
              DO 490 L     =  NSOLP+1,NTOTAL
@@ -358,8 +341,9 @@
 !MTR                    write(*,*) 'stop'
 !MTR             stop
            ENDIF
-           HEAT(J)        =  HEATS(J)+HEATI(J)
-!
+            HEAT(J)        =  HEATS(J)+HEATI(J)
+ 
+       
 !     Load heating rates [deg_K/s] into interface common block
 !          
 !            write(*,*) 'heats', heats
@@ -369,6 +353,9 @@
 !            write(*,*) 'heats_aerad_in radtran',heats_aerad(j)
 !           write(*,*) 'j,bar,solar,IR',j,heats_aerad(j),heati_aerad(j)
  500    CONTINUE
+!            write(*,*) 'HEAT',HEAT
+!            stop
+
 !           DO 502 IJ=1,NVERT !NLAYER
 !           write(*,*) 'LWUP,DN',IJ,P_aerad(IJ)
 !           write(*,*) '     ',DIRECTU(2,IJ),DIREC(2,IJ)
@@ -641,17 +628,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top                           
       RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom                       
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          
-
-!      IF (LSURF) THEN
-!         RFLUXES_aerad(2,2,2)=fir_up_aerad(1)+FLWE*1.0E-3
-!      ELSE
-      RFLUXES_aerad(2,2,2)=fir_up_aerad(1) ! LW up bottom  
-
-      IF (LSURF) THEN
-         FSWD=(1E3)*(1-ALBSW)*fsl_dn_aerad(1)                                                                                                                                                                                                              
-         FLWD=(1E3)*(1-ALBLW)*fir_dn_aerad(1) 
-      ENDIF
-!      ENDIF
+      RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom  
 !      write(*,*)'RFLUXES_aerad',rfluxes_aerad
       return
       END
