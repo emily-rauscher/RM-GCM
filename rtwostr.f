@@ -42,8 +42,6 @@
              AK(L,J)    = SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
              GAMI(L,J)  =  B2(L,J)/(B1(L,J) + AK(L,J))
              EE1(L,J)   =  EXP(-AK(L,J)*TAUL(L,J))
-!             write(*,*) 'EE1',J,EE1(L,J)
-!             write(*,*) 'GAMI',J,GAMI(L,J)
              EL1(L,J)   =  1.0 + GAMI(L,J) *EE1(L,J)  !e1                          
              EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J) !e2                      
              EL2(L,J)   =  GAMI(L,J) + EE1(L,J)       !e3                        
