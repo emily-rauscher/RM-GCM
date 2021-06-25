@@ -22,12 +22,15 @@ C
 
     
        CHARACTER(30) :: AEROSOLMODEL
-       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1)
+       CHARACTER(30) :: AEROSOLCOMP
+       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
+       REAL MTLX
+       INTEGER MAXTAULOC,AERLAYERS
        LOGICAL DELTASCALE
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
-
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,MOLEF,AERLAYERS
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
      +              ,RNTAPO                                               
      +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR                          
@@ -43,13 +46,6 @@ C
      & STMASS2,STRAD1,STRAD2,STTEMP1,STTEMP2,LBIN
 
       LOGICAL LBIN
-
-! need this for the logical switch for if surface or not.
-      REAL TSURFACE(mg,jg*nhem)
-      REAL SURFES(mg,jg*nhem)
-      COMMON/SURFACE/CSURF,RHOSURF,GRNDZ,ALBLW,SURF_EMIS,LSURF,LENGY,
-     & TGRND0,TSURFACE,SURFES,SURFEH,FSWD,FLWD,FLWE,BOAWIND,DELTAT
-      LOGICAL LSURF, LENGY
 
 
       INTEGER MXGAS,MXLEV,MXBAND,MXCL                                     
@@ -100,10 +96,10 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
      +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT
      +              ,RD,RV,CPD,CLATNT                                     
      +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
-     +              ,LFLUX                                               
+     +              ,LFLUX,R_AIR                                                
      +              ,LBALAN,LRESTIJ                                       
      +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE,NFP,R_AIR                                               
+     +              ,LNOISE,NFP                                               
       COMPLEX EZ,AIOCT                                                    
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                

@@ -149,7 +149,7 @@ d) Choosing a integer value for the opacity power law will greatly reduce the ru
 With the executable produced and the fort.7 file supplied, the code can be run using the following command:
 ./igcm_nopg
 
-Now that's fine, but it's the bare minimum.  It would be better to include 'nohup' to ensure that the
+Now that's fine, but it's the bear minimum.  It would be better to include 'nohup' to ensure that the
 run is not interrupted when you logout, and 'nice' to share the computer with other processes.  Also, it 
 is often convenient to create a file that records how long the run took, and to make the entire process
 run in the background by ending everything with an ampersand. The resulting command would be:

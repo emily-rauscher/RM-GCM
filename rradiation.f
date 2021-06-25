@@ -524,13 +524,11 @@ c            IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
 c                        IF (PORB.EQ.0) THEN
 c                           htnet(ihem,jh,i,ld)=0.
 c                        ENDIF
-        IF (((KOUNT/ITSPD).GE.0).AND.((KOUNT/ITSPD).LE.200)
-     &              .AND.(.NOT.L1DZENITH)) THEN
+c        IF (((KOUNT/ITSPD).GE.2000).AND.((KOUNT/ITSPD).LE.2100)
+c     &              .AND.(.NOT.L1DZENITH)) THEN
                htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
-     &                               *((KOUNT/ITSPD))/200.
-            ELSE 
-               htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)   
-            END IF
+c     &                               *((KOUNT/ITSPD)-1999.)/100.
+
 
 c                if ((htnet(ihem,jh,i,ld).LT.-1000000).OR. 
 c     &              (htnet(ihem,jh,i,ld).GT.1000000)) THEN 

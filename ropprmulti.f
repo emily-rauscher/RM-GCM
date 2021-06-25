@@ -1173,11 +1173,9 @@
 !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR 
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
-      write(*,*), PRESS
-      write(*,*),P_aerad
-!      write(*,*), PBARS
-      write(*,*), DPG
-      stop
+     
+
+ 
       Do 200  I         = 1,NCLOUD
        DO 180  J          =   1,NLAYER -1 
         CONDFACT(J,I)     =min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
