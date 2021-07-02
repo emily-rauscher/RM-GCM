@@ -32,11 +32,30 @@
 ! NSOLP  = NUMBER OF SOLAR PROBABILITY INTERVALS;                       
 ! NIRP   = NUMBER OF INFRARED PROBABILITY INTERVALS;                    
 !                                                                       
-!      PARAMETER ( NSOLP = 77 )
-!      PARAMETER ( NIRP = 71 )
+
       PARAMETER ( NSOLP = 1)
       PARAMETER ( NIRP = 1)
-      PARAMETER ( NTOTAL = NSOLP + NIRP )          
+      PARAMETER ( NTOTAL = NSOLP + NIRP )     
+
+!     MALSKY ADDITIONS
+!     DEFINING THE WAVENGTH BINS AND THE ASSOCIATED FREQUENCIES
+!     THESE NU BINS MATCH THE SHOWMAN ONES
+      PARAMETER ( NUM_NUS = 3 )
+      REAL, parameter, dimension(3) :: NUS = (/1e13, 1e14, 1e15/)
+
+!     INTEGER PARAMETER ( NUM_NUS = 3 )
+!     REAL, parameter, dimension(31) :: NUS = (/9.23986695e+11
+!     6.52173913e+12 1.50000000e+13 2.88461538e+13
+!     4.64972102e+13 5.74712644e+13 6.81818182e+13 7.89473684e+13
+!     9.12408759e+13 1.00368016e+14 1.19760479e+14 1.38248848e+14
+!     1.48514851e+14 1.68823860e+14 1.88323917e+14 2.00400802e+14
+!     2.25563910e+14 2.50626566e+14 2.72727273e+14 2.98507463e+14
+!     3.12500000e+14 3.29670330e+14 3.48837209e+14 3.82165605e+14
+!     4.02684564e+14 4.44444444e+14 4.90196078e+14 5.24475524e+14
+!     6.06060606e+14 7.50000000e+14 1.14942529e+15/)
+!
+!
+!
 !                                                                       
 ! NGAUSS = TOTAL NUMBER OF GAUSS QUADRATURE POINTS;                     
 !                                                                       
@@ -118,16 +137,6 @@
 !                                                                       
 ! DEFINED IN 'OPPROP'                                                   
 !
-!MTR      COMMON /irad7/                                                        
-!MTR     &   WOT, GOT,                                                            
-!MTR     &   PTEMPG(NTOTAL),        PTEMPT(NTOTAL),     
-!MTR     &   G0(   NTOTAL,NLAYER),  OPD( NTOTAL,NLAYER),                          
-!MTR     &   PTEMP(NTOTAL,NLAYER),  TAUL(NTOTAL,NLAYER),     
-!MTR     &   TAUH2O(NTOTAL,NLAYER), TAUS(NWAVE,NLAYER),     
-!MTR     &   TAUA(NWAVE,NLAYER),    G01(NWAVE,NLAYER),     
-!MTR     &   uG0(   NTOTAL,NLAYER), uTAUL(NTOTAL,NLAYER),     
-!MTR     &   W0(   NTOTAL,NLAYER),                                                
-!MTR     &   uW0(   NTOTAL,NLAYER) , uopd(NTOTAL,NLAYER)
       COMMON /irad7/
      &   WOT, GOT,
      &   PTEMPG(NTOTAL),        PTEMPT(NTOTAL),  
