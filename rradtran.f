@@ -31,10 +31,8 @@
         p(k)=player(k)*10.  ! to convert from Pa to Dyne cm^2
       enddo
 
-!
 !     INTERPOLATE TEMPERATURE FROM LAYER CENTER (T) TO LAYER EDGE (TT)
-!
-!      TT(1) = tabove_aerad
+
       DO 12 J = 2, NVERT
          TT(J) = T(J-1) * (PRESS(J)/P(J-1)) **    
      &              (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
@@ -50,100 +48,100 @@
 !     treated differently at the top.
 !     TOP
       TT(1)=((T(1)-TT(2))/log(P(1)/PRESS(2)))*log(PRESS(1)/P(1))+T(1)
+
 !     BOTTOM
+
       TT(NLAYER)=T(NVERT) * (PRESS(NLAYER)/P(NVERT)) **
      &              (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
 
 !     HERE, INSTEAD OF SPECIFYING THE GROUND AND TOP TEMPERATURES, WE
 !     USE THE EXTRAPOLATED VALUES TO DEFINE THESE; ALTERNATIVELY THEY
 !     MAY BE DEFINED HERE, WHERE THEY WILL BE PASSED TO THE MODEL
+
       TGRND=TT(NLAYER)
       TABOVE_AERAD=TT(1)
-!      write(*,*)'TGRND',TGRND   
+
 !     WATER VAPOR (G / CM**2)
-!    
 !     create a T array for the double resolution IR by combinging the
 !     layer center and edge temperatures 
       
-                 K  =  1
+      K  =  1
       DO 46 J  = 1, NDBL-1,2
-                 L  =  J
-         TTsub(L) = TT(K)
-                 L  =  L+1
-         TTsub(L) = T(K)
-                 K  =  K+1
+        L = J
+        TTsub(L) = TT(K)
+        L =  L+1
+        TTsub(L) = T(K)
+        K = K + 1
  46    CONTINUE
 
 !     Solar zenith angle 
       u0 = u0_aerad
 !
 !     SURFACE REFLECTIVITY AND EMISSIVITY
-!
-!...Hack: use spectrally dependent surface albedo
+!     Hack: use spectrally dependent surface albedo
 
       DO 20 L =  1,NSOLP
-         RSFX(L) = ALBSW  !ALBEDO_SFC
-         EMIS(L) =  1.0 - RSFX(L)
+          RSFX(L) = ALBSW  !ALBEDO_SFC
+          EMIS(L) =  1.0 - RSFX(L)
  20   CONTINUE
 
-!...Hack: specify EMIS based on RSFX rather than visa versa
+!     Hack: specify EMIS based on RSFX rather than visa versa
 
       DO 30 L =  NSOLP+1,NTOTAL
-         EMIS(L) =  EMISIR
-         RSFX(L) = 1.0 - EMIS(L)
-        if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
-         rsfx(L) = albedoa(nwave_alb)
-        endif
-         EMIS(L) = 1.0 - RSFX(L)
+          EMIS(L) =  EMISIR
+          RSFX(L) = 1.0 - EMIS(L)
+          if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
+              rsfx(L) = albedoa(nwave_alb)
+          endif
+          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
 !     SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
 
-        LLA                   =  NTOTAL
-        LLS                   =  1
-        IF(ISL  .EQ. 0) THEN
-          LLS   =  NSOLP+1
+        LLA = NTOTAL
+        LLS = 1
+        IF(ISL .EQ. 0) THEN
+            LLS   =  NSOLP+1
         ENDIF
-!
-        IF(IR   .EQ. 0) THEN
-          LLA  =  NSOLP
+        IF(IR .EQ. 0) THEN
+            LLA  =  NSOLP
         ENDIF
 
 !     CALCULATE THE OPTICAL PROPERTIES
 
         IF(AEROSOLCOMP .EQ. 'All') THEN
-          CALL OPPRMULTI
+            CALL OPPRMULTI
         ELSE 
-          CALL OPPR
+            CALL OPPR
         ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
         
         IF(IR .NE. 0) THEN
-           CALL OPPR1
+            CALL OPPR1
         ENDIF
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF
 !     SOLAR INTERVALS
 
         IF(IRS .EQ. 0) THEN
-          LLA  =  NSOLP
+            LLA  =  NSOLP
         ENDIF
 
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
 
         IF(ISL .NE. 0 .OR. IRS .NE. 0 ) THEN
-          CALL TWOSTR
-          CALL ADD
+            CALL TWOSTR
+            CALL ADD
         ENDIF
           
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
 
         IF(IR .NE. 0) THEN
-         CALL NEWFLUX1
+            CALL NEWFLUX1
         
          !CLOUD FRACTION     
 !        NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
@@ -154,27 +152,28 @@
 !        THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
 !        LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
 !        WITHOUT DOUBLING
-                      K     =  1
-            DO        J     =  1,NLAYER
-             FNET(2,J)      =  DIRECTU(2,k)-DIREC(2,k)  
-             DIRECTU(2,J)   =  DIRECTU(2,K)
-             DIREC(2,J)     =  DIREC(2,K)
-             OPD(2,J)       =  OPD(2,K)
-             TAUL(2,J)      =  TAUL(2,K)
-             W0(2,J)        =  W0(2,K)
-             G0(2,J)        =  G0(2,K)
-             ug0(2,J)       =  ug0(2,K)
-             uOPD(2,J)      =  uOPD(2,K)
-             uTAUL(2,j)     =  uTAUL(2,K)
-             uW0(2,J)       =  uW0(2,k)
-             TMIU(2,J)      =  TMIU(2,k)
-             TMID(2,J)      =  TMID(2,k)
-                      K     =  K+2.  
-            ENDDO
+        
+        K = 1
+        DO J = 1,NLAYER
+            FNET(2,J)      =  DIRECTU(2,k)-DIREC(2,k)  
+            DIRECTU(2,J)   =  DIRECTU(2,K)
+            DIREC(2,J)     =  DIREC(2,K)
+            OPD(2,J)       =  OPD(2,K)
+            TAUL(2,J)      =  TAUL(2,K)
+            W0(2,J)        =  W0(2,K)
+            G0(2,J)        =  G0(2,K)
+            ug0(2,J)       =  ug0(2,K)
+            uOPD(2,J)      =  uOPD(2,K)
+            uTAUL(2,j)     =  uTAUL(2,K)
+            uW0(2,J)       =  uW0(2,k)
+            TMIU(2,J)      =  TMIU(2,k)
+            TMID(2,J)      =  TMID(2,k)
+            K     =  K+2.  
+        ENDDO
 
-          IF(FLXLIMDIF) THEN 
+        IF(FLXLIMDIF) THEN 
             IF(OPD(2,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
-            CALL FLUXLD
+                CALL FLUXLD
             ENDIF
           ENDIF
         ENDIF
@@ -214,7 +213,6 @@
            ENDIF
             HEAT(J)        =  HEATS(J)+HEATI(J)
 
-
 !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     !!!!!!!!!!!!!!!         MALSKY CODE          !!!!!!!!!!!!!!!!
 !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -251,45 +249,42 @@
         do i = 1, nwave
           opd_aerad(i) = uopd(i,nlayer)
         enddo
-!
+
 !     <tsLu> and <tsLd> are total upwelling and downwelling solar
 !     fluxes at top-of-atmosphere
-!
+
         tsLu = 0.
         tsLd = 0.
-!
+
 !     <fupbs>, <fdownbs>, and <fnetbs> are total upwelling, downwelling,
-!     and net
-!     solar fluxes at grid boundaries
-!
+!     and net solar fluxes at grid boundaries
+
         do 507 j = 1, nlayer
           fupbs(j) = 0.
           fdownbs(j) = 0.
           fnetbs(j) = 0.
           fdownbs2(j)= 0.
  507    continue
-!
+
 !     <fsLu> and <fsLd> are upwelling, downwelling, and net
 !     solar fluxes at top-of-atmosphere (spectrally-resolved)
-!
 !     <alb_toa> is albedo at top-of-atmosphere (spectrally-resolved)
-!
+
         do 509 i = 1, nsoL
           fsLu(i) = 0.
           fsLd(i) = 0.
           alb_toa(i) = 0.
  509    continue
-!
+
 !      <alb_tomi> and <alb_toai> are total solar albedos at top-of-model 
 !      and top-of-atmosphere
-!
+
         alb_tomi = 0.
         alb_toai = 0.
-!
+
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
-!     DOWNWARD
-!     LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
-!
+!     DOWNWARD LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
+
         SOLNET  = 0.0
         IF (ISL .NE. 0) THEN
           DO 510 L       =  1,NSOLP
@@ -317,37 +312,36 @@
           alb_toai = tsLu/tsLd
 
 !      Load albedos into interface common block
-!
+
           alb_toai_aerad = alb_toai
           alb_tomi_aerad = alb_tomi
           do i = 1, NSOL
             alb_toa_aerad(i) = alb_toa(i)
           enddo
-!
+
 !      Load fluxes into interface common block
-!
+
           do j = 1, nlayer
             fsl_up_aerad(j) = fupbs(j)
             fsl_dn_aerad(j) = fdownbs(j)
           enddo
 
         ENDIF
-!
+
 !     <tiru> is total upwelling infrared flux at top-of-atmosphere;
 !     <fupbi>, <fdownbi>, and <fnetbi> are total upwelling, downwelling,
-!     and net
-!     infrared fluxes at grid boundaries
-!
+!     and net infrared fluxes at grid boundaries
+
         tiru = 0.
         do 606 j = 1, nlayer
           fupbi(j)   =  0.0
           fdownbi(j)   =  0.0
           fnetbi(j)   =  0.0
  606    continue
-!
+
 !     <firu> is upwelling infrared flux at top-of-atmosphere
 !     (spectrally-resolved)
-!
+
         do 609 i = 1, nir
           firu(i) = 0.
  609    continue
@@ -370,9 +364,9 @@
           do 529 i = 1, nir
             tiru = tiru + firu(i)
  529      continue
-!
+
 !      Load fluxes into interface common block
-!
+
           do j = 1, nlayer
                jflip=nlayer+1-j
             fir_up_aerad(j) = fupbi(jflip)
@@ -381,9 +375,6 @@
             fsl_up_aerad(j) = fupbs(jflip)
             fsl_dn_aerad(j) = fdownbs(jflip)
             fsl_net_aerad(j)= fnetbs(jflip)
-            
-!            write(*,*)'fir_up_aerad',j,fir_up_aerad(j)
-!            write(*,*)'fir_dn_aerad',j,fir_dn_aerad(j)
           enddo
     
         ENDIF
@@ -399,7 +390,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom                       
       RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top                          
       RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom  
-!      write(*,*)'RFLUXES_aerad',rfluxes_aerad
       return
       END
 
