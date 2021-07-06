@@ -18,29 +18,27 @@
       dimension rup_1(NGROUP)
       dimension rhoi(NRAD), dbnds(NRAD+1)
       dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
-!      dimension tauem(NWAVE,6), ssam(NWAVE,6), asmm(NWAVE,6)
       dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
       integer i1, i2, indorder(5)
-!
       logical all_ok
-!
+
 ! **********************************************************************
 !
 !            DEFINE CONSTANTS 
 !
 ! **********************************************************************
-!
+
 !     used for soot cores
-!
+
       parameter( I_NO_SOOT = 0 )
       parameter( I_CORE_FIX = 1 )
       parameter( I_CORE_FRAC = 2 )
       parameter( I_SHELL_FRAC = 3 )
-!
+
 !     REAL REFRACTIVE INDEX FOR LIQUID WATER
-!
+
       DATA (TREAL(1,I),I=1,NWAVE) /     &
 !     VISIBLE
             1.38    , 1.37    , 1.365   , 1.36    , 1.357   ,     &
@@ -54,9 +52,9 @@
             1.313   , 1.326   , 1.310   , 1.293   , 1.270   ,     &
             1.227   , 1.164   , 1.173   , 1.287   , 1.415   ,     &
             1.508   , 1.541   , 1.669   /
-!
+
 !     IMAGINARY REFRACTIVE INDEX FOR LIQUID WATER
-!
+
       DATA (TTMAG(1,I),I=1,NWAVE) /     &
 !     VISIBLE
             0.0     , 0.0     , 0.0     , 0.0     , 0.0     ,     &

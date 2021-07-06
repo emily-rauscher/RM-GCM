@@ -8,6 +8,7 @@
           real, dimension(NLAYER) :: SINGLE_TEMPS
 
           real :: NU
+          real :: mu_0
 
           NU = 1e13
         
@@ -19,9 +20,15 @@
             SINGLE_TEMPS(J) = TT(J)
           END DO
 
-          ! I also created a variable for NUM_NUS
+          ! This is to calculate the incident fraction of the starlight
+          mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)
+
+          IF (mu_0 .le. 0) THEN
+            mu_0 = 0
+          END IF
+
           CALL GET_IR_INTENSITY(NUS(1), EMIS(1), RSFX(1), NLAYER, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
-          CALL GET_SOLAR_INTENSITY(NUS(2), EMIS(1), RSFX(1), NLAYER, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
+          CALL GET_SOLAR_INTENSITY(NUS(2), EMIS(1), RSFX(1), NLAYER, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S, mu_0)
 
       END SUBROUTINE TWO_STREAM_WRAPPER
       
@@ -62,7 +69,7 @@
           temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
           temp_val_1 = temp_val_1 * (h_constant)
           temp_val_1 = temp_val_1 * NU
-          temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(NLAYER))) - 1.0
+          temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(1))) - 1.0
           BB_TOP_OF_ATM = REAL(temp_val_1 * (1.0 / temp_val_2))
 
           temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
@@ -231,7 +238,7 @@
 
 
 
-      SUBROUTINE GET_SOLAR_INTENSITY(NU, EMIS, RSFX, NLAYER, TAULS, W0, G0)
+      SUBROUTINE GET_SOLAR_INTENSITY(NU, EMIS, RSFX, NLAYER, TAULS, W0, G0, mu_0)
           integer :: NLAYER, J, L
           real :: RSFX, FLUX_SURFACE_QUADRATURE, mu_0, mu_1
 
@@ -254,9 +261,7 @@
           e_con = 2.718281828459
           pi    = 3.141592653589
 
-          mu_0 = 1.0
           FLUX_SURFACE_QUADRATURE = 1.0
-          
 
           TAUCS(1) = 0.0
           DO N = 1, NLAYER

@@ -104,10 +104,7 @@ C
 C                  
       OOM=OOM_IN
       STP=1.0/NL                                                          
-      IF (.NOT. LSTRETCH) THEN                                            
-!!         DO 23 L=1,NLM                                                    
-!!            SIGMAH(L)=L*STP                                               
-!!   23    CONTINUE                                                         
+      IF (.NOT. LSTRETCH) THEN                                                                                            
          IF (OOM.EQ.0.) THEN
             DO 23 L=1,NLM   
                SIGMAH(L)=L*STP 
@@ -136,17 +133,7 @@ C
       SIGMAH(3)=0.019                                                     
       SIGMAH(4)=0.037                                                     
       ENDIF                                                               
-!!      S1=0.                                                               
-!!      DO 60 L=1,NLM                                                       
-!!         S2=SIGMAH(L)                                                     
-!!         DSIGMA(L)=S2-S1                                                  
-!!         SIGMA(L)=0.5*(S2+S1)                                             
-!!         RDSIG(L)=0.5/DSIGMA(L)                                           
-!!         S1=S2                                                            
-!!   60 CONTINUE                                                            
-!!      DSIGMA(NL)=1.-SIGMAH(NLM)                                           
-!!      RDSIG(NL)=0.5/DSIGMA(NL)                                            
-!!      SIGMA(NL)=0.5*(1.+SIGMAH(NLM))                                      
+                                        
       IF (OOM.EQ.0.) THEN
          S1=0.             
          DO 60 L=1,NLM     
