@@ -20,6 +20,10 @@
 
       integer jflip
 
+      real, dimension(NLAYER) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
+      real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
+      real, dimension(NLAYER) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
+
 !     Reset flag for computation of solar fluxes
 
       ISL        = isl_aerad
@@ -218,8 +222,23 @@
 !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     !!!!!!!!!!!!!!!         MALSKY CODE          !!!!!!!!!!!!!!!!
 !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            CALL TWO_STREAM_WRAPPER
-            write(*,*) MEAN_HEMISPHERIC_INTENSITY_UP(5)
+            CALL TWO_STREAM_WRAPPER(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
+     &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
+     &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY)
+
+            !write(*,*)  MEAN_HEMISPHERIC_INTENSITY_UP
+            !write(*,*)
+            !write(*,*)  MEAN_HEMISPHERIC_INTENSITY_DOWN
+            !write(*,*)
+            !write(*,*)  MEAN_HEMISPHERIC_FLUX_UP
+            !write(*,*)
+            !write(*,*)  MEAN_HEMISPHERIC_FLUX_DOWN
+            !write(*,*)
+            !write(*,*)  QUADRATURE_FLUX
+            !write(*,*)
+            !write(*,*)  QUADRATURE_INTENSITY
+            !write(*,*)
+            !write(*,*)
  
 
 

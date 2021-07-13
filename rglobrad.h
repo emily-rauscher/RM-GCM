@@ -93,12 +93,15 @@
 !                                                                       
       COMMON /irad3/                                                       
      &  HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER),                           
-     &  SOLNET, XIRDOWN, XIRUP,
-     &  MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER),
-     &  MEAN_HEMISPHERIC_INTENSITY_DOWN(NLAYER),
-     &  MEAN_HEMISPHERIC_FLUX_UP(NLAYER),
-     &  MEAN_HEMISPHERIC_FLUX_DOWN(NLAYER)                              
-!                                                                       
+     &  SOLNET, XIRDOWN, XIRUP
+!     &  MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER),
+!     &  MEAN_HEMISPHERIC_INTENSITY_DOWN(NLAYER),
+!     &  MEAN_HEMISPHERIC_FLUX_UP(NLAYER),
+!     &  MEAN_HEMISPHERIC_FLUX_DOWN(NLAYER)                              
+
+
+
+                                                                       
 ! INITIATED IN SETUPRAD FOR RADIATION CALCULATION                       
 !
       COMMON /irad4/                                                       

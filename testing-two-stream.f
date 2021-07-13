@@ -1,4 +1,6 @@
-      SUBROUTINE TWO_STREAM_WRAPPER
+      SUBROUTINE TWO_STREAM_WRAPPER(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
+     &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
+     &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY)
           include 'rcommons.h'
 
           integer :: NLAYER, J
@@ -6,6 +8,10 @@
           real, dimension(NLAYER) :: SINGLE_G0S
           real, dimension(NLAYER) :: SINGLE_TAULS
           real, dimension(NLAYER) :: SINGLE_TEMPS
+
+          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
+          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
+          real, dimension(NLAYER) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
 
           real :: NU
           real :: mu_0
@@ -26,14 +32,25 @@
           IF (mu_0 .le. 0) THEN
             mu_0 = 0
           END IF
+          CALL GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
+     &                          MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
+     &                          NUS(1), EMIS(1), RSFX(1), NLAYER, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
 
-          CALL GET_IR_INTENSITY(NUS(1), EMIS(1), RSFX(1), NLAYER, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
-          CALL GET_SOLAR_INTENSITY(NUS(2), EMIS(1), RSFX(1), NLAYER, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S, mu_0)
 
+          CALL GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
+     &                             NUS(2), EMIS(1), RSFX(1), NLAYER, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S, mu_0)
+                 
       END SUBROUTINE TWO_STREAM_WRAPPER
       
+
+
+
+
       
-      SUBROUTINE GET_IR_INTENSITY(NU, EMIS, RSFX, NLAYER, TEMPS, TAULS, W0, G0)
+      SUBROUTINE GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
+     &                            MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,   
+     &                            NU, EMIS, RSFX, NLAYER, TEMPS, TAULS, W0, G0)
+
           integer :: NLAYER, J, L, Z
           real :: NU, mu_1, mu, temp_val_2, BB_TOP_OF_ATM, BB_BOTTOM_OF_ATM, SFCS_HEMISPHERIC
           real(16) :: temp_val_1
@@ -59,7 +76,7 @@
           real, dimension(NLAYER) :: HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP
 
           real, dimension(NLAYER) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
-          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN 
+          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
 
           real, dimension(3) :: GAUSS_ANGLES, GUASS_WEIGHTS, GUASS_RATIOS
           integer :: I
@@ -227,9 +244,8 @@
 
 
 
-          DO I=1, NGAUSS
+          DO I=1, 3
             mu = GAUSS_ANGLES(I)
-
             HEMISPHERIC_INTENSITY_DOWN(1) = BB_TOP_OF_ATM * e_con ** (-TAULS(1)/mu) + 
      &                      SOURCE_J(1)/(LAMBDAS(1)*mu + 1.0) * (1.0 - e_con ** (-TAULS(1)*(LAMBDAS(1)+1.0/mu))) + 
      &                      SOURCE_K(1)/(LAMBDAS(1)*mu - 1.0) * (e_con ** (-TAULS(1)/mu) - e_con ** (-TAULS(1)*LAMBDAS(1)))+ 
@@ -278,7 +294,24 @@
       END SUBROUTINE GET_IR_INTENSITY
 
 
-      SUBROUTINE GET_SOLAR_INTENSITY(NU, EMIS, RSFX, NLAYER, TAULS, W0, G0, mu_0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      SUBROUTINE GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
+     &                               NU, EMIS, RSFX, NLAYER, TAULS, W0, G0, mu_0)
           integer :: NLAYER, J, L
           real :: RSFX, FLUX_SURFACE_QUADRATURE, mu_0, mu_1
 
