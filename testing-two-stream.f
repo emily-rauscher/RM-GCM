@@ -58,6 +58,23 @@
           real, dimension(NLAYER) :: SOURCE_Y1, SOURCE_Y2, source_temp
           real, dimension(NLAYER) :: HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP
 
+          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
+          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN 
+
+          real, dimension(3) :: GAUSS_ANGLES, GUASS_WEIGHTS, GUASS_RATIOS
+          integer :: I
+
+          DO J = 1, NLAYER
+            MEAN_HEMISPHERIC_INTENSITY_UP(J) = 0
+            MEAN_HEMISPHERIC_INTENSITY_DOWN(J) = 0
+            MEAN_HEMISPHERIC_FLUX_UP(J) = 0
+            MEAN_HEMISPHERIC_FLUX_DOWN(J) = 0
+          END DO
+
+          GAUSS_ANGLES  = (/0.2123405382, 0.5905331356, 0.9114120405/)
+          GUASS_WEIGHTS = (/0.0698269799, 0.2292411064, 0.2009319137/)
+          GUASS_RATIOS  = (/0.2123405382, 0.5905331356, 0.9114120405/)
+
           mu   = 1.0
 
           bolz_constant = 1.380649e-23
@@ -208,34 +225,57 @@
               SIGMA_2(J) = 2.0 * pi * B1(J)
           END DO
 
-          HEMISPHERIC_INTENSITY_DOWN(1) = BB_TOP_OF_ATM * e_con ** (-TAULS(1)/mu) + 
-     &                    SOURCE_J(1)/(LAMBDAS(1)*mu + 1.0) * (1.0 - e_con ** (-TAULS(1)*(LAMBDAS(1)+1.0/mu))) + 
-     &                    SOURCE_K(1)/(LAMBDAS(1)*mu - 1.0) * (e_con ** (-TAULS(1)/mu) - e_con ** (-TAULS(1)*LAMBDAS(1)))+ 
-     &                    SIGMA_1(1) * (1.0 - e_con ** (-TAULS(1)/mu)) + 
-     &                    SIGMA_2(1) * (mu * e_con ** (-TAULS(1)/mu) + TAULS(1) - mu);
 
-          DO J = 2, NLAYER
+
+          DO I=1, NGAUSS
+            mu = GAUSS_ANGLES(I)
+
+            HEMISPHERIC_INTENSITY_DOWN(1) = BB_TOP_OF_ATM * e_con ** (-TAULS(1)/mu) + 
+     &                      SOURCE_J(1)/(LAMBDAS(1)*mu + 1.0) * (1.0 - e_con ** (-TAULS(1)*(LAMBDAS(1)+1.0/mu))) + 
+     &                      SOURCE_K(1)/(LAMBDAS(1)*mu - 1.0) * (e_con ** (-TAULS(1)/mu) - e_con ** (-TAULS(1)*LAMBDAS(1)))+ 
+     &                      SIGMA_1(1) * (1.0 - e_con ** (-TAULS(1)/mu)) + 
+     &                      SIGMA_2(1) * (mu * e_con ** (-TAULS(1)/mu) + TAULS(1) - mu);
+
+
+            MEAN_HEMISPHERIC_INTENSITY_DOWN(1) = MEAN_HEMISPHERIC_INTENSITY_DOWN(1) + 
+     &                                           GUASS_RATIOS(I) * HEMISPHERIC_INTENSITY_DOWN(1)
+            MEAN_HEMISPHERIC_FLUX_DOWN(1)      = MEAN_HEMISPHERIC_INTENSITY_DOWN(1) + 
+     &                                           GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_DOWN(1)
+
+            DO J = 2, NLAYER
               HEMISPHERIC_INTENSITY_DOWN(J) = HEMISPHERIC_INTENSITY_DOWN(J-1) * e_con ** (-TAULS(J)/mu) + 
-     &                     SOURCE_J(J)/(LAMBDAS(J)*mu + 1.0) * (1.0 - e_con ** (-TAULS(J)*(LAMBDAS(J)+1.0/mu))) + 
-     &                     SOURCE_K(J)/(LAMBDAS(J)*mu - 1.0) * (e_con ** (-TAULS(J)/mu) - e_con ** (-TAULS(J)*LAMBDAS(J)))+ 
-     &                     SIGMA_1(J) * (1.0 - e_con ** (-TAULS(J)/mu)) + 
-     &                     SIGMA_2(J) * (mu * e_con ** (-TAULS(J)/mu) + TAULS(J) - mu)
-          END DO
+     &                       SOURCE_J(J)/(LAMBDAS(J)*mu + 1.0) * (1.0 - e_con ** (-TAULS(J)*(LAMBDAS(J)+1.0/mu))) + 
+     &                       SOURCE_K(J)/(LAMBDAS(J)*mu - 1.0) * (e_con ** (-TAULS(J)/mu) - e_con ** (-TAULS(J)*LAMBDAS(J)))+ 
+     &                       SIGMA_1(J) * (1.0 - e_con ** (-TAULS(J)/mu)) + 
+     &                       SIGMA_2(J) * (mu * e_con ** (-TAULS(J)/mu) + TAULS(J) - mu)
 
-          HEMISPHERIC_INTENSITY_UP(NLAYER) = 2.0 * BB_BOTTOM_OF_ATM * EMIS * pi
+              MEAN_HEMISPHERIC_INTENSITY_DOWN(J)= MEAN_HEMISPHERIC_INTENSITY_DOWN(J)+GUASS_RATIOS(I)*HEMISPHERIC_INTENSITY_DOWN(J)
+              MEAN_HEMISPHERIC_FLUX_DOWN(J)     = MEAN_HEMISPHERIC_FLUX_DOWN(J) + GUASS_WEIGHTS(I)*HEMISPHERIC_INTENSITY_DOWN(J)
 
-          !Calculate the upward intensity next
-          DO Z = 1, NLAYER - 1
+            END DO
+
+            HEMISPHERIC_INTENSITY_UP(NLAYER)      = 2.0 * BB_BOTTOM_OF_ATM * EMIS * pi
+
+            MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER) = MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER) + 
+     &                                              GUASS_RATIOS(I) * HEMISPHERIC_INTENSITY_UP(NLAYER)
+            MEAN_HEMISPHERIC_FLUX_UP(NLAYER)      = MEAN_HEMISPHERIC_FLUX_UP(NLAYER) +
+     &                                              GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_UP(NLAYER)
+
+            !Calculate the upward intensity next
+            DO Z = 1, NLAYER - 1
               J = NLAYER - Z
               HEMISPHERIC_INTENSITY_UP(J) = HEMISPHERIC_INTENSITY_UP(J+1) * e_con ** (-TAULS(J+1)/mu) + 
-     &                         SOURCE_G(J)/(LAMBDAS(J)*mu-1.0)*(e_con ** (-TAULS(J+1)/mu)-e_con ** (-TAULS(J+1)*(LAMBDAS(J)))) + 
-     &                         SOURCE_H(J)/(LAMBDAS(J)*mu+1.0) * (1.0 - e_con ** (-TAULS(J+1) * (LAMBDAS(J) + 1.0/mu))) + 
-     &                         ALPHA_1(J) * (1.0 - e_con ** (-TAULS(J+1)/mu)) + 
-     &                         ALPHA_2(J) * (mu - ((TAULS(J+1) + mu) * (e_con ** (-TAULS(J+1)/mu))))
+     &                           SOURCE_G(J)/(LAMBDAS(J)*mu-1.0)*(e_con ** (-TAULS(J+1)/mu)-e_con ** (-TAULS(J+1)*(LAMBDAS(J)))) + 
+     &                           SOURCE_H(J)/(LAMBDAS(J)*mu+1.0) * (1.0 - e_con ** (-TAULS(J+1) * (LAMBDAS(J) + 1.0/mu))) + 
+     &                           ALPHA_1(J) * (1.0 - e_con ** (-TAULS(J+1)/mu)) + 
+     &                           ALPHA_2(J) * (mu - ((TAULS(J+1) + mu) * (e_con ** (-TAULS(J+1)/mu))))
+
+              MEAN_HEMISPHERIC_INTENSITY_UP(J) = MEAN_HEMISPHERIC_INTENSITY_UP(J) + GUASS_RATIOS(I) * HEMISPHERIC_INTENSITY_UP(J)
+              MEAN_HEMISPHERIC_FLUX_UP(J)      = MEAN_HEMISPHERIC_FLUX_UP(J) + GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_UP(J)
+            END DO
           END DO
 
       END SUBROUTINE GET_IR_INTENSITY
-
 
 
       SUBROUTINE GET_SOLAR_INTENSITY(NU, EMIS, RSFX, NLAYER, TAULS, W0, G0, mu_0)

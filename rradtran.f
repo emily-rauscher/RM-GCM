@@ -213,10 +213,15 @@
            ENDIF
             HEAT(J)        =  HEATS(J)+HEATI(J)
 
+
+
 !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     !!!!!!!!!!!!!!!         MALSKY CODE          !!!!!!!!!!!!!!!!
 !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             CALL TWO_STREAM_WRAPPER
+            write(*,*) MEAN_HEMISPHERIC_INTENSITY_UP(5)
+ 
+
 
 !     Load heating rates [deg_K/s] into interface common block
 

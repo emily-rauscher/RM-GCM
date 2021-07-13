@@ -43,6 +43,7 @@
       PARAMETER ( NUM_NUS = 3 )
       REAL, parameter, dimension(3) :: NUS = (/1e13, 1e14, 1e15/)
 
+
 !     INTEGER PARAMETER ( NUM_NUS = 3 )
 !     REAL, parameter, dimension(31) :: NUS = (/9.23986695e+11
 !     6.52173913e+12 1.50000000e+13 2.88461538e+13
@@ -92,7 +93,11 @@
 !                                                                       
       COMMON /irad3/                                                       
      &  HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER),                           
-     &  SOLNET, XIRDOWN, XIRUP                                           
+     &  SOLNET, XIRDOWN, XIRUP,
+     &  MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER),
+     &  MEAN_HEMISPHERIC_INTENSITY_DOWN(NLAYER),
+     &  MEAN_HEMISPHERIC_FLUX_UP(NLAYER),
+     &  MEAN_HEMISPHERIC_FLUX_DOWN(NLAYER)                              
 !                                                                       
 ! INITIATED IN SETUPRAD FOR RADIATION CALCULATION                       
 !
