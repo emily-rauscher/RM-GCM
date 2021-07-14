@@ -3,24 +3,22 @@
      &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY)
           include 'rcommons.h'
 
-          integer :: NLAYER, J
-          real, dimension(NLAYER) :: SINGLE_W0S
-          real, dimension(NLAYER) :: SINGLE_G0S
-          real, dimension(NLAYER) :: SINGLE_TAULS
-          real, dimension(NLAYER) :: SINGLE_TEMPS
+          integer :: NVERT, J
+          real, dimension(NVERT) :: SINGLE_W0S
+          real, dimension(NVERT) :: SINGLE_G0S
+          real, dimension(NVERT) :: SINGLE_TAULS
+          real, dimension(NVERT) :: SINGLE_TEMPS
 
-          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
-          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
-          real, dimension(NLAYER) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
+          real, dimension(NVERT) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
+          real, dimension(NVERT) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
+          real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
 
-          real :: NU
           real :: mu_0
 
-          NU = 1e13
         
-          DO J = 1, NLAYER
-            SINGLE_W0S(J) = W0(1,J)
-            SINGLE_G0S(J) = G0(1,J)
+          DO J = 1, NVERT
+            SINGLE_W0S(J) = W0(2,J)
+            SINGLE_G0S(J) = G0(2,J)
 
             SINGLE_TAULS(J) = TAUL(1,J)
             SINGLE_TEMPS(J) = TT(J)
@@ -32,13 +30,15 @@
           IF (mu_0 .le. 0) THEN
             mu_0 = 0
           END IF
+
           CALL GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                          MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
-     &                          NUS(1), EMIS(1), RSFX(1), NLAYER, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
+     &                          NUS(1), EMIS(1), RSFX(1), NVERT, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
 
 
           CALL GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
-     &                             NUS(2), EMIS(1), RSFX(1), NLAYER, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S, mu_0)
+     &                               NUS(1), FLUX_SURFACE_QUADRATURE(1),
+     &                               EMIS, RSFX, NVERT, TAULS, W0, G0, mu_0)
                  
       END SUBROUTINE TWO_STREAM_WRAPPER
       
@@ -49,39 +49,39 @@
       
       SUBROUTINE GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                            MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,   
-     &                            NU, EMIS, RSFX, NLAYER, TEMPS, TAULS, W0, G0)
+     &                            NU, EMIS, RSFX, NVERT, TEMPS, TAULS, W0, G0)
 
-          integer :: NLAYER, J, L, Z
+          integer :: NVERT, J, L, Z, NGAUSS
           real :: NU, mu_1, mu, temp_val_2, BB_TOP_OF_ATM, BB_BOTTOM_OF_ATM, SFCS_HEMISPHERIC
           real(16) :: temp_val_1
           real :: e_con, pi, bolz_constant, clight, h_constant
 
-          real, dimension(50) :: TAULS, W0, G0, TEMPS
+          real, dimension(NVERT) :: TAULS, W0, G0, TEMPS
 
           real ::  EMIS, RSFX
-          real, dimension(NLAYER) :: y1, y2
-          real, dimension(NLAYER) :: LAMBDAS, GAMMA
-          real, dimension(NLAYER) :: temp_e_val
-          real, dimension(NLAYER) :: e1, e2, e3, e4
-          real, dimension(NLAYER) :: temp_gamma_val
-          real, dimension(NLAYER) :: CP, CPB, CM, CMB
+          real, dimension(NVERT) :: y1, y2
+          real, dimension(NVERT) :: LAMBDAS, GAMMA
+          real, dimension(NVERT) :: temp_e_val
+          real, dimension(NVERT) :: e1, e2, e3, e4
+          real, dimension(NVERT) :: temp_gamma_val
+          real, dimension(NVERT) :: CP, CPB, CM, CMB
 
-          real, dimension(2*NLAYER) :: A, B, D, E
-          real, dimension(2*NLAYER) :: AS, DS, X, Y
+          real, dimension(2*NVERT) :: A, B, D, E
+          real, dimension(2*NVERT) :: AS, DS, X, Y
 
-          real, dimension(NLAYER) :: B0, B1
-          real, dimension(NLAYER) :: SOURCE_G, SOURCE_H, SOURCE_J, SOURCE_K
-          real, dimension(NLAYER) :: ALPHA_1, ALPHA_2, SIGMA_1, SIGMA_2
-          real, dimension(NLAYER) :: SOURCE_Y1, SOURCE_Y2, source_temp
-          real, dimension(NLAYER) :: HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP
+          real, dimension(NVERT) :: B0, B1
+          real, dimension(NVERT) :: SOURCE_G, SOURCE_H, SOURCE_J, SOURCE_K
+          real, dimension(NVERT) :: ALPHA_1, ALPHA_2, SIGMA_1, SIGMA_2
+          real, dimension(NVERT) :: SOURCE_Y1, SOURCE_Y2, source_temp
+          real, dimension(NVERT) :: HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP
 
-          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
-          real, dimension(NLAYER) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
+          real, dimension(NVERT) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
+          real, dimension(NVERT) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
 
-          real, dimension(3) :: GAUSS_ANGLES, GUASS_WEIGHTS, GUASS_RATIOS
+          real, dimension(3) :: GAUSS_ANGLES, GUASS_WEIGHTS, GAUSS_RATIOS
           integer :: I
 
-          DO J = 1, NLAYER
+          DO J = 1, NVERT
             MEAN_HEMISPHERIC_INTENSITY_UP(J) = 0
             MEAN_HEMISPHERIC_INTENSITY_DOWN(J) = 0
             MEAN_HEMISPHERIC_FLUX_UP(J) = 0
@@ -90,9 +90,10 @@
 
           GAUSS_ANGLES  = (/0.2123405382, 0.5905331356, 0.9114120405/)
           GUASS_WEIGHTS = (/0.0698269799, 0.2292411064, 0.2009319137/)
-          GUASS_RATIOS  = (/0.2123405382, 0.5905331356, 0.9114120405/)
+          GAUSS_RATIOS  = (/0.4679139346, 0.3607615730, 0.1713244924/)
 
           mu   = 1.0
+          NGAUSS = 3
 
           bolz_constant = 1.380649e-23
           h_constant    = 6.62607015e-34
@@ -109,13 +110,13 @@
           temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
           temp_val_1 = temp_val_1 * (h_constant)
           temp_val_1 = temp_val_1 * NU
-          temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(NLAYER))) - 1.0
+          temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(NVERT))) - 1.0
           BB_BOTTOM_OF_ATM = REAL(temp_val_1 * (1.0 / temp_val_2))
 
           SFCS_HEMISPHERIC = EMIS * PI * BB_BOTTOM_OF_ATM
           mu_1 = 0.5
 
-          DO J = 1, NLAYER
+          DO J = 1, NVERT
               y1(J) = (2.0 - (W0(J) * (1.0 + G0(J))));
               y2(J) = (W0(J) * (1.0 - G0(J)));
 
@@ -130,7 +131,7 @@
           END DO
 
           J = 1
-          DO L = 2, 2*NLAYER-1, 2
+          DO L = 2, 2*NVERT-1, 2
               ! HERE ARE THE EVEN MATRIX ELEMENTS
               A(L)   =  e2(J+1) * e1(J)   - e3(J) * e4(J+1)
               B(L)   =  e2(J+1) * e2(J)   - e4(J+1) * e4(J)
@@ -150,12 +151,12 @@
           B(1) = e1(1);
           D(1) = -e2(1);
 
-          A(2*NLAYER) = e1(NLAYER) - RSFX * e3(NLAYER);
-          B(2*NLAYER) = e2(NLAYER) - RSFX * e4(NLAYER);
-          D(2*NLAYER) = 0.0;
+          A(2*NVERT) = e1(NVERT) - RSFX * e3(NVERT);
+          B(2*NVERT) = e2(NVERT) - RSFX * e4(NVERT);
+          D(2*NVERT) = 0.0;
 
           ! This is the part of the code that solves for the blackbody stuff
-          DO J=1, NLAYER
+          DO J=1, NVERT
               IF (1 .GE. J-1) THEN
                   KINDEX = 1
               ELSE
@@ -173,12 +174,12 @@
               B0(J) = REAL(temp_val_1 * (1.0 / temp_val_2))
 
               ! This is if you want double gray, you'll also have to fix boundary stuff
-              ! B0(J) = TEMPS(J) * TEMPS(J) * TEMPS(J) * TEMPS(J) * 1.8049459031e-8
+              B0(J) = TEMPS(J) * TEMPS(J) * TEMPS(J) * TEMPS(J) * 1.8049459031e-8
 
               B1(J) = (B0(J) - B0(KINDEX)) / TAULS(J)
           END DO
 
-          DO J=1, NLAYER
+          DO J=1, NVERT
               IF (1 .GE. J-1) THEN
                   KINDEX = 1
               ELSE
@@ -195,7 +196,7 @@
           END DO
 
           J = 1
-          DO L = 2, 2*NLAYER-1, 2
+          DO L = 2, 2*NVERT-1, 2
               E(L)   = (CP(J+1) - CPB(J)) * e2(J+1) + (CMB(J) - CM(J+1))*e4(J+1)
               E(L+1) = e3(J) * (CP(J+1) - CPB(J)) + e1(J) * (CMB(J) - CM(J+1))
               J = J + 1
@@ -205,29 +206,29 @@
           ! BEGINNING OF THE TRIDIAGONAL SOLUTION. I ASSUME NO
           ! DIFFUSE RADIATION IS INCIDENT AT THE TOP.
           E(1) = 0.0 - CM(1);
-          E(2*NLAYER)  = SFCS_HEMISPHERIC - CPB(NLAYER) + RSFX * CMB(NLAYER)
+          E(2*NVERT)  = SFCS_HEMISPHERIC - CPB(NVERT) + RSFX * CMB(NVERT)
 
-          DS(2*NLAYER) = E(2*NLAYER) / B(2*NLAYER)
-          AS(2*NLAYER) = A(2*NLAYER) / B(2*NLAYER)
+          DS(2*NVERT) = E(2*NVERT) / B(2*NVERT)
+          AS(2*NVERT) = A(2*NVERT) / B(2*NVERT)
 
-          DO L = 1, 2*NLAYER - 1
-              X(2*NLAYER-L)  = 1.0 / (B(2*NLAYER-L) - D(2*NLAYER-L) * AS(2*NLAYER-L+1))
-              AS(2*NLAYER-L) = A(2*NLAYER-L) * X(2*NLAYER-L)
-              DS(2*NLAYER-L) = (E(2*NLAYER-L) - (D(2*NLAYER-L) * DS(2*NLAYER-L+1))) * X(2*NLAYER-L)
+          DO L = 1, 2*NVERT - 1
+              X(2*NVERT-L)  = 1.0 / (B(2*NVERT-L) - D(2*NVERT-L) * AS(2*NVERT-L+1))
+              AS(2*NVERT-L) = A(2*NVERT-L) * X(2*NVERT-L)
+              DS(2*NVERT-L) = (E(2*NVERT-L) - (D(2*NVERT-L) * DS(2*NVERT-L+1))) * X(2*NVERT-L)
           END DO
 
           Y(1) = DS(1)
 
-          DO L = 2, 2*NLAYER
+          DO L = 2, 2*NVERT
               Y(L) = DS(L) - AS(L) * Y(L-1)
           END DO
 
-          DO J = 2, NLAYER+1
+          DO J = 2, NVERT+1
               SOURCE_Y1(J-1) = Y(2*J-3)
               SOURCE_Y2(J-1) = Y(2*J-2)
           END DO
 
-          DO J=1, NLAYER
+          DO J=1, NVERT
               SOURCE_G(J) = (SOURCE_Y1(J) + SOURCE_Y2(J)) * (1.0/mu_1 - LAMBDAS(J))
               SOURCE_H(J) = (SOURCE_Y1(J) - SOURCE_Y2(J)) * GAMMA(J) * (1.0/mu_1 + LAMBDAS(J))
               SOURCE_J(J) = (SOURCE_Y1(J) + SOURCE_Y2(J)) * GAMMA(J) * (1.0/mu_1 + LAMBDAS(J))
@@ -242,118 +243,103 @@
               SIGMA_2(J) = 2.0 * pi * B1(J)
           END DO
 
-
-
-          DO I=1, 3
+          DO I=1, NGAUSS
             mu = GAUSS_ANGLES(I)
             HEMISPHERIC_INTENSITY_DOWN(1) = BB_TOP_OF_ATM * e_con ** (-TAULS(1)/mu) + 
      &                      SOURCE_J(1)/(LAMBDAS(1)*mu + 1.0) * (1.0 - e_con ** (-TAULS(1)*(LAMBDAS(1)+1.0/mu))) + 
-     &                      SOURCE_K(1)/(LAMBDAS(1)*mu - 1.0) * (e_con ** (-TAULS(1)/mu) - e_con ** (-TAULS(1)*LAMBDAS(1)))+ 
+     &                      SOURCE_K(1)/(LAMBDAS(1)*mu - 1.0) * (e_con ** (-TAULS(1)/mu)-e_con**(-TAULS(1)*LAMBDAS(1)))+
      &                      SIGMA_1(1) * (1.0 - e_con ** (-TAULS(1)/mu)) + 
      &                      SIGMA_2(1) * (mu * e_con ** (-TAULS(1)/mu) + TAULS(1) - mu);
 
 
             MEAN_HEMISPHERIC_INTENSITY_DOWN(1) = MEAN_HEMISPHERIC_INTENSITY_DOWN(1) + 
-     &                                           GUASS_RATIOS(I) * HEMISPHERIC_INTENSITY_DOWN(1)
+     &                                           GAUSS_RATIOS(I) * HEMISPHERIC_INTENSITY_DOWN(1)
             MEAN_HEMISPHERIC_FLUX_DOWN(1)      = MEAN_HEMISPHERIC_INTENSITY_DOWN(1) + 
      &                                           GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_DOWN(1)
 
-            DO J = 2, NLAYER
+            DO J = 2, NVERT
               HEMISPHERIC_INTENSITY_DOWN(J) = HEMISPHERIC_INTENSITY_DOWN(J-1) * e_con ** (-TAULS(J)/mu) + 
      &                       SOURCE_J(J)/(LAMBDAS(J)*mu + 1.0) * (1.0 - e_con ** (-TAULS(J)*(LAMBDAS(J)+1.0/mu))) + 
-     &                       SOURCE_K(J)/(LAMBDAS(J)*mu - 1.0) * (e_con ** (-TAULS(J)/mu) - e_con ** (-TAULS(J)*LAMBDAS(J)))+ 
+     &                       SOURCE_K(J)/(LAMBDAS(J)*mu-1.0) * (e_con ** (-TAULS(J)/mu)-e_con**(-TAULS(J)*LAMBDAS(J)))+
      &                       SIGMA_1(J) * (1.0 - e_con ** (-TAULS(J)/mu)) + 
      &                       SIGMA_2(J) * (mu * e_con ** (-TAULS(J)/mu) + TAULS(J) - mu)
 
-              MEAN_HEMISPHERIC_INTENSITY_DOWN(J)= MEAN_HEMISPHERIC_INTENSITY_DOWN(J)+GUASS_RATIOS(I)*HEMISPHERIC_INTENSITY_DOWN(J)
-              MEAN_HEMISPHERIC_FLUX_DOWN(J)     = MEAN_HEMISPHERIC_FLUX_DOWN(J) + GUASS_WEIGHTS(I)*HEMISPHERIC_INTENSITY_DOWN(J)
+              MEAN_HEMISPHERIC_INTENSITY_DOWN(J) = MEAN_HEMISPHERIC_INTENSITY_DOWN(J) +
+     &                                             GAUSS_RATIOS(I)*HEMISPHERIC_INTENSITY_DOWN(J)
+              MEAN_HEMISPHERIC_FLUX_DOWN(J)      = MEAN_HEMISPHERIC_FLUX_DOWN(J) + GUASS_WEIGHTS(I) *
+     &                                             HEMISPHERIC_INTENSITY_DOWN(J)
 
             END DO
 
-            HEMISPHERIC_INTENSITY_UP(NLAYER)      = 2.0 * BB_BOTTOM_OF_ATM * EMIS * pi
-
-            MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER) = MEAN_HEMISPHERIC_INTENSITY_UP(NLAYER) + 
-     &                                              GUASS_RATIOS(I) * HEMISPHERIC_INTENSITY_UP(NLAYER)
-            MEAN_HEMISPHERIC_FLUX_UP(NLAYER)      = MEAN_HEMISPHERIC_FLUX_UP(NLAYER) +
-     &                                              GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_UP(NLAYER)
+            HEMISPHERIC_INTENSITY_UP(NVERT)      = 2.0 * BB_BOTTOM_OF_ATM * EMIS * pi
+            MEAN_HEMISPHERIC_INTENSITY_UP(NVERT) = MEAN_HEMISPHERIC_INTENSITY_UP(NVERT) + 
+     &                                              GAUSS_RATIOS(I) * HEMISPHERIC_INTENSITY_UP(NVERT)
+            MEAN_HEMISPHERIC_FLUX_UP(NVERT)      = MEAN_HEMISPHERIC_FLUX_UP(NVERT) +
+     &                                              GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_UP(NVERT)
 
             !Calculate the upward intensity next
-            DO Z = 1, NLAYER - 1
-              J = NLAYER - Z
+            DO Z = 1, NVERT - 1
+              J = NVERT - Z
               HEMISPHERIC_INTENSITY_UP(J) = HEMISPHERIC_INTENSITY_UP(J+1) * e_con ** (-TAULS(J+1)/mu) + 
-     &                           SOURCE_G(J)/(LAMBDAS(J)*mu-1.0)*(e_con ** (-TAULS(J+1)/mu)-e_con ** (-TAULS(J+1)*(LAMBDAS(J)))) + 
-     &                           SOURCE_H(J)/(LAMBDAS(J)*mu+1.0) * (1.0 - e_con ** (-TAULS(J+1) * (LAMBDAS(J) + 1.0/mu))) + 
+     &                           SOURCE_G(J)/(LAMBDAS(J)*mu-1.0)*(e_con ** (-TAULS(J+1)/mu)-e_con **
+     &                           (-TAULS(J+1)*(LAMBDAS(J)))) +
+     &                           SOURCE_H(J)/(LAMBDAS(J)*mu+1.0)*(1.0 - e_con ** (-TAULS(J+1)*(LAMBDAS(J) + 1.0/mu)))+
      &                           ALPHA_1(J) * (1.0 - e_con ** (-TAULS(J+1)/mu)) + 
      &                           ALPHA_2(J) * (mu - ((TAULS(J+1) + mu) * (e_con ** (-TAULS(J+1)/mu))))
 
-              MEAN_HEMISPHERIC_INTENSITY_UP(J) = MEAN_HEMISPHERIC_INTENSITY_UP(J) + GUASS_RATIOS(I) * HEMISPHERIC_INTENSITY_UP(J)
-              MEAN_HEMISPHERIC_FLUX_UP(J)      = MEAN_HEMISPHERIC_FLUX_UP(J) + GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_UP(J)
+              MEAN_HEMISPHERIC_INTENSITY_UP(J) = MEAN_HEMISPHERIC_INTENSITY_UP(J) +
+     &                                           GAUSS_RATIOS(I) * HEMISPHERIC_INTENSITY_UP(J)
+              MEAN_HEMISPHERIC_FLUX_UP(J)      = MEAN_HEMISPHERIC_FLUX_UP(J) +
+     &                                           GUASS_WEIGHTS(I) * HEMISPHERIC_INTENSITY_UP(J)
             END DO
           END DO
-
       END SUBROUTINE GET_IR_INTENSITY
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       SUBROUTINE GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
-     &                               NU, EMIS, RSFX, NLAYER, TAULS, W0, G0, mu_0)
-          integer :: NLAYER, J, L
-          real :: RSFX, FLUX_SURFACE_QUADRATURE, mu_0, mu_1
+     &                               NU, FLUX_SURFACE_QUADRATURE,
+     &                               EMIS, RSFX, NVERT, TAULS, W0, G0, mu_0)
+          integer :: NVERT, J, L
+          real :: RSFX, mu_0, mu_1, NU, FLUX_SURFACE_QUADRATURE
 
           real :: e_con, pi
 
-          real, dimension(NLAYER) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY, TAULS, W0, G0
-          real, dimension(NLAYER+1) :: TAUCS
+          real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY, TAULS, W0, G0
+          real, dimension(NVERT+1) :: TAUCS
 
-          real, dimension(NLAYER) :: DIRECT_QUADRATURE
-          real, dimension(NLAYER) :: y1, y2, y3, y4
-          real, dimension(NLAYER) :: LAMBDAS, GAMMA
-          real, dimension(NLAYER) :: temp_e_val
-          real, dimension(NLAYER) :: e1, e2, e3, e4
-          real, dimension(NLAYER) :: temp_gamma_val
-          real, dimension(NLAYER) :: CP, CPB, CM, CMB
+          real, dimension(NVERT) :: DIRECT_QUADRATURE
+          real, dimension(NVERT) :: y1, y2, y3, y4
+          real, dimension(NVERT) :: LAMBDAS, GAMMA
+          real, dimension(NVERT) :: temp_e_val
+          real, dimension(NVERT) :: e1, e2, e3, e4
+          real, dimension(NVERT) :: temp_gamma_val
+          real, dimension(NVERT) :: CP, CPB, CM, CMB
 
-          real, dimension(2*NLAYER) :: A, B, D, E
-          real, dimension(2*NLAYER) :: AS, DS, X, Y
+          real, dimension(2*NVERT) :: A, B, D, E
+          real, dimension(2*NVERT) :: AS, DS, X, Y
 
           e_con = 2.718281828459
           pi    = 3.141592653589
 
-          FLUX_SURFACE_QUADRATURE = 1.0
-
           TAUCS(1) = 0.0
-          DO N = 1, NLAYER
+          DO N = 1, NVERT
               TAUCS(N+1) = TAUCS(N) + TAULS(N)
           END DO
 
-          DO J = 1, NLAYER
+          DO J = 1, NVERT
               DIRECT_QUADRATURE(J) = mu_0 * pi * FLUX_SURFACE_QUADRATURE*e_con ** (-1.0 * (TAUCS(J) + TAULS(J)) / mu_0)
           END DO
 
           ! Boundary conditions
           mu_1 = 0.577350;
-          SFCS_QUADRATURE = RSFX * mu_0 * e_con ** (-(TAUCS(NLAYER + 1))/mu_0) * pi * FLUX_SURFACE_QUADRATURE
+          SFCS_QUADRATURE = RSFX * mu_0 * e_con ** (-(TAUCS(NVERT + 1))/mu_0) * pi * FLUX_SURFACE_QUADRATURE
 
           ! HERE WE FIND LAYER PROPERTIES FOLLOWING GENERAL SCHEME
           ! OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
           ! NEEDED FOR MATRIX
 
-          DO J = 1, NLAYER
+          DO J = 1, NVERT
               y1(J) = 0.86602540378 * (2.0 - (W0(J) * (1.0 + G0(J))))
               y2(J) = 0.86602540378 * W0(J) * (1.0 - G0(J))
               y3(J) = 0.5 * (1.0 - 1.73205080756 * mu_0 * G0(J))
@@ -370,7 +356,7 @@
           END DO
 
           J = 1
-          DO L = 2, 2*NLAYER-1, 2
+          DO L = 2, 2*NVERT-1, 2
               ! HERE ARE THE EVEN MATRIX ELEMENTS
               A(L)   =  e2(J+1) * e1(J)   - e3(J) * e4(J+1)
               B(L)   =  e2(J+1) * e2(J)   - e4(J+1) * e4(J)
@@ -390,11 +376,11 @@
           B(1) = e1(1);
           D(1) = -e2(1);
 
-          A(2*NLAYER) = e1(NLAYER) - RSFX * e3(NLAYER);
-          B(2*NLAYER) = e2(NLAYER) - RSFX * e4(NLAYER);
-          D(2*NLAYER) = 0.0;
+          A(2*NVERT) = e1(NVERT) - RSFX * e3(NVERT);
+          B(2*NVERT) = e2(NVERT) - RSFX * e4(NVERT);
+          D(2*NVERT) = 0.0;
 
-          DO J = 1, NLAYER
+          DO J = 1, NVERT
               temp_gamma_val(J)   = 1.0 / (y1(J) + y2(J))
 
               CP(J) =  W0(J) * PI * FLUX_SURFACE_QUADRATURE * 
@@ -422,7 +408,7 @@
           END DO
 
           J = 1
-          DO L = 2, 2*NLAYER-1, 2
+          DO L = 2, 2*NVERT-1, 2
               E(L)   = (CP(J+1) - CPB(J)) * e2(J+1) + (CMB(J) - CM(J+1))*e4(J+1)
               E(L+1) = e3(J) * (CP(J+1) - CPB(J)) + e1(J) * (CMB(J) - CM(J+1))
               J = J + 1
@@ -432,27 +418,26 @@
           ! BEGINNING OF THE TRIDIAGONAL SOLUTION. I ASSUME NO
           ! DIFFUSE RADIATION IS INCIDENT AT THE TOP.
           E(1) = 0.0 - CM(1);
-          E(2*NLAYER)  = SFCS_QUADRATURE - CPB(NLAYER) + RSFX * CMB(NLAYER)
+          E(2*NVERT)  = SFCS_QUADRATURE - CPB(NVERT) + RSFX * CMB(NVERT)
 
-          DS(2*NLAYER) = E(2*NLAYER) / B(2*NLAYER)
-          AS(2*NLAYER) = A(2*NLAYER) / B(2*NLAYER)
+          DS(2*NVERT) = E(2*NVERT) / B(2*NVERT)
+          AS(2*NVERT) = A(2*NVERT) / B(2*NVERT)
 
-          DO L = 1, 2*NLAYER - 1
-              X(2*NLAYER-L)  = 1.0 / (B(2*NLAYER-L) - D(2*NLAYER-L) * AS(2*NLAYER-L+1))
-              AS(2*NLAYER-L) = A(2*NLAYER-L) * X(2*NLAYER-L)
-              DS(2*NLAYER-L) = (E(2*NLAYER-L) - (D(2*NLAYER-L) * DS(2*NLAYER-L+1))) * X(2*NLAYER-L)
+          DO L = 1, 2*NVERT - 1
+              X(2*NVERT-L)  = 1.0 / (B(2*NVERT-L) - D(2*NVERT-L) * AS(2*NVERT-L+1))
+              AS(2*NVERT-L) = A(2*NVERT-L) * X(2*NVERT-L)
+              DS(2*NVERT-L) = (E(2*NVERT-L) - (D(2*NVERT-L) * DS(2*NVERT-L+1))) * X(2*NVERT-L)
           END DO
 
           Y(1) = DS(1)
 
-          DO L = 2, 2*NLAYER
+          DO L = 2, 2*NVERT
               Y(L) = DS(L) - AS(L) * Y(L-1)
           END DO
 
 
-          DO J = 1, NLAYER
-              QUADRATURE_FLUX(J) = Y(2*J-1)*(e1(J)-e3(J)) + Y(2*J)*(e2(J)-e4(J)) + CPB(J) - CMB(J) - DIRECT_QUADRATURE(J)
-
+          DO J = 1, NVERT
+              QUADRATURE_FLUX(J) = Y(2*J-1)*(e1(J)-e3(J))+Y(2*J)*(e2(J)-e4(J)) + CPB(J) - CMB(J)-DIRECT_QUADRATURE(J)
               QUADRATURE_INTENSITY(J) = (1.0 / mu_1) * (Y(2*J-1)*(e1(J) + e3(J)) + 
      &                   (Y(2*J) * (e2(J) + e4(J))) + CPB(J) + CMB(J))+DIRECT_QUADRATURE(J)/mu_0
           END DO

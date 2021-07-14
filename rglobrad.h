@@ -42,6 +42,8 @@
 !     THESE NU BINS MATCH THE SHOWMAN ONES
       PARAMETER ( NUM_NUS = 3 )
       REAL, parameter, dimension(3) :: NUS = (/1e13, 1e14, 1e15/)
+      REAL, parameter, dimension(3) :: FLUX_SURFACE_QUADRATURE = (/1e-3, 
+     &  2e-3, 4e-3/)
 
 
 !     INTEGER PARAMETER ( NUM_NUS = 3 )
