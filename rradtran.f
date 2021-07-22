@@ -234,10 +234,10 @@
      &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
      &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY)
 
-      DO J=1, NVERT
-          write(*,*) DIRECTU(2,J), MEAN_HEMISPHERIC_FLUX_UP(J)
-      END DO
-      write(*,*)
+      !DO J=1, NVERT
+      !    write(*,*) DIRECTU(2,J), MEAN_HEMISPHERIC_FLUX_UP(J)
+      !END DO
+      !write(*,*)
 
 !     Set the IR and the SOLAR heating to 0
 !            DO J = 1, NLAYER

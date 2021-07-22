@@ -17,19 +17,7 @@
             U1I(L) = 2.d0
           endif
   10      U1S(L)  =  TPI/U1I(L)
-!       write(*,*) 'U1S',U1S
-!       write(*,*) 'U1I',U1I 
-!       write(*,*) 'W0',W0
-!       write(*,*) 'U1I',U1I
-!       write(*,*)'U1S',U1S  
-!       stop
-            
-!       DO J = 1, NLAYER
-!        DO L= 1,2 
-!        W0(L,J) = 0.9
-!        G0(L,J) = 0.848
-!        ENDDO
-!       ENDDO
+
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
 !      NEEDED FOR MATRIX.

@@ -110,29 +110,7 @@ C     ER Modif: output pressures in bar instead of mbar
      $             F7.4,1x,F7.4,2X,F7.4,1X,F7.4,2X,E12.5,2X,
      $             E12.5,1X,E12.5) 
           END DO
-          WRITE(62,*) ''
-!         ENDING WRITE TO FILE 62
-      ENDIF 
-!     TEMPORARY DIAGNOSTIC WRITE FILE
-!  If you want to write to file the temperature profile at a given
-!  location every single timestep, then uncomment the following 9 lines
-!                IF ((ALON.GT.-10).AND.(ALON.LT.10)) THEN
-!        IF ((ALAT1.GT.(58.)).AND.(ALAT1.LT.61.)) THEN
-!          WRITE(631,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
-!               DO ILAY=NLAYER,1,-1                                                 
-!         WRITE(631,2021) PR(NLAYER-LHT+1)*1e-5,HTLW(LHT),T(NLAYER-LHT+1)
-!          WRITE(631,2053),P_FULL(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),                            
-!     &    FIR_DN_AERAD(ILAY),FIR_NET_AERAD(ILAY),
-!     &    TT(NLAYER-ILAY+1),T(NLAYER-ILAY+1),HTLW(ILAY)
-!     &
-! 2053       FORMAT(2X,F12.6,3X,E12.5,3X,E12.5,3X,E12.5,3X,E12.5
-!     &             ,3X,E12.5,3X,E12.5)
+      END IF
 
-! 2021      FORMAT(2X,F12.6,10X,E12.5,3X,E12.5)
- 
-!         END DO
-!        ENDIF
-!       ENDIF 
-! END OF TEMPORARY DIAGNOSTIC FILE
       end
 

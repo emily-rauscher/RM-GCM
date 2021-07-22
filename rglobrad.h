@@ -31,8 +31,7 @@
 ! NTOTAL = TOTAL NUMBER OF PROBABILITY INTERVALS;                       
 ! NSOLP  = NUMBER OF SOLAR PROBABILITY INTERVALS;                       
 ! NIRP   = NUMBER OF INFRARED PROBABILITY INTERVALS;                    
-!                                                                       
-
+!
       PARAMETER ( NSOLP = 1)
       PARAMETER ( NIRP = 1)
       PARAMETER ( NTOTAL = NSOLP + NIRP )     

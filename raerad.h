@@ -49,13 +49,11 @@
 !
 !  Define # solar wavelength bins
 !
-!      parameter( NSOL = 26 )
       parameter( NSOL = 1)
 !
 !
 !  Define # infrared wavelength bins
 !
-!      parameter( NIR = 18 )
        parameter( NIR = 1)
 !
 !

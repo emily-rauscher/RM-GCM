@@ -15,7 +15,6 @@
 
           real :: mu_0
 
-        
           DO J = 1, NVERT
             SINGLE_W0S(J) = W0(2,J)
             SINGLE_G0S(J) = G0(2,J)
