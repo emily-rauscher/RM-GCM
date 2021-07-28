@@ -136,6 +136,22 @@ C
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
      &   MAXTAU,MAXTAULOC,TCON,AERSOLCOMP,MTLX,MOLEF,AERLAYERS
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF
+!       CHARACTER(20) :: AEROSOLMODEL
+!       REAL TAUAEROSOL(nl+1,mg,2,jg)
+!       REAL AERORPROF
+!       LOGICAL DELTASCALE
+
+!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF,
+!     &   TAUAEROSOL
+!       CHARACTER(20) :: AEROSOLMODEL
+!       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1)
+!       REAL TAUAEROSOL(nl+1,mg,2,jg)
+!       LOGICAL DELTASCALE
 
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
@@ -196,13 +212,14 @@ c     The following for parallel testing --MTR
       double precision test_wctime                              
                                                                         
       save                          ! Want to keep things like dcompl.    
-
+                                                                          
+                                                                          
+                                                                          
       DATA IFIRST/1/                                                      
       data ifirstcol/1/                                                   
                                                                           
       RHSCL=288.0*GASCON/GA                                               
-      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates
-
+      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates     
 c  Skipping part set up here.                                             
 c  Radiation scheme only called every nskip longitudes                    
 c  nskip must divide exactly into mg for longitude.                       
@@ -212,6 +229,7 @@ C      ntstep=max(2,itspd/100000)       ! N.B. No point any more frequent as
       ntstep=NTSTEP_IN
                          ! Morcrette doing diurnal averages anyway.       
 
+!      write(*,*) 'ntstep',ntstep
       nskip=NSKIP_IN                                                       
 C this sets the non-dimensional gridpoint temperature tendency (TTRD)     
 C to get to TTRD from K/day divide the K/day heating rate by              
@@ -229,10 +247,14 @@ C loop over hemispheres
 C
                                                                          
       DO 800 ihem=1,nhem                                                  
-
+C          write(*,*) 'kount',kount
+!          write(*,*) 'ntstep',ntstep
+!         write(*,*) mod(kount,ntstep)          
+!          write(*,*) 'Starting Radiation scheme'                                                                
 c calculates heating rates every ntstep time steps                        
          IF (mod(kount,ntstep).eq.1) then                                   
-
+!          write(*,*) mod(kount,ntstep)          
+C          write(*,*) 'Starting Radiation scheme'
 C                                                                         
 C  Does do Radn scheme                                                    
 C                                                                         
@@ -308,7 +330,11 @@ c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 !$OMP& TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSLD, TSTAR, TSTARO, TTCR,
 !$OMP& TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
 !$OMP& UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
-            DO i=1,mg
+            DO i=1,mg                                                         
+         !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
+c         write(*,*),mg
+cM         write(*,*), 'Thread id=', omp_get_thread_num(),i
+cm               test_wctime=omp_get_wtime()
                im=i+iofm   
                idocalc=0                                                        
                IF ((i.eq.1).or.(i-ilast.ge.nskip)) then                         
@@ -390,6 +416,12 @@ c                  IF (KOUTP.EQ.KOUNTP-1) THEN
  2021                  FORMAT('DAY:',F7.2,', SUBSTELLAR LON,LAT:',2F7.2)
                         WRITE(63,*)
                         WRITE(62,*)''
+!       WRITE(62,*)'Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1',
+!     &               (2./3.)/(ABSSW*1e6/GA/100.)
+!
+!       WRITE(62,*)'Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1',
+!     &               (2./3.)/(ABSLW*1e6/GA/100.)
+!       write(62,*)''
                      ENDIF
                   ENDIF
                                                                           
@@ -429,14 +461,32 @@ C Call radiation scheme
               DO  LD=1,NL +1
               AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
              ENDDO
-
+!            write(*,*) alat1,alon
+!            write(*,*) aeroprof
+!            write(*,*) ''
+!            WRITE(*,*) ''
+!            write(*,*) AERO4LAT(:,10,1)
+!            WRITE(*,*) ''
+!            write(*,*) AERO4LAT(:,10,2)
+            
+!            write(*,*) 'TAUAEROSOL IN RRAD',TAUAEROSOL 
             ENDIF
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
      $                 ic,fluxes,swalb,kount,itspd)
-
-
+                                 
+c                  call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
+c     $                 fluxes,swalb,alon,kount,itspd)
+          
+c          write(*,*) "Just called Nikosrad"
+!           write(*,*) 'in radiation...'
+!           write(*,*) 'htlw', htlw
+!           write(*,*) 'htsw', htsw
 c       flip indexing of pr to be consistent with bottom to top convention
-           pr=prb2t
+           pr=prb2t   
+!           write(*,*) 'pr',pr
+!           write(*,*) 'fluxes',fluxes          
+!           write(*,*) 'stop following calc_radheat'
+          
                                                                 
 c store net flux in PNET                                                  
                   PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-          
@@ -611,7 +661,9 @@ Cm                stop
                   im=j+iofm                                                      
                   DO l=nl,1,-1                                                   
                      ld=nl+1-l                                                    
-                     HTNETO=HTNET(IHEM,JH,J,LD)
+                     HTNETO=HTNET(IHEM,JH,J,LD)                                   
+c                     write(*,*),'l,dl,nl,ihem,jh,j',l,dl,nl,ihmem,jh,j
+c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
                      htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
      $                    b*htnet(ihem,jh,ilast,ld)                  
                      TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             

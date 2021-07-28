@@ -85,14 +85,15 @@
       REAL CONDFACT(NL+1,13),TAUAERSW(NL+1,13),TAUAERLW(NL+1,13)
       REAL CLOUDLOC(NL+1,13),ZEROARR(NL+1),CORFACT(NL+1)
       INTEGER K,JJ,J,NCLOUD,BASELEV,TOPLEV
-
-!     COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+!             COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
 !     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
 !     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,MOLEF,AERLAYERS 
 !cloudspecies=['KCl','ZnS','Na2S','MnS','Cr2O3','SiO2','Mg2SiO4','VO','Ni','Fe','Ca2SiO4','CaTiO3','Al2O3']
-      
       DATA NCLOUD/13/
+!      DATA molefrac/1.23e-07, 4.06e-08,9.35e-07,3.11e-07,4.4e-07,
+!     &             3.26e-05, 1.745e-05,9.56e-09,1.61e-06,2.94e-05,
+!     &             9.95e-07,7.83e-08,1.385e-06/
 
       DATA   DENSITY/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,
      &                5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3/
@@ -174,6 +175,16 @@
      &             1761.10,1776.94, 1793.70,1811.36,1829.60, 1848.37,
      &             1867.54, 1887.00, 1896.46/
 
+!    MgSiO3
+!      DATA   TCONMgSiO3 /1307.11,1314.43,1321.68,1329.11,1336.79, 
+!     &             1344.72,1352.04,1359.52,1367.46,1375.60,1383.27,
+!     &             1391.60,1400.24,1408.51,1416.97,1425.28,1434.14,
+!     &             1442.49,1451.31,1460.37,1469.43,1478.40,1487.67, 
+!     &             1497.14,1507.25,1517.04,1527.28,1537.29,1546.58,
+!     &             1556.41,1567.50,1578.63,1588.50,1598.45,1609.41,
+!     &             1620.62,1631.41,1642.37,1654.32,1666.68,1678.34,
+!     &             1689.61,1702.01,1715.51,1727.89,1739.21,1751.75, 
+!     &             1765.34, 1778.58,1790.56,1796.07/     
 
 !    Mg2SiO4
       DATA   TCONMg2SiO4 /1370.00,1378.31,1386.62,1395.03,1403.56,
@@ -249,6 +260,14 @@
      &              2010.76,2021.69,2033.01,2044.36, 2055.67,2066.99,
      &              2078.33,2089.65,2100.99,2112.62,2124.88,2137.43,
      &              2150.32,2163.28, 2176.89, 2191.32,2198.76/
+
+!    Scattering Params
+!         /MnS,Al2O3,Fe,Mg2SiO4,MgSiO3,Na2S,KCl,Cr/
+!      DATA  swPI0s  /0.9999,0.86 ,0.69 ,0.9999,0.9999/!,0.954,1.0  ,0.713/
+!      DATA  lwPI0s  /0.9999,0.32 ,0.27 ,0.61, 0.61/!, 0.4352,.99997,0.412/
+!      DATA  swgs    /0.28 ,0.65,  0.46,  0.6,  0.61/! ,0.584,  0.68 ,.411/
+!      DATA  lwgs    /0.06  ,0.03 ,-0.18, 0.05 , 0.03/!, 0.03,0.027,-0.3/
+!      DATA  lwxfact /0.007, 0.006, 0.054, 0.0026, 0.003/!,0.0029,0.0012 ,0.031/
 
       DATA rps/ 0.1000e-6,  0.1000e-6,  0.1000e-6,  0.1000e-6,0.1000e-6,
      &  0.1000e-6,  0.1000e-6,  0.1000e-6,  0.1000e-6,  0.1000e-6, 
@@ -530,7 +549,15 @@
      &  2.3729,  2.3764,  2.3484,  2.3115,  2.2719,  2.2340,  2.2007,
      &  2.1723,  2.1486,  2.1289,  2.1127,  2.0992,  2.0879,  2.0785,
      &  2.0705,  2.0637,  2.0578/
-
+  
+!      DATA     Cr2O3g0vir/ -0.1671, -0.1671, -0.1671, -0.1671, -0.1671,
+!     & -0.1671, -0.1671, -0.1671, -0.1671, -0.1671, -0.1671, -0.1671,
+!     & -0.1671, -0.1671, -0.1671, -0.1671, -0.1671, -0.1705, -0.1757,
+!     & -0.1821, -0.1897, -0.1985, -0.2088, -0.2201, -0.2304, -0.2385,
+!    & -0.2424, -0.2389, -0.2253, -0.1997, -0.1612, -0.1005, -0.0003,
+!     &  0.1311,  0.2619,  0.3592,  0.4218,  0.4612,  0.4862,  0.5017,
+!     &  0.5112,  0.5169,  0.5202,  0.5219,  0.5227,  0.5229,  0.5227,
+!     &  0.5224,  0.5218,  0.5212/
 
       DATA     Cr2O3g0vir/  0.1671, 0.1671, 0.1671,  0.1671,  0.1671,
      &  0.1671,  0.1671,  0.1671,  0.1671,  0.1671,  0.1671,  0.1671,
@@ -705,7 +732,15 @@
      &  2.7034,  2.6667,  2.6073,  2.5427,  2.4783,  2.4187,  2.3657,
      &  2.3195,  2.2796,  2.2451,  2.2152,  2.1891,  2.1663,  2.1462,
      &  2.1283,  2.1124,  2.0982/
-
+  
+!      DATA  VOg0vir/ -0.0207, -0.0207, -0.0207, -0.0207, -0.0207,
+!     & -0.0207, -0.0207, -0.0207, -0.0207, -0.0207, -0.0207, -0.0207,
+!     & -0.0207, -0.0207, -0.0207, -0.0207, -0.0207, -0.0222, -0.0248,
+!     & -0.0284, -0.0334, -0.0403, -0.0505, -0.0651, -0.0833, -0.1043,
+!     & -0.1244, -0.1365, -0.1345, -0.1156, -0.0796, -0.0180,  0.0841,
+!     &  0.2150,  0.3421,  0.4357,  0.4965,  0.5354,  0.5604,  0.5761,
+!     &  0.5857,  0.5915,  0.5946,  0.5961,  0.5965,  0.5962,  0.5954,
+!     &  0.5944,  0.5933,  0.5921/
 
       DATA  VOg0vir/ 0.0207, 0.0207, 0.0207, 0.0207, 0.0207,
      & 0.0207, 0.0207, 0.0207, 0.0207, 0.0207, 0.0207, 0.0207,
@@ -764,7 +799,15 @@
      &  2.4697,  2.4621,  2.4257,  2.3813,  2.3350,  2.2914,  2.2528,
      &  2.2197,  2.1918,  2.1683,  2.1485,  2.1319,  2.1177,  2.1055,
      &  2.0949,  2.0857,  2.0775/
-
+  
+!      DATA  Nig0vir/ -0.1178, -0.1178, -0.1178, -0.1178, -0.1178,
+!     & -0.1178, -0.1178, -0.1178, -0.1178, -0.1178, -0.1178, -0.1178,
+!     & -0.1178, -0.1178, -0.1178, -0.1178, -0.1178, -0.1212, -0.1264,
+!     & -0.1330, -0.1411, -0.1508, -0.1627, -0.1765, -0.1899, -0.2019,
+!     & -0.2099, -0.2103, -0.1999, -0.1767, -0.1400, -0.0805,  0.0190,
+!     &  0.1497,  0.2795,  0.3759,  0.4379,  0.4772,  0.5021,  0.5177,
+!     &  0.5272,  0.5328,  0.5360,  0.5376,  0.5382,  0.5382,  0.5377,
+!     &  0.5371,  0.5363,  0.5355/
 
       DATA  Nig0vir/ 0.1178, 0.1178, 0.1178, 0.1178, 0.1178,
      & 0.1178, 0.1178, 0.1178, 0.1178, 0.1178, 0.1178, 0.1178,
@@ -823,6 +866,15 @@
      &  2.4047,  2.4044,  2.3736,  2.3341,  2.2923,  2.2526,  2.2175,
      &  2.1876,  2.1625,  2.1415,  2.1241,  2.1096,  2.0974,  2.0870,
      &  2.0782,  2.0706,  2.0639/
+  
+!      DATA  Feg0vir/ -0.1515, -0.1515, -0.1515, -0.1515, -0.1515,
+!     & -0.1515, -0.1515, -0.1515, -0.1515, -0.1515, -0.1515, -0.1515,
+!     & -0.1515, -0.1515, -0.1515, -0.1515, -0.1515, -0.1550, -0.1603,
+!     & -0.1669, -0.1749, -0.1841, -0.1952, -0.2073, -0.2187, -0.2281,
+!     & -0.2331, -0.2306, -0.2177, -0.1927, -0.1544, -0.0938,  0.0065,
+!     &  0.1377,  0.2683,  0.3653,  0.4277,  0.4671,  0.4920,  0.5076,
+!     &  0.5171,  0.5228,  0.5260,  0.5277,  0.5285,  0.5286,  0.5283,
+!     &  0.5279,  0.5272,  0.5266/
  
       DATA  Feg0vir/  0.1515,  0.1515,  0.1515, 0.1515, 0.1515,
      &  0.1515,  0.1515,  0.1515,  0.1515,  0.1515,  0.1515,  0.1515,
@@ -1121,206 +1173,254 @@
 !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR 
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
+     
 
-      DO I = 1,NCLOUD
-          DO J = 1,NLAYER -1
-              CONDFACT(J,I) = min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
-              TAUFACT= DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)
-     &        *CONDFACT(J,I)*MTLX*CORFACT(J)
-              TAUAERSW(J,I) = TAUFACT*qevis(J,I)
-              TAUAERLW(J,I) = TAUFACT*qeir(J,I)
-              CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-              ZEROARR(J)    = 0.
-          END DO
-
-          ! uncomment this section for compact cloud
-          BASELEV         = MAXVAL(CLOUDLOC(1:50,I),1)
-          TOPLEV          = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
-
-          DO J = 1,TOPLEV
-              TAUAERSW(J,I) = 0.
-              TAUAERLW(J,I) = 0.
-          END DO
-
-          TAUAERSW(TOPLEV+2,I)= TAUAERSW(TOPLEV+2,I)*0.367879 !i.e.e(-2)
-          TAUAERLW(TOPLEV+2,I)= TAUAERLW(TOPLEV+2,I)*0.367879
-          TAUAERSW(TOPLEV+1,I)= TAUAERSW(TOPLEV+1,I)*0.135335 !i.e.e(-1)
-          TAUAERLW(TOPLEV+1,I)= TAUAERLW(TOPLEV+1,I)*0.135335
-      END DO
-
-
-
+ 
+      Do 200  I         = 1,NCLOUD
+       DO 180  J          =   1,NLAYER -1 
+        CONDFACT(J,I)     =min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
+        TAUFACT= DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)
+     &            *CONDFACT(J,I)*MTLX*CORFACT(J)
+        TAUAERSW(J,I)     =TAUFACT*qevis(J,I)
+        TAUAERLW(J,I)     =TAUFACT*qeir(J,I)
+        CLOUDLOC(J,I)     =NINT(CONDFACT(J,I))*J
+        ZEROARR(J)        =0.
+       
+180   CONTINUE
+!uncomment this section for compact cloud
+        BASELEV         = MAXVAL(CLOUDLOC(1:50,I),1)
+        TOPLEV          = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
+        DO 185  J       = 1,TOPLEV
+         TAUAERSW(J,I)       = 0.
+         TAUAERLW(J,I)       = 0.
+185   CONTINUE
+         TAUAERSW(TOPLEV+2,I)= TAUAERSW(TOPLEV+2,I)*0.367879 !i.e.e(-2)
+         TAUAERLW(TOPLEV+2,I)= TAUAERLW(TOPLEV+2,I)*0.367879 
+         TAUAERSW(TOPLEV+1,I)= TAUAERSW(TOPLEV+1,I)*0.135335 !i.e.e(-1)
+         TAUAERLW(TOPLEV+1,I)= TAUAERLW(TOPLEV+1,I)*0.135335
+186   CONTINUE
+200   CONTINUE
 
 
-
-!     SW AT STANDARD VERTICAL RESOLUTION
-      DO J = 1,NLAYER
-          TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
-          WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
+! SW AT STANDARD VERTICAL RESOLUTION
+      DO 220    J     =  1,NLAYER
+       TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
+       WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
      &                      * PI0vis(J,1:13))
-          GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
+       GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
      &                      * g0vis(J,1:13))
-      END DO
+220   CONTINUE
 
-!     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
-      k = 1
-      DO J = 1,NDBL,2
-          JJ = J
-          TAUAER(2,JJ) = SUM(TAUAERLW(K,1:13))
-          WOL(2,JJ)    = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8)
+! LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
+               k         =  1
+      DO 240  J          =   1,NDBL,2
+              JJ         = J  
+       TAUAER(2,JJ)       = SUM(TAUAERLW(K,1:13))
+
+
+       WOL(2,JJ)  = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8)
      &                      * PI0ir(k,1:13))
-          GOL(2,JJ)  = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8)
+       GOL(2,JJ)  = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8)
      &                      * g0ir(k,1:13))
-
-          JJ          = J+1
-          TAUAER(2,JJ)       = TAUAER(2,JJ-1)
-          WOL(2,JJ)          = WOL(2,JJ-1)
-          GOL(2,JJ)          = GOL(2,JJ-1)
-          k            = k+1
-      END DO
+    
+              JJ          = J+1
+       TAUAER(2,JJ)       = TAUAER(2,JJ-1)
+       WOL(2,JJ)          = WOL(2,JJ-1)
+       GOL(2,JJ)          = GOL(2,JJ-1)
+             k            = k+1
+240   CONTINUE
 
 !     iradgas = 0: no gas in radiative xfer!
       iradgas = 1     
 
-      DO J = 1,NLAYER
-          j1 = max(1, j-1)
+      DO 500 J           = 1,NLAYER
+          j1             = max( 1, j-1 )
+!
+!     First the solar at standard resolution
+          DO 400 L       = LLS,NSOLP
+!M          DO 400 L       = LLS,LLA
+ 
+!MTR              TAUL(L,J)   = TAUH2O(L,J)+TAUGAS(L,J)+   &
+!MTR                               PARAY(L,J)+TAUAER(L,J)+TAUCLD(L,J)
+!              THE CODE ORIGINALLY INCLUDED TAUCLD AS WELL AS TAUAER. I
+!              DO NOT SEE THE POINT OF HAVING BOTH OPTICAL DEPTHS IN OUR
+!              MODEL SO I AM OMMITTING TAUCLD, W0CLD, GCLD, ETC
 
-!         First the solar at standard resolution
-          DO L = LLS,NSOLP
-              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+          TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
              
              if (iradgas.eq.0) then
-                 tauL(L,j) = tauaer(L,j)
+             tauL(L,j) = tauaer(L,j)
              endif
 
              if( TAUL(L,J) .lt. EPSILON ) then
-                 TAUL(L,J) = EPSILON
+             TAUL(L,J) = EPSILON
              endif
 
              utauL(L,j)  = TAUL(L,J)
-             WOT = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+          WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
              if (iradgas.eq.0) then
-                 wot = woL(L,j)
+              wot = woL(L,j)
              endif
  
-             WOT       = min(1.-EPSILON,WOT)
-             uw0(L,j)  = WOT
-             DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
-
+             WOT         = min(1.-EPSILON,WOT)
+             uw0(L,j)    = WOT
+!             write(*,*) 'WOT',WOT
+             DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
              if( DENOM .LE. EPSILON ) then 
-                 DENOM = EPSILON
+             DENOM = EPSILON then
              endif
-
              if( DENOM .GT. EPSILON ) then
-                 GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
+               GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
+!       print*, j, L, GCLD(l,j), gol(l,j),wol(l,j),got
              else
-                 GOT = 0.
+               GOT = 0.
              endif
-
              if (iradgas.eq.0) then
-                 GOT = goL(L,j)
+             GOT = goL(L,j)
              endif
-
              ug0(L,j)    = GOT
              uOPD(L,J)   = 0.0
              uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
-
              IF (deltascale) THEN
-                 FO          = GOT*GOT
-                 DEN         = 1.-WOT*FO
-                 TAUL(L,J)   = TAUL(L,J) * DEN
-                 W0(L,J)     = (1.-FO)*WOT/DEN
-                 G0(L,J)     = GOT/(1.+GOT)
-                 OPD(L,J)    = 0.0
-                 OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
+             FO          = GOT*GOT
+             DEN         = 1.-WOT*FO
+             TAUL(L,J)   = TAUL(L,J) * DEN
+             W0(L,J)     = (1.-FO)*WOT/DEN
+             G0(L,J)     = GOT/(1.+GOT)
+             OPD(L,J)    = 0.0
+             OPD(L,J)    = OPD(L,J1)+TAUL(L,J)             
              ELSE 
+                  W0(L,J)= uw0(L,J)
+                  G0(L,J)= ug0(L,J)
+                TAUL(L,J)= utaul(L,J)
+                 OPD(L,J)= uOPD(L,J)
+             ENDIF 
+!!!!!!!!!!!!!!!!HERE'S WHERE YOU CAN HARDWIRE VALUES!!!!!!!!!
+ 
+             if( taul(L,j).lt.0. ) then
+       write(*,*) 'taul lt 0'
+       stop
+       endif
+                       
+ 400        CONTINUE
+           
+!MTR          IF(IR .EQ. 1) THEN
+!MTR             DO 450 I        =   1,NGAUSS
+!MTR                DO 425 L     =   LLS,LLA
+!MTR                   Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
+!MTR 425            CONTINUE
+!MTR 450         CONTINUE
+!          ENDIF
+ 500  CONTINUE
+!       write(*,*) 'tauaer',tauaer
+!       DO 667 I  = 1,NDBL
+!       write(*,*) 'tauaersw',TAUAER(1,I)
+! 667   CONTINUE
+!       DO 668 I  = 1,NDBL
+!       write(*,*) 'tauaerlw',TAUAER(2,I)
+! 668   CONTINUE
+
+
+!      NOW AGAIN FOR THE IR
+      DO 501 J           = 1,NDBL
+          j1             = max( 1, j-1 )
+!
+!     First the solar at standard resolution
+          DO 401 L       = NSOLP+1,NTOTAL
+
+         TAUL(L,J)  =  TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
+             if (iradgas.eq.0) then
+             tauL(L,j) = tauaer(L,j)
+             endif
+
+             if( TAUL(L,J) .lt. EPSILON ) then
+             TAUL(L,J) = EPSILON
+             endif
+
+             utauL(L,j)  = TAUL(L,J)
+          WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+             if (iradgas.eq.0) then
+              wot = woL(L,j)
+             endif
+
+             WOT         = min(1.-EPSILON,WOT)
+             uw0(L,j)    = WOT
+             DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
+             if( DENOM .LE. EPSILON ) then
+             DENOM = EPSILON then
+             endif
+             if( DENOM .GT. EPSILON ) then
+               GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM        
+             else
+               GOT = 0.
+             endif
+             if (iradgas.eq.0) then
+             GOT = goL(L,j)
+             endif
+             ug0(L,j)    = GOT
+             uOPD(L,J)   = 0.0
+             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
+             IF (deltascale) THEN
+             FO          = GOT*GOT
+             DEN         = 1.-WOT*FO
+             TAUL(L,J)   = TAUL(L,J) * DEN
+             W0(L,J)     = (1.-FO)*WOT/DEN
+             G0(L,J)     = GOT/(1.+GOT)
+             OPD(L,J)    = 0.0
+             OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
+             ELSE
                   W0(L,J)= uw0(L,J)
                   G0(L,J)= ug0(L,J)
                 TAUL(L,J)= utaul(L,J)
                  OPD(L,J)= uOPD(L,J)
              ENDIF
 
-!           HERE'S WHERE YOU CAN HARDWIRE VALUES
              if( taul(L,j).lt.0. ) then
-                 write(*,*) 'taul lt 0'
-                 stop
-             endif
-          END DO
-      END DO
-
-!     NOW AGAIN FOR THE IR
-      DO J = 1,NDBL
-          j1 = max( 1, j-1 )
-          DO L = NSOLP+1,NTOTAL
-              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
-
-              if (iradgas.eq.0) then
-                  tauL(L,j) = tauaer(L,j)
-              endif
-
-              if( TAUL(L,J) .lt. EPSILON ) then
-                  TAUL(L,J) = EPSILON
-              endif
-
-              utauL(L,j)  = TAUL(L,J)
-              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-
-              if (iradgas.eq.0) then
-                  wot = woL(L,j)
-              endif
-
-              WOT         = min(1.-EPSILON,WOT)
-              uw0(L,j)    = WOT
-              DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
-
-              if( DENOM .LE. EPSILON ) then
-                  DENOM = EPSILON
-              endif
-
-              if( DENOM .GT. EPSILON ) then
-                  GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
-              else
-                  GOT = 0.
-              endif
-
-              if (iradgas.eq.0) then
-                  GOT = goL(L,j)
-              endif
-
-              ug0(L,j)    = GOT
-              uOPD(L,J)   = 0.0
-              uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
-
-              IF (deltascale) THEN
-                  FO          = GOT*GOT
-                  DEN         = 1.-WOT*FO
-                  TAUL(L,J)   = TAUL(L,J) * DEN
-                  W0(L,J)     = (1.-FO)*WOT/DEN
-                  G0(L,J)     = GOT/(1.+GOT)
-                  OPD(L,J)    = 0.0
-                  OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
-              ELSE
-                   W0(L,J)= uw0(L,J)
-                   G0(L,J)= ug0(L,J)
-                  TAUL(L,J)= utaul(L,J)
-                  OPD(L,J)= uOPD(L,J)
-             END IF
-
-             if( taul(L,j).lt.0. ) then
-                 write(*,*) 'taul lt 0'
-                 stop
-             endif
-          END DO
+       write(*,*) 'taul lt 0'
+       stop
+       endif
+          
+            
+ 401        CONTINUE
 
           IF(IR .EQ. 1) THEN
-              DO I = 1,NGAUSS
-                  DO L = LLS,LLA
-                      Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
-                  END DO
-              END DO
-          END IF
-      END DO
+             DO 450 I        =   1,NGAUSS
+                DO 425 L     =   LLS,LLA
+                   Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
+ 425            CONTINUE
+ 450         CONTINUE
+          ENDIF
+ 501  CONTINUE
 
+!      DO J = 1,NDBL 
+!      write(*,*) 'W0',J,W0(2,J)
+!      ENDDO 
+!      DO J = 1,NDBL
+!      write(*,*) 'G0',J,G0(2,J)
+!      ENDDO
+!      DO J = 1,NDBL
+!      write(*,*) 'WOL',J,WOL(2,J)
+!      ENDDO
+!      stop
+!      DO J = 1,NDBL
+!      write(*,*) 'GOL',J,GOL(2,J)
+!      ENDDO
+!      DO J = 1,NDBL
+!      write(*,*) 'TAURAY',J,TAURAY(2,J)
+!      ENDDO
+!      DO J = 1,NDBL
+!      write(*,*) 'TAUAER',J,TAUAER(2,J)
+!      ENDDO
+!      DO J = 1,NDBL
+!      write(*,*) 'TAUGAS',J,TAUGAS(2,J)
+!      ENDDO
+!      DO J = 1,NDBL
+!      write(*,*) 'TAUL',J,TAUL(1,J),TAUL(2,J)
+!      ENDDO
+!     DO J = 1,NDBL
+!      write(*,*) 'OPD',J,OPD(2,J) 
+!      ENDDO     
+!         stop
       RETURN
       END
 

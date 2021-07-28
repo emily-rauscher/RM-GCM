@@ -1,9 +1,10 @@
       SUBROUTINE TWO_STREAM_WRAPPER(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
-     &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY)
+     &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY, Beta_V, Beta_IR, term1,
+     &                              total_heat_ir, total_heat_vi)
           include 'rcommons.h'
 
-          integer :: NVERT, J
+          integer :: NVERT, J, I
           real, dimension(NVERT) :: SINGLE_W0S
           real, dimension(NVERT) :: SINGLE_G0S
           real, dimension(NVERT) :: SINGLE_TAULS
@@ -13,7 +14,13 @@
           real, dimension(NVERT) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
           real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
 
-          real :: mu_0
+          real :: mu_0, NU, FLUX_SURFACE_QUADRATURE, EMIS_VAL, RSFX_VAL, Beta_IR_VAL, Beta_V_VAL, term1
+          real, dimension(2) :: Beta_IR
+          real, dimension(3) :: Beta_V
+
+          real, dimension(NVERT) :: total_heat_ir
+          real, dimension(NVERT) :: total_heat_vi
+
 
           DO J = 1, NVERT
             SINGLE_W0S(J) = W0(2,J)
@@ -30,14 +37,43 @@
             mu_0 = 0
           END IF
 
-          CALL GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
-     &                          MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
-     &                          NUS(1), EMIS(1), RSFX(1), NVERT, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S)
+          NU = 1e13
+          FLUX_SURFACE_QUADRATURE = 1.0
+
+          total_heat_ir(1) = 0.0
+          DO I = 1, 1
+              NU   = 1e13
+              EMIS_VAL = EMIS(2)
+              RSFX_VAL = RSFX(2)
+              !Beta_IR_VAL = Beta_IR(I)
+              Beta_IR_VAL = 1.0
+              CALL GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
+     &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
+     &                              NU, EMIS_VAL, RSFX_VAL, NVERT, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S,
+     &                              Beta_IR_VAL)
+              DO J = 1, NVERT
+                   total_heat_ir(J) = total_heat_ir(J)  +
+     &                        ((MEAN_HEMISPHERIC_INTENSITY_UP(J+1) - 0.0) -
+     &                         (MEAN_HEMISPHERIC_INTENSITY_UP(J)   - 0.0)) * TERM1
+              END DO
+          END DO
 
 
-          CALL GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
-     &                               NUS(1), FLUX_SURFACE_QUADRATURE(1),
-     &                               EMIS, RSFX, NVERT, TAULS, W0, G0, mu_0)
+
+ !         DO I = 1, 3
+ !             EMIS_VAL = EMIS(1)
+ !             RSFX_VAL = RSFX(1)
+ !             Beta_V_VAL = Beta_V(I)
+ !             CALL GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
+ !    &                                NU, FLUX_SURFACE_QUADRATURE,
+ !    &                                EMIS(2), RSFX(2), NVERT, TAULS, W0, G0, mu_0, Beta_V_VAL)
+!
+!              DO J = 1, NVERT
+!                  total_heat_vi(J) = total_heat_vi(J) + (QUADRATURE_FLUX(J+1) - QUADRATURE_FLUX(J))*TERM1
+!              END DO!
+!
+ !         END DO
+!
                  
       END SUBROUTINE TWO_STREAM_WRAPPER
       
@@ -48,7 +84,7 @@
       
       SUBROUTINE GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                            MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,   
-     &                            NU, EMIS, RSFX, NVERT, TEMPS, TAULS, W0, G0)
+     &                            NU, EMIS, RSFX, NVERT, TEMPS, TAULS, W0, G0, Beta_IR)
 
           integer :: NVERT, J, L, Z, NGAUSS
           real :: NU, mu_1, mu, temp_val_2, BB_TOP_OF_ATM, BB_BOTTOM_OF_ATM, SFCS_HEMISPHERIC
@@ -58,6 +94,7 @@
           real, dimension(NVERT) :: TAULS, W0, G0, TEMPS
 
           real ::  EMIS, RSFX
+          real :: Beta_IR
           real, dimension(NVERT) :: y1, y2
           real, dimension(NVERT) :: LAMBDAS, GAMMA
           real, dimension(NVERT) :: temp_e_val
@@ -100,17 +137,21 @@
           pi            = 3.141592653589
           e_con         = 2.718281828459
 
-          temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
-          temp_val_1 = temp_val_1 * (h_constant)
-          temp_val_1 = temp_val_1 * NU
-          temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(1))) - 1.0
-          BB_TOP_OF_ATM = REAL(temp_val_1 * (1.0 / temp_val_2))
+          !temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
+          !temp_val_1 = temp_val_1 * (h_constant)
+          !temp_val_1 = temp_val_1 * NU
+          !temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(1))) - 1.0
+          !BB_TOP_OF_ATM = REAL(temp_val_1 * (1.0 / temp_val_2))
 
-          temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
-          temp_val_1 = temp_val_1 * (h_constant)
-          temp_val_1 = temp_val_1 * NU
-          temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(NVERT))) - 1.0
-          BB_BOTTOM_OF_ATM = REAL(temp_val_1 * (1.0 / temp_val_2))
+          !temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
+          !temp_val_1 = temp_val_1 * (h_constant)
+          !temp_val_1 = temp_val_1 * NU
+          !temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(NVERT))) - 1.0
+          !BB_BOTTOM_OF_ATM = REAL(temp_val_1 * (1.0 / temp_val_2))
+
+          BB_TOP_OF_ATM    = TEMPS(1) * TEMPS(1) * TEMPS(1) * TEMPS(1) * 1.8049459031e-8 * Beta_IR
+          BB_BOTTOM_OF_ATM = TEMPS(NVERT) * TEMPS(NVERT) * TEMPS(NVERT) * TEMPS(NVERT) *
+     &                       1.8049459031e-8 * Beta_IR
 
           SFCS_HEMISPHERIC = EMIS * PI * BB_BOTTOM_OF_ATM
           mu_1 = 0.5
@@ -165,16 +206,14 @@
               ! STUPID HACK
               ! PREVENTS NU ** 3 from being too big
               ! OMG FORTRAN
-              temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
-              temp_val_1 = temp_val_1 * (h_constant)
-              temp_val_1 = temp_val_1 * NU
-              temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(J))) - 1.0
-
-              B0(J) = REAL(temp_val_1 * (1.0 / temp_val_2))
+              !temp_val_1 = 2.0 * NU * NU / (CLIGHT * CLIGHT)
+              !temp_val_1 = temp_val_1 * (h_constant)
+              !temp_val_1 = temp_val_1 * NU
+              !temp_val_2 = e_con ** (h_constant * NU / (bolz_constant * TEMPS(J))) - 1.0
+              !B0(J) = REAL(temp_val_1 * (1.0 / temp_val_2))
 
               ! This is if you want double gray, you'll also have to fix boundary stuff
-              B0(J) = TEMPS(J) * TEMPS(J) * TEMPS(J) * TEMPS(J) * 1.8049459031e-8
-
+              B0(J) = TEMPS(J) * TEMPS(J) * TEMPS(J) * TEMPS(J) * 1.8049459031e-8 * Beta_IR
               B1(J) = (B0(J) - B0(KINDEX)) / TAULS(J)
           END DO
 
@@ -297,13 +336,13 @@
 
 
       SUBROUTINE GET_SOLAR_INTENSITY(QUADRATURE_FLUX, QUADRATURE_INTENSITY,
-     &                               NU, FLUX_SURFACE_QUADRATURE,
-     &                               EMIS, RSFX, NVERT, TAULS, W0, G0, mu_0)
+     &                               NU, FLUX_SURFACE_QUADRATURE_TOT,
+     &                               EMIS, RSFX, NVERT, TAULS, W0, G0, mu_0, Beta_V)
           integer :: NVERT, J, L
-          real :: RSFX, mu_0, mu_1, NU, FLUX_SURFACE_QUADRATURE
+          real :: RSFX, mu_0, mu_1, NU, FLUX_SURFACE_QUADRATURE, FLUX_SURFACE_QUADRATURE_TOT
 
           real :: e_con, pi
-
+          real :: Beta_V
           real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY, TAULS, W0, G0
           real, dimension(NVERT+1) :: TAUCS
 
@@ -320,6 +359,8 @@
 
           e_con = 2.718281828459
           pi    = 3.141592653589
+
+          FLUX_SURFACE_QUADRATURE = FLUX_SURFACE_QUADRATURE_TOT * Beta_V
 
           TAUCS(1) = 0.0
           DO N = 1, NVERT

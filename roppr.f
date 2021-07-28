@@ -63,8 +63,6 @@
 
 
       DO 201  J          = NLAYER+1,NDBL
-!       DO 130 L          = 1,NTOTAL
-!    VIS
        TAUAER(1,J)       = 0.
        WOL(1,J)          = 0. 
        GOL(1,J)          = 0. 
@@ -79,12 +77,10 @@
        TAUAER(2,JJ)       = TAUAER(1,K)*EXTFACTLW
        WOL(2,JJ)          = PI0AERLW
        GOL(2,JJ)          = ASYMLW
-!       TAUS(2,JJ)         = PI0AERLW*TAUAER(2,K)
               JJ          = J+1
        TAUAER(2,JJ)       = TAUAER(1,K)*EXTFACTLW
        WOL(2,JJ)          = PI0AERLW
        GOL(2,JJ)          = ASYMLW
-!       TAUS(2,JJ)         = PI0AERLW*TAUAER(2,K)
              k            = k+1
 202   continue
 

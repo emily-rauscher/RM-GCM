@@ -24,6 +24,10 @@
       real cheats(NZ), cheati(NZ), cheat(NZ)
       real htlw(NZ),htsw(NZ)
       real pbot_pass, ptop_pass,PSOL,PSOL_aerad
+
+      real, dimension(2) :: Beta_IR
+      real, dimension(3) :: Beta_V
+
       real rfluxes(nwave,2,2)
       REAL SSLON,SSLAT  ! ER:
       REAL DLENGTH  ! ER: half-length of solar dayinteger ibinmin
@@ -35,18 +39,28 @@
       ibinm = ibinmin
       ifsetup = 0
       if( iffirst.eq. 1 ) ifsetup = 1
+!      GRAV = 980.6d+0
+!      RGAS = 8.31430d+07
+!      WTMOL_AIR = 28.966d+0
+!      R_AIR = RGAS / WTMOL_AIR
+!MTR      use phyiscal_constants
 
-
+!@ Keep an Eye on this, Mike
       if_diurnal = 0
+
       heats_aerad_tot = 0.
       heati_aerad_tot = 0.
 
+
        t_aerad=t_pass
        p_aerad=p_pass
-
+      
+!       dz=deltaz
 
       ir_above_aerad = 0
       tabove_aerad = 0
+
+
 
 
 !@ The following lines of code are taken from cnikos and may require adjustment
@@ -98,15 +112,7 @@ C Setup SW code
       ELSE
         SOLC=SOLC_IN*(1.0-TOAALB)
       ENDIF
-!      LDIUR=.TRUE.   !Diurnally averaged if false                        
-C      LDIUR=.FALSE.   !Diurnally averaged if false
-C                                                                         
-C       YCLOCK=3.14159      !time of day in radians                        
-!       YCLOCK= (DOY-REAL(INT(DOY))*2.*3.14159                            
-C                                                                         
-!      CALL SOLANG(LDIUR,DOY,YCLOCK,ALAT,ALON,AMU0,RDAYL,CDISSEM)          
-C 
-!      write(*,*) 'solc raddsub',SOLC        
+
 C     globally averaged solar constant, vertical rays
       AMU0=1.0
       PSOL=SOLC/4.
@@ -117,19 +123,7 @@ C        (1D for DDAYs, then linear to full in another DDAYs)
          IF(DAY.GT.DDAY) THEN
             DFAC=MIN(1.0,(DAY - DDAY)/DDAY)
             IF(.NOT.LDIUR) THEN
-CC Modif for hemispheric forcing of Hot Jupiters
-!              write(*,*) 'AMU0',AMU0
-!              write(*,*) 'DFAC',DFAC
-!              write(*,*) 'ALAT',ALAT
-!              write(*,*) 'SSLAT', SSLAT
-!              write(*,*) 'PI2', PI2
-!              write(*,*) 'ALON',ALON
-!              write(*,*) 'PI2',PI2
-!              write(*,*) 'SSLON',SSLON
-!              write(*,*) (1.0-DFAC)*AMU0
-!              write(*,*) DFAC *SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)
-!              write(*,*) COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)
-!              write(*,*) COS((ALON-SSLON)/360.*PI2)
+
               
                AMU0=(1.0-DFAC)*AMU0
      &              +DFAC*MAX(0.0,SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)
@@ -154,12 +148,8 @@ C ER modif for non-zero obliquity
       endif
       
 
-!     write(*,*) 'AMU0',AMU0
-!      u0_aerad = max( 0.*ONE, AMU0 )  
       u0_aerad = max(0*ONE, AMU0 ) 
       PSOL_aerad=PSOL
-
-
 
 
       do_mie_aerad = .false.
@@ -176,21 +166,72 @@ C ER modif for non-zero obliquity
 
       itime1 = 12
       do itime = 1, ntime
-        call setuprad_simple
-        pc_aerad = 0.
-        call radtran
 
-!
+
+        call setuprad_simple(Beta_V, Beta_IR)
+        pc_aerad = 0.
+        call radtran(Beta_V, Beta_IR)
+
+
+
+
+
 !...Read in clear-sky radiative heating rates
 !
         cheats = 0.
         cheati = 0.
         cheat = 0.
+!      open(unit=19,file='clear_heat_rf23_1600.dat',status='unknown',form='formatted')
+!      open(unit=19,file='clear_heat_rf23_noice.dat',status='unknown',form='formatted')
+!      open(unit=19,file='clear_heat_rf31_sza.dat',status='unknown',form='formatted')
+!      open(unit=19,file='clear_heat_rf31_alb.dat',status='unknown',form='formatted')
+!      open(unit=19,file='clear_heat_rf23_alb.dat',status='unknown',form='formatted')
+!      open(unit=19,file='clear_heat_rf31_constalb.dat',status='unknown',
+!      &
+!           form='formatted')
+!MTR        if( if_diurnal == 0 ) then
+!      open(unit=19,file='clear_heat_rf31_varalb.dat',status='unknown',
+!      &
+!           form='formatted')
+!MTR      open(unit=19,file='clearheat_rf31.dat',status='unknown', 
+!MTR     &      form='formatted')
+!          open(unit=19,file='clearheat_rf23.dat',status='unknown', &
+!               form='formatted')
+!          open(unit=19,file='clearheat_rf23_oceanalbedo.dat',status='unknown',
+!          &
+!               form='formatted')
+!          open(unit=19,file='clearheat_rf31_oceanalbedo.dat',status='unknown',
+!          &
+!               form='formatted')
+!MTR        endif
 
+!MTR
+!MTR        if( if_diurnal == 1 ) then
+!MTR          open(unit=19,file=clearheat_file,status='unknown', 
+!MTR     &          form='formatted')
+!MTR        endif
+!MTR        do i = 1, NZ
+!MTR          read(19,*) i1, r1, r2, r3, r4, r5
+!MTR          cheats(i) = r3
+!MTR          cheati(i) = r4
+!MTR          cheat(i) = r5
+!          print*, r3, r4, r5
+!MTR        enddo
+!MTR        close(19)
+!
+!  Calculate radiative heating rate
+!
+!      print*, 'iffirst = ', iffirst
+!      print*, 'iz   p   T   hs   hi   hnet'
+!print*, clearheat_file
+!print*, cheati(1:5)
 
+!        write(*,*) 'heats_aerad',heats_aerad
+!        write(*,*) 'heati_aerad',heati_aerad
         do iz = 1,NZ
           jz = NZ + 1 - iz
-
+!          print*, heati_aerad(jz)*SCDAY
+!if( iz < 6 ) print*, iz, jz, heati_aerad(jz)*SCDAY - cheati(iz)
           radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
           heats_aerad_tot(iz) = heats_aerad_tot(iz) +   
      &                           heats_aerad(jz)*SCDAY - cheats(iz)
@@ -199,18 +240,48 @@ C ER modif for non-zero obliquity
           radheat_tot(iz) = radheat_tot(iz) +   
      &                       heats_aerad(jz)*SCDAY - cheats(iz) +  
      &                       heati_aerad(jz)*SCDAY - cheati(iz)
-
+!       print*,'iz jz p T hs hi heat = ', iz, jz, p_pass(iz)/1.e3,  &
+!             t_pass(iz), heats_aerad(jz)*24.*3600.,  &
+!             heati_aerad(jz)*24.*3600.,  &
+!             radheat(iz)*24.*3600.
+!       print*,'iz p T hi heat = ', iz, p_pass(iz)/1.e3,  &
+!        WRITE(6,582)  iz, p_pass(iz)/1.e3,  &
+!        WRITE(19,582)  iz, p_pass(iz)/1.e3,  &
+!             t_pass(iz),  &
+!             heats_aerad(jz)*24.*3600.-cheats(iz),  &
+!             heati_aerad(jz)*24.*3600.-cheati(iz),  &
+!             radheat(iz)*24.*3600.-cheat(iz)
+!             heats_aerad(jz)*24.*3600.,  &
+!             heati_aerad(jz)*24.*3600.,  &
+!             radheat(iz)*24.*3600.
         enddo
+!         write(*,*)'heats_SW'
+!         do iz=1,NZ
+!         write(*,*),heats_aerad(iz)
+!         enddo
+!         write(*,*)'heats_LW'
+!         do iz=1,NZ
+!         write(*,*),heati_aerad(iz)
+!         enddo
+!MTR        close(19)
 
       enddo
 
       if( if_diurnal.eq. 1 ) then
+        write(*,*)'if_diurnal ==1'
+        write(*,*)'ntime',ntime
         heats_aerad_tot = heats_aerad_tot / ntime
         heati_aerad_tot = heati_aerad_tot / ntime
         radheat_tot = radheat_tot / ntime
       endif
 
-
+!MTR      do iz = 1,NZ
+!MTR        WRITE(6,582)  iz, p_pass(iz) !/1.e3,  
+!MTR     &        t_pass(iz),  
+!MTR     &        heats_aerad_tot(iz),  
+!MTR     &        heati_aerad_tot(iz),  
+!MTR     &        radheat_tot(iz)
+!MTR      enddo
       htlw=heati_aerad_tot
       htsw=heats_aerad_tot
       rfluxes=rfluxes_aerad
