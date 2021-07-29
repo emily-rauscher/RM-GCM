@@ -131,12 +131,10 @@
       IF(LWSCAT) THEN 
         IRS  = 1
       ENDIF
-      EMISIR       = SURFEMIS
-!      PTOP         = 53.6e3
-!      PBOT         = 1000.e3
-      PTOP         =p_aerad(1)*10. !P(1)
-      PBOT         =p_aerad(NL+1)*10.
 
+      EMISIR       = SURFEMIS
+      PTOP         =p_aerad(1)*10.
+      PBOT         =p_aerad(NL+1)*10.
 
       ALBEDO_SFC = ALBSW !SFC_ALB MTR
 !
@@ -199,9 +197,6 @@
 !        for this cap above the model.  The attenuation through it must
 !        still be calculated using these values.
 
-!         DPG(2)=PRESS(1)/G
-
-
 !     CALCULATE CLOUD AND AEROSOL OPACITY.
 !
       DO 100  J             = 1,NDBL !NLAYER
@@ -222,19 +217,17 @@
       tau_IRe(:,1) = ABS(tau_IRe(:,3) - tau_IRe(:,2))
 
 
+!     THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
+!     SHORTWAVE:
       DO 306   J     =   1,NLAYER
-         PM          =   DPG(J) 
-
-!        THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
-!        
-!       SHORTWAVE: 
-         L=1
-         TAUGAS(L,J) = ABSCOEFF(L)*PM
-         FNET(L,J)   = 0.0
-         TMI(L,J)    = 0.0
-         DIRECT(L,J) = 0.0
-!       LONGWAVE:
-306     continue
+          PM          =   DPG(J)
+          L=1
+          TAUGAS(L,J) = ABSCOEFF(L)*PM
+          FNET(L,J)   = 0.0
+          TMI(L,J)    = 0.0
+          DIRECT(L,J) = 0.0
+!        LONGWAVE:
+306   continue
  
 
          L=2

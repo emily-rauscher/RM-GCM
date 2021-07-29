@@ -55,7 +55,6 @@
 !
 !  Define # infrared wavelength bins
 !
-!      parameter( NIR = 18 )
        parameter( NIR = 1)
 !
 !

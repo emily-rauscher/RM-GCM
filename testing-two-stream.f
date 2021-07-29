@@ -1,7 +1,7 @@
       SUBROUTINE TWO_STREAM_WRAPPER(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
      &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY, Beta_V, Beta_IR, term1,
-     &                              total_heat_ir, total_heat_vi)
+     &                              total_heat_ir, total_heat_vi, HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP)
           include 'rcommons.h'
 
           integer :: NVERT, J, I
@@ -13,6 +13,7 @@
           real, dimension(NVERT) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
           real, dimension(NVERT) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
           real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
+          real, dimension(NVERT) :: HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP
 
           real :: mu_0, NU, FLUX_SURFACE_QUADRATURE, EMIS_VAL, RSFX_VAL, Beta_IR_VAL, Beta_V_VAL, term1
           real, dimension(2) :: Beta_IR
@@ -50,11 +51,11 @@
               CALL GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
      &                              NU, EMIS_VAL, RSFX_VAL, NVERT, SINGLE_TEMPS, SINGLE_TAULS, SINGLE_W0S, SINGLE_G0S,
-     &                              Beta_IR_VAL)
+     &                              Beta_IR_VAL, HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP)
               DO J = 1, NVERT
                    total_heat_ir(J) = total_heat_ir(J)  +
-     &                        ((MEAN_HEMISPHERIC_INTENSITY_UP(J+1) - 0.0) -
-     &                         (MEAN_HEMISPHERIC_INTENSITY_UP(J)   - 0.0)) * TERM1
+     &                        ((MEAN_HEMISPHERIC_INTENSITY_UP(J+1)/2 - MEAN_HEMISPHERIC_INTENSITY_DOWN(J+1)/2) -
+     &                         (MEAN_HEMISPHERIC_INTENSITY_UP(J)/2   - MEAN_HEMISPHERIC_INTENSITY_DOWN(J)/2)) * TERM1
               END DO
           END DO
 
@@ -84,7 +85,8 @@
       
       SUBROUTINE GET_IR_INTENSITY(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
      &                            MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,   
-     &                            NU, EMIS, RSFX, NVERT, TEMPS, TAULS, W0, G0, Beta_IR)
+     &                            NU, EMIS, RSFX, NVERT, TEMPS, TAULS, W0, G0, Beta_IR,
+     &                            HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP)
 
           integer :: NVERT, J, L, Z, NGAUSS
           real :: NU, mu_1, mu, temp_val_2, BB_TOP_OF_ATM, BB_BOTTOM_OF_ATM, SFCS_HEMISPHERIC
@@ -283,12 +285,13 @@
 
           DO I=1, NGAUSS
             mu = GAUSS_ANGLES(I)
-            HEMISPHERIC_INTENSITY_DOWN(1) = BB_TOP_OF_ATM * e_con ** (-TAULS(1)/mu) + 
+
+            !BB_TOP_OF_ATM
+            HEMISPHERIC_INTENSITY_DOWN(1) = BB_TOP_OF_ATM * e_con ** (-TAULS(1)/mu) +
      &                      SOURCE_J(1)/(LAMBDAS(1)*mu + 1.0) * (1.0 - e_con ** (-TAULS(1)*(LAMBDAS(1)+1.0/mu))) + 
      &                      SOURCE_K(1)/(LAMBDAS(1)*mu - 1.0) * (e_con ** (-TAULS(1)/mu)-e_con**(-TAULS(1)*LAMBDAS(1)))+
      &                      SIGMA_1(1) * (1.0 - e_con ** (-TAULS(1)/mu)) + 
      &                      SIGMA_2(1) * (mu * e_con ** (-TAULS(1)/mu) + TAULS(1) - mu);
-
 
             MEAN_HEMISPHERIC_INTENSITY_DOWN(1) = MEAN_HEMISPHERIC_INTENSITY_DOWN(1) + 
      &                                           GAUSS_RATIOS(I) * HEMISPHERIC_INTENSITY_DOWN(1)
@@ -303,7 +306,7 @@
      &                       SIGMA_2(J) * (mu * e_con ** (-TAULS(J)/mu) + TAULS(J) - mu)
 
               MEAN_HEMISPHERIC_INTENSITY_DOWN(J) = MEAN_HEMISPHERIC_INTENSITY_DOWN(J) +
-     &                                             GAUSS_RATIOS(I)*HEMISPHERIC_INTENSITY_DOWN(J)
+     &                                             GAUSS_RATIOS(I) * HEMISPHERIC_INTENSITY_DOWN(J)
               MEAN_HEMISPHERIC_FLUX_DOWN(J)      = MEAN_HEMISPHERIC_FLUX_DOWN(J) + GUASS_WEIGHTS(I) *
      &                                             HEMISPHERIC_INTENSITY_DOWN(J)
 

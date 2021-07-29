@@ -18,35 +18,31 @@
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
       real maxopd(nwave_alb)
 
-      real, dimension(NVERT) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
-      real, dimension(NVERT) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
-      real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
-      real, dimension(NVERT) :: total_heat_ir
-      real, dimension(NVERT) :: total_heat_vi
+      !real, dimension(NVERT) :: MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN
+      !real, dimension(NVERT) :: MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN
+      !real, dimension(NVERT) :: QUADRATURE_FLUX, QUADRATURE_INTENSITY
+      !real, dimension(NVERT) :: HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP
+      !real, dimension(NVERT) :: total_heat_ir
+      !real, dimension(NVERT) :: total_heat_vi
+
       real, dimension(2) :: Beta_IR
       real, dimension(3) :: Beta_V
 
       integer jflip
-!  Reset flag for computation of solar fluxes
-!
-
+!     Reset flag for computation of solar fluxes
       ISL        = isl_aerad
-!
+
 !     Get atmospheric profiles from interface common block
-!
       do k = 1,nvert
         t(k) = t_aerad(k)
         p(k)=player(k)*10.  ! to convert from Pa to Dyne cm^2
       enddo
 
 !     INTERPOLATE TEMPERATURE FROM LAYER CENTER (T) TO LAYER EDGE (TT)
-!
-!      TT(1) = tabove_aerad
       DO 12 J = 2, NVERT
-         TT(J) = T(J-1) * (PRESS(J)/P(J-1)) **    
-     &              (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
-   12 CONTINUE
-!      TT(NLAYER)=TGRND
+         TT(J) = T(J-1) * (PRESS(J)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
+12    CONTINUE
+
 !     SINCE WE DON'T HAVE A GROUND (YET,...ERIN)
 !     EXTRAPOLATE FOR THE BOUNDARY TEMPERATURES
 !     We need a top temperature boundary.  Zero degrees at zero pressure
@@ -58,87 +54,85 @@
 !     TOP
       TT(1)=((T(1)-TT(2))/log(P(1)/PRESS(2)))*log(PRESS(1)/P(1))+T(1)
 !     BOTTOM
-      TT(NLAYER)=T(NVERT) * (PRESS(NLAYER)/P(NVERT)) **
-     &              (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
+      TT(NLAYER)=T(NVERT) * (PRESS(NLAYER)/P(NVERT)) ** (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
 
 !     HERE, INSTEAD OF SPECIFYING THE GROUND AND TOP TEMPERATURES, WE
 !     USE THE EXTRAPOLATED VALUES TO DEFINE THESE; ALTERNATIVELY THEY
 !     MAY BE DEFINED HERE, WHERE THEY WILL BE PASSED TO THE MODEL
       TGRND=TT(NLAYER)
       TABOVE_AERAD=TT(1)
-!      write(*,*)'TGRND',TGRND   
+
 !     WATER VAPOR (G / CM**2)
-!    
 !     create a T array for the double resolution IR by combinging the
 !     layer center and edge temperatures 
       
-                 K  =  1
+      K  =  1
       DO 46 J  = 1, NDBL-1,2
-                 L  =  J
-         TTsub(L) = TT(K)
-                 L  =  L+1
-         TTsub(L) = T(K)
-                 K  =  K+1
+          L  =  J
+          TTsub(L) = TT(K)
+          L  =  L+1
+          TTsub(L) = T(K)
+          K  =  K+1
+ 46   CONTINUE
 
- 46    CONTINUE
-
-!     Solar zenith angle 
-!
+!     Solar zenith angle
       u0 = u0_aerad
 !
 !     SURFACE REFLECTIVITY AND EMISSIVITY
-!
-!...Hack: use spectrally dependent surface albedo
-!
-
+!     Hack: use spectrally dependent surface albedo
       DO 20 L =  1,NSOLP
          RSFX(L) = ALBSW
          EMIS(L) =  1.0 - RSFX(L)
-
  20   CONTINUE
+
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
          EMIS(L) =  EMISIR
          RSFX(L) = 1.0 - EMIS(L)
 
-        if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
-         rsfx(L) = albedoa(nwave_alb)
-        endif
-         EMIS(L) = 1.0 - RSFX(L)
+         if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
+            rsfx(L) = albedoa(nwave_alb)
+         endif
+             EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
 !
 !     SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
 !
-        LLA                   =  NTOTAL
-        LLS                   =  1
-        IF(ISL  .EQ. 0) THEN
-          LLS   =  NSOLP+1
-        ENDIF
-!
-        IF(IR   .EQ. 0) THEN
-          LLA  =  NSOLP
-        ENDIF
+      LLA                   =  NTOTAL
+      LLS                   =  1
+
+      ! This stuff doensn't get called because these are not normally true
+      IF(ISL .EQ. 0) THEN
+          LLS =  NSOLP+1
+      ENDIF
+
+      IF(IR   .EQ. 0) THEN
+          LLA =  NSOLP
+      ENDIF
+
+       !!!!!!!!!!!!!!!!!!!!
 !
 !     CALCULATE THE OPTICAL PROPERTIES
-        IF(AEROSOLCOMP .EQ. 'All') THEN
+      IF(AEROSOLCOMP .EQ. 'All') THEN
           CALL OPPRMULTI
-        ELSE 
-          CALL OPPR
-        ENDIF
+      ELSE
+          write(*,*) 'ERROR: Dont run without aerosols'
+          STOP
+          !CALL OPPR
+      ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
 
-        IF(IR .NE. 0) THEN
+      IF(IR .NE. 0) THEN
            CALL OPPR1(beta_ir)
-        ENDIF
-!     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF
-!     SOLAR INTERVALS
-!
-        IF(IRS .EQ. 0) THEN
+      ENDIF
+
+!     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
+      IF(IRS .EQ. 0) THEN
           LLA  =  NSOLP
-        ENDIF
+      ENDIF
 !
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
@@ -150,45 +144,42 @@
           
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
-        IF(IR .NE. 0) THEN
-!        write(*,*) 'HEATI',HEATI
-         CALL NEWFLUX1
-!        write(*,*) 'HEATI',HEATI
-    
+      IF(IR .NE. 0) THEN
+          CALL NEWFLUX1
 
-         !CLOUD FRACTION     
-!        NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
-!        FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
-!        CLEAR SKY AND COMBINE IN A WEIGHTED AVERAGE ASSUMING MAXIMUM OVERLAP. 
+!         NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
+!         FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
+!         CLEAR SKY AND COMBINE IN A WEIGHTED AVERAGE ASSUMING MAXIMUM OVERLAP.
 
-!        HERE WE TAKE THE DOUBLE RESOLUTION FLUXES AND EXTRACT JUST
-!        THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
-!        LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
-!        WITHOUT DOUBLING
-                      K     =  1
-            DO        J     =  1,NLAYER
-             FNET(2,J)      =  DIRECTU(2,k)-DIREC(2,k)  
-             DIRECTU(2,J)   =  DIRECTU(2,K)
-             DIREC(2,J)     =  DIREC(2,K)
-             OPD(2,J)       =  OPD(2,K)
-             TAUL(2,J)      =  TAUL(2,K)
-             W0(2,J)        =  W0(2,K)
-             G0(2,J)        =  G0(2,K)
-             ug0(2,J)       =  ug0(2,K)
-             uOPD(2,J)      =  uOPD(2,K)
-             uTAUL(2,j)     =  uTAUL(2,K)
-             uW0(2,J)       =  uW0(2,k)
-             TMIU(2,J)      =  TMIU(2,k)
-             TMID(2,J)      =  TMID(2,k)
-                      K     =  K+2.  
-            ENDDO
+!         HERE WE TAKE THE DOUBLE RESOLUTION FLUXES AND EXTRACT JUST
+!         THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
+!         LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
+!         WITHOUT DOUBLING
+          K = 1
+          DO J     =  1,NLAYER
+              FNET(2,J)      =  DIRECTU(2,k)-DIREC(2,k)
+              DIRECTU(2,J)   =  DIRECTU(2,K)
+              DIREC(2,J)     =  DIREC(2,K)
+              OPD(2,J)       =  OPD(2,K)
+              TAUL(2,J)      =  TAUL(2,K)
+              W0(2,J)        =  W0(2,K)
+              G0(2,J)        =  G0(2,K)
+              ug0(2,J)       =  ug0(2,K)
+              uOPD(2,J)      =  uOPD(2,K)
+              uTAUL(2,j)     =  uTAUL(2,K)
+              uW0(2,J)       =  uW0(2,k)
+              TMIU(2,J)      =  TMIU(2,k)
+              TMID(2,J)      =  TMID(2,k)
 
-          IF(FLXLIMDIF) THEN 
-            IF(OPD(2,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
-            CALL FLUXLD
-            ENDIF
-          ENDIF
-        ENDIF
+              K = K+2.
+         ENDDO
+
+         IF(FLXLIMDIF) THEN
+             IF(OPD(2,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
+                 CALL FLUXLD
+             ENDIF
+         ENDIF
+      ENDIF
           
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC
 !     MODIFICATION:
@@ -232,15 +223,21 @@
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!         MALSKY CODE          !!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- !     CALL TWO_STREAM_WRAPPER(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
- !    &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
- !    &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY, Beta_V, Beta_IR, term1,
- !    &                              total_heat_ir, total_heat_vi)
+!      CALL TWO_STREAM_WRAPPER(MEAN_HEMISPHERIC_INTENSITY_UP, MEAN_HEMISPHERIC_INTENSITY_DOWN,
+!     &                              MEAN_HEMISPHERIC_FLUX_UP, MEAN_HEMISPHERIC_FLUX_DOWN,
+!     &                              QUADRATURE_FLUX, QUADRATURE_INTENSITY, Beta_V, Beta_IR, term1,
+!     &                              total_heat_ir, total_heat_vi, HEMISPHERIC_INTENSITY_DOWN, HEMISPHERIC_INTENSITY_UP)
 
-      !DO J=1, NVERT
-      !    write(*,*) J, HEATI(J)
-      !END DO
-      !write(*,*)
+!      DO J=1, NVERT
+!          PRINT *,  DINTENT(2,3,J), ',', HEMISPHERIC_INTENSITY_DOWN(J) / (2 * 3.14159),  ','
+!      END DO
+!      write(*,*)
+
+!      DO J=1, NVERT
+!          PRINT *,  DIRECTU(2,J),  ',',MEAN_HEMISPHERIC_FLUX_UP(J),','
+!      END DO
+!      write(*,*)
+!      STOP
 
 !     Here we Calculate (4 * pi * mean_intensity) for the IR.
 !
@@ -312,7 +309,6 @@
 !     LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
 !
         SOLNET  = 0.0
-!        write(*,*) 'SOLAR: DOWN, UP, NET'
         IF (ISL .NE. 0) THEN
           DO 510 L       =  1,NSOLP
             SOLNET = SOLNET - FNET(L,NLAYER)

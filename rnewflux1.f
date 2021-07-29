@@ -20,11 +20,7 @@
      &           A3(NTOTAL,NDBL),A4(NTOTAL,NDBL),     
      &           A7(NTOTAL,NDBL),Y5(NTOTAL,NDBL)
 !
-!             write(*,*) 'SLOPE',SLOPE
-!             write(*,*) 'Y3',Y3
-!             write(*,*) 'B3',B3
-!             write(*,*) 'EE1',EE1
-!             write(*,*) 'EE2',EE2
+
       DO 200 J           =  1,NDBL
           kindex         = max( 1, j-1 )
           DO 100  L      =  NSOLP+1,NTOTAL
@@ -97,7 +93,7 @@
      &                           +Y1(L,I,1)
              endif
              TMID(L,1)      = TMID(L,1)+DINTENT(L,I,1)*GRATIO(I)
-             DIREC(L,1)     = DIREC(L,1)+DINTENT(L,I,1)*     
+             DIREC(L,1)     = DIREC(L,1)+DINTENT(L,I,1)*
      &                         GWEIGHT(I)
  475      CONTINUE
  500   CONTINUE
@@ -145,10 +141,7 @@
  630         CONTINUE
  640      CONTINUE
  650  CONTINUE
-!       write(*,*) 'UINTENT',UINTENT
-!        write(*,*) 'DINTENT',DINTENT
-!        write(*,*) 'DIREC',DIREC
-!        write(*,*) 'DIRECTU',DIRECTU
+
       RETURN
       END
 
