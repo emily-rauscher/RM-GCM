@@ -17,19 +17,7 @@
             U1I(L) = 2.d0
           endif
   10      U1S(L)  =  TPI/U1I(L)
-!       write(*,*) 'U1S',U1S
-!       write(*,*) 'U1I',U1I 
-!       write(*,*) 'W0',W0
-!       write(*,*) 'U1I',U1I
-!       write(*,*)'U1S',U1S  
-!       stop
-            
-!       DO J = 1, NLAYER
-!        DO L= 1,2 
-!        W0(L,J) = 0.9
-!        G0(L,J) = 0.848
-!        ENDDO
-!       ENDDO
+
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
 !      NEEDED FOR MATRIX.
@@ -57,8 +45,7 @@
              AK(L,J)    = SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
              GAMI(L,J)  =  B2(L,J)/(B1(L,J) + AK(L,J))
              EE1(L,J)   =  EXP(-AK(L,J)*TAUL(L,J))
-!             write(*,*) 'EE1',J,EE1(L,J)
-!             write(*,*) 'GAMI',J,GAMI(L,J)
+
              EL1(L,J)   =  1.0 + GAMI(L,J) *EE1(L,J)  !e1                          
              EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J) !e2                      
              EL2(L,J)   =  GAMI(L,J) + EE1(L,J)       !e3                        
@@ -124,15 +111,6 @@
          EF(L,JDBLEDBLE) = 0.0
   21  CONTINUE
 
-
-
-!          write(*,*)'RSFX in twostream',RSFX
-!         write(*,*)'AF',AF
-!         write(*,*)'BF',BF
-!         write(*,*)'EF',EF
-!      write(*,*) 'w0',w0
-!      write(*,*) 'g0',w0
-!         stop
       RETURN
       END
 

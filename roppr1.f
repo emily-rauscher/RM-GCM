@@ -26,15 +26,15 @@
       DO 300 J            =   1,NDBL
           kindex          = max( 1, j-1 )
 
-          Beta_IR(1) = 1
-          IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI * Beta_IR(1)
+          IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
 
           DO 200 L = NSOLP+1,NTOTAL
-              PTEMP(L,J)  = IT1
+              PTEMP(L,J)  = IT1 !* Beta_IR(L - NSOLP)
               SLOPE(L,J)  = (PTEMP(L,J)-PTEMP(L,KINDEX))/TAUL(L,J)
               if( TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
  200      CONTINUE
  300  CONTINUE
+
       RETURN
       END
 

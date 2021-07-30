@@ -32,8 +32,8 @@
 ! NSOLP  = NUMBER OF SOLAR PROBABILITY INTERVALS;                       
 ! NIRP   = NUMBER OF INFRARED PROBABILITY INTERVALS;                    
 !
-      PARAMETER ( NSOLP = 1)
-      PARAMETER ( NIRP = 1)
+      PARAMETER ( NSOLP = 3)
+      PARAMETER ( NIRP  = 2)
       PARAMETER ( NTOTAL = NSOLP + NIRP )          
 !                                                                       
 ! NGAUSS = TOTAL NUMBER OF GAUSS QUADRATURE POINTS;                     
@@ -41,9 +41,7 @@
       PARAMETER ( NGAUSS = 3)                                           
 !                                                                       
 ! NCOUNT = USED TO CALCULATE PLANK FUNCTION.                            
-!                                                                       
-!      PARAMETER ( NLOW = 12500 )
-!      PARAMETER ( NHIGH = 32500 )
+!
       PARAMETER (NLOW =2000)
       PARAMETER (NHIGH=2001)
       PARAMETER ( NCOUNT = NHIGH - NLOW )

@@ -48,14 +48,9 @@
 !
 !
 !  Define # solar wavelength bins
-!
-!      parameter( NSOL = 26 )
-      parameter( NSOL = 1)
-!
-!
 !  Define # infrared wavelength bins
-!
-       parameter( NIR = 1)
+      parameter( NSOL = 3)
+      parameter( NIR  = 2)
 !
 !
 !  Define # layers in rad xfer model domain underlying aerosol model domain
