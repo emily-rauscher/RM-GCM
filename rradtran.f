@@ -204,13 +204,13 @@
           TERM1      =  FDEGDAY/(DPG(J+1)*G)
           IF(ISL .NE. 0) THEN
               DO 480 L     =  1,NSOLP
-                  HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1 * Beta_V(L)
+                  HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1 !* Beta_V(L)
 480           CONTINUE
           ENDIF
 
           IF(IR .NE. 0) THEN
               DO 490 L     =  NSOLP+1,NTOTAL
-                  HEATI(J)   =  HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1 * Beta_IR(L - NSOLP)
+                  HEATI(J)   =  HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1 !* Beta_IR(L - NSOLP)
  490          CONTINUE
           ENDIF
 
@@ -392,7 +392,7 @@ C     2nd index - Direction 1=DN, 2=UP
 C     3rd index - Where 1=TOP, 2=SURFACE
 
       DO L = 1, NTOTAL
-          IF (L .LE. 3) THEN
+          IF (L .LE. NSOL) THEN
               RFLUXES_aerad(L,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
               RFLUXES_aerad(L,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
 

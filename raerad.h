@@ -23,7 +23,6 @@
 !
 !  Define # particle radius bins
 !
-!      parameter( NBIN = 61 )
       parameter( NBIN = 1)
 !
 !
@@ -49,8 +48,8 @@
 !
 !  Define # solar wavelength bins
 !  Define # infrared wavelength bins
-      parameter( NSOL = 3)
-      parameter( NIR  = 2)
+      parameter( NSOL = 1)
+      parameter( NIR  = 1)
 !
 !
 !  Define # layers in rad xfer model domain underlying aerosol model domain
