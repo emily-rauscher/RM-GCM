@@ -77,11 +77,28 @@
       REAL Al2O3QEVIS(NL),Al2O3G0VIS(NL),Al2O3PI0VIS(NL)
       REAL Al2O3QEVIR(NL),Al2O3G0VIR(NL),Al2O3PI0VIR(NL)
       REAL MOLEF(13),DENSITY(13),RPS(NL),TAUFACT,FMOLW(13)
-      REAL QEVIS(NL+1,13),PI0VIS(NL+1,13),G0VIS(NL+1,13)
-      REAL QEIR(NL+1,13),PI0IR(NL+1,13),G0IR(NL+1,13)
-      REAL CONDFACT(NL+1,13),TAUAERSW(NL+1,13),TAUAERLW(NL+1,13)
+
+      REAL QEVIS(NL+1,13)
+      REAL PI0VIS(NL+1,13)
+      REAL G0VIS(NL+1,13)
+
+      REAL QEIR(NL+1,13)
+      REAL PI0IR(NL+1,13)
+      REAL G0IR(NL+1,13)
+
+      REAL TAUAERSW(NL+1,13)
+      REAL TAUAERLW(NL+1,13)
+
+      ! THESE ARE MALSKY VALUES THAT I'M trying to add
+      REAL QE_OPPR(NTOTAL, NL+1, 13)
+      REAL PI0_OPPR(NTOTAL, NL+1, 13)
+      REAL G0_OPPR(NTOTAL, NL+1, 13)
+      REAL TAUAER_OPPR(NTOTAL, NL+1, 13)
+
+      REAL CONDFACT(NL+1,13)
       REAL CLOUDLOC(NL+1,13),ZEROARR(NL+1),CORFACT(NL+1)
       INTEGER K,JJ,J,NCLOUD,BASELEV,TOPLEV
+
 
 !     COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
@@ -1023,7 +1040,7 @@
       Tconds(1:51,10)=TconFe
       Tconds(1:51,11)=TconCa2SiO4
       Tconds(1:51,12)=TconCaTiO3
-      Tconds(1:51,13)=TconAl2O3 
+      Tconds(1:51,13)=TconAl2O3
 
       g0vis(1:50,1)=KClg0vis
       g0vis(1:50,2)=ZnSg0vis
@@ -1110,6 +1127,95 @@
       qeir(1:50,13)=Al2O3g0vir
 
 
+
+
+
+
+
+      G0_OPPR(1,1:50,1)=KClg0vis
+      G0_OPPR(1,1:50,2)=ZnSg0vis
+      G0_OPPR(1,1:50,3)=Na2Sg0vis
+      G0_OPPR(1,1:50,4)=MnSg0vis
+      G0_OPPR(1,1:50,5)=Cr2O3g0vis
+      G0_OPPR(1,1:50,6)=SiO2g0vis
+      G0_OPPR(1,1:50,7)=Mg2SiO4g0vis
+      G0_OPPR(1,1:50,8)=VOg0vis
+      G0_OPPR(1,1:50,9)=Nig0vis
+      G0_OPPR(1,1:50,10)=Feg0vis
+      G0_OPPR(1,1:50,11)=Ca2SiO4g0vis
+      G0_OPPR(1,1:50,12)=CaTiO3g0vis
+      G0_OPPR(1,1:50,13)=Al2O3g0vis
+
+      G0_OPPR(2,1:50,1)=KClg0vir
+      G0_OPPR(2,1:50,2)=ZnSg0vir
+      G0_OPPR(2,1:50,3)=Na2Sg0vir
+      G0_OPPR(2,1:50,4)=MnSg0vir
+      G0_OPPR(2,1:50,5)=Cr2O3g0vir
+      G0_OPPR(2,1:50,6)=SiO2g0vir
+      G0_OPPR(2,1:50,7)=Mg2SiO4g0vir
+      G0_OPPR(2,1:50,8)=VOg0vir
+      G0_OPPR(2,1:50,9)=Nig0vir
+      G0_OPPR(2,1:50,10)=Feg0vir
+      G0_OPPR(2,1:50,11)=Ca2SiO4g0vir
+      G0_OPPR(2,1:50,12)=CaTiO3g0vir
+      G0_OPPR(2,1:50,13)=Al2O3g0vir
+
+      PI0_OPPR(1,1:50,1)=KClpi0vis
+      PI0_OPPR(1,1:50,2)=ZnSpi0vis
+      PI0_OPPR(1,1:50,3)=Na2Spi0vis
+      PI0_OPPR(1,1:50,4)=MnSpi0vis
+      PI0_OPPR(1,1:50,5)=Cr2O3pi0vis
+      PI0_OPPR(1,1:50,6)=SiO2pi0vis
+      PI0_OPPR(1,1:50,7)=Mg2SiO4pi0vis
+      PI0_OPPR(1,1:50,8)=VOpi0vis
+      PI0_OPPR(1,1:50,9)=Nipi0vis
+      PI0_OPPR(1,1:50,10)=Fepi0vis
+      PI0_OPPR(1,1:50,11)=Ca2SiO4pi0vis
+      PI0_OPPR(1,1:50,12)=CaTiO3pi0vis
+      PI0_OPPR(1,1:50,13)=Al2O3pi0vis
+
+      PI0_OPPR(2,1:50,1)=KClpi0vir
+      PI0_OPPR(2,1:50,2)=ZnSpi0vir
+      PI0_OPPR(2,1:50,3)=Na2Spi0vir
+      PI0_OPPR(2,1:50,4)=MnSpi0vir
+      PI0_OPPR(2,1:50,5)=Cr2O3pi0vir
+      PI0_OPPR(2,1:50,6)=SiO2pi0vir
+      PI0_OPPR(2,1:50,7)=Mg2SiO4pi0vir
+      PI0_OPPR(2,1:50,8)=VOpi0vir
+      PI0_OPPR(2,1:50,9)=Nipi0vir
+      PI0_OPPR(2,1:50,10)=Fepi0vir
+      PI0_OPPR(2,1:50,11)=Ca2SiO4pi0vir
+      PI0_OPPR(2,1:50,12)=CaTiO3pi0vir
+      PI0_OPPR(2,1:50,13)=Al2O3pi0vir
+
+      QE_OPPR(1,1:50,1)=KClqevis
+      QE_OPPR(1,1:50,2)=ZnSqevis
+      QE_OPPR(1,1:50,3)=Na2Sqevis
+      QE_OPPR(1,1:50,4)=MnSqevis
+      QE_OPPR(1,1:50,5)=Cr2O3qevis
+      QE_OPPR(1,1:50,6)=SiO2qevis
+      QE_OPPR(1,1:50,7)=Mg2SiO4qevis
+      QE_OPPR(1,1:50,8)=VOqevis
+      QE_OPPR(1,1:50,9)=Niqevis
+      QE_OPPR(1,1:50,10)=Feqevis
+      QE_OPPR(1,1:50,11)=Ca2SiO4qevis
+      QE_OPPR(1,1:50,12)=CaTiO3qevis
+      QE_OPPR(1,1:50,13)=Al2O3qevis
+
+      QE_OPPR(2,1:50,1)=KClqevir
+      QE_OPPR(2,1:50,2)=ZnSqevir
+      QE_OPPR(2,1:50,3)=Na2Sqevir
+      QE_OPPR(2,1:50,4)=MnSqevir
+      QE_OPPR(2,1:50,5)=Cr2O3qevir
+      QE_OPPR(2,1:50,6)=SiO2qevir
+      QE_OPPR(2,1:50,7)=Mg2SiO4qevir
+      QE_OPPR(2,1:50,8)=VOqevir
+      QE_OPPR(2,1:50,9)=Niqevir
+      QE_OPPR(2,1:50,10)=Feqevir
+      QE_OPPR(2,1:50,11)=Ca2SiO4qevir
+      QE_OPPR(2,1:50,12)=CaTiO3qevir
+      QE_OPPR(2,1:50,13)=Al2O3qevir
+
 !     The mass of these layers is this pressure thickness divide by G.
 !    
 !     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
@@ -1122,10 +1228,11 @@
       DO I = 1,NCLOUD
           DO J = 1,NLAYER -1
               CONDFACT(J,I) = min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
-              TAUFACT= DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)
-     &        *CONDFACT(J,I)*MTLX*CORFACT(J)
+              TAUFACT= DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(J)
+
               TAUAERSW(J,I) = TAUFACT*qevis(J,I)
               TAUAERLW(J,I) = TAUFACT*qeir(J,I)
+
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
               ZEROARR(J)    = 0.
           END DO
@@ -1144,9 +1251,6 @@
           TAUAERSW(TOPLEV+1,I)= TAUAERSW(TOPLEV+1,I)*0.135335 !i.e.e(-1)
           TAUAERLW(TOPLEV+1,I)= TAUAERLW(TOPLEV+1,I)*0.135335
       END DO
-
-
-
 
 
 
