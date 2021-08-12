@@ -13,41 +13,33 @@
 !
       include 'rcommons.h'
 
-!
 ! **********************************************************************
 !
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
-!     
+
       REAL p(NZ),ABSCOEFF(NWAVE),G,WVO,AM
 
-      real, dimension(2,NVERT) :: tau_IRe
-      real, dimension(3,NVERT) :: tau_Ve
+      real, dimension(2,NLAYER) :: tau_IRe
+      real, dimension(3,NLAYER) :: tau_Ve
       real, dimension(2) :: Beta_IR
       real, dimension(3) :: Beta_V
-
-!MTR      DIMENSION AKO3(4,6), AKCO2(6,6), AKH2O(54,6), PJ(6)
       dimension rup_1(NGROUP)
       dimension rhoi(NRAD), dbnds(NRAD+1)
       dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
-!      dimension tauem(NWAVE,6), ssam(NWAVE,6), asmm(NWAVE,6)
       dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
       integer i1, i2, indorder(5)
-!
       logical all_ok
       DATA AVG    / 6.02252E+23  /
-      DATA PI    /3.14159265359/
+      DATA PI     /3.14159265359/
 
-      
-!
-! **********************************************************************
-!
-!            DEFINE CONSTANTS 
-!
-! **********************************************************************
+
+! ******************************************
+!            DEFINE CONSTANTS
+! *****************************************
 !
 !     UNITS ARE (CM**2)/GM
 !
@@ -72,29 +64,21 @@
 !     PI     - PI
 !     RGAS   - UNIVERSAL GAS CONSTANT (ERG / MOL K)
 !     SCDAY  - NUMBER OF SECONDS IN ONE DAY (S)
-!
-!      DATA AM     / 28.966       /
+
       AM= RGAS/R_AIR
       DATA ALOS   / 2.68719E19   /
-!MTR      DATA AVG    / 6.02252E+23  /
-!      DATA G      / 980.6        /
       G= GA*100.
-!MTR      DATA PI     / 3.1415926536 /
       DATA RGAS   / 8.31430E+07  /
       DATA SBK    / 5.6697E-8    /
       DATA SCDAY  / 86400.0      /
 
 
-!     EPSILON - roundoff error precision
-!
       DATA EPSILON / ALMOST_ZERO  /
-!
-!
+
       AM= RGAS/R_AIR
       ABSCOEFF(1)=ABSSW
       ABSCOEFF(2)=ABSLW
-!     DERIVED PARAMETERS
-!
+
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
       JDBLEDBLE = 2*JDBLE
@@ -122,13 +106,13 @@
       ISL          = 0
       IR           = 0
       IRS          = 0
-      IF(DOSWRAD) THEN 
+      IF(DOSWRAD) THEN
          ISL = 1
       ENDIF
-      IF(DOLWRAD) THEN 
+      IF(DOLWRAD) THEN
          IR  = 1
       ENDIF
-      IF(LWSCAT) THEN 
+      IF(LWSCAT) THEN
         IRS  = 1
       ENDIF
 
@@ -137,14 +121,13 @@
       PBOT         =p_aerad(NL+1)*10.
 
       ALBEDO_SFC = ALBSW !SFC_ALB MTR
-!
+
 !     Get atmospheric pressure profile from interface common block
 !     [ dyne / cm^2 ]
-!
+
       do k = 1,NZ
         press(k)=p_aerad(k)*10.
       enddo
-
 
 !     The layer thickness in pressure should be the difference between
 !     the top and bottom edge of the layer.  Eg. So for layer 3, the layer thickness
@@ -163,25 +146,28 @@
       PRESS=P_aerad*10.
       PBAR(1)  = P_AERAD(1)*1e-5
       DPG(1)= PRESS(1)/G
-      DO 45 J  = 2,NLAYER
+
+      DO J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
          DPG(J) = (PRESS(J)-PRESS(J-1)) / G
- 45    CONTINUE
+      END DO
                  K  =  1
-      DO 46 J  = 2, NDBL,2
-                 L  =  J
-         PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
+      DO J  = 2, NDBL,2
+         L  =  J
 
+         PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
          DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
-                 K  =  K+1
-                 L  =  L+1
+
+          K  =  K+1
+          L  =  L+1
+
          PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
          DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
- 46    CONTINUE 
+      END DO
 
-         PBARsub(1) = PBAR(1) 
-         DPGsub(1)  = DPG(1)        
-!         stop
+      PBARsub(1) = PBAR(1)
+      DPGsub(1)  = DPG(1)
+
 !        Here we are saying that the top layer has a thickness that
 !        extends from the top of the atmosphere (pressure = 0) down to
 !        the interface ABOVE the top sigma levels. The atmosphere
@@ -198,18 +184,18 @@
 !        still be calculated using these values.
 
 !     CALCULATE CLOUD AND AEROSOL OPACITY.
-!
-      DO 100  J             = 1,NDBL !NLAYER
-          DO 50 L           = 1,NTOTAL
-               TAUAER(L,J)  = 0.
-               TAUCLD(L,J)  = 0.
-               WCLD(L,J)    = 0.
-               WOL(L,J)     = 0.
-               GOL(L,J)     = 0.
-               GCLD(L,J)    = 0.
-               TAURAY(L,J)    = 0.
- 50        CONTINUE
-100   CONTINUE
+
+      DO J             = 1,NDBL
+          DO L           = 1,NTOTAL
+               TAUAER(L,J)  = 0.0
+               TAUCLD(L,J)  = 0.0
+               WCLD(L,J)    = 0.0
+               WOL(L,J)     = 0.0
+               GOL(L,J)     = 0.0
+               GCLD(L,J)    = 0.0
+               TAURAY(L,J)  = 0.0
+          END DO
+      END DO
 
       CALL opacity_wrapper(tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
@@ -217,49 +203,78 @@
       tau_IRe(:,1) = ABS(tau_IRe(:,3) - tau_IRe(:,2))
 
 
+      DO J = 1,NLAYER
+          DO L = 1,NSOLP
+              TAUGAS(L,J) = tau_Ve(L,J)
+          END DO
+      END DO
+
+      DO L = NSOLP+1, NTOTAL
+          DO J = 1,NLAYER - 1
+              TAUGAS(L,2*J-1) = tau_IRe(L - NSOLP,J) / 2
+              TAUGAS(L,2*J)   = (tau_IRe(L - NSOLP,J) + tau_IRe(L - NSOLP,J+1)) / 4
+          END DO
+
+          TAUGAS(L,2*NLAYER-1) = tau_IRe(L-NSOLP, NLAYER)/2
+          TAUGAS(L,2*NLAYER) = tau_IRe(L-NSOLP,NLAYER)/2 + ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/2
+      END DO
+
+
+      DO J = 1, NLAYER
+          DO L = 1, NSOLP
+              FNET(L,J)   = 0.0
+              TMI(L,J)    = 0.0
+              DIRECT(L,J) = 0.0
+          END DO
+      END DO
+
+      DO J = 1, NDBL
+          DO L = NSOLP+1, NTOTAL
+              FNET(L,J)   = 0.0
+              TMI(L,J)    = 0.0
+              DIRECT(L,J) = 0.0
+          END DO
+      END DO
+
+
+
 !     THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
 !     SHORTWAVE:
-      DO 306   J     =   1,NLAYER
-          PM          =   DPG(J)
-          L=1
-          TAUGAS(L,J) = ABSCOEFF(L)*PM
-          FNET(L,J)   = 0.0
-          TMI(L,J)    = 0.0
-          DIRECT(L,J) = 0.0
+!      DO 306   J     =   1,NLAYER
+!          PM          =   DPG(J)
+!          L=1
+!          TAUGAS(L,J) = ABSCOEFF(L)*PM
+!          FNET(L,J)   = 0.0
+!          TMI(L,J)    = 0.0
+!          DIRECT(L,J) = 0.0
 !        LONGWAVE:
-306   continue
+!306   continue
  
 
-      L=2
-      DO 308   J     =   1,NDBL
-         PM          =   DPGsub(J)
-         IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
-             TAUGAS(L,J)=ABSCOEFF(L)*PM
-             ELSE IF (OPACIR_POWERLAW.eq.1) THEN
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                     ELSE IF (OPACIR_POWERLAW.eq.2) THEN
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                     ELSE IF (OPACIR_POWERLAW.eq.3) THEN
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                     ELSE
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-     & *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
-          ENDIF
-         FNET(L,J)    =  0.0
-         TMI(L,J)     =  0.0
-         DIRECT(L,J)  =  0.0
+!      L=2
+!      DO 308   J     =   1,NDBL
+!          PM  =   DPGsub(J)
+!          IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
+!              TAUGAS(L,J)=ABSCOEFF(L)*PM
+!          ELSE IF (OPACIR_POWERLAW.eq.1) THEN
+!              TAUGAS(L,J)=ABSCOEFF(L) * PM *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!          ELSE IF (OPACIR_POWERLAW.eq.2) THEN
+!              TAUGAS(L,J)=ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!          ELSE IF (OPACIR_POWERLAW.eq.3) THEN
+!              TAUGAS(L,J)=ABSCOEFF(L)*PM
+!     &                    *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!     &                    *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!     &                    *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+!          ELSE
+!                       TAUGAS(L,J)=ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
+!          ENDIF
+!
+!      FNET(L,J)    =  0.0
+!      TMI(L,J)     =  0.0
+!      DIRECT(L,J)  =  0.0
+!  308  CONTINUE
 
-
-  308  CONTINUE
-
-
-      DO  L           =   NSOLP+1,NTOTAL
+      DO  L = NSOLP+1,NTOTAL
           TAUCONST(L)=ABSCOEFF(L)/GA/100.
       ENDDO
 
@@ -268,10 +283,8 @@
 !     CALCULATE RAYLEIGH OPTICAL DEPTH PARAMETERS.
 
 !     RAYLEIGH SCATTERING CONDITIONAL:
-      IF(RAYSCAT) THEN
-
 ! NOTE: The conversion factor KMAMGperBAR is computed in insimprad
-! KMAMGperBAR  = AVG*1.E5/(LO*GA*MWTOT)     
+! KMAMGperBAR  = AVG*1.E5/(LO*GA*MWTOT)
 !it is derived by the relation:
 !km-amagats= Pressure * Avogadro's# * mole fraction/  (Loshchmidt's# *
 !gravity* molecular weight)
@@ -279,17 +292,10 @@
 !Lo=2.6867630*10^25 m^-3, gravity= 24.40 m s^-2
 !molec. weight for mole fraction .86 H2 and .136 He (von Zahn)
 ! 2.27 *10^-3 kg/mole
-
-          DO 310 L      =   1,NTOTAL
-        
-!MTR          WVO       =    WAVE(NPROB(L))
-!MTR          TAURAY(L) =   (8.46E-9/WVO**4) *     &
-!MTR                        ( 1.+0.0113/WVO**2+0.00013/WVO**4 )
-!              WVO = RAYSCATLAM  !Hardwire for H2!! MTR
-!              RAYPERBAR(L) =   (KMAMGperbar*0.000219/WVO/WVO/WVO/WVO) *     
-!     &           ( 1.+0.0157248/WVO/WVO+0.0001978/WVO/WVO/WVO/WVO)
+      IF (RAYSCAT) THEN
+          DO  L = 1,NTOTAL
                RAYPERBAR(L) = RAYPERBARCONS
-310       CONTINUE   
+          END DO
 
                DO 330 J          =   1,NLAYER
                 DO 335 L         =   1,NTOTAL

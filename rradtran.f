@@ -96,21 +96,24 @@
 !     SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA                   =  NTOTAL
       LLS                   =  1
-      ! This stuff doensn't get called because these are not normally true
-      IF(ISL .EQ. 0) THEN
-          LLS =  NSOLP+1
-      ENDIF
 
-      IF(IR .EQ. 0) THEN
-          LLA =  NSOLP
-      ENDIF
+      !IF(ISL .EQ. 0) THEN
+      !    LLS =  NSOLP+1
+      !    write(*,*) "ERROR! The Visible code is not being called"
+      !    stop
+      !ENDIF
 
+      !IF(IR .EQ. 0) THEN
+      !    LLA =  NSOLP
+      !    write(*,*) "ERROR! The IR code is not being called"
+      !    stop
+      !ENDIF
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
           CALL OPPRMULTI
       ELSE
-          write(*,*) 'ERROR: Dont run without aerosols'
+          write(*,*) 'ERROR! Dont run without aerosols'
           STOP
           !CALL OPPR
       ENDIF

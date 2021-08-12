@@ -1,15 +1,15 @@
       subroutine opacity_wrapper(tau_IRe,tau_Ve, Beta_V, Beta_IR, gravity_SI)
           include 'rcommons.h'
 
-          integer :: NVERT, J, k
+          integer :: NLAYER, J, k
           real :: mu_0, Tirr, Tint, gravity_SI
 
-          real, dimension(2,NVERT) :: tau_IRe
-          real, dimension(3,NVERT) :: tau_Ve
+          real, dimension(2,NLAYER) :: tau_IRe
+          real, dimension(3,NLAYER) :: tau_Ve
           real, dimension(2) :: Beta_IR
           real, dimension(3) :: Beta_V
 
-          real, dimension(NVERT) :: dpe, Tl, Pl
+          real, dimension(NLAYER) :: dpe, Tl, Pl
 
           ! This is to calculate the incident fraction of the starlight
           mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)
@@ -22,23 +22,23 @@
           Tint = (FBASEFLUX / 5.670367E-5) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-5) ** 0.25
 
-          DO J = 1, NVERT
+          DO J = 1, NLAYER
               dpe(J) = player(J)
               Tl(J) = TT(J)
           END DO
 
           ! Pressure at the layers
           Pl(1) = dpe(1)
-          do J = 2, NVERT
+          do J = 2, NLAYER
               Pl(J) = Pl(J-1) + dpe(J)
           end do
 
-          CALL calculate_opacities(NVERT, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V, Beta_IR,gravity_SI)
+          CALL calculate_opacities(NLAYER, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V, Beta_IR,gravity_SI)
 
 
       end subroutine opacity_wrapper
 
-      subroutine calculate_opacities(NVERT, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V, Beta_IR,gravity_SI)
+      subroutine calculate_opacities(NLAYER, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V, Beta_IR,gravity_SI)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -57,7 +57,7 @@
         real :: gam_1, gam_2, tau_lim, gam_P
         real, dimension(3) :: Beta_V, gam_V
         real, dimension(2) :: Beta_IR
-        integer :: k, NVERT,J
+        integer :: k, NLAYER,J
         real :: Teff, Tint, Tirr, mu_0
 
         real :: R,gravity_SI
@@ -66,9 +66,9 @@
         real :: aB, bB
         real :: l10T, l10T2, RT
 
-        real, dimension(NVERT) :: dpe, Tl, Pl
-        real, dimension(2,NVERT) :: k_IRl, tau_IRe
-        real, dimension(3,NVERT) :: k_Vl, tau_Ve
+        real, dimension(NLAYER) :: dpe, Tl, Pl
+        real, dimension(2,NLAYER) :: k_IRl, tau_IRe
+        real, dimension(3,NLAYER) :: k_Vl, tau_Ve
         real :: grav
 
         grav = gravity_SI
@@ -163,7 +163,7 @@
         tau_Ve(:,1) = 0.0
         tau_IRe(:,1) = 0.0
 
-        do k = 1, NVERT-1
+        do k = 1, NLAYER-1
 
 
           call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
@@ -221,7 +221,7 @@
         k_IR = 0.0
 
         T = Tin
-        P = Pin * 10.0 ! Convert to dyne cm-2
+        P = Pin * 10.0 ! CoNLAYER to dyne cm-2
 
         Tl10 = log10(T)
         Pl10 = log10(P)
@@ -245,7 +245,7 @@
         end if
 
 
-        ! Total Rosseland mean opacity - converted to m2 kg-1
+        ! Total Rosseland mean opacity - coNLAYERed to m2 kg-1
         k_IR = (10.0**k_lowP + 10.0**k_hiP) / 10.0
 
         ! Avoid divergence in fit for large values
