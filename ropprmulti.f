@@ -1324,7 +1324,7 @@
           j1 = max(1, j-1)
 
 !         First the solar at standard resolution
-          DO L = 1,NSOLP
+          DO L = 1, NSOLP
              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
              if( TAUL(L,J) .lt. EPSILON ) then
@@ -1453,6 +1453,8 @@
               END DO
           END IF
       END DO
+
+      STOP
 
       RETURN
       END

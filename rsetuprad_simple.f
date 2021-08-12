@@ -217,6 +217,7 @@
 
           TAUGAS(L,2*NLAYER-1) = tau_IRe(L-NSOLP, NLAYER)/2
           TAUGAS(L,2*NLAYER) = tau_IRe(L-NSOLP,NLAYER)/2 + ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/2
+
       END DO
 
 
@@ -237,6 +238,11 @@
       END DO
 
 
+      !DO L = 1, NTOTAL
+      !    DO J = 1,NDBL
+      !        write(*,*) L, J, TAUGAS(L,J)
+      !    END DO
+      !END DO
 
 !     THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
 !     SHORTWAVE:
