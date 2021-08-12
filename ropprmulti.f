@@ -89,6 +89,8 @@
       REAL TAUAERSW(NL+1,13)
       REAL TAUAERLW(NL+1,13)
 
+
+
       ! THESE ARE MALSKY VALUES THAT I'M trying to add
       REAL QE_OPPR(NTOTAL, NL+1, 13)
       REAL PI0_OPPR(NTOTAL, NL+1, 13)
@@ -1128,10 +1130,6 @@
 
 
 
-
-
-
-
       G0_OPPR(1,1:50,1)=KClg0vis
       G0_OPPR(1,1:50,2)=ZnSg0vis
       G0_OPPR(1,1:50,3)=Na2Sg0vis
@@ -1202,6 +1200,7 @@
       QE_OPPR(1,1:50,12)=CaTiO3qevis
       QE_OPPR(1,1:50,13)=Al2O3qevis
 
+      ! THIS IS WRONG, FIX!!!
       QE_OPPR(2,1:50,1)=KClqevir
       QE_OPPR(2,1:50,2)=ZnSqevir
       QE_OPPR(2,1:50,3)=Na2Sqevir
@@ -1228,10 +1227,15 @@
       DO I = 1,NCLOUD
           DO J = 1,NLAYER -1
               CONDFACT(J,I) = min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
-              TAUFACT= DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(J)
+              TAUFACT = DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(J)
 
-              TAUAERSW(J,I) = TAUFACT*qevis(J,I)
-              TAUAERLW(J,I) = TAUFACT*qeir(J,I)
+              !TAUAERSW(J,I) = TAUFACT*qevis(J,I)
+              !TAUAERLW(J,I) = TAUFACT*qeir(J,I)
+
+              ! MALSKY CODE
+              DO L = LLS,NTOTAL
+                  TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,J,I)
+              END DO
 
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
               ZEROARR(J)    = 0.
@@ -1242,57 +1246,86 @@
           TOPLEV          = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
 
           DO J = 1,TOPLEV
-              TAUAERSW(J,I) = 0.
-              TAUAERLW(J,I) = 0.
+              !TAUAERSW(J,I) = 0.
+              !TAUAERLW(J,I) = 0.
+
+              ! MALSKY CODE
+              DO L = LLS,NTOTAL
+                  TAUAER_OPPR(L,J,I) = 0.0
+              END DO
           END DO
 
-          TAUAERSW(TOPLEV+2,I)= TAUAERSW(TOPLEV+2,I)*0.367879 !i.e.e(-2)
-          TAUAERLW(TOPLEV+2,I)= TAUAERLW(TOPLEV+2,I)*0.367879
-          TAUAERSW(TOPLEV+1,I)= TAUAERSW(TOPLEV+1,I)*0.135335 !i.e.e(-1)
-          TAUAERLW(TOPLEV+1,I)= TAUAERLW(TOPLEV+1,I)*0.135335
+          !TAUAERSW(TOPLEV+2,I) = TAUAERSW(TOPLEV+2,I) * 0.367879 !i.e.e(-2)
+          !TAUAERLW(TOPLEV+2,I) = TAUAERLW(TOPLEV+2,I) * 0.367879
+          !TAUAERSW(TOPLEV+1,I) = TAUAERSW(TOPLEV+1,I) * 0.135335 !i.e.e(-1)
+          !TAUAERLW(TOPLEV+1,I) = TAUAERLW(TOPLEV+1,I) * 0.135335
+
+          ! MALSKY CODE
+          DO L = LLS,NTOTAL
+              TAUAER_OPPR(L,TOPLEV+2,I) = TAUAER_OPPR(L,TOPLEV+2,I) * 0.367879
+              TAUAER_OPPR(L,TOPLEV+1,I) = TAUAER_OPPR(L,TOPLEV+1,I) * 0.135335
+          END DO
       END DO
 
 
 
 !     SW AT STANDARD VERTICAL RESOLUTION
       DO J = 1,NLAYER
-          TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
-          WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
-     &                      * PI0vis(J,1:13))
-          GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
-     &                      * g0vis(J,1:13))
+          !TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
+          !WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8) * PI0vis(J,1:13))
+          !GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8) * g0vis(J,1:13))
+
+          ! MALSKY CODE
+          DO L = LLS,NSOLP
+              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,J,1:13))
+              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * PI0_OPPR(L,J,1:13))
+              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * G0_OPPR(L,J,1:13))
+          END DO
       END DO
 
+
+! GOOD UP UNTIL HERE
 !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
       k = 1
       DO J = 1,NDBL,2
           JJ = J
-          TAUAER(2,JJ) = SUM(TAUAERLW(K,1:13))
-          WOL(2,JJ)    = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8)
-     &                      * PI0ir(k,1:13))
-          GOL(2,JJ)  = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8)
-     &                      * g0ir(k,1:13))
 
-          JJ          = J+1
-          TAUAER(2,JJ)       = TAUAER(2,JJ-1)
-          WOL(2,JJ)          = WOL(2,JJ-1)
-          GOL(2,JJ)          = GOL(2,JJ-1)
+          !TAUAER(2,JJ) = SUM(TAUAERLW(K,1:13))
+          !WOL(2,JJ)    = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8) * PI0ir(k,1:13))
+          !GOL(2,JJ)    = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8) * g0ir(k,1:13))
+
+          ! MALSKY CODE
+          DO L = NSOLP+1,NTOTAL
+              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:13))
+              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * PI0_OPPR(L,K,1:13))
+              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * G0_OPPR(L,K,1:13))
+          END DO
+
+          JJ = J+1
+
+          !TAUAER(2,JJ) = TAUAER(2,JJ-1)
+          !WOL(2,JJ)    = WOL(2,JJ-1)
+          !GOL(2,JJ)    = GOL(2,JJ-1)
+
+          ! MALSKY CODE
+          DO L = NSOLP+1,NTOTAL
+              TAUAER(L,JJ) = TAUAER(L,JJ-1)
+              WOL(L,JJ)    = WOL(L,JJ-1)
+              GOL(L,JJ)    = GOL(L,JJ-1)
+          END DO
+
           k            = k+1
       END DO
 
-!     iradgas = 0: no gas in radiative xfer!
-      iradgas = 1     
 
+
+      iradgas = 1
       DO J = 1,NLAYER
           j1 = max(1, j-1)
 
 !         First the solar at standard resolution
           DO L = LLS,NSOLP
-              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
-             
-             if (iradgas.eq.0) then
-                 tauL(L,j) = tauaer(L,j)
-             endif
+             TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
              if( TAUL(L,J) .lt. EPSILON ) then
                  TAUL(L,J) = EPSILON
@@ -1335,15 +1368,15 @@
                  OPD(L,J)    = 0.0
                  OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
              ELSE 
-                  W0(L,J)= uw0(L,J)
-                  G0(L,J)= ug0(L,J)
-                TAUL(L,J)= utaul(L,J)
+                 W0(L,J)= uw0(L,J)
+                 G0(L,J)= ug0(L,J)
+                 TAUL(L,J)= utaul(L,J)
                  OPD(L,J)= uOPD(L,J)
              ENDIF
 
 !           HERE'S WHERE YOU CAN HARDWIRE VALUES
-             if( taul(L,j).lt.0. ) then
-                 write(*,*) 'taul lt 0'
+             if( taul(L,j) .lt. 0.) then
+                 write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
                  stop
              endif
           END DO
@@ -1365,7 +1398,6 @@
 
               utauL(L,j)  = TAUL(L,J)
               WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-
               if (iradgas.eq.0) then
                   wot = woL(L,j)
               endif
@@ -1407,8 +1439,8 @@
                   OPD(L,J)= uOPD(L,J)
              END IF
 
-             if( taul(L,j).lt.0. ) then
-                 write(*,*) 'taul lt 0'
+             if(taul(L,j) .lt. 0.) then
+                 write(*,*) 'ERROR! The IR layer optical depth is less than 0:', taul(L,j)
                  stop
              endif
           END DO

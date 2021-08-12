@@ -230,13 +230,12 @@
 306   continue
  
 
-         L=2
+      L=2
       DO 308   J     =   1,NDBL
          PM          =   DPGsub(J)
-!         write(*,*)'PM',PM
          IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-                     ELSE IF (OPACIR_POWERLAW.eq.1) THEN
+             TAUGAS(L,J)=ABSCOEFF(L)*PM
+             ELSE IF (OPACIR_POWERLAW.eq.1) THEN
                        TAUGAS(L,J)=ABSCOEFF(L)*PM
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
                      ELSE IF (OPACIR_POWERLAW.eq.2) THEN
@@ -258,9 +257,6 @@
 
 
   308  CONTINUE
-!M
-
-!      write(*,*) 'TAUGAS',TAUGAS
 
 
       DO  L           =   NSOLP+1,NTOTAL
