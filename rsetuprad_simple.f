@@ -1,4 +1,4 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -31,6 +31,10 @@
       dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
+
+      real t_pass(NZ)
+
+
       integer i1, i2, indorder(5)
       logical all_ok
       DATA AVG    / 6.02252E+23  /
@@ -197,7 +201,7 @@
           END DO
       END DO
 
-      CALL opacity_wrapper(tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
+      CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
       tau_Ve(:,1)  = ABS(tau_Ve(:,3) - tau_Ve(:,2))
       tau_IRe(:,1) = ABS(tau_IRe(:,3) - tau_IRe(:,2))
@@ -216,8 +220,7 @@
           END DO
 
           TAUGAS(L,2*NLAYER-1) = tau_IRe(L-NSOLP, NLAYER)/2
-          TAUGAS(L,2*NLAYER) = tau_IRe(L-NSOLP,NLAYER)/2 + ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/2
-
+          TAUGAS(L,2*NLAYER)   = tau_IRe(L-NSOLP,NLAYER)/2 + ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/2
       END DO
 
 
@@ -237,12 +240,14 @@
           END DO
       END DO
 
-
       !DO L = 1, NTOTAL
       !    DO J = 1,NDBL
-      !        write(*,*) L, J, TAUGAS(L,J)
+      !        write(*,*) TAUGAS(L,J), ','
       !    END DO
       !END DO
+      !write(*,*)
+      !stop
+
 
 !     THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
 !     SHORTWAVE:

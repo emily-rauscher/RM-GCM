@@ -1144,19 +1144,63 @@
       G0_OPPR(1,1:50,12)=CaTiO3g0vis
       G0_OPPR(1,1:50,13)=Al2O3g0vis
 
-      G0_OPPR(2,1:50,1)=KClg0vir
-      G0_OPPR(2,1:50,2)=ZnSg0vir
-      G0_OPPR(2,1:50,3)=Na2Sg0vir
-      G0_OPPR(2,1:50,4)=MnSg0vir
-      G0_OPPR(2,1:50,5)=Cr2O3g0vir
-      G0_OPPR(2,1:50,6)=SiO2g0vir
-      G0_OPPR(2,1:50,7)=Mg2SiO4g0vir
-      G0_OPPR(2,1:50,8)=VOg0vir
-      G0_OPPR(2,1:50,9)=Nig0vir
-      G0_OPPR(2,1:50,10)=Feg0vir
-      G0_OPPR(2,1:50,11)=Ca2SiO4g0vir
-      G0_OPPR(2,1:50,12)=CaTiO3g0vir
-      G0_OPPR(2,1:50,13)=Al2O3g0vir
+      G0_OPPR(2,1:50,1)=KClg0vis
+      G0_OPPR(2,1:50,2)=ZnSg0vis
+      G0_OPPR(2,1:50,3)=Na2Sg0vis
+      G0_OPPR(2,1:50,4)=MnSg0vis
+      G0_OPPR(2,1:50,5)=Cr2O3g0vis
+      G0_OPPR(2,1:50,6)=SiO2g0vis
+      G0_OPPR(2,1:50,7)=Mg2SiO4g0vis
+      G0_OPPR(2,1:50,8)=VOg0vis
+      G0_OPPR(2,1:50,9)=Nig0vis
+      G0_OPPR(2,1:50,10)=Feg0vis
+      G0_OPPR(2,1:50,11)=Ca2SiO4g0vis
+      G0_OPPR(2,1:50,12)=CaTiO3g0vis
+      G0_OPPR(2,1:50,13)=Al2O3g0vis
+
+      G0_OPPR(3,1:50,1)=KClg0vis
+      G0_OPPR(3,1:50,2)=ZnSg0vis
+      G0_OPPR(3,1:50,3)=Na2Sg0vis
+      G0_OPPR(3,1:50,4)=MnSg0vis
+      G0_OPPR(3,1:50,5)=Cr2O3g0vis
+      G0_OPPR(3,1:50,6)=SiO2g0vis
+      G0_OPPR(3,1:50,7)=Mg2SiO4g0vis
+      G0_OPPR(3,1:50,8)=VOg0vis
+      G0_OPPR(3,1:50,9)=Nig0vis
+      G0_OPPR(3,1:50,10)=Feg0vis
+      G0_OPPR(3,1:50,11)=Ca2SiO4g0vis
+      G0_OPPR(3,1:50,12)=CaTiO3g0vis
+      G0_OPPR(3,1:50,13)=Al2O3g0vis
+
+      G0_OPPR(4,1:50,1)=KClg0vir
+      G0_OPPR(4,1:50,2)=ZnSg0vir
+      G0_OPPR(4,1:50,3)=Na2Sg0vir
+      G0_OPPR(4,1:50,4)=MnSg0vir
+      G0_OPPR(4,1:50,5)=Cr2O3g0vir
+      G0_OPPR(4,1:50,6)=SiO2g0vir
+      G0_OPPR(4,1:50,7)=Mg2SiO4g0vir
+      G0_OPPR(4,1:50,8)=VOg0vir
+      G0_OPPR(4,1:50,9)=Nig0vir
+      G0_OPPR(4,1:50,10)=Feg0vir
+      G0_OPPR(4,1:50,11)=Ca2SiO4g0vir
+      G0_OPPR(4,1:50,12)=CaTiO3g0vir
+      G0_OPPR(4,1:50,13)=Al2O3g0vir
+
+      G0_OPPR(5,1:50,1)=KClg0vir
+      G0_OPPR(5,1:50,2)=ZnSg0vir
+      G0_OPPR(5,1:50,3)=Na2Sg0vir
+      G0_OPPR(5,1:50,4)=MnSg0vir
+      G0_OPPR(5,1:50,5)=Cr2O3g0vir
+      G0_OPPR(5,1:50,6)=SiO2g0vir
+      G0_OPPR(5,1:50,7)=Mg2SiO4g0vir
+      G0_OPPR(5,1:50,8)=VOg0vir
+      G0_OPPR(5,1:50,9)=Nig0vir
+      G0_OPPR(5,1:50,10)=Feg0vir
+      G0_OPPR(5,1:50,11)=Ca2SiO4g0vir
+      G0_OPPR(5,1:50,12)=CaTiO3g0vir
+      G0_OPPR(5,1:50,13)=Al2O3g0vir
+
+
 
       PI0_OPPR(1,1:50,1)=KClpi0vis
       PI0_OPPR(1,1:50,2)=ZnSpi0vis
@@ -1172,19 +1216,63 @@
       PI0_OPPR(1,1:50,12)=CaTiO3pi0vis
       PI0_OPPR(1,1:50,13)=Al2O3pi0vis
 
-      PI0_OPPR(2,1:50,1)=KClpi0vir
-      PI0_OPPR(2,1:50,2)=ZnSpi0vir
-      PI0_OPPR(2,1:50,3)=Na2Spi0vir
-      PI0_OPPR(2,1:50,4)=MnSpi0vir
-      PI0_OPPR(2,1:50,5)=Cr2O3pi0vir
-      PI0_OPPR(2,1:50,6)=SiO2pi0vir
-      PI0_OPPR(2,1:50,7)=Mg2SiO4pi0vir
-      PI0_OPPR(2,1:50,8)=VOpi0vir
-      PI0_OPPR(2,1:50,9)=Nipi0vir
-      PI0_OPPR(2,1:50,10)=Fepi0vir
-      PI0_OPPR(2,1:50,11)=Ca2SiO4pi0vir
-      PI0_OPPR(2,1:50,12)=CaTiO3pi0vir
-      PI0_OPPR(2,1:50,13)=Al2O3pi0vir
+      PI0_OPPR(2,1:50,1)=KClpi0vis
+      PI0_OPPR(2,1:50,2)=ZnSpi0vis
+      PI0_OPPR(2,1:50,3)=Na2Spi0vis
+      PI0_OPPR(2,1:50,4)=MnSpi0vis
+      PI0_OPPR(2,1:50,5)=Cr2O3pi0vis
+      PI0_OPPR(2,1:50,6)=SiO2pi0vis
+      PI0_OPPR(2,1:50,7)=Mg2SiO4pi0vis
+      PI0_OPPR(2,1:50,8)=VOpi0vis
+      PI0_OPPR(2,1:50,9)=Nipi0vis
+      PI0_OPPR(2,1:50,10)=Fepi0vis
+      PI0_OPPR(2,1:50,11)=Ca2SiO4pi0vis
+      PI0_OPPR(2,1:50,12)=CaTiO3pi0vis
+      PI0_OPPR(2,1:50,13)=Al2O3pi0vis
+
+      PI0_OPPR(3,1:50,1)=KClpi0vis
+      PI0_OPPR(3,1:50,2)=ZnSpi0vis
+      PI0_OPPR(3,1:50,3)=Na2Spi0vis
+      PI0_OPPR(3,1:50,4)=MnSpi0vis
+      PI0_OPPR(3,1:50,5)=Cr2O3pi0vis
+      PI0_OPPR(3,1:50,6)=SiO2pi0vis
+      PI0_OPPR(3,1:50,7)=Mg2SiO4pi0vis
+      PI0_OPPR(3,1:50,8)=VOpi0vis
+      PI0_OPPR(3,1:50,9)=Nipi0vis
+      PI0_OPPR(3,1:50,10)=Fepi0vis
+      PI0_OPPR(3,1:50,11)=Ca2SiO4pi0vis
+      PI0_OPPR(3,1:50,12)=CaTiO3pi0vis
+      PI0_OPPR(3,1:50,13)=Al2O3pi0vis
+
+      PI0_OPPR(4,1:50,1)=KClpi0vir
+      PI0_OPPR(4,1:50,2)=ZnSpi0vir
+      PI0_OPPR(4,1:50,3)=Na2Spi0vir
+      PI0_OPPR(4,1:50,4)=MnSpi0vir
+      PI0_OPPR(4,1:50,5)=Cr2O3pi0vir
+      PI0_OPPR(4,1:50,6)=SiO2pi0vir
+      PI0_OPPR(4,1:50,7)=Mg2SiO4pi0vir
+      PI0_OPPR(4,1:50,8)=VOpi0vir
+      PI0_OPPR(4,1:50,9)=Nipi0vir
+      PI0_OPPR(4,1:50,10)=Fepi0vir
+      PI0_OPPR(4,1:50,11)=Ca2SiO4pi0vir
+      PI0_OPPR(4,1:50,12)=CaTiO3pi0vir
+      PI0_OPPR(4,1:50,13)=Al2O3pi0vir
+
+      PI0_OPPR(5,1:50,1)=KClpi0vir
+      PI0_OPPR(5,1:50,2)=ZnSpi0vir
+      PI0_OPPR(5,1:50,3)=Na2Spi0vir
+      PI0_OPPR(5,1:50,4)=MnSpi0vir
+      PI0_OPPR(5,1:50,5)=Cr2O3pi0vir
+      PI0_OPPR(5,1:50,6)=SiO2pi0vir
+      PI0_OPPR(5,1:50,7)=Mg2SiO4pi0vir
+      PI0_OPPR(5,1:50,8)=VOpi0vir
+      PI0_OPPR(5,1:50,9)=Nipi0vir
+      PI0_OPPR(5,1:50,10)=Fepi0vir
+      PI0_OPPR(5,1:50,11)=Ca2SiO4pi0vir
+      PI0_OPPR(5,1:50,12)=CaTiO3pi0vir
+      PI0_OPPR(5,1:50,13)=Al2O3pi0vir
+
+
 
       QE_OPPR(1,1:50,1)=KClqevis
       QE_OPPR(1,1:50,2)=ZnSqevis
@@ -1200,20 +1288,62 @@
       QE_OPPR(1,1:50,12)=CaTiO3qevis
       QE_OPPR(1,1:50,13)=Al2O3qevis
 
-      ! THIS IS WRONG, FIX!!!
-      QE_OPPR(2,1:50,1)=KClqevir
-      QE_OPPR(2,1:50,2)=ZnSqevir
-      QE_OPPR(2,1:50,3)=Na2Sqevir
-      QE_OPPR(2,1:50,4)=MnSqevir
-      QE_OPPR(2,1:50,5)=Cr2O3qevir
-      QE_OPPR(2,1:50,6)=SiO2qevir
-      QE_OPPR(2,1:50,7)=Mg2SiO4qevir
-      QE_OPPR(2,1:50,8)=VOqevir
-      QE_OPPR(2,1:50,9)=Niqevir
-      QE_OPPR(2,1:50,10)=Feqevir
-      QE_OPPR(2,1:50,11)=Ca2SiO4qevir
-      QE_OPPR(2,1:50,12)=CaTiO3qevir
-      QE_OPPR(2,1:50,13)=Al2O3qevir
+      QE_OPPR(2,1:50,1)=KClqevis
+      QE_OPPR(2,1:50,2)=ZnSqevis
+      QE_OPPR(2,1:50,3)=Na2Sqevis
+      QE_OPPR(2,1:50,4)=MnSqevis
+      QE_OPPR(2,1:50,5)=Cr2O3qevis
+      QE_OPPR(2,1:50,6)=SiO2qevis
+      QE_OPPR(2,1:50,7)=Mg2SiO4qevis
+      QE_OPPR(2,1:50,8)=VOqevis
+      QE_OPPR(2,1:50,9)=Niqevis
+      QE_OPPR(2,1:50,10)=Feqevis
+      QE_OPPR(2,1:50,11)=Ca2SiO4qevis
+      QE_OPPR(2,1:50,12)=CaTiO3qevis
+      QE_OPPR(2,1:50,13)=Al2O3qevis
+
+      QE_OPPR(3,1:50,1)=KClqevis
+      QE_OPPR(3,1:50,2)=ZnSqevis
+      QE_OPPR(3,1:50,3)=Na2Sqevis
+      QE_OPPR(3,1:50,4)=MnSqevis
+      QE_OPPR(3,1:50,5)=Cr2O3qevis
+      QE_OPPR(3,1:50,6)=SiO2qevis
+      QE_OPPR(3,1:50,7)=Mg2SiO4qevis
+      QE_OPPR(3,1:50,8)=VOqevis
+      QE_OPPR(3,1:50,9)=Niqevis
+      QE_OPPR(3,1:50,10)=Feqevis
+      QE_OPPR(3,1:50,11)=Ca2SiO4qevis
+      QE_OPPR(3,1:50,12)=CaTiO3qevis
+      QE_OPPR(3,1:50,13)=Al2O3qevis
+
+      QE_OPPR(4,1:50,1)=KClqevir
+      QE_OPPR(4,1:50,2)=ZnSqevir
+      QE_OPPR(4,1:50,3)=Na2Sqevir
+      QE_OPPR(4,1:50,4)=MnSqevir
+      QE_OPPR(4,1:50,5)=Cr2O3qevir
+      QE_OPPR(4,1:50,6)=SiO2qevir
+      QE_OPPR(4,1:50,7)=Mg2SiO4qevir
+      QE_OPPR(4,1:50,8)=VOqevir
+      QE_OPPR(4,1:50,9)=Niqevir
+      QE_OPPR(4,1:50,10)=Feqevir
+      QE_OPPR(4,1:50,11)=Ca2SiO4qevir
+      QE_OPPR(4,1:50,12)=CaTiO3qevir
+      QE_OPPR(4,1:50,13)=Al2O3qevir
+
+      QE_OPPR(5,1:50,1)=KClqevir
+      QE_OPPR(5,1:50,2)=ZnSqevir
+      QE_OPPR(5,1:50,3)=Na2Sqevir
+      QE_OPPR(5,1:50,4)=MnSqevir
+      QE_OPPR(5,1:50,5)=Cr2O3qevir
+      QE_OPPR(5,1:50,6)=SiO2qevir
+      QE_OPPR(5,1:50,7)=Mg2SiO4qevir
+      QE_OPPR(5,1:50,8)=VOqevir
+      QE_OPPR(5,1:50,9)=Niqevir
+      QE_OPPR(5,1:50,10)=Feqevir
+      QE_OPPR(5,1:50,11)=Ca2SiO4qevir
+      QE_OPPR(5,1:50,12)=CaTiO3qevir
+      QE_OPPR(5,1:50,13)=Al2O3qevir
+
 
 !     The mass of these layers is this pressure thickness divide by G.
 !    
@@ -1453,8 +1583,6 @@
               END DO
           END IF
       END DO
-
-      STOP
 
       RETURN
       END

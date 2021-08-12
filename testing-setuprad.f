@@ -1,7 +1,7 @@
-      subroutine opacity_wrapper(tau_IRe,tau_Ve, Beta_V, Beta_IR, gravity_SI)
+      subroutine opacity_wrapper(t_pass, tau_IRe,tau_Ve, Beta_V, Beta_IR, gravity_SI)
           include 'rcommons.h'
 
-          integer :: NLAYER, J, k
+          integer :: NLAYER, J, k, NZ
           real :: mu_0, Tirr, Tint, gravity_SI
 
           real, dimension(2,NLAYER) :: tau_IRe
@@ -9,6 +9,7 @@
           real, dimension(2) :: Beta_IR
           real, dimension(3) :: Beta_V
 
+          real, dimension(NZ) :: t_pass
           real, dimension(NLAYER) :: dpe, Tl, Pl
 
           ! This is to calculate the incident fraction of the starlight
@@ -24,8 +25,12 @@
 
           DO J = 1, NLAYER
               dpe(J) = player(J)
-              Tl(J) = TT(J)
           END DO
+
+          DO J = 1, NLAYER-1
+              Tl(J) = t_pass(J)
+          END DO
+          Tl(NLAYER) = t_pass(NLAYER-1) + ABS(t_pass(NLAYER-1) - t_pass(NLAYER-2))
 
           ! Pressure at the layers
           Pl(1) = dpe(1)
@@ -172,13 +177,9 @@
           k_IRl(2,k) = k_IRl(1,k) * gam_2
           k_IRl(1,k) = k_IRl(1,k) * gam_1
 
-          !tau_Ve(:,k+1) = tau_Ve(:,k) + (k_Vl(:,k) * dpe(k)) / grav
-          !tau_IRe(:,k+1) = tau_IRe(:,k) + (k_IRl(:,k) * dpe(k)) / grav
-
           tau_Ve(:,k+1)  = (k_Vl(:,k) * dpe(k)) / grav
           tau_IRe(:,k+1) = (k_IRl(:,k) * dpe(k)) / grav
         end do
-
 
 
       end subroutine calculate_opacities

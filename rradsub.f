@@ -151,7 +151,7 @@ C ER modif for non-zero obliquity
       do itime = 1, ntime
 
 
-        call setuprad_simple(Beta_V, Beta_IR)
+        call setuprad_simple(Beta_V, Beta_IR, t_pass)
         pc_aerad = 0.
         call radtran(Beta_V, Beta_IR)
 
