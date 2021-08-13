@@ -145,6 +145,7 @@ C ER modif for non-zero obliquity
          ENDIF
       ir_aerad = 1
       ntime = 1
+
       if( if_diurnal.eq.1 ) ntime = 24
 
       itime1 = 12

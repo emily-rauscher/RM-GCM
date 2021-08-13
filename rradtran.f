@@ -96,18 +96,14 @@
 !     SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA                   =  NTOTAL
       LLS                   =  1
+      ! This stuff doensn't get called because these are not normally true
+      IF(ISL .EQ. 0) THEN
+          LLS =  NSOLP+1
+      ENDIF
 
-      !IF(ISL .EQ. 0) THEN
-      !    LLS =  NSOLP+1
-      !    write(*,*) "ERROR! The Visible code is not being called"
-      !    stop
-      !ENDIF
-
-      !IF(IR .EQ. 0) THEN
-      !    LLA =  NSOLP
-      !    write(*,*) "ERROR! The IR code is not being called"
-      !    stop
-      !ENDIF
+      IF(IR .EQ. 0) THEN
+          LLA =  NSOLP
+      ENDIF
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
@@ -115,7 +111,6 @@
       ELSE
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
-          !CALL OPPR
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
@@ -136,7 +131,6 @@
           CALL TWOSTR
           CALL ADD
       ENDIF
-          
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
       IF(IR .NE. 0) THEN
