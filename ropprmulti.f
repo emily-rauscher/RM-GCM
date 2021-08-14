@@ -1376,8 +1376,8 @@
           TOPLEV          = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
 
           DO J = 1,TOPLEV
-              !TAUAERSW(J,I) = 0.
-              !TAUAERLW(J,I) = 0.
+              TAUAERSW(J,I) = 0.
+              TAUAERLW(J,I) = 0.
 
               ! MALSKY CODE
               DO L = 1,NTOTAL
@@ -1398,18 +1398,21 @@
       END DO
 
 
-
 !     SW AT STANDARD VERTICAL RESOLUTION
-      DO J = 1,NLAYER
+      DO L = LLS,NSOLP
           !TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
           !WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8) * PI0vis(J,1:13))
           !GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8) * g0vis(J,1:13))
 
           ! MALSKY CODE
-          DO L = 1,NSOLP
-              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,J,1:13))
-              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * PI0_OPPR(L,J,1:13))
-              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * G0_OPPR(L,J,1:13))
+          DO J = 1,NLAYER
+              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:13))
+              WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * PI0_OPPR(L,J,1:13))
+              GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * G0_OPPR(L,J,1:13))
+
+              TAUAER(L,J) = 0
+              WOL(L,J)    = 0
+              GOL(L,J)    = 0
           END DO
       END DO
 
@@ -1429,6 +1432,10 @@
               TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:13))
               WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * PI0_OPPR(L,K,1:13))
               GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * G0_OPPR(L,K,1:13))
+
+              TAUAER(L,JJ) = 0
+              WOL(L,JJ)    = 0
+              GOL(L,JJ)    = 0
           END DO
 
           JJ = J+1
@@ -1442,9 +1449,13 @@
               TAUAER(L,JJ) = TAUAER(L,JJ-1)
               WOL(L,JJ)    = WOL(L,JJ-1)
               GOL(L,JJ)    = GOL(L,JJ-1)
+
+              TAUAER(L,JJ) = 0
+              WOL(L,JJ)    = 0
+              GOL(L,JJ)    = 0
           END DO
 
-          k            = k+1
+          k = k+1
       END DO
 
 
@@ -1454,7 +1465,7 @@
           j1 = max(1, j-1)
 
 !         First the solar at standard resolution
-          DO L = 1, NSOLP
+          DO L = LLS,NSOLP
              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
              if( TAUL(L,J) .lt. EPSILON ) then
@@ -1511,6 +1522,8 @@
              endif
           END DO
       END DO
+
+
 
 !     NOW AGAIN FOR THE IR
       DO J = 1,NDBL

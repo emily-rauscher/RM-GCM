@@ -32,6 +32,7 @@
           END DO
           Tl(NLAYER) = t_pass(NLAYER-1) + ABS(t_pass(NLAYER-1) - t_pass(NLAYER-2))
 
+
           ! Pressure at the layers
           Pl(1) = dpe(1)
           do J = 2, NLAYER

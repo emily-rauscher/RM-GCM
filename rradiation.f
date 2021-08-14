@@ -471,9 +471,10 @@ C Call radiation scheme
             
 !            write(*,*) 'TAUAEROSOL IN RRAD',TAUAEROSOL 
             ENDIF
-            call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,           
+
+            call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,
      $                 ic,fluxes,swalb,kount,itspd)
-                                 
+
 c                  call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
 c     $                 fluxes,swalb,alon,kount,itspd)
           

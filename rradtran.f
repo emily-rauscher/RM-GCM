@@ -26,6 +26,8 @@
 !     Reset flag for computation of solar fluxes
       ISL        = isl_aerad
 
+
+
 !     Get atmospheric profiles from interface common block
       do k = 1,nvert
         t(k) = t_aerad(k)
@@ -96,7 +98,7 @@
 !     SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA                   =  NTOTAL
       LLS                   =  1
-      ! This stuff doensn't get called because these are not normally true
+
       IF(ISL .EQ. 0) THEN
           LLS =  NSOLP+1
       ENDIF
@@ -131,8 +133,10 @@
           CALL TWOSTR
           CALL ADD
       ENDIF
+
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
+
       IF(IR .NE. 0) THEN
           CALL NEWFLUX1
 
@@ -145,44 +149,42 @@
 !         LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
 !         WITHOUT DOUBLING
 
-          ! THIS IS HARDWIRED< I NEED TO FIX!!
-          K = 1
-          DO J =  1,NLAYER
-              DO L =  NSOLP+1,NTOTAL
-                  FNET(L,J)      =  DIRECTU(L,k)-DIREC(L,k)
-                  DIRECTU(L,J)   =  DIRECTU(L,K)
-                  DIREC(L,J)     =  DIREC(L,K)
-                  OPD(L,J)       =  OPD(L,K)
-                  TAUL(L,J)      =  TAUL(L,K)
-                  W0(L,J)        =  W0(L,K)
-                  G0(L,J)        =  G0(L,K)
-                  ug0(L,J)       =  ug0(L,K)
-                  uOPD(L,J)      =  uOPD(L,K)
-                  uTAUL(L,j)     =  uTAUL(L,K)
-                  uW0(L,J)       =  uW0(L,k)
-                  TMIU(L,J)      =  TMIU(L,k)
-                  TMID(L,J)      =  TMID(L,k)
-
-                  K = K+2.
-              END DO
-         ENDDO
-
-         IF(FLXLIMDIF) THEN
-             DO L =  NSOLP+1,NTOTAL
-                 IF(OPD(L,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
-                     CALL FLUXLD
-                 ENDIF
-             END DO
-         ENDIF
+         ! K = 1
+         ! DO J =  1,NLAYER
+         !     DO L =  NSOLP+1,NTOTAL
+         !         FNET(L,J)      =  DIRECTU(L,k)-DIREC(L,k)
+         !         DIRECTU(L,J)   =  DIRECTU(L,K)
+         !         DIREC(L,J)     =  DIREC(L,K)
+         !         OPD(L,J)       =  OPD(L,K)
+         !         TAUL(L,J)      =  TAUL(L,K)
+         !         W0(L,J)        =  W0(L,K)
+         !         G0(L,J)        =  G0(L,K)
+         !         ug0(L,J)       =  ug0(L,K)
+         !         uOPD(L,J)      =  uOPD(L,K)
+         !         uTAUL(L,j)     =  uTAUL(L,K)
+         !         uW0(L,J)       =  uW0(L,k)
+         !         TMIU(L,J)      =  TMIU(L,k)
+         !         TMID(L,J)      =  TMID(L,k)
+         !         K = K+2.
+         !     END DO
+         !ENDD
+         !IF(FLXLIMDIF) THEN
+         !    DO L =  NSOLP+1,NTOTAL
+         !        IF(OPD(L,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
+         !            CALL FLUXLD
+         !        ENDIF
+         !    END DO
+         !ENDIF
       ENDIF
           
-!     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC
-!     MODIFICATION:
+!     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
-      DO L =  NSOLP+1,NTOTAL
+
+      DO L = NSOLP+1,NTOTAL
           FNET(L,NLAYER)=FBASEFLUX
       END DO
+
 !     SINCE WE ARE PLACING A CONSTRAINT ON THE NET FLUX AT THE BOTTOM OF
 !     THE MODEL (BY DEFINING  NET FLUX AT THE BASE TO EQUAL FBASEFLUX)
 !     TO BE SELF CONSISTENT, WE CAN REDIFINE THE UPWARD FLUX FROM THE
@@ -195,31 +197,68 @@
           DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
       END DO
 
-      DO 500 J      =  1,NVERT !!MTRNVERT
-          HEATS(J)   =  0.0
-          HEATI(J)   =  0.0
-          TERM1      =  FDEGDAY/(DPG(J+1)*G)
-          IF(ISL .NE. 0) THEN
-              DO 480 L     =  1,NSOLP
-                  HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1 !* Beta_V(L)
-480           CONTINUE
-          ENDIF
-
-          IF(IR .NE. 0) THEN
-              DO 490 L     =  NSOLP+1,NTOTAL
-                  HEATI(J)   =  HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1 !* Beta_IR(L - NSOLP)
- 490          CONTINUE
-          ENDIF
-
-          HEAT(J) = HEATS(J)+HEATI(J)
+!     DO 500 J      =  1,NVERT !!MTRNVERT
+!         HEATS(J)   =  0.0
+!         HEATI(J)   =  0.0
+!         TERM1      =  FDEGDAY/(DPG(J+1)*G)
+!         IF(ISL .NE. 0) THEN
+!             DO 480 L     =  1,NSOLP
+!                 HEATS(J)   =  (HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1) !* Beta_V(L)
+!480          CONTINUE
+!         ENDIF
+!         IF(IR .NE. 0) THEN
+!             DO 490 L     =  NSOLP+1,NTOTAL
+!                 HEATI(J)   =  (HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1) !* Beta_IR(L - NSOLP)
+! 490         CONTINUE
+!         ENDIF
+!         HEAT(J) = HEATS(J)+HEATI(J)
 
 !         Load heating rates [deg_K/s] into interface common block
+!          heats_aerad(j) =  heats(j)/scday
+!          heati_aerad(j) =  heati(j)/scday
+! 500   CONTINUE
+
+      DO J = 1, NDBL
+           DO L = 1, NTOTAL
+               IF (L .LE. NSOLP) THEN
+                   FNET(L,J) = FNET(L,J) / NSOLP
+                   DIREC(L,J) = DIREC(L,J) / NSOLP
+                   DIRECTU(L,J) = DIRECTU(L,J) / NSOLP
+               ELSE
+                   FNET(L,J) = FNET(L,J) / NIRP
+                   DIREC(L,J) = DIREC(L,J) / NIRP
+                   DIRECTU(L,J) = DIRECTU(L,J) / NIRP
+               END IF
+           END DO
+      END DO
+
+
+!     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
+      DO 500 J      =  1,NVERT
+          HEATS(J)   =  0.0
+          HEATI(J)   =  0.0
+          TERM1      =  FDEGDAY/(DPG(J)*G)
 !
+          IF(ISL .NE. 0) THEN
+            DO 480 L     =  1,NSOLP
+              HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
+ 480        CONTINUE
+          ENDIF
+!
+          IF(IR .NE. 0) THEN
+            DO 490 L    =  NSOLP+1,NTOTAL
+               HEATI(J) = HEATI(J)+(DIRECTU(L,(2*J-1)+1)-DIREC(L,(2*J-1)+1)-(DIRECTU(L,(2*J-1))-DIREC(L,(2*J-1))))*TERM1
+ 490        CONTINUE
+          ENDIF
+
+          ! Eventually this needs to be split with the beta values
+          HEAT(J)        =  HEATS(J) + HEATI(J)
+
+!         Load heating rates [deg_K/s] into interface common block
           heats_aerad(j) =  heats(j)/scday
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
-
 
 !     Here we Calculate (4 * pi * mean_intensity) for the IR.
 !
@@ -232,9 +271,9 @@
       ENDIF
 
 
-!     Load layer averages of droplet heating rates into interface common
-!     block
 
+
+!     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
 !     load them into the interface common block.  None of these presently
 !     influence any microphysical processes -- hence, the following code
@@ -268,9 +307,9 @@
 !     <alb_toa> is albedo at top-of-atmosphere (spectrally-resolved)
 
       do 509 i = 1, nsoL
-          fsLu(i) = 0.
-          fsLd(i) = 0.
-          alb_toa(i) = 0.
+          fsLu(i)    = 0.0
+          fsLd(i)    = 0.0
+          alb_toa(i) = 0.0
 509   continue
 !
 !     <alb_tomi> and <alb_toai> are total solar albedos at top-of-model
@@ -286,123 +325,176 @@
       SOLNET  = 0.0
       IF (ISL .NE. 0) THEN
           DO 510 L       =  1,NSOLP
-            SOLNET = SOLNET - FNET(L,NLAYER)
-            fp = ck1(L,1)*eL2(L,1) - ck2(L,1)*em2(L,1) + cp(L,1)
-             fsLu(L) = fsLu(L)+fp
+              SOLNET  = SOLNET - FNET(L,NLAYER)
+              fp      = ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)
+              fsLu(L) = fsLu(L) + fp
 
-            do 510 j = 1, NLAYER !nlayer
-              fp  =  ck1(L,j)* eL1(L,j) + ck2(L,j)*em1(L,j) + cpb(L,j)
-              fm  =  ck1(L,j)* eL2(L,j) + ck2(L,j)*em2(L,j) + cmb(L,j)
-              fupbs(j) = fupbs(j) + fp
-              fdownbs2(j) = fdownbs2(J) + fm
-              fnetbs(j) = fnetbs(j) + fnet(L,j)
-              if (L.eq.nsolp) then 
-                  fdownbs(J) = fupbs(j) - fnetbs(j)
+              do 510 j = 1, NLAYER !nlayer
+                  fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
+                  fm  =  ck1(L,j) * eL2(L,j) + ck2(L,j) * em2(L,j) + cmb(L,j)
+
+                  fupbs(j)    = fupbs(j)    + (fp / 1)
+                  fdownbs2(j) = fdownbs2(J) + (fm / 1)
+                  fnetbs(j)   = fnetbs(j)   + (fnet(L,j) / 1)
+
+              if (L .eq. nsolp) then
+                  fdownbs(J) = (fupbs(j) - fnetbs(j))
               endif
 
  510      CONTINUE
+
+
           do 508 i = 1, nsoL
-            fsLd(i) = psol_aerad*u0_aerad !u0*solfx(i)
-            alb_toa(i) = fsLu(i)/fsLd(i)
-            tsLu = tsLu + fsLu(i)
-            tsLd = tsLd + fsLd(i)
+              fsLd(i) = psol_aerad*u0_aerad !u0*solfx(i)
+              alb_toa(i) = fsLu(i)/fsLd(i)
+              tsLu = tsLu + fsLu(i)
+              tsLd = tsLd + fsLd(i)
  508      continue
+
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
 
-!      Load albedos into interface common block
+!         Load albedos into interface common block
 !
           alb_toai_aerad = alb_toai
           alb_tomi_aerad = alb_tomi
+
           do i = 1, NSOL
-            alb_toa_aerad(i) = alb_toa(i)
+              alb_toa_aerad(i) = alb_toa(i)
           enddo
 !
-!      Load fluxes into interface common block
+!         Load fluxes into interface common block
 !
           do j = 1, nlayer
-            fsl_up_aerad(j) = fupbs(j)
-            fsl_dn_aerad(j) = fdownbs(j)
+              fsl_up_aerad(j) = fupbs(j)
+              fsl_dn_aerad(j) = fdownbs(j)
           enddo
+      ENDIF
 
-        ENDIF
-!
 !     <tiru> is total upwelling infrared flux at top-of-atmosphere;
 !     <fupbi>, <fdownbi>, and <fnetbi> are total upwelling, downwelling,
 !     and net
 !     infrared fluxes at grid boundaries
-!
-        tiru = 0.
-        do 606 j = 1, nlayer
+
+      tiru = 0.0
+
+      do 606 j = 1, nlayer
           fupbi(j)   =  0.0
           fdownbi(j)   =  0.0
           fnetbi(j)   =  0.0
- 606    continue
-!
+606   continue
+
 !     <firu> is upwelling infrared flux at top-of-atmosphere
 !     (spectrally-resolved)
-!
-        do 609 i = 1, nir
+
+      do 609 i = 1, nir
           firu(i) = 0.
- 609    continue
+ 609  continue
 
-        XIRDOWN = 0.0
-        XIRUP   = 0.0
+      XIRDOWN = 0.0
+      XIRUP   = 0.0
 
-        IF (IR .NE. 0) THEN
+      IF (IR .NE. 0) THEN
           DO 520 L        =  NSOLP+1,NTOTAL
              XIRDOWN = XIRDOWN + DIREC  (L,NLAYER)
              XIRUP   = XIRUP   + DIRECTU(L,NLAYER)
-             firu(L-nsol ) = firu( L-nsol ) +    
-     &                                directu(L,1)
+             firu(L-nsol ) = firu( L-nsol ) + directu(L,1)
+
              do 520 j = 1, nlayer
-               fupbi(j) = fupbi(j) + directu(L,j)
-               fdownbi(j) = fdownbi(j) + direc  (L,j)
-               fnetbi(j) = fnetbi(j) + directu(L,j) - direc(L,j)
+                 fupbi(j) = fupbi(j)     + (directu(L,j) / 1)
+                 fdownbi(j) = fdownbi(j) + (direc(L,j) / 1)
+                 fnetbi(j) = fnetbi(j)   + ((directu(L,j) - direc(L,j)) / 1)
  520      CONTINUE
 
           do 529 i = 1, nir
-            tiru = tiru + firu(i)
+              tiru = tiru + firu(i)
  529      continue
 
-!      Load fluxes into interface common block
+!         Load fluxes into interface common block
 
           do j = 1, nlayer
-               jflip=nlayer+1-j
-            fir_up_aerad(j) = fupbi(jflip)
-            fir_dn_aerad(j) = fdownbi(jflip)
-            fir_net_aerad(j)= fnetbi(jflip)
-            fsl_up_aerad(j) = fupbs(jflip)
-            fsl_dn_aerad(j) = fdownbs(jflip)
-            fsl_net_aerad(j)= fnetbs(jflip)
-
+              jflip=nlayer+1-j
+              fir_up_aerad(j) = fupbi(jflip)
+              fir_dn_aerad(j) = fdownbi(jflip)
+              fir_net_aerad(j)= fnetbi(jflip)
+              fsl_up_aerad(j) = fupbs(jflip)
+              fsl_dn_aerad(j) = fdownbs(jflip)
+              fsl_net_aerad(j)= fnetbs(jflip)
           enddo
-            
+      ENDIF
 
 
-
-    
-        ENDIF
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere           
 C     1st index - flux 1=SW, 2=LW                                         
 C     2nd index - Direction 1=DN, 2=UP                                    
 C     3rd index - Where 1=TOP, 2=SURFACE
 
-      DO L = 1, NTOTAL
-          IF (L .LE. NSOL) THEN
-              RFLUXES_aerad(L,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
-              RFLUXES_aerad(L,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
+      if (NSOLP .gt. 1) then
+          RFLUXES_aerad(1,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
+          RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
+          RFLUXES_aerad(1,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
+          RFLUXES_aerad(1,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
 
-              RFLUXES_aerad(L,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
-              RFLUXES_aerad(L,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
-          ELSE
-              RFLUXES_aerad(L,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
-              RFLUXES_aerad(L,1,2)=fir_dn_aerad(1)       ! LW down bottom
+          RFLUXES_aerad(2,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
+          RFLUXES_aerad(2,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
+          RFLUXES_aerad(2,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
+          RFLUXES_aerad(2,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
 
-              RFLUXES_aerad(L,2,1)=fir_up_aerad(NLAYER)       ! LW up top
-              RFLUXES_aerad(L,2,2)=fir_up_aerad(1)   ! LW up bottom
-          END IF
-      END DO
+          RFLUXES_aerad(3,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+          RFLUXES_aerad(3,1,2)=fir_dn_aerad(1)       ! LW down bottom
+          RFLUXES_aerad(3,2,1)=fir_up_aerad(NLAYER)       ! LW up top
+          RFLUXES_aerad(3,2,2)=fir_up_aerad(1)   ! LW up bottom
+
+          RFLUXES_aerad(4,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+          RFLUXES_aerad(4,1,2)=fir_dn_aerad(1)       ! LW down bottom
+          RFLUXES_aerad(4,2,1)=fir_up_aerad(NLAYER)       ! LW up top
+          RFLUXES_aerad(4,2,2)=fir_up_aerad(1)   ! LW up bottom
+
+          RFLUXES_aerad(4,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+          RFLUXES_aerad(4,1,2)=fir_dn_aerad(1)       ! LW down bottom
+          RFLUXES_aerad(4,2,1)=fir_up_aerad(NLAYER)       ! LW up top
+          RFLUXES_aerad(4,2,2)=fir_up_aerad(1)   ! LW up bottom
+      else
+          RFLUXES_aerad(1,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
+          RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
+          RFLUXES_aerad(1,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
+          RFLUXES_aerad(1,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
+          RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+          RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom
+          RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
+          RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
+      end if
+
+      !DO L = 1, NTOTAL
+      !    IF (L .LE. NSOL) THEN
+      !        RFLUXES_aerad(L,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
+      !        RFLUXES_aerad(L,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
+      !
+      !        RFLUXES_aerad(L,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
+      !        RFLUXES_aerad(L,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
+      !    ELSE
+      !        RFLUXES_aerad(L,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+      !        RFLUXES_aerad(L,1,2)=fir_dn_aerad(1)       ! LW down bottom
+
+      !        RFLUXES_aerad(L,2,1)=fir_up_aerad(NLAYER)       ! LW up top
+      !        RFLUXES_aerad(L,2,2)=fir_up_aerad(1)   ! LW up bottom
+      !    END IF
+      !END DO
+
+      write(*,*) RFLUXES_aerad(1,1,1)
+      write(*,*) RFLUXES_aerad(1,1,2)
+      write(*,*) RFLUXES_aerad(1,2,1)
+      write(*,*) RFLUXES_aerad(1,2,2)
+
+      write(*,*)
+
+      write(*,*) RFLUXES_aerad(4,1,1)
+      write(*,*) RFLUXES_aerad(4,1,2)
+      write(*,*) RFLUXES_aerad(4,2,1)
+      write(*,*) RFLUXES_aerad(4,2,2)
+
+      stop
+
 
 
       return

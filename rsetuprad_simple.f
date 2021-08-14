@@ -82,11 +82,17 @@
       DATA EPSILON / ALMOST_ZERO  /
 
       AM= RGAS/R_AIR
-      ABSCOEFF(1)=ABSSW
-      ABSCOEFF(2)=ABSLW
-      ABSCOEFF(3)=ABSLW
-      ABSCOEFF(4)=ABSLW
-      ABSCOEFF(5)=ABSLW
+      !ABSCOEFF(1)=ABSSW
+      !ABSCOEFF(2)=ABSLW
+      !ABSCOEFF(3)=ABSLW
+      !ABSCOEFF(4)=ABSLW
+      !ABSCOEFF(5)=ABSLW
+
+      ABSCOEFF(1)=1d-3
+      ABSCOEFF(2)=1d-3
+      ABSCOEFF(3)=1d-3
+      ABSCOEFF(4)=1d-3
+      ABSCOEFF(5)=1d-3
 
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
@@ -233,17 +239,12 @@
 
 
       malsky_switch = 0
+
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
-          !IF ((ANY(TT .ge. 1d4)) .or. (ANY(TT .lt. 0)) .or. (ANY(tau_IRe .gt. 1d10)) .or. (ANY(tau_Ve .gt. 1d10))) then
-          !    DO J = 1, NLAYER
-          !        write(*,*) TT(J), tau_IRe(1, J), tau_IRe(2, J)
-          !    END DO
-          !    STOP
-          !END IF
 
-          DO L = 1,NSOLP
+          DO L = LLS,NSOLP
               tau_Ve(L, 1)  = ABS(tau_Ve(L,3) - tau_Ve(L,2))
           END DO
 
@@ -261,15 +262,16 @@
               DO J = 1,NLAYER - 1
                   TAUGAS(L,2*J-1) = tau_IRe(L - NSOLP,J) / 2
                   TAUGAS(L,2*J)   = (tau_IRe(L - NSOLP,J) + tau_IRe(L - NSOLP,J+1)) / 4
+
               END DO
 
               TAUGAS(L,2*NLAYER-1) = tau_IRe(L-NSOLP, NLAYER)/2
-              TAUGAS(L,2*NLAYER)   = tau_IRe(L-NSOLP,NLAYER)/2 + ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/2
+              TAUGAS(L,2*NLAYER)   = tau_IRe(L-NSOLP,NLAYER)/2+ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/22
           END DO
 
 
           DO J = 1, NLAYER
-              DO L = 1, NSOLP
+              DO L = LLS,NSOLP
                   FNET(L,J)   = 0.0
                   TMI(L,J)    = 0.0
                   DIRECT(L,J) = 0.0
@@ -283,54 +285,54 @@
                   DIRECT(L,J) = 0.0
               END DO
           END DO
-      end if
-
-
-
-
-
-
-!     THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
-!     SHORTWAVE:
-      DO L = LLS,NSOLP
-          DO J     =   1,NLAYER
-              PM          =   DPG(J)
-              TAUGAS(L,J) = ABSCOEFF(L)*PM
-              FNET(L,J)   = 0.0
-              TMI(L,J)    = 0.0
-              DIRECT(L,J) = 0.0
+      else
+          DO L = LLS,NSOLP
+              DO J     =   1,NLAYER
+                  PM          =   DPG(J)
+                  TAUGAS(L,J) = ABSCOEFF(L)*PM
+                  FNET(L,J)   = 0.0
+                  TMI(L,J)    = 0.0
+                  DIRECT(L,J) = 0.0
+              END DO
           END DO
-      END DO
 
-
-      DO L  = NSOLP+1,NTOTAL
-          DO J     =   1,NDBL
-         PM          =   DPGsub(J)
-!         write(*,*)'PM',PM
-         IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-                     ELSE IF (OPACIR_POWERLAW.eq.1) THEN
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+          DO L  = NSOLP+1,NTOTAL
+              DO J     =   1,NDBL
+             PM          =   DPGsub(J)
+             IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
+                           TAUGAS(L,J)=ABSCOEFF(L)*PM
+                         ELSE IF (OPACIR_POWERLAW.eq.1) THEN
+                           TAUGAS(L,J)=ABSCOEFF(L)*PM
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                     ELSE IF (OPACIR_POWERLAW.eq.2) THEN
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+                         ELSE IF (OPACIR_POWERLAW.eq.2) THEN
+                           TAUGAS(L,J)=ABSCOEFF(L)*PM
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                     ELSE IF (OPACIR_POWERLAW.eq.3) THEN
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
+                         ELSE IF (OPACIR_POWERLAW.eq.3) THEN
+                           TAUGAS(L,J)=ABSCOEFF(L)*PM
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
      &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                     ELSE
-                       TAUGAS(L,J)=ABSCOEFF(L)*PM
-     & *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
-          ENDIF
-         FNET(L,J)    =  0.0
-         TMI(L,J)     =  0.0
-         DIRECT(L,J)  =  0.0
+                         ELSE
+                           TAUGAS(L,J)=ABSCOEFF(L)*PM
+     &                     *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
+              ENDIF
+             FNET(L,J)    =  0.0
+             TMI(L,J)     =  0.0
+             DIRECT(L,J)  =  0.0
+              END DO
           END DO
-      END DO
+      END IF
 
+      IF ((ANY(TT .ge. 4d3))) then
+          write(*,*)
+          write(*,*) "BREAKING"
+          DO J = 1, NLAYER
+              write(*,*) t_pass(J), TAUGAS(1,J), TAUGAS(2,J)
+          END DO
+          write(*,*)
+          STOP
+      END IF
 
       DO  L           =   NSOLP+1,NTOTAL
           TAUCONST(L)=ABSCOEFF(L)/GA/100.

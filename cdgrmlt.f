@@ -292,6 +292,7 @@ C
       IF(LVD) CALL VDIFF
       IF(LCR) CALL CONVEC            
       IF(LLR) CALL LSCRN
+
       IF(LRD) CALL RADIATION(TROPHT,IH)
 !      IF(LRD) CALL RADN(TROPHT)                                           
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
