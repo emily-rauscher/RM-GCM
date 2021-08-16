@@ -22,7 +22,7 @@
       real heats_aerad_tot(NZ), heati_aerad_tot(NZ), radheat_tot(NZ)
       real wave_pass(1) !wave_pass(45)
       real cheats(NZ), cheati(NZ), cheat(NZ)
-      real htlw(NZ),htsw(NZ)
+      real htlw(NZ), htsw(NZ)
       real pbot_pass, ptop_pass,PSOL,PSOL_aerad
 
       real, dimension(2) :: Beta_IR
@@ -114,35 +114,32 @@ C        (1D for DDAYs, then linear to full in another DDAYs)
      &                           *COS((ALON-SSLON)/360.*PI2))
                PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC
             ELSE
-CC ER modif for diurnal forcing (a la Liu & Schneider 2010)
-C               PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC/PI*COS(ALAT/360.*PI2)
+CC ER modif for diurnal forcing (a la Liu & Schneider 2010)  PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC/PI*COS(ALAT/360.*PI2)
 C ER modif for non-zero obliquity
-               PSOL=(1.0-DFAC)*PSOL
-     &              +DFAC*SOLC/PI*
+               PSOL=(1.0-DFAC)*PSOL+DFAC*SOLC/PI*
      &              (SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)*DLENGTH
-     &              +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH)
-     &              )
+     &              +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH))
             ENDIF
          ENDIF
       ENDIF    
 !End CNIKOS lines
       if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
-       AMU0 = 0.0
+          AMU0 = 0.0
       endif
-      
 
       u0_aerad = max(0*ONE, AMU0 ) 
       PSOL_aerad=PSOL
 
-
       do_mie_aerad = .false.
-!         DAY/NIGHT SW CONDITIONAL
-!         IF (AMU0.GT.0) THEN
-         IF (AMU0.GT.EPSILON) THEN
-           isl_aerad=1
-         ELSE 
+
+!     DAY/NIGHT SW CONDITIONAL
+
+      IF (AMU0.GT.EPSILON) THEN
+          isl_aerad=1
+      ELSE
            isl_aerad=0
-         ENDIF
+      ENDIF
+
       ir_aerad = 1
       ntime = 1
 
@@ -151,36 +148,29 @@ C ER modif for non-zero obliquity
       itime1 = 12
       do itime = 1, ntime
 
+          call setuprad_simple(Beta_V, Beta_IR, t_pass)
+          pc_aerad = 0.
+          call radtran(Beta_V, Beta_IR)
 
-        call setuprad_simple(Beta_V, Beta_IR, t_pass)
-        pc_aerad = 0.
-        call radtran(Beta_V, Beta_IR)
-
-
-
-!...Read in clear-sky radiative heating rates
+!         Read in clear-sky radiative heating rates
 !
-        cheats = 0.
-        cheati = 0.
-        cheat = 0.
+          cheats = 0.
+          cheati = 0.
+          cheat = 0.
 
-        do iz = 1,NZ
-          jz = NZ + 1 - iz
+          do iz = 1,NZ
 
+              jz = NZ + 1 - iz
 
-          radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
-          heats_aerad_tot(iz) = heats_aerad_tot(iz) +   
-     &                           heats_aerad(jz)*SCDAY - cheats(iz)
-          heati_aerad_tot(iz) = heati_aerad_tot(iz) +   
-     &                           heati_aerad(jz)*SCDAY - cheati(iz)
-          radheat_tot(iz) = radheat_tot(iz) +   
-     &                       heats_aerad(jz)*SCDAY - cheats(iz) +  
-     &                       heati_aerad(jz)*SCDAY - cheati(iz)
+              radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
 
-        enddo
+              heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
+              heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
 
-
+              radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz)*SCDAY-cheats(iz) + heati_aerad(jz)*SCDAY - cheati(iz)
+          enddo
       enddo
+
 
       if( if_diurnal.eq. 1 ) then
         write(*,*)'if_diurnal ==1'
@@ -193,7 +183,7 @@ C ER modif for non-zero obliquity
       htlw=heati_aerad_tot
       htsw=heats_aerad_tot
       rfluxes=rfluxes_aerad
-      return
 
+      return
       end
 

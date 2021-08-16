@@ -333,9 +333,9 @@
                   fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
                   fm  =  ck1(L,j) * eL2(L,j) + ck2(L,j) * em2(L,j) + cmb(L,j)
 
-                  fupbs(j)    = fupbs(j)    + (fp / 1)
-                  fdownbs2(j) = fdownbs2(J) + (fm / 1)
-                  fnetbs(j)   = fnetbs(j)   + (fnet(L,j) / 1)
+                  fupbs(j)    = fupbs(j)    + (fp / NSOLP)
+                  fdownbs2(j) = fdownbs2(J) + (fm / NSOLP)
+                  fnetbs(j)   = fnetbs(j)   + fnet(L,j)
 
               if (L .eq. nsolp) then
                   fdownbs(J) = (fupbs(j) - fnetbs(j))
@@ -369,6 +369,7 @@
               fsl_up_aerad(j) = fupbs(j)
               fsl_dn_aerad(j) = fdownbs(j)
           enddo
+
       ENDIF
 
 !     <tiru> is total upwelling infrared flux at top-of-atmosphere;
@@ -401,9 +402,9 @@
              firu(L-nsol ) = firu( L-nsol ) + directu(L,1)
 
              do 520 j = 1, nlayer
-                 fupbi(j) = fupbi(j)     + (directu(L,j) / 1)
-                 fdownbi(j) = fdownbi(j) + (direc(L,j) / 1)
-                 fnetbi(j) = fnetbi(j)   + ((directu(L,j) - direc(L,j)) / 1)
+                 fupbi(j) = fupbi(j)     + (directu(L,j))
+                 fdownbi(j) = fdownbi(j) + (direc(L,j))
+                 fnetbi(j) = fnetbi(j)   + (directu(L,j) - direc(L,j))
  520      CONTINUE
 
           do 529 i = 1, nir
@@ -459,6 +460,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
           RFLUXES_aerad(1,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
           RFLUXES_aerad(1,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
+
           RFLUXES_aerad(2,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
           RFLUXES_aerad(2,1,2)=fir_dn_aerad(1)       ! LW down bottom
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
@@ -480,22 +482,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
       !        RFLUXES_aerad(L,2,2)=fir_up_aerad(1)   ! LW up bottom
       !    END IF
       !END DO
-
-      write(*,*) RFLUXES_aerad(1,1,1)
-      write(*,*) RFLUXES_aerad(1,1,2)
-      write(*,*) RFLUXES_aerad(1,2,1)
-      write(*,*) RFLUXES_aerad(1,2,2)
-
-      write(*,*)
-
-      write(*,*) RFLUXES_aerad(4,1,1)
-      write(*,*) RFLUXES_aerad(4,1,2)
-      write(*,*) RFLUXES_aerad(4,2,1)
-      write(*,*) RFLUXES_aerad(4,2,2)
-
-      stop
-
-
 
       return
       END

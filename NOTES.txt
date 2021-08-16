@@ -1,5 +1,10 @@
 This file will hold notes as I update the code.
 
+8/16 Isaac found that in cnikos the rfluxes variable needs a hardcoded number of wavelength bins. This is labeled with
+     MALSKY but it's not good coding regardless
+
+     CHECK CNIKOS
+
 ----------------
 VARIOUS COUNTERS
 ----------------
@@ -302,7 +307,8 @@ TEMP ARRAY (T,TG ==> Temperature in Spectral and Grid space respectively)
 								 ** THIS WILL BE SURFACE FOR THE CODE, means I don't need to add a new matrix.
 
 FLUX ARRAYS 
-     in rradiation: fed to calc_radheat as 'fluxes'. Actually want to use rrfluxes arrays. put into rflux in cdgrmlt. called fluxes inside radiation scheme.
+     in rradiation: fed to calc_radheat as 'fluxes'. Actually want to use rrfluxes arrays. put into rflux in cdgrmlt.
+     called fluxes inside radiation scheme.
 
 
 ADDITIONS TO FORT.7

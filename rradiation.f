@@ -355,34 +355,10 @@ Cm                     stop
                   ENDIF                                                           
                ENDIF                                                            
                IF (idocalc.eq.1) then                                           
-                                                                          
-c ------------------------------ First set SURFACE VALUES                 
-c Pressure, units of Pa 
 
-!MTR                  write(*,*) 'PLG in rradiation', PLG
-!MTR                  write(*,*) 'P0', P0
-                                                  
-!MTR                  PR(1)=PLG(im)*P0   
 
-!MTR                  write(*,*) 'PR(1)=',PR(1) 
-!MTR                  write(*,*) 'SIGMA',SIGMA
-!MTR                  write(*,*) 'CT', CT                                            
-c T, units of K                                                           
-!          T(1)=TSTAR(IM,JH)*CT                                            
-c          T(1)=288.00 !+((rrflux(IM,JH,1)+rrflux(IM,JH,3)-rrflux(IM,JH,2)-rrflux(IM,JH,4))/5.6704e-8)**0.25
+c --------------------------------------- Now set rest of column.
 
-C          IF(SNET(IM,JH).GE.0) THEN
-C             T(1)=0.0 +(SNET(IM,JH)/5.6704e-8)**0.25
-
-C      T(1)=((FBASEFLUX+(rrflux(IM,JH,1)+rrflux(IM,JH,3))*3.1416)
-C     &         /5.6704e-8)**0.25    !PI adjustment
-
-C      T(1)=((FBASEFLUX+rrflux(IM,JH,1)+rrflux(IM,JH,3))/5.6704e-8)**0.25
-C     ER Modif, to be consistent with cnikos.f (no downward flux if f-diff)
-
-!MTR                  T(1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
-
-c --------------------------------------- Now set rest of column.         
                   DO LD=1,NL    ! Start of loop over column.     
                      L=NL-LD+2  ! Reverse index (Morc goes bottom up).                     
                      PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure 
@@ -394,6 +370,7 @@ c --------------------------------------- Now set rest of column.
                    PRB2T(1)=PLG(im)*P0
                    PR(NL+1)=PLG(im)*P0
                    T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
+
 ! This could also just be the ground temperature... decision to be made
 c ----------------------------------------------------- And alat1         
                                                                           
@@ -416,34 +393,31 @@ c                  IF (KOUTP.EQ.KOUNTP-1) THEN
  2021                  FORMAT('DAY:',F7.2,', SUBSTELLAR LON,LAT:',2F7.2)
                         WRITE(63,*)
                         WRITE(62,*)''
-!       WRITE(62,*)'Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1',
-!     &               (2./3.)/(ABSSW*1e6/GA/100.)
-!
-!       WRITE(62,*)'Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1',
-!     &               (2./3.)/(ABSLW*1e6/GA/100.)
-!       write(62,*)''
                      ENDIF
                   ENDIF
                                                                           
 !! BOTTOM SHORT WAVE ALBEDO SET IN FORT.7 INISIMPRAD,
 ! Note to future modelers-this is not location or wavelenght dependent
+
              SWALB=ALBSW   
                   
 ! PR AND T ARE THE TEMPERATURE AND PRESSURE AT THE SIGMA LEVELS
 ! AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE. 
 ! TO COMPUTE HEATING RATES AT THESE CENTERS, WE NEED TO DEFINE
 ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
+
              DO LD    = 1,NL-1      
-             PRFLUX(LD+1)=(pr(LD)+pr(LD+1))/2. 
+                 PRFLUX(LD+1)=(pr(LD)+pr(LD+1))/2.
              ENDDO
+
              PRFLUX(NL+1)=PR(NL+1)
-!             write(*,*),'PR',PR
              PRFLUX(1)=pr(1)*0.5
-!             write(*,*)'fluxes',fluxes
+
 C cloud cf and ic passed. fluxes returned.                                
 C which is net flux at TOA in profile                                     
-C Call radiation scheme                                                   
-                  alon=REAL(i-1)/REAL(mg)*360.0  
+C Call radiation scheme
+
+             alon=REAL(i-1)/REAL(mg)*360.0
 
 !     PR in pascals for layer boundaries (NL+1), T in Kelvin for layer
 !     centers + one layer for the bottom boundary. The top is n=1, the
@@ -493,11 +467,15 @@ c store net flux in PNET
                   PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-          
      $                 fluxes(2,2,1)                                                  
                   SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-          
-     $                 fluxes(2,2,2)                                                  
+     $                 fluxes(2,2,2)
+
+
                   rrflux(im,jh,1)=fluxes(1,1,2)                                   
-                  rrflux(im,jh,2)=fluxes(1,2,2)                                   
+                  rrflux(im,jh,2)=fluxes(1,2,2)
+
                   rrflux(im,jh,3)=fluxes(2,1,2)                                   
-                  rrflux(im,jh,4)=fluxes(2,2,2)                                   
+                  rrflux(im,jh,4)=fluxes(2,2,2)
+
                   rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
                   rrflux(im,jh,6)=fluxes(2,2,1)                                   
                                                                           

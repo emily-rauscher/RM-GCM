@@ -2,8 +2,9 @@ C**********************************************************
 C             SUBROUTINE NIKOSRAD                                         
 C**********************************************************               
        SUBROUTINE NIKOSRAD(PR,T,H2O,O3,alat,HTLW,HTSW,DOY,CF,IC,          
-     $     RFLUXES,SWALB,ALON,KOUNT,ITSPD)                                            
-C                                                                         
+     $     RFLUXES,SWALB,ALON,KOUNT,ITSPD)
+
+C
 C No aerosols                                                             
 c Morcrette SW combined with Nikos LW scheme                              
 C Piers 27-1-98                                                           
@@ -30,7 +31,6 @@ C  level 1 is ground
 C  same index as cloud                                                    
                                                                           
        include 'params.i'
-
 C                                                                       
        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
      & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
@@ -141,8 +141,10 @@ C
       REAL CF(4,2)     !cloud fractions,lwps                              
 c clouds in order of convective,high,mid,low                              
 c ie convective has index of 1 with low cloud index of 4                  
-      INTEGER IC(4,2)   ! cloud positions                                 
-      REAL RFLUXES(2,2,2)                                                 
+      INTEGER IC(4,2)   ! cloud positions
+
+      REAL RFLUXES(2,2,2)
+
 C      LOGICAL LDIUR    
 ********************************************************************      
 C Morcrette                                                               
@@ -401,10 +403,7 @@ c          END MODIF MTR
             IF (LHT.EQ.1) THEN
                GRAD=(TEMP(LHT+1)-TEMP(LHT))/(PRES(LHT+1)-PRES(LHT))*100.  !for mbar
                
-c            MODIF: Same as above. Replacig ** with specific cases--MTR                        
-C                EXPCORR=TAUCONST*1.E6*0.5
-c     &              *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
-c     &              *(1.E2*PFLUX(LHT)/OPACIR_REFPRES)**OPACIR_POWERLAW
+c            MODIF: Same as above. Replacig ** with specific cases--MTR
                   IF (OPACIR_POWERLAW.EQ.0) THEN
                      EXPCORR=TAUCONST*1.E6*0.5
      &                *(2*PRES(LHT-1)-PRES(LHT)-PRES(LHT+1))
@@ -595,8 +594,10 @@ C LW
       RFLUXES(2,1,1)=FDWN(NLEV)   ! LW down top                           
       RFLUXES(2,1,2)=FDWN(0)       ! LW down bottom                       
       RFLUXES(2,2,1)=FUP(NLEV)       ! LW up top                          
-      RFLUXES(2,2,2)=FUP(0)   ! LW up bottom                              
-                                                                          
+      RFLUXES(2,2,2)=FUP(0)   ! LW up bottom
+
+      write(*,*) 'ERROR! OLD CODE IN CNIKOS IS CALLED WITH WRONG NUMBER OF BINS'
+      stop
 C OUTPUT                                                                  
                                                                           
       GRCP=(GA/CPD)*24*3600 ! g/Cp *24*3600                               
