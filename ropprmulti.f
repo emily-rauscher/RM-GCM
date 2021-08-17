@@ -1411,9 +1411,9 @@
               WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * PI0_OPPR(L,J,1:13))
               GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * G0_OPPR(L,J,1:13))
 
-              !TAUAER(L,J) = 0
-              !WOL(L,J)    = 0
-              !GOL(L,J)    = 0
+              TAUAER(L,J) = 0
+              WOL(L,J)    = 0
+              GOL(L,J)    = 0
           END DO
       END DO
 
@@ -1435,9 +1435,9 @@
               WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * PI0_OPPR(L,K,1:13))
               GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * G0_OPPR(L,K,1:13))
 
-              !TAUAER(L,JJ) = 0
-              !WOL(L,JJ)    = 0
-              !GOL(L,JJ)    = 0
+              TAUAER(L,JJ) = 0
+              WOL(L,JJ)    = 0
+              GOL(L,JJ)    = 0
           END DO
 
           JJ = J+1
@@ -1452,9 +1452,9 @@
               WOL(L,JJ)    = WOL(L,JJ-1)
               GOL(L,JJ)    = GOL(L,JJ-1)
 
-              !TAUAER(L,JJ) = 0
-              !WOL(L,JJ)    = 0
-              !GOL(L,JJ)    = 0
+              TAUAER(L,JJ) = 0
+              WOL(L,JJ)    = 0
+              GOL(L,JJ)    = 0
           END DO
 
           k = k+1

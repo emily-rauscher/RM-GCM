@@ -294,7 +294,6 @@ C
       IF(LLR) CALL LSCRN
 
       IF(LRD) CALL RADIATION(TROPHT,IH)
-!      IF(LRD) CALL RADN(TROPHT)                                           
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
 C                                                                         
       do j=1,igc                                                          

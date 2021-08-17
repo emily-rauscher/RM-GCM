@@ -1,5 +1,5 @@
-      subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass, 
-     &                radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD)
+      subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass,
+     &                radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V)
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
@@ -25,8 +25,8 @@
       real htlw(NZ), htsw(NZ)
       real pbot_pass, ptop_pass,PSOL,PSOL_aerad
 
-      real, dimension(2) :: Beta_IR
-      real, dimension(3) :: Beta_V
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL) :: Beta_V
 
       real rfluxes(nwave,2,2)
       REAL SSLON,SSLAT  ! ER:

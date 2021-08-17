@@ -23,8 +23,8 @@
 
       real, dimension(2,NLAYER) :: tau_IRe
       real, dimension(3,NLAYER) :: tau_Ve
-      real, dimension(2) :: Beta_IR
-      real, dimension(3) :: Beta_V
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL) :: Beta_V
       dimension rup_1(NGROUP)
       dimension rhoi(NRAD), dbnds(NRAD+1)
       dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
@@ -164,16 +164,17 @@
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
-      PRESSMID=PLAYER*10.
-      PRESS=P_aerad*10.
+      PRESSMID = PLAYER*10.
+      PRESS    = P_aerad*10.
       PBAR(1)  = P_AERAD(1)*1e-5
-      DPG(1)= PRESS(1)/G
+      DPG(1)   = PRESS(1)/G
 
       DO J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
          DPG(J) = (PRESS(J)-PRESS(J-1)) / G
       END DO
-                 K  =  1
+
+      K  =  1
       DO J  = 2, NDBL,2
          L  =  J
 
@@ -233,7 +234,7 @@
       END DO
 
 
-      malsky_switch = 1
+      malsky_switch = 0
 
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
@@ -330,6 +331,18 @@
       DO  L           =   NSOLP+1,NTOTAL
           TAUCONST(L)=ABSCOEFF(L)/GA/100.
       ENDDO
+
+      if (NSOLP .gt. 1) then
+          Beta_V(1) = 0.333333333333
+          Beta_V(2) = 0.333333333333
+          Beta_V(3) = 0.333333333333
+
+          Beta_IR(1) = 0.5
+          Beta_IR(2) = 0.5
+      else
+          Beta_V(1) = 1.0
+          Beta_IR(1) = 1.0
+      end if
 
 !@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  
 !     WAVE MUST BE IN MICRONS

@@ -18,8 +18,8 @@
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
       real maxopd(nwave_alb)
 
-      real, dimension(2) :: Beta_IR
-      real, dimension(3) :: Beta_V
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL) :: Beta_V
 
       integer jflip
 
@@ -149,27 +149,6 @@
 !         LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
 !         WITHOUT DOUBLING
 
-         ! K = 1
-         ! DO J =  1,NLAYER
-         !     DO L =  NSOLP+1,NTOTAL
-         !         FNET(L,J)      =  DIRECTU(L,k)-DIREC(L,k)
-         !         DIRECTU(L,J)   =  DIRECTU(L,K)
-         !         DIREC(L,J)     =  DIREC(L,K)
-         !         OPD(L,J)       =  OPD(L,K)
-         !         TAUL(L,J)      =  TAUL(L,K)
-         !         W0(L,J)        =  W0(L,K)
-         !         G0(L,J)        =  G0(L,K)
-         !         ug0(L,J)       =  ug0(L,K)
-         !         uOPD(L,J)      =  uOPD(L,K)
-         !         uTAUL(L,j)     =  uTAUL(L,K)
-         !         uW0(L,J)       =  uW0(L,k)
-         !         TMIU(L,J)      =  TMIU(L,k)
-         !         TMID(L,J)      =  TMID(L,k)
-         !         K = K+2.
-         !     END DO
-         !ENDD
-
-
          IF(FLXLIMDIF) THEN
              DO L =  NSOLP+1,NTOTAL
                  IF(OPD(L,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
@@ -201,40 +180,23 @@
           DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
       END DO
 
-!     DO 500 J      =  1,NVERT !!MTRNVERT
-!         HEATS(J)   =  0.0
-!         HEATI(J)   =  0.0
-!         TERM1      =  FDEGDAY/(DPG(J+1)*G)
-!         IF(ISL .NE. 0) THEN
-!             DO 480 L     =  1,NSOLP
-!                 HEATS(J)   =  (HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1) !* Beta_V(L)
-!480          CONTINUE
-!         ENDIF
-!         IF(IR .NE. 0) THEN
-!             DO 490 L     =  NSOLP+1,NTOTAL
-!                 HEATI(J)   =  (HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1) !* Beta_IR(L - NSOLP)
-! 490         CONTINUE
-!         ENDIF
-!         HEAT(J) = HEATS(J)+HEATI(J)
-
-!         Load heating rates [deg_K/s] into interface common block
-!          heats_aerad(j) =  heats(j)/scday
-!          heati_aerad(j) =  heati(j)/scday
-! 500   CONTINUE
 
       DO J = 1, NDBL
            DO L = 1, NTOTAL
                IF (L .LE. NSOLP) THEN
-                   FNET(L,J) = FNET(L,J) / NSOLP
-                   DIREC(L,J) = DIREC(L,J) / NSOLP
-                   DIRECTU(L,J) = DIRECTU(L,J) / NSOLP
+                   FNET(L,J) = FNET(L,J) * Beta_V(L)
+
+                   DIREC(L,J)   = -99999999
+                   DIRECTU(L,J) = -99999999
                ELSE
-                   FNET(L,J) = FNET(L,J) / NIRP
-                   DIREC(L,J) = DIREC(L,J) / NIRP
-                   DIRECTU(L,J) = DIRECTU(L,J) / NIRP
+                   DIREC(L,J) = DIREC(L,J) * Beta_IR(L - NSOLP)
+                   DIRECTU(L,J) = DIRECTU(L,J) * Beta_IR(L - NSOLP)
+
+                   FNET(L,J) = -99999999
                END IF
            END DO
       END DO
+
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
@@ -255,7 +217,7 @@
           ENDIF
 
           ! Eventually this needs to be split with the beta values
-          HEAT(J)        =  HEATS(J) + HEATI(J)
+          HEAT(J) = HEATS(J) + HEATI(J)
 
 !         Load heating rates [deg_K/s] into interface common block
           heats_aerad(j) =  heats(j)/scday
@@ -333,16 +295,14 @@
                   fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
                   fm  =  ck1(L,j) * eL2(L,j) + ck2(L,j) * em2(L,j) + cmb(L,j)
 
-                  fupbs(j)    = fupbs(j)    + (fp / NSOLP)
-                  fdownbs2(j) = fdownbs2(J) + (fm / NSOLP)
+                  fupbs(j)    = fupbs(j)    + fp * Beta_V(L)
+                  fdownbs2(j) = fdownbs2(J) + fm * Beta_V(L)
                   fnetbs(j)   = fnetbs(j)   + fnet(L,j)
 
               if (L .eq. nsolp) then
                   fdownbs(J) = (fupbs(j) - fnetbs(j))
               endif
-
  510      CONTINUE
-
 
           do 508 i = 1, nsoL
               fsLd(i) = psol_aerad*u0_aerad !u0*solfx(i)
@@ -402,9 +362,9 @@
              firu(L-nsol ) = firu( L-nsol ) + directu(L,1)
 
              do 520 j = 1, nlayer
-                 fupbi(j) = fupbi(j)     + (directu(L,j))
+                 fupbi(j)   = fupbi(j)   + (directu(L,j))
                  fdownbi(j) = fdownbi(j) + (direc(L,j))
-                 fnetbi(j) = fnetbi(j)   + (directu(L,j) - direc(L,j))
+                 fnetbi(j)  = fnetbi(j)  + (directu(L,j) - direc(L,j))
  520      CONTINUE
 
           do 529 i = 1, nir

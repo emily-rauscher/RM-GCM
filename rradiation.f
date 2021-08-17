@@ -202,6 +202,8 @@ C
       integer im                    ! Pointer for array plg (for
                                     ! getting sfc pressure).
 
+      integer L
+
 C     Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW
 C     2nd index - Direction 1=DN, 2=UP
@@ -209,6 +211,9 @@ C     3rd index - Where 1=TOP, 2=SURFACE
 
       real fluxes(NWAVE,2,2)
       real temporary_malsky_fluxes(2,2,2)
+
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL) :: Beta_V
 
 c     The following for parallel testing --MTR
       integer TID, NTHREADS
@@ -421,14 +426,11 @@ C Call radiation scheme
               ENDDO
             ENDIF
 
-            call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
+            call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,Beta_IR,Beta_V)
+
             pr=prb2t
 
-
-c           store net flux in PNET
-
-
-            DO L = 1,NWAVE
+            DO L = 1,2
                 temporary_malsky_fluxes(L,1,1) = 0.0
                 temporary_malsky_fluxes(L,1,2) = 0.0
                 temporary_malsky_fluxes(L,2,1) = 0.0
@@ -436,27 +438,18 @@ c           store net flux in PNET
             END DO
 
             DO L = 1,NSOL
-                temporary_malsky_fluxes(1,1,1) = temporary_malsky_fluxes(1,1,1) + fluxes(L,1,1)
-                temporary_malsky_fluxes(1,1,2) = temporary_malsky_fluxes(1,1,2) + fluxes(L,1,2)
-                temporary_malsky_fluxes(1,2,1) = temporary_malsky_fluxes(1,2,1) + fluxes(L,2,1)
-                temporary_malsky_fluxes(1,2,2) = temporary_malsky_fluxes(1,2,2) + fluxes(L,2,2)
+                temporary_malsky_fluxes(1,1,1) = temporary_malsky_fluxes(1,1,1) + fluxes(L,1,1) * Beta_V(L)
+                temporary_malsky_fluxes(1,1,2) = temporary_malsky_fluxes(1,1,2) + fluxes(L,1,2) * Beta_V(L)
+                temporary_malsky_fluxes(1,2,1) = temporary_malsky_fluxes(1,2,1) + fluxes(L,2,1) * Beta_V(L)
+                temporary_malsky_fluxes(1,2,2) = temporary_malsky_fluxes(1,2,2) + fluxes(L,2,2) * Beta_V(L)
             END DO
+
             DO L = NSOL+1,NWAVE
-                temporary_malsky_fluxes(2,1,1) = temporary_malsky_fluxes(2,1,1) + fluxes(L,1,1)
-                temporary_malsky_fluxes(2,1,2) = temporary_malsky_fluxes(2,1,2) + fluxes(L,1,2)
-                temporary_malsky_fluxes(2,2,1) = temporary_malsky_fluxes(2,2,1) + fluxes(L,2,1)
-                temporary_malsky_fluxes(2,2,2) = temporary_malsky_fluxes(2,2,2) + fluxes(L,2,2)
+                temporary_malsky_fluxes(2,1,1) = temporary_malsky_fluxes(2,1,1) + fluxes(L,1,1) * Beta_IR(L - NSOL)
+                temporary_malsky_fluxes(2,1,2) = temporary_malsky_fluxes(2,1,2) + fluxes(L,1,2) * Beta_IR(L - NSOL)
+                temporary_malsky_fluxes(2,2,1) = temporary_malsky_fluxes(2,2,1) + fluxes(L,2,1) * Beta_IR(L - NSOL)
+                temporary_malsky_fluxes(2,2,2) = temporary_malsky_fluxes(2,2,2) + fluxes(L,2,2) * Beta_IR(L - NSOL)
             END DO
-
-            temporary_malsky_fluxes(1,1,1) = temporary_malsky_fluxes(1,1,1) / NSOL
-            temporary_malsky_fluxes(1,1,2) = temporary_malsky_fluxes(1,1,2) / NSOL
-            temporary_malsky_fluxes(1,2,1) = temporary_malsky_fluxes(1,2,1) / NSOL
-            temporary_malsky_fluxes(1,2,2) = temporary_malsky_fluxes(1,2,2) / NSOL
-
-            temporary_malsky_fluxes(2,1,1) = temporary_malsky_fluxes(2,1,1) / NIR
-            temporary_malsky_fluxes(2,1,2) = temporary_malsky_fluxes(2,1,2) / NIR
-            temporary_malsky_fluxes(2,2,1) = temporary_malsky_fluxes(2,2,1) / NIR
-            temporary_malsky_fluxes(2,2,2) = temporary_malsky_fluxes(2,2,2) / NIR
 
             PNET(IM,JH)=temporary_malsky_fluxes(1,1,1)-temporary_malsky_fluxes(1,2,1)+
      &                  temporary_malsky_fluxes(2,1,1)-temporary_malsky_fluxes(2,2,1)
