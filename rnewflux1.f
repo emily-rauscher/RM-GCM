@@ -12,16 +12,16 @@
       include 'rcommons.h'
 !
 !     LOCAL DIMENSIONS
-      DIMENSION Y1(NTOTAL,NGAUSS,NDBL),     
-     &           Y2(NTOTAL,NGAUSS,NDBL),     
-     &           Y4(NTOTAL,NGAUSS,NDBL),     
-     &           Y8(NTOTAL,NGAUSS,NDBL),     
-     &           A1(NTOTAL,NDBL),A2(NTOTAL,NDBL),     
-     &           A3(NTOTAL,NDBL),A4(NTOTAL,NDBL),     
-     &           A7(NTOTAL,NDBL),Y5(NTOTAL,NDBL)
+      DIMENSION Y1(NTOTAL,NGAUSS,NLAYER),     
+     &           Y2(NTOTAL,NGAUSS,NLAYER),     
+     &           Y4(NTOTAL,NGAUSS,NLAYER),     
+     &           Y8(NTOTAL,NGAUSS,NLAYER),     
+     &           A1(NTOTAL,NLAYER),A2(NTOTAL,NLAYER),     
+     &           A3(NTOTAL,NLAYER),A4(NTOTAL,NLAYER),     
+     &           A7(NTOTAL,NLAYER),Y5(NTOTAL,NLAYER)
 !
 
-      DO 200 J           =  1,NDBL
+      DO 200 J           =  1,NLAYER
           kindex         = max( 1, j-1 )
           DO 100  L      =  NSOLP+1,NTOTAL
 !            HERE WE DO NO SCATTERING COEFFICIENTS
@@ -45,7 +45,7 @@
 !
 !     CALCULATIONS FOR ALL GAUSS POINTS. HERE WE DO NO SCATTERING COEFFI
 !
-      DO 400       J         =  1,NDBL
+      DO 400       J         =  1,NLAYER
          DO 350    I         =  1,NGAUSS
             DO 300 L         =  NSOLP+1,NTOTAL
                Y1(L,I,J)  =  0.0
@@ -70,7 +70,7 @@
  350     CONTINUE
  400  CONTINUE
 !
-      DO 450 J             =  1,NDBL
+      DO 450 J             =  1,NLAYER
          DO 425  L         =  NSOLP+1,NTOTAL
             TMID(L,J) = 0.0
             TMIU(L,J) = 0.0
@@ -100,7 +100,7 @@
 !
 !      DINTENT IS DOWNWARD INTENSITY * TPI. DIREC IS THE DOWNWARD FLUX.
 !
-       DO 530        J           = 2,NDBL
+       DO 530        J           = 2,NLAYER
            DO 520    I           = 1,NGAUSS
               DO 510 L           = NSOLP+1,NTOTAL
                  DINTENT(L,I,J)  = DINTENT(L,I,J-1)*Y3(L,I,J)     
@@ -119,17 +119,17 @@
 
        DO 570     I               =  1,NGAUSS
           DO 560  L               =  NSOLP+1,NTOTAL
-             UINTENT(L,I,NDBL)  =  PTEMPG(L)*EMIS(L)     
-     &                               *TPI+2.*RSFX(L)*DIREC(L,NDBL)
-             TMIU(L,NDBL)       =  TMIU(L,NDBL)+     
-     &                               UINTENT(L,I,NDBL)*GRATIO(I)
-             DIRECTU(L,NDBL)    =  DIRECTU(L,NDBL)+     
-     &                               UINTENT(L,I,NDBL)*GWEIGHT(I)
+             UINTENT(L,I,NLAYER)  =  PTEMPG(L)*EMIS(L)     
+     &                               *TPI+2.*RSFX(L)*DIREC(L,NLAYER)
+             TMIU(L,NLAYER)       =  TMIU(L,NLAYER)+     
+     &                               UINTENT(L,I,NLAYER)*GRATIO(I)
+             DIRECTU(L,NLAYER)    =  DIRECTU(L,NLAYER)+     
+     &                               UINTENT(L,I,NLAYER)*GWEIGHT(I)
  560      CONTINUE
  570   CONTINUE
 !
-      DO 650        M              = 2,NDBL
-          J                        = NDBL-M+1
+      DO 650        M              = 2,NLAYER
+          J                        = NLAYER-M+1
           DO 640    I              = 1,NGAUSS
              DO 630 L              = NSOLP+1,NTOTAL
                  UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))     

@@ -23,10 +23,10 @@
       SBKoverPI=SBK/PI
 
       T=t_aerad
-      DO 300 J            =   1,NDBL
+      DO 300 J            =   1,NLAYER
           kindex          = max( 1, j-1 )
 
-          IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
+          IT1 = TT(J)*TT(J)*TT(J)*TT(J)*SBKoverPI
 
           DO 200 L = NSOLP+1,NTOTAL
               PTEMP(L,J)  = IT1 !* Beta_IR(L - NSOLP)
@@ -34,7 +34,6 @@
               if( TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
  200      CONTINUE
  300  CONTINUE
-
       RETURN
       END
 

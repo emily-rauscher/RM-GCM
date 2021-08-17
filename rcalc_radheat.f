@@ -50,7 +50,7 @@
       RdCp = Rd/Cpd
       player=pr
 
-      call radsub(iffirst,pr,p_full,t_full,qh2o_full, radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V)
+      call radsub(iffirst, pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V)
 
       iffirst = 0
       

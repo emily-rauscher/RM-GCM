@@ -36,7 +36,7 @@
              EM2(L,J)   =  GAMI(L,J) - EE1(L,J)       !e4
   14  CONTINUE
 
-       DO 15 J          =  1,NDBL
+       DO 15 J          =  1,NLAYER
           DO 15 L       =  NSOLP+1,NTOTAL
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
@@ -105,9 +105,9 @@
          AF(L,1)     = 0.0
          BF(L,1)     = EL1(L,1)
          EF(L,1)     = -EM1(L,1)
-         AF(L,JDBLEDBLE) = EL1(L,NDBL)-RSFX(L)*EL2(L,NDBL)
-         BF(L,JDBLEDBLE) = EM1(L,NDBL)-RSFX(L)*EM2(L,NDBL)
-         EF(L,JDBLEDBLE) = 0.0
+         AF(L,JDBLE) = EL1(L,NLAYER)-RSFX(L)*EL2(L,NLAYER)
+         BF(L,JDBLE) = EM1(L,NLAYER)-RSFX(L)*EM2(L,NLAYER)
+         EF(L,JDBLE) = 0.0
   21  CONTINUE
 
 

@@ -463,6 +463,7 @@ C Call radiation scheme
             rrflux(im,jh,5)=temporary_malsky_fluxes(1,1,1)-temporary_malsky_fluxes(1,2,1)
             rrflux(im,jh,6)=temporary_malsky_fluxes(2,2,1)
 
+
                   DO l=nl,1,-1
                      LD=NL+1-L
                      IM=I+IOFM

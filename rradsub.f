@@ -127,7 +127,9 @@ C ER modif for non-zero obliquity
           AMU0 = 0.0
       endif
 
-      u0_aerad = max(0*ONE, AMU0 ) 
+
+      u0_aerad = max(0*ONE, AMU0 )
+
       PSOL_aerad=PSOL
 
       do_mie_aerad = .false.
@@ -162,15 +164,20 @@ C ER modif for non-zero obliquity
 
               jz = NZ + 1 - iz
 
-              radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
+              ! MALSKY NEEDS TO FIX, BAD CODE!!!!
+              if (iz .eq. 1) then
+                  radheat_tot(1) = 0
+              else
+                  radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
 
-              heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
-              heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
+                  heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
+                  heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
 
-              radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz)*SCDAY-cheats(iz) + heati_aerad(jz)*SCDAY - cheati(iz)
+                  radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz)*SCDAY-cheats(iz)
+     &             + heati_aerad(jz)*SCDAY - cheati(iz)
+              end if
           enddo
       enddo
-
 
       if( if_diurnal.eq. 1 ) then
         write(*,*)'if_diurnal ==1'

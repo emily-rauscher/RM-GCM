@@ -1354,6 +1354,9 @@
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
+
+
+
       DO I = 1,NCLOUD
           DO J = 1,NLAYER -1
               CONDFACT(J,I) = min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
@@ -1399,6 +1402,7 @@
       END DO
 
 
+
 !     SW AT STANDARD VERTICAL RESOLUTION
       DO L = LLS,NSOLP
           !TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
@@ -1419,46 +1423,66 @@
 
 
 
+!     LW AT STANDARD VERTICAL RESOLUTION
+      DO L = NSOLP+1,NTOTAL
+          !TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
+          !WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8) * PI0vis(J,1:13))
+          !GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8) * g0vis(J,1:13))
+
+          ! MALSKY CODE
+          DO J = 1,NLAYER
+              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:13))
+              WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * PI0_OPPR(L,J,1:13))
+              GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:13)/(SUM(TAUAER_OPPR(L,J,1:13))+1e-8) * G0_OPPR(L,J,1:13))
+
+              TAUAER(L,J) = 0
+              WOL(L,J)    = 0
+              GOL(L,J)    = 0
+          END DO
+      END DO
 ! GOOD UP UNTIL HERE
 !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
-      k = 1
-      DO J = 1,NDBL,2
-          JJ = J
+!      k = 1
+!      DO J = 1,NDBL,2
+!          JJ = J
 
           !TAUAER(2,JJ) = SUM(TAUAERLW(K,1:13))
           !WOL(2,JJ)    = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8) * PI0ir(k,1:13))
           !GOL(2,JJ)    = SUM(TAUAERLW(K,1:13)/(SUM(TAUAERLW(K,1:13))+1e-8) * g0ir(k,1:13))
 
-          ! MALSKY CODE
-          DO L = NSOLP+1,NTOTAL
-              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:13))
-              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * PI0_OPPR(L,K,1:13))
-              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * G0_OPPR(L,K,1:13))
+!          ! MALSKY CODE
+!          DO L = NSOLP+1,NTOTAL
+!              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:13))
+!              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * PI0_OPPR(L,K,1:13))
+!              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:13)/(SUM(TAUAER_OPPR(L,K,1:13))+1e-8) * G0_OPPR(L,K,1:13))
 
-              TAUAER(L,JJ) = 0
-              WOL(L,JJ)    = 0
-              GOL(L,JJ)    = 0
-          END DO
+!              TAUAER(L,JJ) = 0
+!              WOL(L,JJ)    = 0
+!              GOL(L,JJ)    = 0
+!          END DO
 
-          JJ = J+1
+!          JJ = J+1
 
           !TAUAER(2,JJ) = TAUAER(2,JJ-1)
           !WOL(2,JJ)    = WOL(2,JJ-1)
           !GOL(2,JJ)    = GOL(2,JJ-1)
 
           ! MALSKY CODE
-          DO L = NSOLP+1,NTOTAL
-              TAUAER(L,JJ) = TAUAER(L,JJ-1)
-              WOL(L,JJ)    = WOL(L,JJ-1)
-              GOL(L,JJ)    = GOL(L,JJ-1)
+!          DO L = NSOLP+1,NTOTAL
+!              TAUAER(L,JJ) = TAUAER(L,JJ-1)
+!              WOL(L,JJ)    = WOL(L,JJ-1)
+!              GOL(L,JJ)    = GOL(L,JJ-1)
 
-              TAUAER(L,JJ) = 0
-              WOL(L,JJ)    = 0
-              GOL(L,JJ)    = 0
-          END DO
+!              TAUAER(L,JJ) = 0
+!              WOL(L,JJ)    = 0
+!              GOL(L,JJ)    = 0
+!          END DO
 
-          k = k+1
-      END DO
+!          k = k+1
+!      END DO
+
+
+
 
 
 
@@ -1527,7 +1551,7 @@
 
 
 !     NOW AGAIN FOR THE IR
-      DO J = 1,NDBL
+      DO J = 1,NLAYER
           j1 = max( 1, j-1 )
           DO L = NSOLP+1,NTOTAL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)

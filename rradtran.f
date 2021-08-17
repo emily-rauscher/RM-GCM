@@ -39,6 +39,10 @@
          TT(J) = T(J-1) * (PRESS(J)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
 12    CONTINUE
 
+      if (TT(1) .eq. 0) then
+          tt(1) = tt(2)
+      end if
+
 !     SINCE WE DON'T HAVE A GROUND (YET,...ERIN)
 !     EXTRAPOLATE FOR THE BOUNDARY TEMPERATURES
 !     We need a top temperature boundary.  Zero degrees at zero pressure
@@ -61,15 +65,6 @@
 !     WATER VAPOR (G / CM**2)
 !     create a T array for the double resolution IR by combinging the
 !     layer center and edge temperatures 
-      
-      K  =  1
-      DO 46 J  = 1, NDBL-1,2
-          L  =  J
-          TTsub(L) = TT(K)
-          L  =  L+1
-          TTsub(L) = T(K)
-          K  =  K+1
- 46   CONTINUE
 
 !     Solar zenith angle
       u0 = u0_aerad
@@ -80,7 +75,6 @@
          RSFX(L) = ALBSW
          EMIS(L) =  1.0 - RSFX(L)
  20   CONTINUE
-
 
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
@@ -107,6 +101,8 @@
           LLA =  NSOLP
       ENDIF
 
+
+
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
           CALL OPPRMULTI
@@ -114,6 +110,7 @@
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
       ENDIF
+
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
@@ -159,7 +156,7 @@
              END DO
          ENDIF
       ENDIF
-          
+
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
@@ -180,14 +177,13 @@
           DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
       END DO
 
-
-      DO J = 1, NDBL
+      DO J = 1, NLAYER
            DO L = 1, NTOTAL
                IF (L .LE. NSOLP) THEN
                    FNET(L,J) = FNET(L,J) * Beta_V(L)
 
-                   DIREC(L,J)   = -99999999
-                   DIRECTU(L,J) = -99999999
+                   DIREC(L,J)   = -99999991
+                   DIRECTU(L,J) = -99994111
                ELSE
                    DIREC(L,J) = DIREC(L,J) * Beta_IR(L - NSOLP)
                    DIRECTU(L,J) = DIRECTU(L,J) * Beta_IR(L - NSOLP)
@@ -197,13 +193,17 @@
            END DO
       END DO
 
+      CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K
+      FDEGDAY =   1.0E-4*G*SCDAY/CPCON
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
           HEATS(J)   =  0.0
           HEATI(J)   =  0.0
-          TERM1      =  FDEGDAY/(DPG(J)*G)
-!
+
+          ! THIS IS Possibly a mistake, why is it DPG(J+1??????)
+          TERM1      =  FDEGDAY/(DPG(J+1)*G)
+
           IF(ISL .NE. 0) THEN
             DO 480 L     =  1,NSOLP
               HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
@@ -212,7 +212,7 @@
 !
           IF(IR .NE. 0) THEN
             DO 490 L    =  NSOLP+1,NTOTAL
-               HEATI(J) = HEATI(J)+(DIRECTU(L,(2*J-1)+1)-DIREC(L,(2*J-1)+1)-(DIRECTU(L,(2*J-1))-DIREC(L,(2*J-1))))*TERM1
+               HEATI(J) = HEATI(J)+(DIRECTU(L,J+1)-DIREC(L,J+1) -(DIRECTU(L,J)-DIREC(L,J)))*TERM1
  490        CONTINUE
           ENDIF
 
@@ -329,8 +329,8 @@
               fsl_up_aerad(j) = fupbs(j)
               fsl_dn_aerad(j) = fdownbs(j)
           enddo
-
       ENDIF
+
 
 !     <tiru> is total upwelling infrared flux at top-of-atmosphere;
 !     <fupbi>, <fdownbi>, and <fnetbi> are total upwelling, downwelling,
@@ -384,7 +384,6 @@
           enddo
       ENDIF
 
-
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere           
 C     1st index - flux 1=SW, 2=LW                                         
 C     2nd index - Direction 1=DN, 2=UP                                    
@@ -426,22 +425,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
-
-      !DO L = 1, NTOTAL
-      !    IF (L .LE. NSOL) THEN
-      !        RFLUXES_aerad(L,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
-      !        RFLUXES_aerad(L,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
-      !
-      !        RFLUXES_aerad(L,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
-      !        RFLUXES_aerad(L,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
-      !    ELSE
-      !        RFLUXES_aerad(L,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
-      !        RFLUXES_aerad(L,1,2)=fir_dn_aerad(1)       ! LW down bottom
-
-      !        RFLUXES_aerad(L,2,1)=fir_up_aerad(NLAYER)       ! LW up top
-      !        RFLUXES_aerad(L,2,2)=fir_up_aerad(1)   ! LW up bottom
-      !    END IF
-      !END DO
 
       return
       END

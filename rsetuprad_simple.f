@@ -93,12 +93,9 @@
 
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
-      JDBLEDBLE = 2*JDBLE
       JN      =   JDBLE-1
       JN2     =   2*JDBLE-1
       TPI     =   2.*PI
-      CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K 
-      FDEGDAY =   1.0E-4*G*SCDAY/CPCON
 
 !     Get scalars from interface common block:
 !     ISL        - do solar calculations when = 1
@@ -174,23 +171,6 @@
          DPG(J) = (PRESS(J)-PRESS(J-1)) / G
       END DO
 
-      K  =  1
-      DO J  = 2, NDBL,2
-         L  =  J
-
-         PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
-         DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
-
-          K  =  K+1
-          L  =  L+1
-
-         PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
-         DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
-      END DO
-
-      PBARsub(1) = PBAR(1)
-      DPGsub(1)  = DPG(1)
-
 !        Here we are saying that the top layer has a thickness that
 !        extends from the top of the atmosphere (pressure = 0) down to
 !        the interface ABOVE the top sigma levels. The atmosphere
@@ -208,7 +188,7 @@
 
 !     CALCULATE CLOUD AND AEROSOL OPACITY.
 
-      DO J             = 1,NDBL
+      DO J             = 1,NLAYER
           DO L           = 1,NTOTAL
                TAUAER(L,J)  = 0.0
                TAUCLD(L,J)  = 0.0
@@ -272,7 +252,7 @@
               END DO
           END DO
 
-          DO J = 1, NDBL
+          DO J = 1, NLAYER
               DO L = NSOLP+1, NTOTAL
                   FNET(L,J)   = 0.0
                   TMI(L,J)    = 0.0
@@ -280,6 +260,17 @@
               END DO
           END DO
       else
+          if (NSOLP .gt. 1) then
+              Beta_V(1) = 1.0
+              Beta_V(2) = 0.0
+              Beta_V(3) = 0.0
+
+              Beta_IR(1) = 1.0
+              Beta_IR(2) = 0.0
+          else
+              Beta_V(1)  = 1.0
+              Beta_IR(1) = 1.0
+         end if
           DO L = LLS,NSOLP
               DO J     =   1,NLAYER
                   PM          =   DPG(J)
@@ -291,8 +282,8 @@
           END DO
 
           DO L  = NSOLP+1,NTOTAL
-              DO J     =   1,NDBL
-             PM          =   DPGsub(J)
+              DO J     =   1,NLAYER
+             PM          =   DPG(J)
              IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
                            TAUGAS(L,J)=ABSCOEFF(L)*PM
                          ELSE IF (OPACIR_POWERLAW.eq.1) THEN
@@ -311,9 +302,9 @@
                            TAUGAS(L,J)=ABSCOEFF(L)*PM
      &                     *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
               ENDIF
-             FNET(L,J)    =  0.0
-             TMI(L,J)     =  0.0
-             DIRECT(L,J)  =  0.0
+              FNET(L,J)    =  0.0
+              TMI(L,J)     =  0.0
+              DIRECT(L,J)  =  0.0
               END DO
           END DO
       END IF
@@ -331,18 +322,6 @@
       DO  L           =   NSOLP+1,NTOTAL
           TAUCONST(L)=ABSCOEFF(L)/GA/100.
       ENDDO
-
-      if (NSOLP .gt. 1) then
-          Beta_V(1) = 0.333333333333
-          Beta_V(2) = 0.333333333333
-          Beta_V(3) = 0.333333333333
-
-          Beta_IR(1) = 0.5
-          Beta_IR(2) = 0.5
-      else
-          Beta_V(1) = 1.0
-          Beta_IR(1) = 1.0
-      end if
 
 !@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  
 !     WAVE MUST BE IN MICRONS
