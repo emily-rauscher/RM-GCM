@@ -82,17 +82,14 @@
       DATA EPSILON / ALMOST_ZERO  /
 
       AM= RGAS/R_AIR
-      !ABSCOEFF(1)=ABSSW
-      !ABSCOEFF(2)=ABSLW
-      !ABSCOEFF(3)=ABSLW
-      !ABSCOEFF(4)=ABSLW
-      !ABSCOEFF(5)=ABSLW
 
-      ABSCOEFF(1)=1d-3
-      ABSCOEFF(2)=1d-3
-      ABSCOEFF(3)=1d-3
-      ABSCOEFF(4)=1d-3
-      ABSCOEFF(5)=1d-3
+      DO L = LLS,NSOLP
+          ABSCOEFF(L)=ABSSW
+      END DO
+
+      DO L = NSOLP+1,NTOTAL
+          ABSCOEFF(L)=ABSLW
+      END DO
 
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
@@ -103,9 +100,7 @@
       CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K 
       FDEGDAY =   1.0E-4*G*SCDAY/CPCON
 
-
 !     Get scalars from interface common block:
-!
 !     ISL        - do solar calculations when = 1
 !     IR         - do infrared calculations when = 1
 !     IRS        - do infrared scattering when = 1
@@ -238,11 +233,10 @@
       END DO
 
 
-      malsky_switch = 0
+      malsky_switch = 1
 
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
-
 
           DO L = LLS,NSOLP
               tau_Ve(L, 1)  = ABS(tau_Ve(L,3) - tau_Ve(L,2))
@@ -268,7 +262,6 @@
               TAUGAS(L,2*NLAYER-1) = tau_IRe(L-NSOLP, NLAYER)/2
               TAUGAS(L,2*NLAYER)   = tau_IRe(L-NSOLP,NLAYER)/2+ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/22
           END DO
-
 
           DO J = 1, NLAYER
               DO L = LLS,NSOLP

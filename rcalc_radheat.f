@@ -38,7 +38,7 @@
       t_full=t
       tgrnd=t(NZ)
       p_full=prflux  ! PRFLUX is the layer edge pressures
-      rfluxes=fluxes 
+      rfluxes=fluxes
       iffirst = 1
       R_AIR = GASCON*10000.
       Cpd = GASCON/AKAP !1.004e+7

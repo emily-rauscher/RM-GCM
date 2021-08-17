@@ -34,7 +34,6 @@
              EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J) !e2                      
              EL2(L,J)   =  GAMI(L,J) + EE1(L,J)       !e3                        
              EM2(L,J)   =  GAMI(L,J) - EE1(L,J)       !e4
-
   14  CONTINUE
 
        DO 15 J          =  1,NDBL

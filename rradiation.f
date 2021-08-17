@@ -12,114 +12,115 @@ C     It passes the pressure of the full sigma levels and the surface
 C     to the Radiation scheme temperatures from TG and TSTAR                                  
 C                                                                         
 C     Determines model resolution                                         
-      use omp_lib                                                              
+      use omp_lib
       include 'params.i'
-      
-C                                                                         
-C     Sets basic constants, especially those needed for array dimensions  
-C                                                                         
-      PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
-     +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
-     +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
-     +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL             
-     +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG                    
-     +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL   
-     +,NWW=1+(MM-1)/MOCT)                                                 
-      PARAMETER(IGA=NWJ2*NHEM,IGB=IDB*NHEM,IGC=MGPP*NHEM,IGD=IDD*NHEM     
-     +,IGG=IDG*NHEM,IGL=IDL*NHEM,IGM=IDM*NHEM,IGN=IDN*NHEM                
-     +,IGO=IGA+IGA,IGP=IGB+IGB,NFTWG=(5+NTRAC)*NL+3                       
-     +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)           
-C     Number of 2D (surface) output fields. This value is                 
-C     Doubled due to averaged and instantaneous fields.                   
-      PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)                           
-C                                                                         
-C                                                                         
-C     Basic planetary parameters for run plus information about           
-C     vertical grid structure                                             
+      include 'raerad.h'
 
-C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.  
-      COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)                
-     +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)     
-     +              ,TKP(NL),C(NL2),SQH(NNP)                              
-     +              ,MF,MFP,JZF,NF                                    
-     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT             
-     +              ,RD,RV,CPD,CLATNT                                     
-     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
-     +              ,LFLUX                                                
-     +              ,LBALAN,LRESTIJ                                       
-     +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE,NFP                                               
-      COMPLEX EZ,AIOCT                                                    
-      LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
-     +       ,LFLUX,LNOISE                                                
-     +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT                           
-C                                                                         
-C                                                                         
-C     Legendre polynomials and information about gaussian latitudes       
-C                                                                         
-      COMMON/LEGAU/ ALPJ(MJP),DALPJ(MJP)                                  
-     +              ,ALP(NWJ2,2,JGL),DALP(NWJ2,2,JGL)                     
-     +              ,RLP(NWJ2,2,JGL),RDLP(NWJ2,2,JGL)                     
-     +              ,SI(JGG),CS(JGG),SISQ(JGG),CSSQ(JGG),SECSQ(JGG)       
-     +              ,ALAT(JGG),GWT(JGG),AW(JGG),JH,JL,JINC                
-C                                                                         
-C                                                                         
-C     Array ordering in GRIDP must correspond to that in SPECTR.          
-C     Real arrays: multi-level arrays are 2-dimensional.                  
-C     the variables have been renamed to coincide with                    
-C     variable names in bgcm5 DGRMLT                                      
-C                                                                         
-C swapped round VLNG and UNLG to check                                    
-      COMMON/GRIDP/ CHIG(IGC,NL),SFG(IGC,NL),UG(IGC,NL),VG(IGC,NL)        
-     :              ,TTVD(IGC,NL),QTVD(IGC,NL),TG(IGC,NL)                 
-     :              ,TRAG(IGC,NL,NTRAC)                                   
-     :              ,PLG(IGC),TYBL(IGC),TXBL(IGC)                         
-     :              ,SPG(IGC),VPG(IGC),TTRD(IGC,NL)                       
-     :              ,TNLG(IGC,NL),TRANLG(IGC,NL,NTRAC),UNLG(IGC,NL)       
-     :              ,VNLG(IGC,NL),TTLR(IGC,NL),UTRAG(IGC,NL,NTRAC)        
-     :              ,TTCR(IGC,NL),VTRAG(IGC,NL,NTRAC)                     
-     :              ,UTVD(IGC,NL),VTVD(IGC,NL)                            
-     :         ,ASSBL(IGC),ASHBL(IGC),ASLBL(IGC),ARRCR(IGC),ARRLR(IGC)    
-     :         ,arflux(igc,6),asfld(igc,6),acld(igc,4)                    
-     :         ,SSBL(IGC),SHBL(IGC),SLBL(IGC),RRCR(IGC),RRLR(IGC)         
-     :         ,rflux(igc,6),sfld(igc,6),cld(igc,4)                       
-C                                                                         
-C                                                                         
-       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
-     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
-     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
-     & PORB, OBLIQ, ECCEN 
-      
+C
+C     Sets basic constants, especially those needed for array dimensions
+C
+      PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI
+     +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2
+     +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL
+     +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL
+     +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG
+     +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL
+     +,NWW=1+(MM-1)/MOCT)
+      PARAMETER(IGA=NWJ2*NHEM,IGB=IDB*NHEM,IGC=MGPP*NHEM,IGD=IDD*NHEM
+     +,IGG=IDG*NHEM,IGL=IDL*NHEM,IGM=IDM*NHEM,IGN=IDN*NHEM
+     +,IGO=IGA+IGA,IGP=IGB+IGB,NFTWG=(5+NTRAC)*NL+3
+     +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)
+C     Number of 2D (surface) output fields. This value is
+C     Doubled due to averaged and instantaneous fields.
+      PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)
+C
+C
+C     Basic planetary parameters for run plus information about
+C     vertical grid structure
+
+C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
+      COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)
+     +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)
+     +              ,TKP(NL),C(NL2),SQH(NNP)
+     +              ,MF,MFP,JZF,NF
+     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT
+     +              ,RD,RV,CPD,CLATNT
+     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH
+     +              ,LFLUX
+     +              ,LBALAN,LRESTIJ
+     +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT
+     +              ,LNOISE,NFP
+      COMPLEX EZ,AIOCT
+      LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ
+     +       ,LFLUX,LNOISE
+     +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT
+C
+C
+C     Legendre polynomials and information about gaussian latitudes
+C
+      COMMON/LEGAU/ ALPJ(MJP),DALPJ(MJP)
+     +              ,ALP(NWJ2,2,JGL),DALP(NWJ2,2,JGL)
+     +              ,RLP(NWJ2,2,JGL),RDLP(NWJ2,2,JGL)
+     +              ,SI(JGG),CS(JGG),SISQ(JGG),CSSQ(JGG),SECSQ(JGG)
+     +              ,ALAT(JGG),GWT(JGG),AW(JGG),JH,JL,JINC
+C
+C
+C     Array ordering in GRIDP must correspond to that in SPECTR.
+C     Real arrays: multi-level arrays are 2-dimensional.
+C     the variables have been renamed to coincide with
+C     variable names in bgcm5 DGRMLT
+C
+C swapped round VLNG and UNLG to check
+      COMMON/GRIDP/ CHIG(IGC,NL),SFG(IGC,NL),UG(IGC,NL),VG(IGC,NL)
+     :              ,TTVD(IGC,NL),QTVD(IGC,NL),TG(IGC,NL)
+     :              ,TRAG(IGC,NL,NTRAC)
+     :              ,PLG(IGC),TYBL(IGC),TXBL(IGC)
+     :              ,SPG(IGC),VPG(IGC),TTRD(IGC,NL)
+     :              ,TNLG(IGC,NL),TRANLG(IGC,NL,NTRAC),UNLG(IGC,NL)
+     :              ,VNLG(IGC,NL),TTLR(IGC,NL),UTRAG(IGC,NL,NTRAC)
+     :              ,TTCR(IGC,NL),VTRAG(IGC,NL,NTRAC)
+     :              ,UTVD(IGC,NL),VTVD(IGC,NL)
+     :         ,ASSBL(IGC),ASHBL(IGC),ASLBL(IGC),ARRCR(IGC),ARRLR(IGC)
+     :         ,arflux(igc,6),asfld(igc,6),acld(igc,4)
+     :         ,SSBL(IGC),SHBL(IGC),SLBL(IGC),RRCR(IGC),RRLR(IGC)
+     :         ,rflux(igc,6),sfld(igc,6),cld(igc,4)
+C
+C
+       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
+     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS,
+     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
+     & PORB, OBLIQ, ECCEN
+
        LOGICAL LPLOTMAP
 
-C                                                                         
-C     Constant arrays and variables associated with time and vertical     
-C     differencing. Also counters.                                        
-C                                                                         
-      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)              
-     +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD           
-     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
-     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
-     +              ,BEGDOY,DOY                                           
-C                                                                         
+C
+C     Constant arrays and variables associated with time and vertical
+C     differencing. Also counters.
+C
+      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)
+     +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD
+     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21
+     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
+     +              ,BEGDOY,DOY
+C
             COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
-     :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
-     :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)         
-     :              ,tdeep(igc,jg),hsnow(igc,jg),sqstar(igc,jg)           
-     :              ,SALB(IGC,JG),SBAL(IGC,JG),BLCD(IGC)                  
-     :              ,SVEGE(IGC,JG),CD,DRAG,BLVAD,BLA,BLRH,BLVB(IGC)       
-     :              ,AKVV,AKTV,AKQV,ESCONA,ESCONB,EPSIQ,CTQ,CCC           
-     : ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw             
+     :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)
+     :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)
+     :              ,tdeep(igc,jg),hsnow(igc,jg),sqstar(igc,jg)
+     :              ,SALB(IGC,JG),SBAL(IGC,JG),BLCD(IGC)
+     :              ,SVEGE(IGC,JG),CD,DRAG,BLVAD,BLA,BLRH,BLVB(IGC)
+     :              ,AKVV,AKTV,AKQV,ESCONA,ESCONB,EPSIQ,CTQ,CCC
+     : ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw
      :        ,ssmc,sdsnd,sasnow,saice,shsstar,shsmax
      :     ,LOC,LNOICE,LOLDBL,LCOND,LNNSK
      :              ,NLCR,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP
-     :              ,SKAP(NL),SK(NLM),FWS(NL),CLR(NL),FB(NLM)             
-     :              ,TTDC(NL),QTDC(NL),TTMC(NL),QTMC(NL),TC(NL),QC(NL)    
+     :              ,SKAP(NL),SK(NLM),FWS(NL),CLR(NL),FB(NLM)
+     :              ,TTDC(NL),QTDC(NL),TTMC(NL),QTMC(NL),TC(NL),QC(NL)
      :              ,CTCR(NL,NHEM),CTLR(NL,NHEM)
      :              ,LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ
      :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
-                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
-     :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
+                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC
+     :       ,LNOICE,LOLDBL,LCOND,LNNSK
 
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
@@ -129,7 +130,7 @@ C
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
 
        CHARACTER(30) :: AEROSOLMODEL
-       CHARACTER(30) :: AEROSOLCOMP       
+       CHARACTER(30) :: AEROSOLCOMP
        REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
        LOGICAL DELTASCALE
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
@@ -154,121 +155,122 @@ C
 !       LOGICAL DELTASCALE
 
 
-      COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
-     +              ,RNTAPO                                               
-     +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR                          
-     +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY                          
-     +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG                 
-     +              ,LSPO(NL),LGPO(NL)                                    
-     $              ,LSHIST,LMINIH                                        
-      LOGICAL LSHIST,LMINIH                                               
-      LOGICAL LSPO,LGPO    
+      COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC
+     +              ,RNTAPO
+     +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR
+     +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY
+     +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG
+     +              ,LSPO(NL),LGPO(NL)
+     $              ,LSHIST,LMINIH
+      LOGICAL LSHIST,LMINIH
+      LOGICAL LSPO,LGPO
 
 
-                                                                         
-C                                                                         
-C     Setup moisture variables by equivilencing them to                   
-C     Tracer No. 1                                                        
-C                                                                         
-      REAL QG(IGC,NL),QNLG(IGC,NL),QTLR(IGC,NL),QTCR(IGC,NL)              
-      EQUIVALENCE (QG(1,1),TRAG(1,1,1)) , (QNLG(1,1),TRANLG(1,1,1))       
-     *            ,(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))      
-C                                                                         
-      COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)            
-     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)                       
-     :     ,TTSW(IGC,NL),TTLW(IGC,NL)                           
-      COMMON/GSG/GSG(IGC,JG)                                             
-      REAL htnet                                                         
-      COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)                                
-      REAL TAVE(IGP) 
-                                                                          
+
+C
+C     Setup moisture variables by equivilencing them to
+C     Tracer No. 1
+C
+      REAL QG(IGC,NL),QNLG(IGC,NL),QTLR(IGC,NL),QTCR(IGC,NL)
+      EQUIVALENCE (QG(1,1),TRAG(1,1,1)) , (QNLG(1,1),TRANLG(1,1,1))
+     *            ,(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))
+C
+      COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)
+     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)
+     :     ,TTSW(IGC,NL),TTLW(IGC,NL)
+      COMMON/GSG/GSG(IGC,JG)
+      REAL htnet
+      COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
+      REAL TAVE(IGP)
+
        REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
-       real PRB2T(NL+1),adum                                            
+       real PRB2T(NL+1),adum
 
 
-      integer ifirst                ! If =1, first time reading o3        
-                                    ! and h2o (2 months' worth).          
-                                                                          
-      real amfrac                   ! fraction through month              
-      integer ichange               ! =1 when in process of month change  
-*---------------------------                                              
-      integer ifirstcol             ! =1 first time through column        
-                                    ! calculation (open new file).        
-      real p0                                                             
-      real ps                       ! sfc pressure (used in               
-                                    ! interpolation from climatology      
-                                    ! to model).                          
-      integer im                    ! Pointer for array plg (for          
-                                    ! getting sfc pressure).              
-                                                                          
-C     Array to hold fluxes at top and bottom of atmosphere                
-C     1st index - flux 1=SW, 2=LW                                         
-C     2nd index - Direction 1=DN, 2=UP                                    
-C     3rd index - Where 1=TOP, 2=SURFACE                                  
-      real fluxes(2,2,2) 
+      integer ifirst                ! If =1, first time reading o3
+                                    ! and h2o (2 months' worth).
+
+      real amfrac                   ! fraction through month
+      integer ichange               ! =1 when in process of month change
+*---------------------------
+      integer ifirstcol             ! =1 first time through column
+                                    ! calculation (open new file).
+      real p0
+      real ps                       ! sfc pressure (used in
+                                    ! interpolation from climatology
+                                    ! to model).
+      integer im                    ! Pointer for array plg (for
+                                    ! getting sfc pressure).
+
+C     Array to hold fluxes at top and bottom of atmosphere
+C     1st index - flux 1=SW, 2=LW
+C     2nd index - Direction 1=DN, 2=UP
+C     3rd index - Where 1=TOP, 2=SURFACE
+
+      real fluxes(NWAVE,2,2)
+      real temporary_malsky_fluxes(2,2,2)
 
 c     The following for parallel testing --MTR
-      integer TID, NTHREADS             
-      double precision test_wctime                              
-                                                                        
-      save                          ! Want to keep things like dcompl.    
-                                                                          
-                                                                          
-                                                                          
-      DATA IFIRST/1/                                                      
-      data ifirstcol/1/                                                   
-                                                                          
-      RHSCL=288.0*GASCON/GA                                               
-      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates     
-c  Skipping part set up here.                                             
-c  Radiation scheme only called every nskip longitudes                    
-c  nskip must divide exactly into mg for longitude.                       
-c  ntstep is the number of timesteps to skip.                             
-                                                                          
-C      ntstep=max(2,itspd/100000)       ! N.B. No point any more frequent as      
-      ntstep=NTSTEP_IN
-                         ! Morcrette doing diurnal averages anyway.       
+      integer TID, NTHREADS
+      double precision test_wctime
 
+      save                          ! Want to keep things like dcompl.
+
+
+
+      DATA IFIRST/1/
+      data ifirstcol/1/
+
+      RHSCL=288.0*GASCON/GA
+      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates
+c  Skipping part set up here.
+c  Radiation scheme only called every nskip longitudes
+c  nskip must divide exactly into mg for longitude.
+c  ntstep is the number of timesteps to skip.
+
+C      ntstep=max(2,itspd/100000)       ! N.B. No point any more frequent as
+      ntstep=NTSTEP_IN
+                         ! Morcrette doing diurnal averages anyway.
 !      write(*,*) 'ntstep',ntstep
-      nskip=NSKIP_IN                                                       
-C this sets the non-dimensional gridpoint temperature tendency (TTRD)     
-C to get to TTRD from K/day divide the K/day heating rate by              
-C     (86400*WW*CT)                                                       
-C     TTRD(non-dim)=HTRT(k/day)/(86400*WW*CT)                             
+      nskip=NSKIP_IN
+C this sets the non-dimensional gridpoint temperature tendency (TTRD)
+C to get to TTRD from K/day divide the K/day heating rate by
+C     (86400*WW*CT)
+C     TTRD(non-dim)=HTRT(k/day)/(86400*WW*CT)
 c
-   
-                                           
- 
+
+
+
 c
-c --------------------------------- Now start the radiation bit.          
-c                                                                         
-C loop over hemispheres                                                   
-      IOFM=0                                                              
+c --------------------------------- Now start the radiation bit.
+c
+C loop over hemispheres
+      IOFM=0
 C
-                                                                         
-      DO 800 ihem=1,nhem                                                  
+
+      DO 800 ihem=1,nhem
 C          write(*,*) 'kount',kount
 !          write(*,*) 'ntstep',ntstep
-!         write(*,*) mod(kount,ntstep)          
-!          write(*,*) 'Starting Radiation scheme'                                                                
-c calculates heating rates every ntstep time steps                        
-         IF (mod(kount,ntstep).eq.1) then                                   
-!          write(*,*) mod(kount,ntstep)          
+!         write(*,*) mod(kount,ntstep)
+!          write(*,*) 'Starting Radiation scheme'
+c calculates heating rates every ntstep time steps
+         IF (mod(kount,ntstep).eq.1) then
+!          write(*,*) mod(kount,ntstep)
 C          write(*,*) 'Starting Radiation scheme'
-C                                                                         
-C  Does do Radn scheme                                                    
-C                                                                         
+C
+C  Does do Radn scheme
+C
 C loop over longitudes for radn calculation
 !!!  NOTE, THIS PARALLELISM IS ONLY DOING THE LONGITUDES IN PARALLEL,
 !    NOT THE LAITITUDES. THE |LATITUDE| LOOP STARTS IN DGRMLT, AND
 !    HEMISPHERE LOOP (TO DO BOTH + AND - LAT VALUE) BEGINS ABOVE.  IF WE BEGIN
 !    THE PARALLELISM OUTSIDE THE LATITUDE LOOP, THEN WE WOULD COMPUTE EACH
 !    |LATITUDE| IN PARALLEL, BUT THE LONGITUDES AND HEMISPHERES WOULD BE DONE SERIALLY
-!    WITHIN EACH THREAD, UNLESS NESTING IS POSSIBLE. 
+!    WITHIN EACH THREAD, UNLESS NESTING IS POSSIBLE.
 !    THE NUMBER OF LONGITUDES EXCEEDS THE NUMBER OF
 !    LATITUDES (MORE SO WHEN CONSIDERING HEMISPHERE SEPERATELY) SO THE
 !    BENEFIT IS POTENTIALLY GREATER IF THE NUMBER OF CORES EXCEEDS THE
-!    NUMBER OF LATITUDES. NESTING SHOULD SPEED THIS UP FURTHER. 
+!    NUMBER OF LATITUDES. NESTING SHOULD SPEED THIS UP FURTHER.
 !      THE ARCHITECTURE IS AS FOLLOWS
 !        DO_LATLOOP (IN DGRMLT)
 !            DO_HEMLOOP
@@ -283,12 +285,11 @@ C loop over longitudes for radn calculation
 !        ENDDO_LATLOOP
 !
 !            write(*,*) MAXVAL(AERO4LAT)
-            ilast=0                                                             
+            ilast=0
 c             write(*,*) 'line431'
 c            TID = OMP_GET_MAX_THREADS()
 c            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
 c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
-
 !  NOTE THAT THIS NEEDS TO BE UPDATED FOR THE NEW RADIATIVE TRANSFER
 !  SCHEME!!!!!!!WARNING!
 !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
@@ -330,57 +331,53 @@ c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 !$OMP& TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSLD, TSTAR, TSTARO, TTCR,
 !$OMP& TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
 !$OMP& UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
-            DO i=1,mg                                                         
+            DO i=1,mg
          !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
 c         write(*,*),mg
 cM         write(*,*), 'Thread id=', omp_get_thread_num(),i
 cm               test_wctime=omp_get_wtime()
-               im=i+iofm   
-               idocalc=0                                                        
-               IF ((i.eq.1).or.(i-ilast.ge.nskip)) then                         
-                  idocalc=1                                                       
-               ELSE                                                             
+               im=i+iofm
+               idocalc=0
+               IF ((i.eq.1).or.(i-ilast.ge.nskip)) then
+                  idocalc=1
+               ELSE
                   IF (LNNSK) THEN
 c                     write(*,*) 'line444 stop'
-Cm                     stop                                                 
-                     imp=im+1                                                       
-                     IF (imp.gt.(mg+iofm)) imp=1+iofm                               
-                     imm=im-1                                                       
-                    IF (((gsg(im,jh).gt.0.).and.(gsg(imp,jh).eq.0.)).or.           
-     $                  ((gsg(im,jh).eq.0.).and.(gsg(imp,jh).gt.0.)).or.              
-     $                  ((gsg(im,jh).gt.0.).and.(gsg(imm,jh).eq.0.)).or.              
-     $                ((gsg(im,jh).eq.0.).and.(gsg(imm,jh).gt.0.))) THEN            
-                        idocalc=1                                                     
-                     ENDIF                                                          
-                  ENDIF                                                           
-               ENDIF                                                            
-               IF (idocalc.eq.1) then                                           
-
-
+Cm                     stop
+                     imp=im+1
+                     IF (imp.gt.(mg+iofm)) imp=1+iofm
+                     imm=im-1
+                    IF (((gsg(im,jh).gt.0.).and.(gsg(imp,jh).eq.0.)).or.
+     $                  ((gsg(im,jh).eq.0.).and.(gsg(imp,jh).gt.0.)).or.
+     $                  ((gsg(im,jh).gt.0.).and.(gsg(imm,jh).eq.0.)).or.
+     $                ((gsg(im,jh).eq.0.).and.(gsg(imm,jh).gt.0.))) THEN
+                        idocalc=1
+                     ENDIF
+                  ENDIF
+               ENDIF
+               IF (idocalc.eq.1) then
 c --------------------------------------- Now set rest of column.
-
-                  DO LD=1,NL    ! Start of loop over column.     
-                     L=NL-LD+2  ! Reverse index (Morc goes bottom up).                     
-                     PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure 
-                     PRB2T(L)=PR(LD)                      
+                  DO LD=1,NL    ! Start of loop over column.
+                     L=NL-LD+2  ! Reverse index (Morc goes bottom up).
+                     PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure
+                     PRB2T(L)=PR(LD)
                      T(LD)=TG(im,ld)*CT ! Temperature
-                     AEROPROF(LD)=0.0 
+                     AEROPROF(LD)=0.0
                   ENDDO
                      AEROPROF(NL+1)=0.0
                    PRB2T(1)=PLG(im)*P0
                    PR(NL+1)=PLG(im)*P0
                    T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
-
 ! This could also just be the ground temperature... decision to be made
-c ----------------------------------------------------- And alat1         
-                                                                          
+c ----------------------------------------------------- And alat1
+
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)
 c                  IF (KOUTP.EQ.KOUNTP-1) THEN
                   IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.NTSTEP_IN)) THEN
                      IF(JH.EQ.1.AND.IHEM.EQ.1.AND.I.EQ.1) THEN
                         REWIND(63) !! Rewind file for fluxes in nikosrad
-                        REWIND(62) ! rwnd file for ancillary RT results 
-                        IF (PORB.NE.0) THEN 
+                        REWIND(62) ! rwnd file for ancillary RT results
+                        IF (PORB.NE.0) THEN
                            SSLON=(1./PORB-1.)*KOUNT*360./ITSPD
                            SSLON=MOD(SSLON,360.)
                         ELSE
@@ -395,224 +392,129 @@ c                  IF (KOUTP.EQ.KOUNTP-1) THEN
                         WRITE(62,*)''
                      ENDIF
                   ENDIF
-                                                                          
+
 !! BOTTOM SHORT WAVE ALBEDO SET IN FORT.7 INISIMPRAD,
 ! Note to future modelers-this is not location or wavelenght dependent
+             SWALB=ALBSW
 
-             SWALB=ALBSW   
-                  
 ! PR AND T ARE THE TEMPERATURE AND PRESSURE AT THE SIGMA LEVELS
-! AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE. 
+! AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE.
 ! TO COMPUTE HEATING RATES AT THESE CENTERS, WE NEED TO DEFINE
 ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
-
-             DO LD    = 1,NL-1      
+             DO LD    = 1,NL-1
                  PRFLUX(LD+1)=(pr(LD)+pr(LD+1))/2.
              ENDDO
-
              PRFLUX(NL+1)=PR(NL+1)
              PRFLUX(1)=pr(1)*0.5
-
-C cloud cf and ic passed. fluxes returned.                                
-C which is net flux at TOA in profile                                     
+C cloud cf and ic passed. fluxes returned.
+C which is net flux at TOA in profile
 C Call radiation scheme
-
              alon=REAL(i-1)/REAL(mg)*360.0
-
 !     PR in pascals for layer boundaries (NL+1), T in Kelvin for layer
 !     centers + one layer for the bottom boundary. The top is n=1, the
 !     bottom is n=NL+1
-
-
 ! MTR: THE FOLLOWING LOOP IS ONLY FOR THE OLDER VERSION OF THE CODE
 ! WHERE DISTRIBUTIONS ARE HARDWIRED (ROMAN & RAUSCHER 2017)
-
-            IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN 
-!            IF(AEROSOLS.AND.) THEN
-!           AEROSOLS TIME!
-!           Extract a single column from the array AER4LAT(NLEV,LON,HEM)
-!            AEROPROF=AERO4LAT(:,mg,ihem)
+            IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN
               DO  LD=1,NL +1
-              AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
-             ENDDO
-!            write(*,*) alat1,alon
-!            write(*,*) aeroprof
-!            write(*,*) ''
-!            WRITE(*,*) ''
-!            write(*,*) AERO4LAT(:,10,1)
-!            WRITE(*,*) ''
-!            write(*,*) AERO4LAT(:,10,2)
-            
-!            write(*,*) 'TAUAEROSOL IN RRAD',TAUAEROSOL 
+                AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
+              ENDDO
             ENDIF
 
-            call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,
-     $                 ic,fluxes,swalb,kount,itspd)
-
-c                  call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
-c     $                 fluxes,swalb,alon,kount,itspd)
-          
-c          write(*,*) "Just called Nikosrad"
-!           write(*,*) 'in radiation...'
-!           write(*,*) 'htlw', htlw
-!           write(*,*) 'htsw', htsw
-c       flip indexing of pr to be consistent with bottom to top convention
-           pr=prb2t   
-!           write(*,*) 'pr',pr
-!           write(*,*) 'fluxes',fluxes          
-!           write(*,*) 'stop following calc_radheat'
-          
-                                                                
-c store net flux in PNET                                                  
-                  PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-          
-     $                 fluxes(2,2,1)                                                  
-                  SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-          
-     $                 fluxes(2,2,2)
+            call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
+            pr=prb2t
 
 
-                  rrflux(im,jh,1)=fluxes(1,1,2)                                   
-                  rrflux(im,jh,2)=fluxes(1,2,2)
-
-                  rrflux(im,jh,3)=fluxes(2,1,2)                                   
-                  rrflux(im,jh,4)=fluxes(2,2,2)
-
-                  rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)                     
-                  rrflux(im,jh,6)=fluxes(2,2,1)                                   
-                                                                          
-                  DO l=nl,1,-1                                                    
-c  bottom heating rate is zero in morecret                                
-                     LD=NL+1-L                                                      
-                     IM=I+IOFM                                                      
-                     HTNETO=HTNET(IHem,JH,I,LD)                                     
-C           htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
-
-C ER Modif to turn off radiative heating for first 1 days (if not 1D and
-C not PORB gt 0)
-c                     IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
-c                        IF (PORB.EQ.0) THEN
-c                           htnet(ihem,jh,i,ld)=0.
-c                        ENDIF
-c                     ELSE
-c                        htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
-c                     ENDIF
-
-C ER Modif to turn off radiative heating for first 1 days (if not 1D and not PORB gt 0)
-c expanded by mike
-
-c            IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
-c                        IF (PORB.EQ.0) THEN
-c                           htnet(ihem,jh,i,ld)=0.
-c                        ENDIF
-c        IF (((KOUNT/ITSPD).GE.2000).AND.((KOUNT/ITSPD).LE.2100)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-               htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
-c     &                               *((KOUNT/ITSPD)-1999.)/100.
+c           store net flux in PNET
 
 
-c                if ((htnet(ihem,jh,i,ld).LT.-1000000).OR. 
-c     &              (htnet(ihem,jh,i,ld).GT.1000000)) THEN 
-c                   write(*,*) 'htnet', htnet(ihem,jh,i,ld)
-C               htnet(ihem,jh,i,ld)= 
-C     &             min(max(htnet(ihem,jh,i,ld),-10000.),10000.)
-c                   write(*,*) 'htnet', htnet(ihem,jh,i,ld)                  
-c                   stop
-c                endif
-c               htnet(ihem,jh,i,ld)= 
-c     &                min(max(htnet(ihem,jh,i,ld),-1000000.),1000000.)
-c            ELSE IF (((KOUNT/ITSPD).GT.1).AND.((KOUNT/ITSPD).LE.100)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c            htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*(KOUNT/ITSPD)/100.
+            DO L = 1,NWAVE
+                temporary_malsky_fluxes(L,1,1) = 0.0
+                temporary_malsky_fluxes(L,1,2) = 0.0
+                temporary_malsky_fluxes(L,2,1) = 0.0
+                temporary_malsky_fluxes(L,2,2) = 0.0
+            END DO
 
+            DO L = 1,NSOL
+                temporary_malsky_fluxes(1,1,1) = temporary_malsky_fluxes(1,1,1) + fluxes(L,1,1)
+                temporary_malsky_fluxes(1,1,2) = temporary_malsky_fluxes(1,1,2) + fluxes(L,1,2)
+                temporary_malsky_fluxes(1,2,1) = temporary_malsky_fluxes(1,2,1) + fluxes(L,2,1)
+                temporary_malsky_fluxes(1,2,2) = temporary_malsky_fluxes(1,2,2) + fluxes(L,2,2)
+            END DO
+            DO L = NSOL+1,NWAVE
+                temporary_malsky_fluxes(2,1,1) = temporary_malsky_fluxes(2,1,1) + fluxes(L,1,1)
+                temporary_malsky_fluxes(2,1,2) = temporary_malsky_fluxes(2,1,2) + fluxes(L,1,2)
+                temporary_malsky_fluxes(2,2,1) = temporary_malsky_fluxes(2,2,1) + fluxes(L,2,1)
+                temporary_malsky_fluxes(2,2,2) = temporary_malsky_fluxes(2,2,2) + fluxes(L,2,2)
+            END DO
 
+            temporary_malsky_fluxes(1,1,1) = temporary_malsky_fluxes(1,1,1) / NSOL
+            temporary_malsky_fluxes(1,1,2) = temporary_malsky_fluxes(1,1,2) / NSOL
+            temporary_malsky_fluxes(1,2,1) = temporary_malsky_fluxes(1,2,1) / NSOL
+            temporary_malsky_fluxes(1,2,2) = temporary_malsky_fluxes(1,2,2) / NSOL
 
+            temporary_malsky_fluxes(2,1,1) = temporary_malsky_fluxes(2,1,1) / NIR
+            temporary_malsky_fluxes(2,1,2) = temporary_malsky_fluxes(2,1,2) / NIR
+            temporary_malsky_fluxes(2,2,1) = temporary_malsky_fluxes(2,2,1) / NIR
+            temporary_malsky_fluxes(2,2,2) = temporary_malsky_fluxes(2,2,2) / NIR
 
-c            ELSE IF (((KOUNT/ITSPD).GT.1).AND.((KOUNT/ITSPD).LE.5) 
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.001
-c            ELSE IF (((KOUNT/ITSPD).GT.5).AND.((KOUNT/ITSPD).LE.10)  
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.01
-c            ELSE IF (((KOUNT/ITSPD).GT.10).AND.((KOUNT/ITSPD).LE.20)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.1
-c            ELSE IF (((KOUNT/ITSPD).GT.20).AND.((KOUNT/ITSPD).LE.25)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.2
-c            ELSE IF (((KOUNT/ITSPD).GT.25).AND.((KOUNT/ITSPD).LE.30)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.3
-c            ELSE IF (((KOUNT/ITSPD).GT.30).AND.((KOUNT/ITSPD).LE.35)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.4 
-c            ELSE IF (((KOUNT/ITSPD).GT.35).AND.((KOUNT/ITSPD).LE.40)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.5
-c            ELSE IF (((KOUNT/ITSPD).GT.40).AND.((KOUNT/ITSPD).LE.45)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.6
-c            ELSE IF (((KOUNT/ITSPD).GT.45).AND.((KOUNT/ITSPD).LE.50)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.7
-c            ELSE IF (((KOUNT/ITSPD).GT.50).AND.((KOUNT/ITSPD).LE.55)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.8
-c            ELSE IF (((KOUNT/ITSPD).GT.55).AND.((KOUNT/ITSPD).LE.60)
-c     &              .AND.(.NOT.L1DZENITH)) THEN
-c                        htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))*.9
-c            ELSE 
-c                         htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)   
-c            END IF
-!                        write(*,*) l,htlw(l+1),htsw(l+1)
-!KM To force net heating of bottom atmosphere layer to relax to flux temperature
-C           if(ld.eq.nl) htnet(ihem,jh,i,ld)=(T(1)-T(2))/BOTRELAXTIME
+            PNET(IM,JH)=temporary_malsky_fluxes(1,1,1)-temporary_malsky_fluxes(1,2,1)+
+     &                  temporary_malsky_fluxes(2,1,1)-temporary_malsky_fluxes(2,2,1)
+            SNET(IM,JH)=temporary_malsky_fluxes(1,1,2)-temporary_malsky_fluxes(1,2,2)+
+     &                  temporary_malsky_fluxes(2,1,2)-temporary_malsky_fluxes(2,2,2)
 
-!KM To force net heating of bottom atmosphere layer to be same as just above
-!  if  BOTRELAXTIME < 0
-C           if(ld.eq.nl.AND.BOTRELAXTIME.LT.0.0) 
-C     &          htnet(ihem,jh,i,ld)=htnet(ihem,jh,i,ld-1)
+            rrflux(im,jh,1)=temporary_malsky_fluxes(1,1,2)
+            rrflux(im,jh,2)=temporary_malsky_fluxes(1,2,2)
+            rrflux(im,jh,3)=temporary_malsky_fluxes(2,1,2)
+            rrflux(im,jh,4)=temporary_malsky_fluxes(2,2,2)
+            rrflux(im,jh,5)=temporary_malsky_fluxes(1,1,1)-temporary_malsky_fluxes(1,2,1)
+            rrflux(im,jh,6)=temporary_malsky_fluxes(2,2,1)
 
-c sets this heating rate                                                 
-                     TTRD(IM,LD)=(HTNETO                                            
-     $                    +HTNET(IHEM,JH,I,LD))/(CHRF*2.)                               
-!                     write(*,*) 'IM,LD,TTRD',IM,LD,TTRD(IM,LD)                                                     
-c  put in linear interpolation of heating rates between this              
-c  longitude and last one calculated (i-nskip)                            
-                     IF ((i-ilast.gt.1).and.(nskip.gt.0)) then                                         
-                        write(*,*),i,last
-                        DO j=ilast+1,i-1                                              
-                           a=REAL(j-ilast)/REAL(i-ilast)                               
+                  DO l=nl,1,-1
+                     LD=NL+1-L
+                     IM=I+IOFM
+                     HTNETO=HTNET(IHem,JH,I,LD)
+                     htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
+
+                     TTRD(IM,LD)=(HTNETO+HTNET(IHEM,JH,I,LD))/(CHRF*2.)
+
+c                    put in linear interpolation of heating rates between this
+c                    longitude and last one calculated (i-nskip)
+
+                     IF ((i-ilast.gt.1).and.(nskip.gt.0)) then
+                        DO j=ilast+1,i-1
+                           a=REAL(j-ilast)/REAL(i-ilast)
                            b=1.-a
-c                           write(*,*),IHEM,JH,ilast,ld
-c                           write(*,*),HTNET(IHEM,JH,J,LD) 
+
                  write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
                  write(*,*),'Please set nskip=0 in fort.7'
                  STOP
-                           HTNETO=HTNET(IHEM,JH,J,LD)                                  
-                           htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,i,ld)+                  
-     $                          b*htnet(ihem,jh,ilast,ld)                  
-                           im=j+iofm                                                   
-                           TTRD(IM,LD)=(HTNETO                                         
-     $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)                  
+                           HTNETO=HTNET(IHEM,JH,J,LD)
+                           htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,i,ld)+
+     $                          b*htnet(ihem,jh,ilast,ld)
+                           im=j+iofm
+                           TTRD(IM,LD)=(HTNETO
+     $                          +HTNET(IHEM,JH,J,LD))/(CHRF*2.)
 !                    write(*,*)'TTRD',LD,TTRD(IM,LD)
-                            IF (l.eq.nl) then                                           
-                              pnet(im,jh)=a*pnet(i+iofm,jh)+                            
-     $                             b*pnet(ilast+iofm,jh)                          
-                              snet(im,jh)=a*snet(i+iofm,jh)+                            
-     $                             b*snet(ilast+iofm,jh)                          
-                              DO k=1,6                                                  
-                                 rrflux(im,jh,k)=a*rrflux(i+iofm,jh,k)                   
-     $                                +b*rrflux(ilast+iofm,jh,k)               
-                              ENDDO                                                     
-                           ENDIF                                                       
-                        ENDDO                                                         
-                     ENDIF                                                          
-                  ENDDO                 
-!                  stop                                          
-                  ilast=i                                                         
-C end of conditional execution of morcrette code                          
-               ENDIF 
+                            IF (l.eq.nl) then
+                              pnet(im,jh)=a*pnet(i+iofm,jh)+
+     $                             b*pnet(ilast+iofm,jh)
+                              snet(im,jh)=a*snet(i+iofm,jh)+
+     $                             b*snet(ilast+iofm,jh)
+                              DO k=1,6
+                                 rrflux(im,jh,k)=a*rrflux(i+iofm,jh,k)
+     $                                +b*rrflux(ilast+iofm,jh,k)
+                              ENDDO
+                           ENDIF
+                        ENDDO
+                     ENDIF
+                  ENDDO
+!                  stop
+                  ilast=i
+C end of conditional execution of morcrette code
+               ENDIF
 C          PRINT *, 'threads number =',TID
-C end of loop over longitudes                                            
+C end of loop over longitudes
 c               test_wctime=omp_get_wtime()-test_wctime
 c               write (*,*) 'DEBUG: thread ',omp_get_thread_num(),
 c     +                     ' iteration i=',i,
@@ -627,65 +529,64 @@ c sometimes different?
             IF (nskip.ne.0) then
                write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
                write(*,*),'Please set nskip=0 in fort.7'
-               STOP 
+               STOP
             ELSE
                 ilast=mg
             ENDIF
-            IF (ilast.ne.mg) then                                             
+            IF (ilast.ne.mg) then
 c               write(*,*) 'ilast',ilast
 Cm                stop
-                DO j=ilast+1,mg                                                  
-                  a=REAL(j-ilast)/REAL(mg+1-ilast)                               
-                  b=1.-a                                                         
-                  im=j+iofm                                                      
-                  DO l=nl,1,-1                                                   
-                     ld=nl+1-l                                                    
-                     HTNETO=HTNET(IHEM,JH,J,LD)                                   
+                DO j=ilast+1,mg
+                  a=REAL(j-ilast)/REAL(mg+1-ilast)
+                  b=1.-a
+                  im=j+iofm
+                  DO l=nl,1,-1
+                     ld=nl+1-l
+                     HTNETO=HTNET(IHEM,JH,J,LD)
 c                     write(*,*),'l,dl,nl,ihem,jh,j',l,dl,nl,ihmem,jh,j
 c                     write(*,*),'htneto,chrf,a,b',htneto,chrf,a,b
-                     htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+                   
-     $                    b*htnet(ihem,jh,ilast,ld)                  
-                     TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)                             
-     $                    +HTNETO)/(CHRF*2.)   
-                   write(*,*) 'Now to the print statement'           
-!                   write(*,*)'TTRD',LD,TTRD(IM,LD)                
-                     IF (l.eq.nl) then                                            
-                        pnet(im,jh)=a*pnet(1+iofm,jh)+                             
-     $                       b*pnet(ilast+iofm,jh)                          
-                        snet(im,jh)=a*snet(1+iofm,jh)+                             
-     $                       b*snet(ilast+iofm,jh)                          
-                        DO k=1,6                                                   
-                           rrflux(im,jh,k)=a*rrflux(1+iofm,jh,k)                     
-     $                          +b*rrflux(ilast+iofm,jh,k)                
-                        ENDDO                                                      
-                     ENDIF                                                        
-                  ENDDO                              
-!           stop                            
-               ENDDO                                                            
-            ENDIF                                                             
-c       if (ihem.eq.2) print *, 'rad ',jh,(pnet(im1,jh),im1=1,IGC)        
-
-         ELSE                   ! ntstep requirement
-C                                                                         
-c  Doesn't do rad scheme (simply uses old heating rates)                  
-Cm           write(*,*) 'Ilast,mg',ilast,mg                                                              
-            DO i=1,mg
-Cm               write(*,*) 'line 691'                                                        
-               DO LD=1,NL                                                     
-                  im=i+IOFM                                                    
-                  TTRD(im,LD)=(htnet(ihem,jh,i,ld))/CHRF  
+                     htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+
+     $                    b*htnet(ihem,jh,ilast,ld)
+                     TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)
+     $                    +HTNETO)/(CHRF*2.)
+                   write(*,*) 'Now to the print statement'
+!                   write(*,*)'TTRD',LD,TTRD(IM,LD)
+                     IF (l.eq.nl) then
+                        pnet(im,jh)=a*pnet(1+iofm,jh)+
+     $                       b*pnet(ilast+iofm,jh)
+                        snet(im,jh)=a*snet(1+iofm,jh)+
+     $                       b*snet(ilast+iofm,jh)
+                        DO k=1,6
+                           rrflux(im,jh,k)=a*rrflux(1+iofm,jh,k)
+     $                          +b*rrflux(ilast+iofm,jh,k)
+                        ENDDO
+                     ENDIF
+                  ENDDO
+!           stop
                ENDDO
-            ENDDO                                                            
-         ENDIF                                                              
-         IOFM=MGPP                                                          
- 800  CONTINUE                  ! end of loop over hemispheres                             
-      IF (LSHORT.AND.(KOUNT.eq.1)) then                                   
-         DO l=1,nl                                                         
-            DO i=1,igc                                                      
-               ttrd(i,l)=ttrd(i,l)*2.                                        
-            ENDDO                                                           
-         ENDDO                                                             
-      ENDIF                                                               
-                                                                          
-      RETURN                                                              
-      END                                                                 
+            ENDIF
+c       if (ihem.eq.2) print *, 'rad ',jh,(pnet(im1,jh),im1=1,IGC)
+         ELSE                   ! ntstep requirement
+C
+c  Doesn't do rad scheme (simply uses old heating rates)
+Cm           write(*,*) 'Ilast,mg',ilast,mg
+            DO i=1,mg
+Cm               write(*,*) 'line 691'
+               DO LD=1,NL
+                  im=i+IOFM
+                  TTRD(im,LD)=(htnet(ihem,jh,i,ld))/CHRF
+               ENDDO
+            ENDDO
+         ENDIF
+         IOFM=MGPP
+ 800  CONTINUE                  ! end of loop over hemispheres
+      IF (LSHORT.AND.(KOUNT.eq.1)) then
+         DO l=1,nl
+            DO i=1,igc
+               ttrd(i,l)=ttrd(i,l)*2.
+            ENDDO
+         ENDDO
+      ENDIF
+
+      RETURN
+      END

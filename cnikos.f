@@ -576,8 +576,7 @@ C      ENDIF
 
 c CALL SW scheme                                                          
       ZCARDI=MMR(2,1)                                                     
-      CALL RADSW(T,H2O,O3,PCLFR,PQLWP,AMU0,                               
-     :              ZCARDI,PSOL,SWDP,PFLUX,SWALB,FLS,GA,GASCON)           
+      CALL RADSW(T,H2O,O3,PCLFR,PQLWP,AMU0,ZCARDI,PSOL,SWDP,PFLUX,SWALB,FLS,GA,GASCON)
 
 !KM: New Boundary condition for local energy conservation (verify, if SWALB>0)
 !      FBASE=5.7  ! Jupiter-like: 5.7 W m^-2 from interior

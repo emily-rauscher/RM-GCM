@@ -82,7 +82,6 @@
  20   CONTINUE
 
 
-
 !...Hack: specify EMIS based on RSFX rather than visa versa
       DO 30 L =  NSOLP+1,NTOTAL
          EMIS(L) =  EMISIR
@@ -91,7 +90,8 @@
          if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
              rsfx(L) = albedoa(nwave_alb)
          endif
-             EMIS(L) = 1.0 - RSFX(L)
+
+         EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
 
@@ -168,13 +168,17 @@
          !         K = K+2.
          !     END DO
          !ENDD
-         !IF(FLXLIMDIF) THEN
-         !    DO L =  NSOLP+1,NTOTAL
-         !        IF(OPD(L,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
-         !            CALL FLUXLD
-         !        ENDIF
-         !    END DO
-         !ENDIF
+
+
+         IF(FLXLIMDIF) THEN
+             DO L =  NSOLP+1,NTOTAL
+                 IF(OPD(L,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
+                     write(*,*) "Error, trying to call flux limited diffusion but Isaac hasn't fixed this yet"
+                     STOP
+                     CALL FLUXLD
+                 ENDIF
+             END DO
+         ENDIF
       ENDIF
           
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
@@ -232,7 +236,6 @@
            END DO
       END DO
 
-
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
           HEATS(J)   =  0.0
@@ -269,9 +272,6 @@
           end do
         end do
       ENDIF
-
-
-
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
@@ -441,20 +441,20 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
           RFLUXES_aerad(2,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
 
-          RFLUXES_aerad(3,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
-          RFLUXES_aerad(3,1,2)=fir_dn_aerad(1)       ! LW down bottom
-          RFLUXES_aerad(3,2,1)=fir_up_aerad(NLAYER)       ! LW up top
-          RFLUXES_aerad(3,2,2)=fir_up_aerad(1)   ! LW up bottom
+          RFLUXES_aerad(3,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
+          RFLUXES_aerad(3,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
+          RFLUXES_aerad(3,2,1)=fsl_up_aerad(NLAYER)  ! SW up top
+          RFLUXES_aerad(3,2,2)=RFLUXES_aerad(1,1,2)*ALBSW   ! SW up bottom
 
           RFLUXES_aerad(4,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
           RFLUXES_aerad(4,1,2)=fir_dn_aerad(1)       ! LW down bottom
           RFLUXES_aerad(4,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(4,2,2)=fir_up_aerad(1)   ! LW up bottom
 
-          RFLUXES_aerad(4,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
-          RFLUXES_aerad(4,1,2)=fir_dn_aerad(1)       ! LW down bottom
-          RFLUXES_aerad(4,2,1)=fir_up_aerad(NLAYER)       ! LW up top
-          RFLUXES_aerad(4,2,2)=fir_up_aerad(1)   ! LW up bottom
+          RFLUXES_aerad(5,1,1)=fir_dn_aerad(NLAYER)   ! LW down top
+          RFLUXES_aerad(5,1,2)=fir_dn_aerad(1)       ! LW down bottom
+          RFLUXES_aerad(5,2,1)=fir_up_aerad(NLAYER)       ! LW up top
+          RFLUXES_aerad(5,2,2)=fir_up_aerad(1)   ! LW up bottom
       else
           RFLUXES_aerad(1,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
           RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom

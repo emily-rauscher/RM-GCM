@@ -180,9 +180,9 @@ C ER modif for non-zero obliquity
         radheat_tot = radheat_tot / ntime
       endif
 
-      htlw=heati_aerad_tot
-      htsw=heats_aerad_tot
-      rfluxes=rfluxes_aerad
+      htlw    = heati_aerad_tot
+      htsw    = heats_aerad_tot
+      rfluxes = rfluxes_aerad
 
       return
       end
