@@ -4,10 +4,10 @@
           integer :: NLAYER, J, k, NZ
           real :: mu_0, Tirr, Tint, gravity_SI
 
-          real, dimension(2,NLAYER) :: tau_IRe
-          real, dimension(3,NLAYER) :: tau_Ve
-          real, dimension(2) :: Beta_IR
-          real, dimension(3) :: Beta_V
+          real, dimension(NIRP,NLAYER) :: tau_IRe
+          real, dimension(NSOLP,NLAYER) :: tau_Ve
+          real, dimension(NIRP) :: Beta_IR
+          real, dimension(NSOLP) :: Beta_V
 
           real, dimension(NZ) :: t_pass
           real, dimension(NLAYER) :: dpe, Tl, Pl
@@ -39,12 +39,14 @@
               Pl(J) = Pl(J-1) + dpe(J)
           end do
 
-          CALL calculate_opacities(NLAYER, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V, Beta_IR,gravity_SI)
+          CALL calculate_opacities(NLAYER, NSOLP, NIRP,
+     &                             mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V, Beta_IR,gravity_SI)
 
 
       end subroutine opacity_wrapper
 
-      subroutine calculate_opacities(NLAYER, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V, Beta_IR,gravity_SI)
+      subroutine calculate_opacities(NLAYER, NSOLP, NIRP,
+     &                               mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V, Beta_IR,gravity_SI)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -61,9 +63,9 @@
 
         implicit none
         real :: gam_1, gam_2, tau_lim, gam_P
-        real, dimension(3) :: Beta_V, gam_V
-        real, dimension(2) :: Beta_IR
-        integer :: k, NLAYER,J
+        real, dimension(NSOLP) :: Beta_V, gam_V
+        real, dimension(NIRP) :: Beta_IR
+        integer :: k, NLAYER,J, NSOLP, NIRP
         real :: Teff, Tint, Tirr, mu_0
 
         real :: R,gravity_SI
@@ -73,8 +75,8 @@
         real :: l10T, l10T2, RT
 
         real, dimension(NLAYER) :: dpe, Tl, Pl
-        real, dimension(2,NLAYER) :: k_IRl, tau_IRe
-        real, dimension(3,NLAYER) :: k_Vl, tau_Ve
+        real, dimension(NIRP,NLAYER) :: k_IRl, tau_IRe
+        real, dimension(NSOLP,NLAYER) :: k_Vl, tau_Ve
         real :: grav
 
         grav = gravity_SI
@@ -84,6 +86,7 @@
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         call Bond_Parmentier(Teff, grav, AB)
+
         !! Recalculate Teff and then find parameters
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 - AB) * mu_0 *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)

@@ -10,10 +10,6 @@ C
 C     Determines model resolution                                         
 C                                                                         
       include 'params.i'
-C      PARAMETER(NN=21,MM=21,NHEM=2,NL=5,MOCT=1,MG=64,JG=16,NWJ2=121       
-C     P         ,NCRAY=64,JGL=JG,NTRAC=1,NLEVRF=1)                         
-                                                                          
-C                                                                         
 C                                                                         
 C     Sets basic constants, especially those needed for array dimensions  
 C                                                                         
@@ -426,6 +422,8 @@ CDIR$    IVDEP
             NROW=NROW+1                                                   
             CMPA(NROW+IDL)=CMPA(NROW)                                     
    42    CONTINUE                                                         
-      END IF                                                              
-C                                                                         
+      END IF
+
+      CALL get_cloud_scattering_properties(NL)
+
       END                                                                 

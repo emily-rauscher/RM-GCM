@@ -15,6 +15,7 @@
       include 'rcommons.h'
 
       integer, parameter :: nwave_alb = NTOTAL
+      integer NCLOUDS
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
       real maxopd(nwave_alb)
 
@@ -105,7 +106,8 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          CALL OPPRMULTI
+          NCLOUDS = 4
+          CALL OPPRMULTI(NCLOUDS)
       ELSE
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
@@ -425,6 +427,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
+
 
       return
       END

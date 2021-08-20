@@ -214,7 +214,7 @@
       END DO
 
 
-      malsky_switch = 0
+      malsky_switch = 1
 
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
