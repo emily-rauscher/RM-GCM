@@ -26,7 +26,7 @@
        CHARACTER(30) :: AEROSOLCOMP
        REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
        REAL TCONMnS(NL+1),TCONSiO2(NL+1),TCONMg2SiO4(NL+1)
-       REAL TCONAl2O3(NL+1),TCONFe(NL+1),TCONMgSiO3(NL+1),MOLEF(13)
+       REAL TCONAl2O3(NL+1),TCONFe(NL+1),TCONMgSiO3(NL+1),MOLEF(4)
        REAL MTLX
        INTEGER AERLAYERS
        LOGICAL DELTASCALE
@@ -327,8 +327,6 @@
 
                           TheTAU=TAUC*VERTPROF(ILEV)
 
-!               END ELSE GLOBAL CLOUDS
-
 
 !###########
 !CASE 5
@@ -350,21 +348,16 @@
 ! SUM IT UP
                      TheTAU=TAUpa+TAUpb
                      IF (LONGYS(ILON).EQ.360) THEN
-                     TheTAU=TAUpb
+                         TheTAU=TAUpb
                      ENDIF
+
 ! OK, now replace the night side completely
                     IF(LONGYS(ILON).GT.90.) THEN
                        IF(LONGYS(ILON).LE.DELTALONC) THEN
-!                          TheTAU=TAUC*VERTPROF(ILEV)
-!                   TAUpaN=(TAUC
-!     & *EXP(-(((LONGYS(ILON)-180.)*(LONGYS(ILON)-180.))
-!     &     +(THELAT*THELAT))/(2.*40.*40.)))*VERTPROF(ILEV)
-!                   TheTAU=min(TaupaN+TheTau,tauc)
+
                     TheTau=(TAUC
      & *EXP(-(THELAT*THELAT)/(2.*SIGC*SIGC)))*VERTPROF(ILEV)   
-!     &     +(TAUC
-!     & *EXP(-(((270.-DELLONC360)*(270-DELLONC360))
-!     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV) 
+
                        ENDIF
                     ENDIF
 ! Finally, now remove a chunk for the antisymmetric western limb of
@@ -374,15 +367,6 @@
      &         (LONGYS(ILON)-nightedge+180.))
      &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
 
-!                  TAUpa=(TAUC
-!     & *EXP(-(((LONGYS(ILON)-nightedge+180.)*
-!     &         (LONGYS(ILON)-nightedge+180.))
-!     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV)
-! ONCE AGAIN TO FILL OUT THE CIRCLE THAT THE INDEXING WRAPAROUND MISSES
-!                TAUpb=(TAUC
-!     & *EXP(-(((LONGYS(ILON)-DELLONC360+180.)*
-!     &        (LONGYS(ILON)-DELLONC360+180.))
-!     &     +(THELAT*THELAT))/(2.*SIGC*SIGC)))*VERTPROF(ILEV) 
 
 ! Subtract this shifted cloud from the night side                   
                     IF(LONGYS(ILON).GE.90.) THEN
@@ -461,22 +445,4 @@
             STOP
          END IF
 
-!      WRITE TO FORT.60 FOR ALL INCLUSIVE RADIATIVE TRANSFER SUMMARY
-!       write(*,*) 'where is this writing?'
-!       write(60,*) 'ok'
-!       WRITE(60,*) 'NAMELIST/INCLOUDY/'
-!       WRITE(60,*) 'AEROSOLMODEL',AEROSOLMODEL
-!       
-!       WRITE(60,*)'AERTOTTAU',AERTOTTAU
-!       WRITE(60,*)'CLOUDBASE',CLOUDBASE
-!       WRITE(60,*) 'CLOUDTOP',CLOUDTOP
-!       WRITE(60,*) 'AERHFRAC',AERHFRAC
-!       WRITE(60,*) 'PI0AERSW',PI0AERSW
-!       WRITE(60,*)'ASYMSW',ASYMSW
-!       WRITE(60,*)'EXTFACTLW',EXTFACTLW
-!      WRITE(60,*)'PI0AERLW',PI0AERLW
-!       WRITE(60,*)'ASYMLW',ASYMLW
-!       WRITE(60,*)'DELTASCALE',DELTASCALE
-!       WRITE(60,*)'SIG_AREA',SIG_AREA
-!       WRITE(60,*)'PHI_LON',PHI_LON
        END

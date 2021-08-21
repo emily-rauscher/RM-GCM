@@ -58,8 +58,6 @@
      &                              particle_size_vs_layer_array_in_meters
 
 
-
-
       DO J = 1,NLAYER -1
           size_loc = MINLOC(ABS(input_particle_size_array_in_meters -
      &                      (particle_size_vs_layer_array_in_meters(J))), 1)
