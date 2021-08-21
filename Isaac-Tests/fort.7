@@ -1,5 +1,5 @@
  &COMMENT
- THECOMMENT= 'WASP-43b, Test Planet'
+ THECOMMENT= 'WASP-43b, mostly extended'
  /
  &INPPL      
  GA = 47.02, 
@@ -67,9 +67,9 @@ FORCE1DDAYS	= 0.0e0,
 OPACIR_POWERLAW	= 0.0,
 OPACIR_REFPRES	= 1.0e5, 
 SOLC_IN		= 9.78e5,
-TOAALB		= 0.0,
-PORB		= 1.0,
-OBLIQ		= 0.0,
+TOAALB		= 0.0, 
+PORB		= 1.0, 
+OBLIQ		= 0.0, 
 ECCEN		= 0.0
 /
 &INMAG
@@ -161,7 +161,7 @@ STTEMP2=3357
  RAYSCAT         = T,
  RAYSCATLAM      = 0.410,
  AEROSOLS        = T,
- ABSSW           = 4.0E-3,
+ ABSSW           = 4.0E-3, 
  ABSLW           = 1.0E-2,
  ALBSW           = 0.0,
  NEWTB           = 0,
@@ -170,20 +170,8 @@ STTEMP2=3357
  &INCLOUDY
  AEROSOLMODEL    ='Global',
  AEROSOLCOMP     ='All'
- MTLX            = .1
-   MOLEF       = 1.23e-07,
-                   4.06e-08,
-                   9.35e-07,
-                   3.11e-07,
-                   4.4e-07,
-                   3.26e-05,
-                   1.745e-05,
-                   9.56e-09,
-                   1.61e-06,
-                   2.94e-05,
-                   9.95e-07,
-                   7.83e-08,
-                   1.385e-06,
+ MTLX            = .1,
+ MOLEF           = 1.385e-06, 2.94e-05, 1.745e-05, 3.11e-07,
  AERLAYERS       = 30.
  AERTOTTAU       = 100.,
  CLOUDBASE       = 10.,
@@ -196,7 +184,7 @@ STTEMP2=3357
  ASYMLW          = 0.005896,
  DELTASCALE      = T,
  SIG_AREA        = 25.,
- PHI_LON         = 65.
+ PHI_LON         = 65. 
 /
  &INQ
  LRH     = T,
