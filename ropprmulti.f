@@ -15,25 +15,26 @@
       include 'rcommons.h'
       integer :: NCLOUDS
 
-      REAL MOLEF(4)
       REAL TAUFACT
-      REAL TAUAER_OPPR(NTOTAL, NL+1, 4)
+      REAL TAUAER_OPPR(NTOTAL, NL+1, 13)
 
       REAL CONDFACT(NL+1,NCLOUDS)
       REAL CLOUDLOC(NL+1,NCLOUDS)
 
-      REAL TCONDS(51,4)
+      REAL TCONDS(51,13)
 
-      REAL QE_OPPR(5, 50, 50, 4)
-      REAL PI0_OPPR(5, 50, 50, 4)
-      REAL G0_OPPR(5, 50, 50, 4)
+      REAL QE_OPPR(5, 50, 50, 13)
+      REAL PI0_OPPR(5, 50, 50, 13)
+      REAL G0_OPPR(5, 50, 50, 13)
 
-      REAL QE_TEMP(5, 50, 4)
-      REAL PI0_TEMP(5, 50, 4)
-      REAL G0_TEMP(5, 50, 4)
+      REAL QE_TEMP(5, 50, 13)
+      REAL PI0_TEMP(5, 50, 13)
+      REAL G0_TEMP(5, 50, 13)
 
-      REAL DENSITY(4)
-      REAL FMOLW(4)
+      REAL DENSITY(13)
+      REAL FMOLW(13)
+      REAL MOLEF(13)
+
       REAL CORFACT(51)
 
       real, dimension(50) :: input_particle_size_array_in_meters
@@ -41,7 +42,6 @@
       real, dimension(50) :: particle_size_vs_layer_array_in_meters
 
       INTEGER K,J,BASELEV,TOPLEV
-
 
 !     The mass of these layers is this pressure thickness divide by G.
 !     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
@@ -51,8 +51,9 @@
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
-          COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW, CORFACT,
+      COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
+     &                              DENSITY, FMOLW, MOLEF,
+     &                              CORFACT,
      &                              input_particle_size_array_in_meters,
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters
