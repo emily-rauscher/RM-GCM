@@ -29,9 +29,9 @@
           IT1 = TT(J)*TT(J)*TT(J)*TT(J)*SBKoverPI
 
           DO 200 L = NSOLP+1,NTOTAL
-              PTEMP(L,J)  = IT1 !* Beta_IR(L - NSOLP)
+              PTEMP(L,J)  = IT1
               SLOPE(L,J)  = (PTEMP(L,J)-PTEMP(L,KINDEX))/TAUL(L,J)
-              if( TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
+              if(TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
  200      CONTINUE
  300  CONTINUE
       RETURN

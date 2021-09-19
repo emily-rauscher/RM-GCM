@@ -27,8 +27,6 @@
 !     Reset flag for computation of solar fluxes
       ISL        = isl_aerad
 
-
-
 !     Get atmospheric profiles from interface common block
       do k = 1,nvert
         t(k) = t_aerad(k)
@@ -179,18 +177,18 @@
           DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
       END DO
 
+      !DO J = 1, NLAYER
+      !    write(*,*) TMI(4,J), ','
+      !END DO
+      !STOP
+
       DO J = 1, NLAYER
            DO L = 1, NTOTAL
                IF (L .LE. NSOLP) THEN
                    FNET(L,J) = FNET(L,J) * Beta_V(L)
-
-                   DIREC(L,J)   = -99999991
-                   DIRECTU(L,J) = -99994111
                ELSE
                    DIREC(L,J) = DIREC(L,J) * Beta_IR(L - NSOLP)
                    DIRECTU(L,J) = DIRECTU(L,J) * Beta_IR(L - NSOLP)
-
-                   FNET(L,J) = -99999999
                END IF
            END DO
       END DO
@@ -283,8 +281,7 @@
       alb_toai = 0.
 !
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
-!     DOWNWARD
-!     LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
+!     DOWNWARD LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
 !
       SOLNET  = 0.0
       IF (ISL .NE. 0) THEN
@@ -304,6 +301,7 @@
               if (L .eq. nsolp) then
                   fdownbs(J) = (fupbs(j) - fnetbs(j))
               endif
+
  510      CONTINUE
 
           do 508 i = 1, nsoL
@@ -342,8 +340,8 @@
       tiru = 0.0
 
       do 606 j = 1, nlayer
-          fupbi(j)   =  0.0
-          fdownbi(j)   =  0.0
+          fupbi(j)    =  0.0
+          fdownbi(j)  =  0.0
           fnetbi(j)   =  0.0
 606   continue
 
@@ -427,7 +425,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
-
 
       return
       END

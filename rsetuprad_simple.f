@@ -56,11 +56,9 @@
 !     GAUSS ANGLES AND GAUSS WEIGHTS FOR GAUSSIAN INTEGRATION
 !     MOMENTS (USE FIRST MOMENT VALUES) N=3
 !
-      DATA GANGLE  /  0.2123405382, 0.5905331356,     
-     &               0.9114120405                       /
-      DATA GRATIO/0.4679139346, 0.3607615730, 0.1713244924/
-      DATA GWEIGHT /  0.0698269799, 0.2292411064,     
-     &                 0.2009319137                       /
+      DATA GANGLE  / 0.2123405382, 0.5905331356,0.9114120405/
+      DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
+      DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
 !
 !
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
@@ -188,8 +186,8 @@
 
 !     CALCULATE CLOUD AND AEROSOL OPACITY.
 
-      DO J             = 1,NLAYER
-          DO L           = 1,NTOTAL
+      DO J = 1,NLAYER
+          DO L = 1,NTOTAL
                TAUAER(L,J)  = 0.0
                TAUCLD(L,J)  = 0.0
                WCLD(L,J)    = 0.0
@@ -227,22 +225,19 @@
               tau_IRe(L - NSOLP,1) = ABS(tau_IRe(L - NSOLP,3) - tau_IRe(L - NSOLP,2))
           END DO
 
-          DO J = 1,NLAYER
-              DO L = 1,NSOLP
+
+          DO L = 1,NSOLP
+              DO J = 1,NLAYER
                   TAUGAS(L,J) = tau_Ve(L,J)
               END DO
           END DO
 
           DO L = NSOLP+1, NTOTAL
-              DO J = 1,NLAYER - 1
-                  TAUGAS(L,2*J-1) = tau_IRe(L - NSOLP,J) / 2
-                  TAUGAS(L,2*J)   = (tau_IRe(L - NSOLP,J) + tau_IRe(L - NSOLP,J+1)) / 4
-
+              DO J = 1,NLAYER
+                  TAUGAS(L,J) = tau_IRe(L - NSOLP,J)
               END DO
-
-              TAUGAS(L,2*NLAYER-1) = tau_IRe(L-NSOLP, NLAYER)/2
-              TAUGAS(L,2*NLAYER)   = tau_IRe(L-NSOLP,NLAYER)/2+ABS(tau_IRe(L-NSOLP,NLAYER)-tau_IRe(L-NSOLP,NLAYER-1))/22
           END DO
+
 
           DO J = 1, NLAYER
               DO L = LLS,NSOLP
@@ -360,7 +355,7 @@
       ENDIF
 
        DO 360 L   =   1,NSOLP
-          SOL(L)  = PSOL_aerad !  SOLC_IN  !SOLFX(NPROB(L)) * WEIGHT(L)
+          SOL(L)  = PSOL_aerad
   360  CONTINUE
 ! *********************************************************************
 !

@@ -109,18 +109,18 @@
           real, dimension(50,50) :: VO_vis_800_qext
           real, dimension(50,50) :: VO_vis_800_qscat
           
-          real, dimension(50,50) :: C2H2_rosselandMean_gg
-          real, dimension(50,50) :: C2H2_rosselandMean_qext
-          real, dimension(50,50) :: C2H2_rosselandMean_qscat
-          real, dimension(50,50) :: C2H2_vis_500_gg
-          real, dimension(50,50) :: C2H2_vis_500_qext
-          real, dimension(50,50) :: C2H2_vis_500_qscat
-          real, dimension(50,50) :: C2H2_vis_650_gg
-          real, dimension(50,50) :: C2H2_vis_650_qext
-          real, dimension(50,50) :: C2H2_vis_650_qscat
-          real, dimension(50,50) :: C2H2_vis_800_gg
-          real, dimension(50,50) :: C2H2_vis_800_qext
-          real, dimension(50,50) :: C2H2_vis_800_qscat
+          real, dimension(50,50) :: Ni_rosselandMean_gg
+          real, dimension(50,50) :: Ni_rosselandMean_qext
+          real, dimension(50,50) :: Ni_rosselandMean_qscat
+          real, dimension(50,50) :: Ni_vis_500_gg
+          real, dimension(50,50) :: Ni_vis_500_qext
+          real, dimension(50,50) :: Ni_vis_500_qscat
+          real, dimension(50,50) :: Ni_vis_650_gg
+          real, dimension(50,50) :: Ni_vis_650_qext
+          real, dimension(50,50) :: Ni_vis_650_qscat
+          real, dimension(50,50) :: Ni_vis_800_gg
+          real, dimension(50,50) :: Ni_vis_800_qext
+          real, dimension(50,50) :: Ni_vis_800_qscat
           
           real, dimension(50,50) :: Fe_rosselandMean_gg
           real, dimension(50,50) :: Fe_rosselandMean_qext
@@ -135,18 +135,18 @@
           real, dimension(50,50) :: Fe_vis_800_qext
           real, dimension(50,50) :: Fe_vis_800_qscat
           
-          real, dimension(50,50) :: Fe2SiO4_rosselandMean_gg
-          real, dimension(50,50) :: Fe2SiO4_rosselandMean_qext
-          real, dimension(50,50) :: Fe2SiO4_rosselandMean_qscat
-          real, dimension(50,50) :: Fe2SiO4_vis_500_gg
-          real, dimension(50,50) :: Fe2SiO4_vis_500_qext
-          real, dimension(50,50) :: Fe2SiO4_vis_500_qscat
-          real, dimension(50,50) :: Fe2SiO4_vis_650_gg
-          real, dimension(50,50) :: Fe2SiO4_vis_650_qext
-          real, dimension(50,50) :: Fe2SiO4_vis_650_qscat
-          real, dimension(50,50) :: Fe2SiO4_vis_800_gg
-          real, dimension(50,50) :: Fe2SiO4_vis_800_qext
-          real, dimension(50,50) :: Fe2SiO4_vis_800_qscat
+          real, dimension(50,50) :: CaSiO4_rosselandMean_gg
+          real, dimension(50,50) :: CaSiO4_rosselandMean_qext
+          real, dimension(50,50) :: CaSiO4_rosselandMean_qscat
+          real, dimension(50,50) :: CaSiO4_vis_500_gg
+          real, dimension(50,50) :: CaSiO4_vis_500_qext
+          real, dimension(50,50) :: CaSiO4_vis_500_qscat
+          real, dimension(50,50) :: CaSiO4_vis_650_gg
+          real, dimension(50,50) :: CaSiO4_vis_650_qext
+          real, dimension(50,50) :: CaSiO4_vis_650_qscat
+          real, dimension(50,50) :: CaSiO4_vis_800_gg
+          real, dimension(50,50) :: CaSiO4_vis_800_qext
+          real, dimension(50,50) :: CaSiO4_vis_800_qscat
           
           real, dimension(50,50) :: CaTiO3_rosselandMean_gg
           real, dimension(50,50) :: CaTiO3_rosselandMean_qext
@@ -524,31 +524,31 @@
           close(11)
           close(12)
           
-          open (1, file='../CLOUD_DATA/C2H2_rosselandMean_gg.txt')
-          open (2, file='../CLOUD_DATA/C2H2_rosselandMean_qext.txt')
-          open (3, file='../CLOUD_DATA/C2H2_rosselandMean_qscat.txt')
-          open (4, file='../CLOUD_DATA/C2H2_vis_500_gg.txt')
-          open (5, file='../CLOUD_DATA/C2H2_vis_500_qext.txt')
-          open (6, file='../CLOUD_DATA/C2H2_vis_500_qscat.txt')
-          open (7, file='../CLOUD_DATA/C2H2_vis_650_gg.txt')
-          open (8, file='../CLOUD_DATA/C2H2_vis_650_qext.txt')
-          open (9, file='../CLOUD_DATA/C2H2_vis_650_qscat.txt')
-          open (10, file='../CLOUD_DATA/C2H2_vis_800_gg.txt')
-          open (11, file='../CLOUD_DATA/C2H2_vis_800_qext.txt')
-          open (12, file='../CLOUD_DATA/C2H2_vis_800_qscat.txt')
+          open (1, file='../CLOUD_DATA/Ni_rosselandMean_gg.txt')
+          open (2, file='../CLOUD_DATA/Ni_rosselandMean_qext.txt')
+          open (3, file='../CLOUD_DATA/Ni_rosselandMean_qscat.txt')
+          open (4, file='../CLOUD_DATA/Ni_vis_500_gg.txt')
+          open (5, file='../CLOUD_DATA/Ni_vis_500_qext.txt')
+          open (6, file='../CLOUD_DATA/Ni_vis_500_qscat.txt')
+          open (7, file='../CLOUD_DATA/Ni_vis_650_gg.txt')
+          open (8, file='../CLOUD_DATA/Ni_vis_650_qext.txt')
+          open (9, file='../CLOUD_DATA/Ni_vis_650_qscat.txt')
+          open (10, file='../CLOUD_DATA/Ni_vis_800_gg.txt')
+          open (11, file='../CLOUD_DATA/Ni_vis_800_qext.txt')
+          open (12, file='../CLOUD_DATA/Ni_vis_800_qscat.txt')
           
-          read(1,*) C2H2_rosselandMean_gg
-          read(2,*) C2H2_rosselandMean_qext
-          read(3,*) C2H2_rosselandMean_qscat
-          read(4,*) C2H2_vis_500_gg
-          read(5,*) C2H2_vis_500_qext
-          read(6,*) C2H2_vis_500_qscat
-          read(7,*) C2H2_vis_650_gg
-          read(8,*) C2H2_vis_650_qext
-          read(9,*) C2H2_vis_650_qscat
-          read(10,*) C2H2_vis_800_gg
-          read(11,*) C2H2_vis_800_qext
-          read(12,*) C2H2_vis_800_qscat
+          read(1,*) Ni_rosselandMean_gg
+          read(2,*) Ni_rosselandMean_qext
+          read(3,*) Ni_rosselandMean_qscat
+          read(4,*) Ni_vis_500_gg
+          read(5,*) Ni_vis_500_qext
+          read(6,*) Ni_vis_500_qscat
+          read(7,*) Ni_vis_650_gg
+          read(8,*) Ni_vis_650_qext
+          read(9,*) Ni_vis_650_qscat
+          read(10,*) Ni_vis_800_gg
+          read(11,*) Ni_vis_800_qext
+          read(12,*) Ni_vis_800_qscat
           
           close(1)
           close(2)
@@ -602,31 +602,31 @@
           close(11)
           close(12)
           
-          open (1, file='../CLOUD_DATA/Fe2SiO4_rosselandMean_gg.txt')
-          open (2, file='../CLOUD_DATA/Fe2SiO4_rosselandMean_qext.txt')
-          open (3, file='../CLOUD_DATA/Fe2SiO4_rosselandMean_qscat.txt')
-          open (4, file='../CLOUD_DATA/Fe2SiO4_vis_500_gg.txt')
-          open (5, file='../CLOUD_DATA/Fe2SiO4_vis_500_qext.txt')
-          open (6, file='../CLOUD_DATA/Fe2SiO4_vis_500_qscat.txt')
-          open (7, file='../CLOUD_DATA/Fe2SiO4_vis_650_gg.txt')
-          open (8, file='../CLOUD_DATA/Fe2SiO4_vis_650_qext.txt')
-          open (9, file='../CLOUD_DATA/Fe2SiO4_vis_650_qscat.txt')
-          open (10, file='../CLOUD_DATA/Fe2SiO4_vis_800_gg.txt')
-          open (11, file='../CLOUD_DATA/Fe2SiO4_vis_800_qext.txt')
-          open (12, file='../CLOUD_DATA/Fe2SiO4_vis_800_qscat.txt')
+          open (1, file='../CLOUD_DATA/CaSiO4_rosselandMean_gg.txt')
+          open (2, file='../CLOUD_DATA/CaSiO4_rosselandMean_qext.txt')
+          open (3, file='../CLOUD_DATA/CaSiO4_rosselandMean_qscat.txt')
+          open (4, file='../CLOUD_DATA/CaSiO4_vis_500_gg.txt')
+          open (5, file='../CLOUD_DATA/CaSiO4_vis_500_qext.txt')
+          open (6, file='../CLOUD_DATA/CaSiO4_vis_500_qscat.txt')
+          open (7, file='../CLOUD_DATA/CaSiO4_vis_650_gg.txt')
+          open (8, file='../CLOUD_DATA/CaSiO4_vis_650_qext.txt')
+          open (9, file='../CLOUD_DATA/CaSiO4_vis_650_qscat.txt')
+          open (10, file='../CLOUD_DATA/CaSiO4_vis_800_gg.txt')
+          open (11, file='../CLOUD_DATA/CaSiO4_vis_800_qext.txt')
+          open (12, file='../CLOUD_DATA/CaSiO4_vis_800_qscat.txt')
           
-          read(1,*) Fe2SiO4_rosselandMean_gg
-          read(2,*) Fe2SiO4_rosselandMean_qext
-          read(3,*) Fe2SiO4_rosselandMean_qscat
-          read(4,*) Fe2SiO4_vis_500_gg
-          read(5,*) Fe2SiO4_vis_500_qext
-          read(6,*) Fe2SiO4_vis_500_qscat
-          read(7,*) Fe2SiO4_vis_650_gg
-          read(8,*) Fe2SiO4_vis_650_qext
-          read(9,*) Fe2SiO4_vis_650_qscat
-          read(10,*) Fe2SiO4_vis_800_gg
-          read(11,*) Fe2SiO4_vis_800_qext
-          read(12,*) Fe2SiO4_vis_800_qscat
+          read(1,*) CaSiO4_rosselandMean_gg
+          read(2,*) CaSiO4_rosselandMean_qext
+          read(3,*) CaSiO4_rosselandMean_qscat
+          read(4,*) CaSiO4_vis_500_gg
+          read(5,*) CaSiO4_vis_500_qext
+          read(6,*) CaSiO4_vis_500_qscat
+          read(7,*) CaSiO4_vis_650_gg
+          read(8,*) CaSiO4_vis_650_qext
+          read(9,*) CaSiO4_vis_650_qscat
+          read(10,*) CaSiO4_vis_800_gg
+          read(11,*) CaSiO4_vis_800_qext
+          read(12,*) CaSiO4_vis_800_qscat
           
           close(1)
           close(2)
@@ -753,6 +753,9 @@
           MOLEF   = (/1.23e-07,4.06e-08,9.35e-07,3.11e-07,4.4e-07,3.26e-05,
      &                1.745e-05,9.56e-09,1.61e-06,2.94e-05,9.95e-07,7.83e-08,1.385e-06/)
 
+          MOLEF   = (/1.23e-07,4.06e-08,9.35e-07,3.11e-07,4.4e-07,3.26e-05,
+     &                1.745e-05,9.56e-09,1.61e-06,2.94e-05,0.0,7.83e-08,1.385e-06/)
+
           CORFACT = (/0.005,0.018,0.050,0.135,.367,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
@@ -760,8 +763,6 @@
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000/)
-
-
 
 !    KCl
       TconKCl = (/617.032,621.573,626.038,630.552,635.053, 639.555,
@@ -919,8 +920,6 @@
      &              2150.32,2163.28, 2176.89, 2191.32,2198.76/)
 
 
-
-
       Tconds(1:51,1)=TconKCl 
       Tconds(1:51,2)=TconZnS
       Tconds(1:51,3)=TconNa2S
@@ -984,11 +983,11 @@
       G0_OPPR(4,1:50,1:50,8)=VO_rosselandMean_gg
       G0_OPPR(5,1:50,1:50,8)=VO_rosselandMean_gg
       
-      G0_OPPR(1,1:50,1:50,9)=C2H2_vis_500_gg
-      G0_OPPR(2,1:50,1:50,9)=C2H2_vis_650_gg
-      G0_OPPR(3,1:50,1:50,9)=C2H2_vis_800_gg
-      G0_OPPR(4,1:50,1:50,9)=C2H2_rosselandMean_gg
-      G0_OPPR(5,1:50,1:50,9)=C2H2_rosselandMean_gg
+      G0_OPPR(1,1:50,1:50,9)=Ni_vis_500_gg
+      G0_OPPR(2,1:50,1:50,9)=Ni_vis_650_gg
+      G0_OPPR(3,1:50,1:50,9)=Ni_vis_800_gg
+      G0_OPPR(4,1:50,1:50,9)=Ni_rosselandMean_gg
+      G0_OPPR(5,1:50,1:50,9)=Ni_rosselandMean_gg
       
       G0_OPPR(1,1:50,1:50,10)=Fe_vis_500_gg
       G0_OPPR(2,1:50,1:50,10)=Fe_vis_650_gg
@@ -996,11 +995,11 @@
       G0_OPPR(4,1:50,1:50,10)=Fe_rosselandMean_gg
       G0_OPPR(5,1:50,1:50,10)=Fe_rosselandMean_gg
       
-      G0_OPPR(1,1:50,1:50,11)=Fe2SiO4_vis_500_gg
-      G0_OPPR(2,1:50,1:50,11)=Fe2SiO4_vis_650_gg
-      G0_OPPR(3,1:50,1:50,11)=Fe2SiO4_vis_800_gg
-      G0_OPPR(4,1:50,1:50,11)=Fe2SiO4_rosselandMean_gg
-      G0_OPPR(5,1:50,1:50,11)=Fe2SiO4_rosselandMean_gg
+      G0_OPPR(1,1:50,1:50,11)=CaSiO4_vis_500_gg
+      G0_OPPR(2,1:50,1:50,11)=CaSiO4_vis_650_gg
+      G0_OPPR(3,1:50,1:50,11)=CaSiO4_vis_800_gg
+      G0_OPPR(4,1:50,1:50,11)=CaSiO4_rosselandMean_gg
+      G0_OPPR(5,1:50,1:50,11)=CaSiO4_rosselandMean_gg
       
       G0_OPPR(1,1:50,1:50,12)=CaTiO3_vis_500_gg
       G0_OPPR(2,1:50,1:50,12)=CaTiO3_vis_650_gg
@@ -1062,11 +1061,11 @@
       PI0_OPPR(4,1:50,1:50,8)=VO_rosselandMean_qscat
       PI0_OPPR(5,1:50,1:50,8)=VO_rosselandMean_qscat
       
-      PI0_OPPR(1,1:50,1:50,9)=C2H2_vis_500_qscat
-      PI0_OPPR(2,1:50,1:50,9)=C2H2_vis_650_qscat
-      PI0_OPPR(3,1:50,1:50,9)=C2H2_vis_800_qscat
-      PI0_OPPR(4,1:50,1:50,9)=C2H2_rosselandMean_qscat
-      PI0_OPPR(5,1:50,1:50,9)=C2H2_rosselandMean_qscat
+      PI0_OPPR(1,1:50,1:50,9)=Ni_vis_500_qscat
+      PI0_OPPR(2,1:50,1:50,9)=Ni_vis_650_qscat
+      PI0_OPPR(3,1:50,1:50,9)=Ni_vis_800_qscat
+      PI0_OPPR(4,1:50,1:50,9)=Ni_rosselandMean_qscat
+      PI0_OPPR(5,1:50,1:50,9)=Ni_rosselandMean_qscat
       
       PI0_OPPR(1,1:50,1:50,10)=Fe_vis_500_qscat
       PI0_OPPR(2,1:50,1:50,10)=Fe_vis_650_qscat
@@ -1074,11 +1073,11 @@
       PI0_OPPR(4,1:50,1:50,10)=Fe_rosselandMean_qscat
       PI0_OPPR(5,1:50,1:50,10)=Fe_rosselandMean_qscat
       
-      PI0_OPPR(1,1:50,1:50,11)=Fe2SiO4_vis_500_qscat
-      PI0_OPPR(2,1:50,1:50,11)=Fe2SiO4_vis_650_qscat
-      PI0_OPPR(3,1:50,1:50,11)=Fe2SiO4_vis_800_qscat
-      PI0_OPPR(4,1:50,1:50,11)=Fe2SiO4_rosselandMean_qscat
-      PI0_OPPR(5,1:50,1:50,11)=Fe2SiO4_rosselandMean_qscat
+      PI0_OPPR(1,1:50,1:50,11)=CaSiO4_vis_500_qscat
+      PI0_OPPR(2,1:50,1:50,11)=CaSiO4_vis_650_qscat
+      PI0_OPPR(3,1:50,1:50,11)=CaSiO4_vis_800_qscat
+      PI0_OPPR(4,1:50,1:50,11)=CaSiO4_rosselandMean_qscat
+      PI0_OPPR(5,1:50,1:50,11)=CaSiO4_rosselandMean_qscat
       
       PI0_OPPR(1,1:50,1:50,12)=CaTiO3_vis_500_qscat
       PI0_OPPR(2,1:50,1:50,12)=CaTiO3_vis_650_qscat
@@ -1140,11 +1139,11 @@
       QE_OPPR(4,1:50,1:50,8)=VO_rosselandMean_qext
       QE_OPPR(5,1:50,1:50,8)=VO_rosselandMean_qext
       
-      QE_OPPR(1,1:50,1:50,9)=C2H2_vis_500_qext
-      QE_OPPR(2,1:50,1:50,9)=C2H2_vis_650_qext
-      QE_OPPR(3,1:50,1:50,9)=C2H2_vis_800_qext
-      QE_OPPR(4,1:50,1:50,9)=C2H2_rosselandMean_qext
-      QE_OPPR(5,1:50,1:50,9)=C2H2_rosselandMean_qext
+      QE_OPPR(1,1:50,1:50,9)=Ni_vis_500_qext
+      QE_OPPR(2,1:50,1:50,9)=Ni_vis_650_qext
+      QE_OPPR(3,1:50,1:50,9)=Ni_vis_800_qext
+      QE_OPPR(4,1:50,1:50,9)=Ni_rosselandMean_qext
+      QE_OPPR(5,1:50,1:50,9)=Ni_rosselandMean_qext
       
       QE_OPPR(1,1:50,1:50,10)=Fe_vis_500_qext
       QE_OPPR(2,1:50,1:50,10)=Fe_vis_650_qext
@@ -1152,11 +1151,11 @@
       QE_OPPR(4,1:50,1:50,10)=Fe_rosselandMean_qext
       QE_OPPR(5,1:50,1:50,10)=Fe_rosselandMean_qext
       
-      QE_OPPR(1,1:50,1:50,11)=Fe2SiO4_vis_500_qext
-      QE_OPPR(2,1:50,1:50,11)=Fe2SiO4_vis_650_qext
-      QE_OPPR(3,1:50,1:50,11)=Fe2SiO4_vis_800_qext
-      QE_OPPR(4,1:50,1:50,11)=Fe2SiO4_rosselandMean_qext
-      QE_OPPR(5,1:50,1:50,11)=Fe2SiO4_rosselandMean_qext
+      QE_OPPR(1,1:50,1:50,11)=CaSiO4_vis_500_qext
+      QE_OPPR(2,1:50,1:50,11)=CaSiO4_vis_650_qext
+      QE_OPPR(3,1:50,1:50,11)=CaSiO4_vis_800_qext
+      QE_OPPR(4,1:50,1:50,11)=CaSiO4_rosselandMean_qext
+      QE_OPPR(5,1:50,1:50,11)=CaSiO4_rosselandMean_qext
       
       QE_OPPR(1,1:50,1:50,12)=CaTiO3_vis_500_qext
       QE_OPPR(2,1:50,1:50,12)=CaTiO3_vis_650_qext

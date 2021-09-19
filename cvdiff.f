@@ -149,23 +149,6 @@ C      REAL*8 EKTH, EKV, TINT, TIRR, RAMPUP
 ! Magnetic drag (U, V, and T tendencies)
       REAL*8 UTVD_BDRAG(IGC,NL), VTVD_BDRAG(IGC,NL), TTVD_BDRAG(IGC,NL)
       REAL*8 RHO_CGS, ANG_FACTOR ! in Gauss
-C      REAL*8 BFIELD, TDRAG_MIN, RHO_CGS, ANG_FACTOR ! in Gauss
-C      LOGICAL LBDRAG
-
-C      EKTH=ABSLW1 ! Thermal opacity coeff
-C      EKV=ABSSW1*10.0/P0*GA  ! Visible opacity  coeff (rescaled to cm^2 /g from thickness)
-      
-C      TINT=(FBASEFLUX/5.67e-8)**0.25 ! Temp. equivalent of interior flux
-C      TIRR=(SOLC_IN/5.67e-8)**0.25 ! Temp. equivalent of irradiation flux
-
-C      CT=RADEA*WW*RADEA*WW/GASCON ! Temperature scale for TG
-C      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates     
-
-C Magnetic drag part
-C      LBDRAG=.TRUE.
-C      BFIELD=10.0
-C      TDRAG_MIN=0.005  ! in units of planet days
-C      RAMPUP=5.  ! ER Modif, wait RAMPUP days to start effect and then linearly increase for another RAMPUP days
 
 C                                                                         
       DO 10 L=1,NL                                                        

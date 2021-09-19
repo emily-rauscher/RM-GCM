@@ -188,8 +188,8 @@
      &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
      &                  CMB(L,J) - DIRECT(L,J)
 !
-          TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
-     &                  ( EL1(L,J) + EL2(L,J))   +
+          TMI(L,J)   =  EL3(L,J) + U1I(L) *(CK1(L,J)  *
+     &                  (EL1(L,J) + EL2(L,J))   +
      &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
      &                   CPB(L,J) + CMB(L,J) )
         enddo
@@ -199,16 +199,17 @@
 
       do J = 1,NLAYER
         do L = NSOLP+1,NTOTAL
+
           CK1(L,J)   = XK(L,2*J-1)                                         
           CK2(L,J)   = XK(L,2*J)
 
-          FNET(L,J)  = CK1(L,J)  *( EL1(L,J) -EL2(L,J))   +
-     &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
+          FNET(L,J)  = CK1(L,J) * (EL1(L,J) -EL2(L,J))   +
+     &                 CK2(L,J) * (EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
      &                  CMB(L,J) - DIRECT(L,J)
 !                                                            
           TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
      &                  ( EL1(L,J) + EL2(L,J))   +
-     &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
+     &                   CK2(L,J) * (EM1(L,J)+EM2(L,J) ) +
      &                   CPB(L,J) + CMB(L,J) )                             
         enddo
       enddo
