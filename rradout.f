@@ -30,8 +30,12 @@
            do ig = 1, NGROUP
              do i = 1, NRAD
                ctot = ctot + caer(i,j,ig)
+               write(*,*) ctot, caer(i,j,ig)
              enddo
            enddo
+           stop
+
+
 !           WRITE(LUNOPRT,562) J,P(J),PRESS(J),T(J),TT(J),      &
 !                        RDH2O(J),Ctot,fupbi(j),fdownbi(j),      &
 !                        fupbs(j),fdownbs(j)

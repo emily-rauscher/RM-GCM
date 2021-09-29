@@ -55,9 +55,8 @@
 
   10  CONTINUE
 
-!
+
 !       CALCULATE SFCS, THE SOURCE AT THE BOTTOM.
-!
         DO 20 L            =  1,NSOLP
           SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
   20  CONTINUE
@@ -102,7 +101,7 @@
 
 !     AGAIN FOR THE IR
       J                =  0
-      DO 43 JD         =  2,JN2,2
+      DO 43 JD         =  2,JDBLE,2
          J             =  J + 1
          DO 43 L       =  NSOLP+1,LLA
 !           HERE ARE THE EVEN MATRIX ELEMENTS
@@ -174,7 +173,6 @@
   51  CONTINUE
 
 
-!
 !  ***************************************************************
 !     CALCULATE LAYER COEFFICIENTS, NET FLUX AND MEAN INTENSITY
 !  ***************************************************************
@@ -215,6 +213,10 @@
       enddo
 
 
+      !DO J = 1, NLAYER
+      !    write(*,*) DIRECT(4,J), DIRECT(5,J), 'stopping in radd'
+      !END DO
+      !STOP
 
       RETURN
       END

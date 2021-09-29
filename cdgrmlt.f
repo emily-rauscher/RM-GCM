@@ -292,9 +292,8 @@ C
       IF(LVD) CALL VDIFF
       IF(LCR) CALL CONVEC            
       IF(LLR) CALL LSCRN
-
       IF(LRD) CALL RADIATION(TROPHT,IH)
-      if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM                               
+      if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM
 C                                                                         
       do j=1,igc                                                          
          sfld(j,1)=salb(j,jh)                                             
@@ -308,19 +307,22 @@ C
          cld(j,3)=cfrac(j,3)                                              
          cld(j,4)=cfrac(j,4)+cfrac(j,5)                                   
          do k=1,6                                                         
-            rflux(j,k)=rrflux(j,jh,k)                                     
-         enddo                                                            
+            rflux(j,k)=rrflux(j,jh,k)
+         enddo
+
 C rflux(j,2) is +downwards surface flux Wm-2                              
         rflux(j,2)=rflux(j,1)-rflux(j,2)+rflux(j,3)-rflux(j,4)-           
      :    CV*1.0E5*(shbl(j)+slbl(j))                                      
-      enddo                                                               
+      enddo
+
       IF(LSUM) THEN                                                       
       do k=1,6                                                            
          do j=1,igc                                                       
             arflux(j,k)=arflux(j,k)+rflux(j,k)*RKP                        
             asfld(j,k)=asfld(j,k)+sfld(j,k)*RKP                           
          enddo                                                            
-      enddo                                                               
+      enddo
+
       do k=1,4                                                            
          do j=1,igc                                                       
             acld(j,k)=acld(j,k)+cld(j,k)*RKP                              
@@ -347,25 +349,17 @@ C rflux(j,2) is +downwards surface flux Wm-2
         QTCRZ(K)=SSUM(MG,QTCR(IOF,L),1)*RMG                               
         TTLRZ(K)=SSUM(MG,TTLR(IOF,L),1)*RMG                               
         QTLRZ(K)=SSUM(MG,QTLR(IOF,L),1)*RMG                               
-        TTRDZ(K)=SSUM(MG,TTRD(IOF,L),1)*RMG                               
+        TTRDZ(K)=SSUM(MG,TTRD(IOF,L),1)*RMG
         CTCRZ(K)=CTCR(L,IHEM)                                             
         CTLRZ(K)=CTLR(L,IHEM)                                             
-  120  K=K+JGG                                                            
+  120  K=K+JGG
+
        UTBLZ(K1)=SSUM(MG,UTBL(IOF),1)*RMG                                 
        VTBLZ(K1)=SSUM(MG,VTBL(IOF),1)*RMG                                 
        TTBLZ(K1)=SSUM(MG,TTBL(IOF),1)*RMG                                 
        QTBLZ(K1)=SSUM(MG,QTBL(IOF),1)*RMG                                 
   140 CONTINUE                                                            
-c      IF(LWRITE) THEN                                                    
-c        WRITE(NAVWT)ASSBL,ASHBL,ASLBL,ARRCR,ARRLR                        
-c     $        ,arflux,asfld,acld                                         
-c     :  ,SSBL,SHBL,SLBL,RRCR,RRLR                                        
-c     $        ,rflux,sfld,cld                                            
-c      ELSE                                                               
-c        WRITE(NAVWT)ASSBL,ASHBL,ASLBL,ARRCR,ARRLR                        
-c     $        ,arflux,asfld,acld                                         
-c      ENDIF                                                              
-c                                                                         
+
       do i=1,igc                                                          
          assbl1(i,jh)=assbl(i)                                            
          ashbl1(i,jh)=ashbl(i)                                            
@@ -384,7 +378,7 @@ c
             acld1(i,k,jh)=acld(i,k)                                       
          end do                                                           
       end do                                                              
-      ENDIF ! IF(LSUM)                                                    
+      ENDIF
 C                                                                         
       DO 200 L=1,NL                                                       
        DO 200 J=1,IGC                                                     

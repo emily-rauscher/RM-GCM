@@ -146,7 +146,7 @@
       common / aerad1 /     
      &   isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,      
      &   ifsetup, ibinm,  
-     &   riwp,rfluxes_aerad(NWAVE,2,2),  
+     &   riwp,rfluxes_aerad(2,2,2),
      &   r_aerad(NBIN,NGROUP),      
      &   rup_aerad(NBIN,NGROUP),     
      &   p_aerad(NZ_RAD), t_aerad(NZ_RAD),PRESS(NZ_RAD),      

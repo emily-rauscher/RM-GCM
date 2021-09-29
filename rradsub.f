@@ -28,7 +28,7 @@
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
 
-      real rfluxes(nwave,2,2)
+      real rfluxes(2,2,2)
       REAL SSLON,SSLAT  ! ER:
       REAL DLENGTH  ! ER: half-length of solar dayinteger ibinmin
       real PI2
@@ -161,21 +161,15 @@ C ER modif for non-zero obliquity
           cheat = 0.
 
           do iz = 1,NZ
-
               jz = NZ + 1 - iz
 
-              ! MALSKY NEEDS TO FIX, BAD CODE!!!!
-              if (iz .eq. 1) then
-                  radheat_tot(1) = 0
-              else
-                  radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
+              radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
 
-                  heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
-                  heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
+              heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
+              heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
 
-                  radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz)*SCDAY-cheats(iz)
+              radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz) * SCDAY-cheats(iz)
      &             + heati_aerad(jz)*SCDAY - cheati(iz)
-              end if
           enddo
       enddo
 

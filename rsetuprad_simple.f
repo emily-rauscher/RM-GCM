@@ -19,10 +19,11 @@
 !
 ! **********************************************************************
 
-      REAL p(NZ),ABSCOEFF(NWAVE),G,WVO,AM
-
+      REAL G,WVO,AM
+      !REAL :: p(NZ)
       real, dimension(2,NLAYER) :: tau_IRe
       real, dimension(3,NLAYER) :: tau_Ve
+      real, dimension(NWAVE) :: ABSCOEFF(NWAVE)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       dimension rup_1(NGROUP)
@@ -34,10 +35,9 @@
 
       real t_pass(NZ)
 
-
       integer i1, i2, indorder(5)
       logical all_ok
-      DATA AVG    / 6.02252E+23  /
+      DATA AVG    /6.02252E+23/
       DATA PI     /3.14159265359/
 
       integer :: malsky_switch
@@ -71,17 +71,16 @@
 
       AM= RGAS/R_AIR
       DATA ALOS   / 2.68719E19   /
-      G= GA*100.
+      G = GA*100.
       DATA RGAS   / 8.31430E+07  /
       DATA SBK    / 5.6697E-8    /
       DATA SCDAY  / 86400.0      /
-
 
       DATA EPSILON / ALMOST_ZERO  /
 
       AM= RGAS/R_AIR
 
-      DO L = LLS,NSOLP
+      DO L = 1,NSOLP
           ABSCOEFF(L)=ABSSW
       END DO
 
@@ -92,7 +91,6 @@
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
       JN      =   JDBLE-1
-      JN2     =   2*JDBLE-1
       TPI     =   2.*PI
 
 !     Get scalars from interface common block:
@@ -106,7 +104,6 @@
 !     PBOT       - PRESSURE AT BOTTOM OF MODEL (DYNES/CM**2)
 !     SFC_WIND   - wind speed at 10 m altitude (m/s)
 !     SFC_ALB    - surface albedo when fixed
-!
 
       ISL          = 0
       IR           = 0
@@ -163,10 +160,11 @@
       PRESS    = P_aerad*10.
       PBAR(1)  = P_AERAD(1)*1e-5
       DPG(1)   = PRESS(1)/G
+      t_pass(NZ) = t_pass(NZ-1)
 
       DO J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-         DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+         DPG(J)   = (PRESS(J)-PRESS(J-1)) / G
       END DO
 
 !        Here we are saying that the top layer has a thickness that
@@ -184,7 +182,7 @@
 !        for this cap above the model.  The attenuation through it must
 !        still be calculated using these values.
 
-!     CALCULATE CLOUD AND AEROSOL OPACITY.
+!        CALCULATE CLOUD AND AEROSOL OPACITY.
 
       DO J = 1,NLAYER
           DO L = 1,NTOTAL
@@ -199,23 +197,11 @@
       END DO
 
 
-!     THIS IS DOUBLE-GRAY SPECIFIC. NOT YET GENERALIZED
-!     SHORTWAVE:
-      DO L = LLS,NSOLP
-          DO J = 1,NLAYER
-              PM          =   DPG(J)
-              TAUGAS(L,J) = ABSCOEFF(L)*PM
-              FNET(L,J)   = 0.0
-              TMI(L,J)    = 0.0
-              DIRECT(L,J) = 0.0
-          END DO
-      END DO
-
-
-      malsky_switch = 1
+      malsky_switch = 0
 
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
+
 
           DO L = LLS,NSOLP
               tau_Ve(L, 1)  = ABS(tau_Ve(L,3) - tau_Ve(L,2))
@@ -225,8 +211,7 @@
               tau_IRe(L - NSOLP,1) = ABS(tau_IRe(L - NSOLP,3) - tau_IRe(L - NSOLP,2))
           END DO
 
-
-          DO L = 1,NSOLP
+          DO L = LLS,NSOLP
               DO J = 1,NLAYER
                   TAUGAS(L,J) = tau_Ve(L,J)
               END DO
@@ -238,83 +223,58 @@
               END DO
           END DO
 
-
-          DO J = 1, NLAYER
-              DO L = LLS,NSOLP
-                  FNET(L,J)   = 0.0
-                  TMI(L,J)    = 0.0
-                  DIRECT(L,J) = 0.0
-              END DO
-          END DO
-
-          DO J = 1, NLAYER
-              DO L = NSOLP+1, NTOTAL
-                  FNET(L,J)   = 0.0
-                  TMI(L,J)    = 0.0
-                  DIRECT(L,J) = 0.0
-              END DO
-          END DO
       else
           if (NSOLP .gt. 1) then
-              Beta_V(1) = 1.0
-              Beta_V(2) = 0.0
-              Beta_V(3) = 0.0
+              Beta_V(1) = 0.33333
+              Beta_V(2) = 0.33333
+              Beta_V(3) = 0.33333
 
-              Beta_IR(1) = 1.0
-              Beta_IR(2) = 0.0
+              Beta_IR(1) = 0.84
+              Beta_IR(2) = 0.16
+
+              !Beta_V(1) = 1.0
+              !Beta_V(2) = 0.0
+              !Beta_V(3) = 0.0
+
+              !Beta_IR(1) = 1.0
+              !Beta_IR(2) = 0.0
           else
               Beta_V(1)  = 1.0
               Beta_IR(1) = 1.0
-         end if
+          end if
+
           DO L = LLS,NSOLP
               DO J     =   1,NLAYER
                   PM          =   DPG(J)
                   TAUGAS(L,J) = ABSCOEFF(L)*PM
-                  FNET(L,J)   = 0.0
-                  TMI(L,J)    = 0.0
-                  DIRECT(L,J) = 0.0
               END DO
           END DO
+
 
           DO L  = NSOLP+1,NTOTAL
-              DO J     =   1,NLAYER
-             PM          =   DPG(J)
-             IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
-                           TAUGAS(L,J)=ABSCOEFF(L)*PM
-                         ELSE IF (OPACIR_POWERLAW.eq.1) THEN
-                           TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                         ELSE IF (OPACIR_POWERLAW.eq.2) THEN
-                           TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                         ELSE IF (OPACIR_POWERLAW.eq.3) THEN
-                           TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                  *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                         ELSE
-                           TAUGAS(L,J)=ABSCOEFF(L)*PM
-     &                     *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
-              ENDIF
-              FNET(L,J)    =  0.0
-              TMI(L,J)     =  0.0
-              DIRECT(L,J)  =  0.0
-              END DO
+             DO J     =   1,NLAYER
+                 PM          =   DPG(J)
+                 IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
+                     TAUGAS(L,J)=ABSCOEFF(L)*PM
+                 ELSE IF (OPACIR_POWERLAW.eq.1) THEN
+                     TAUGAS(L,J)=ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+                 ELSE IF (OPACIR_POWERLAW.eq.2) THEN
+                     TAUGAS(L,J)=ABSCOEFF(L)*PM
+     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+                 ELSE IF (OPACIR_POWERLAW.eq.3) THEN
+                     TAUGAS(L,J)=ABSCOEFF(L)*PM
+     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+                 ELSE
+                     TAUGAS(L,J)=ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
+                 ENDIF
+             END DO
           END DO
       END IF
 
-      IF ((ANY(TT .ge. 4d3))) then
-          write(*,*)
-          write(*,*) "BREAKING"
-          DO J = 1, NLAYER
-              write(*,*) t_pass(J), TAUGAS(1,J), TAUGAS(2,J)
-          END DO
-          write(*,*)
-          STOP
-      END IF
-
-      DO  L           =   NSOLP+1,NTOTAL
+      DO  L = NSOLP+1,NTOTAL
           TAUCONST(L)=ABSCOEFF(L)/GA/100.
       ENDDO
 
@@ -375,6 +335,5 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
-
       RETURN
       END

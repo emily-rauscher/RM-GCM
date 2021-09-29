@@ -25,8 +25,7 @@
       PARAMETER ( NLAYER = NVERT+1)
       PARAMETER ( NDBL = 2*NLAYER )
       PARAMETER ( NRADVER = NRAD*NVERT )                                    
-      PARAMETER ( NRADLAY = NRAD*NLAYER )     
-      PARAMETER ( NQPL = 4*NLAYER)                              
+      PARAMETER ( NRADLAY = NRAD*NLAYER )
 !                                                                       
 ! NTOTAL = TOTAL NUMBER OF PROBABILITY INTERVALS;                       
 ! NSOLP  = NUMBER OF SOLAR PROBABILITY INTERVALS;                       
@@ -34,8 +33,8 @@
 !
       PARAMETER ( NSOLP = 3)
       PARAMETER ( NIRP  = 2)
-      PARAMETER ( NTOTAL = NSOLP + NIRP )          
-!                                                                       
+      PARAMETER ( NTOTAL = NSOLP + NIRP )
+!
 ! NGAUSS = TOTAL NUMBER OF GAUSS QUADRATURE POINTS;                     
 !                                                                       
       PARAMETER ( NGAUSS = 3)                                           
@@ -74,7 +73,7 @@
 ! INITIATED IN SETUPRAD FOR RADIATION CALCULATION                       
 !
       COMMON /irad4/                                                       
-     &   LLA, LLS, JDBLE, JN,JN2, EPSILON, EXPMAX,
+     &   LLA, LLS, JDBLE, JN, EPSILON, EXPMAX,
      &   TPI, SQ3, SBK,                                                       
      &   AM, AVG, ALOS, G, PI, SCDAY, RGAS,                                   
      &   GANGLE(NGAUSS), GWEIGHT(NGAUSS), SFLX(NSOL), WVLN(NSOL),             
@@ -135,7 +134,7 @@
      &   EM1(NTOTAL,NLAYER),                                                  
      &   EM2(NTOTAL,NLAYER),    EL1( NTOTAL,NLAYER),                          
      &   EL2(NTOTAL,NLAYER),    GAMI(NTOTAL,NLAYER),                          
-     &   AF(NTOTAL,NQPL), BF(NTOTAL,NQPL), EF(NTOTAL,NQPL)               
+     &   AF(NTOTAL,NDBL), BF(NTOTAL,NDBL), EF(NTOTAL,NDBL)
 !
 ! DEFINED IN 'ADD'                                                      
 !
@@ -147,8 +146,8 @@
      &   CMB( NTOTAL,NLAYER),   DIRECT(NTOTAL,NLAYER),                       
      &   EE3( NTOTAL,NLAYER),   EL3(   NTOTAL,NLAYER),                        
      &   FNET(NTOTAL,NLAYER),   TMI(   NTOTAL,NLAYER),                        
-     &   AS(  NTOTAL,NQPL),     DF(    NTOTAL,NQPL),                          
-     &   DS(  NTOTAL,NQPL),     XK(    NTOTAL,NQPL)                      
+     &   AS(  NTOTAL,NDBL),     DF(    NTOTAL,NDBL),
+     &   DS(  NTOTAL,NDBL),     XK(    NTOTAL,NDBL)
 !
 ! DEFINED IN 'NEWFLUX1'                                                 
 !

@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI(NCLOUDS)
+      SUBROUTINE OPPRMULTI
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -13,13 +13,12 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
-      integer :: NCLOUDS
 
       REAL TAUFACT
       REAL TAUAER_OPPR(NTOTAL, NL+1, 13)
 
-      REAL CONDFACT(NL+1,NCLOUDS)
-      REAL CLOUDLOC(NL+1,NCLOUDS)
+      REAL CONDFACT(NL+1,13)
+      REAL CLOUDLOC(NL+1,13)
 
       REAL TCONDS(51,13)
 
@@ -41,7 +40,7 @@
       real, dimension(50) :: input_temperature_array
       real, dimension(50) :: particle_size_vs_layer_array_in_meters
 
-      INTEGER K,J,BASELEV,TOPLEV
+      INTEGER K,J,BASELEV,TOPLEV, NCLOUDS
 
 !     The mass of these layers is this pressure thickness divide by G.
 !     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
@@ -58,6 +57,7 @@
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters
 
+      NCLOUDS = 13
 
       DO J = 1,NLAYER -1
           size_loc = MINLOC(ABS(input_particle_size_array_in_meters -
@@ -106,7 +106,6 @@
           END DO
       END DO
 
-      ! Maybe I can get rid of this?
       DO L =1, NTOTAL
           DO I =1, NCLOUDS
               TAUAER_OPPR(L,NLAYER,I) = 0.0
@@ -116,20 +115,28 @@
 !     SW AT STANDARD VERTICAL RESOLUTION
       DO L = LLS,NSOLP
           DO J = 1,NLAYER
-              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:4))
+              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
 
-              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:4)/(SUM(TAUAER_OPPR(L,J,1:4))+1e-8) * PI0_TEMP(L,J,1:4))
-              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:4)/(SUM(TAUAER_OPPR(L,J,1:4))+1e-8) * G0_TEMP(L, J,1:4))
+              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
+     &                       PI0_TEMP(L,J,1:NCLOUDS))
+              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
+     &                       G0_TEMP(L, J,1:NCLOUDS))
+
           END DO
       END DO
+
+
 
 !     LW AT STANDARD VERTICAL RESOLUTION
       DO L = NSOLP+1,NTOTAL
           DO J = 1,NLAYER
-              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:4))
+              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
 
-              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:4)/(SUM(TAUAER_OPPR(L,J,1:4))+1e-8) * PI0_TEMP(L,J,1:4))
-              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:4)/(SUM(TAUAER_OPPR(L,J,1:4))+1e-8) * G0_TEMP(L, J,1:4))
+              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
+     &                       PI0_TEMP(L,J,1:NCLOUDS))
+              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
+     &                       G0_TEMP(L, J,1:NCLOUDS))
+
           END DO
       END DO
 
@@ -139,60 +146,60 @@
 
 !         First the solar at standard resolution
           DO L = LLS,NSOLP
-             TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
-             if( TAUL(L,J) .lt. EPSILON ) then
-                 TAUL(L,J) = EPSILON
-             endif
+              if( TAUL(L,J) .lt. EPSILON ) then
+                  TAUL(L,J) = EPSILON
+              endif
 
-             utauL(L,j)  = TAUL(L,J)
-             WOT = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-             if (iradgas.eq.0) then
-                 wot = woL(L,j)
-             endif
+              utauL(L,j)  = TAUL(L,J)
+              WOT = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+              if (iradgas.eq.0) then
+                  wot = woL(L,j)
+              endif
 
-             WOT       = min(1.-EPSILON,WOT)
-             uw0(L,j)  = WOT
-             DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
+              WOT       = min(1.-EPSILON,WOT)
+              uw0(L,j)  = WOT
+              DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
 
-             if( DENOM .LE. EPSILON ) then
-                 DENOM = EPSILON
-             endif
+              if( DENOM .LE. EPSILON ) then
+                  DENOM = EPSILON
+              endif
 
-             if( DENOM .GT. EPSILON ) then
-                 GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
-             else
-                 GOT = 0.
-             endif
+              if( DENOM .GT. EPSILON ) then
+                  GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
+              else
+                  GOT = 0.
+              endif
 
-             if (iradgas.eq.0) then
-                 GOT = goL(L,j)
-             endif
+              if (iradgas.eq.0) then
+                  GOT = goL(L,j)
+              endif
 
-             ug0(L,j)    = GOT
-             uOPD(L,J)   = 0.0
-             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
+              ug0(L,j)    = GOT
+              uOPD(L,J)   = 0.0
+              uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
-             IF (deltascale) THEN
-                 FO          = GOT*GOT
-                 DEN         = 1.-WOT*FO
-                 TAUL(L,J)   = TAUL(L,J) * DEN
-                 W0(L,J)     = (1.-FO)*WOT/DEN
-                 G0(L,J)     = GOT/(1.+GOT)
-                 OPD(L,J)    = 0.0
-                 OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
-             ELSE
-                 W0(L,J)= uw0(L,J)
-                 G0(L,J)= ug0(L,J)
-                 TAUL(L,J)= utaul(L,J)
-                 OPD(L,J)= uOPD(L,J)
-             ENDIF
+              IF (deltascale) THEN
+                  FO          = GOT*GOT
+                  DEN         = 1.-WOT*FO
+                  TAUL(L,J)   = TAUL(L,J) * DEN
+                  W0(L,J)     = (1.-FO)*WOT/DEN
+                  G0(L,J)     = GOT/(1.+GOT)
+                  OPD(L,J)    = 0.0
+                  OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
+              ELSE
+                  W0(L,J)= uw0(L,J)
+                  G0(L,J)= ug0(L,J)
+                  TAUL(L,J)= utaul(L,J)
+                  OPD(L,J)= uOPD(L,J)
+              ENDIF
 
-!            HERE'S WHERE YOU CAN HARDWIRE VALUES
-             if( taul(L,j) .lt. 0.) then
-                 write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
-                 stop
-             endif
+!             HERE'S WHERE YOU CAN HARDWIRE VALUES
+              if( taul(L,j) .lt. 0.) then
+                  write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
+                  stop
+              endif
           END DO
       END DO
 
@@ -207,7 +214,7 @@
                   tauL(L,j) = tauaer(L,j)
               endif
 
-              if( TAUL(L,J) .lt. EPSILON ) then
+              if(TAUL(L,J) .lt. EPSILON) then
                   TAUL(L,J) = EPSILON
               endif
 
@@ -219,7 +226,7 @@
 
               WOT         = min(1.-EPSILON,WOT)
               uw0(L,j)    = WOT
-              DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
+              DENOM       = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))
 
               if( DENOM .LE. EPSILON ) then
                   DENOM = EPSILON

@@ -132,7 +132,7 @@
           J                        = NLAYER-M+1
           DO 640    I              = 1,NGAUSS
              DO 630 L              = NSOLP+1,NTOTAL
-                 UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))     
+                  UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))
      &                               *Y3(L,I,J+1)+Y2(L,I,J+1)+     
      &                               (1.-Y3(L,I,J+1))*Y8(L,I,J+1)
                   TMIU(L,J)        = TMIU(L,J)+UINTENT(L,I,J)*GRATIO(I)
@@ -141,6 +141,7 @@
  630         CONTINUE
  640      CONTINUE
  650  CONTINUE
+
 
       RETURN
       END

@@ -1,16 +1,21 @@
-      subroutine opacity_wrapper(t_pass, tau_IRe,tau_Ve, Beta_V, Beta_IR, gravity_SI)
+      subroutine opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, gravity_SI)
           include 'rcommons.h'
 
-          integer :: NLAYER, J, k, NZ
+          integer :: NLAYER, J, k
           real :: mu_0, Tirr, Tint, gravity_SI
 
-          real, dimension(NIRP,NLAYER) :: tau_IRe
-          real, dimension(NSOLP,NLAYER) :: tau_Ve
           real, dimension(NIRP) :: Beta_IR
           real, dimension(NSOLP) :: Beta_V
 
-          real, dimension(NZ) :: t_pass
-          real, dimension(NLAYER) :: dpe, Tl, Pl
+          real, dimension(NIRP,NLAYER+1) :: tau_IRe
+          real, dimension(NSOLP,NLAYER+1) :: tau_Ve
+          real, dimension(NLAYER) :: dpe, Pl, Tl, t_pass
+
+          real, dimension(NLAYER + 1) :: pe
+          !real, dimension(NIRP,54) :: tau_IRe
+          !real, dimension(NSOLP,54) :: tau_Ve
+          !real, dimension(54) :: dpe, Tl, Pl
+          !real, dimension(55) :: pe
 
           ! This is to calculate the incident fraction of the starlight
           mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)
@@ -23,25 +28,56 @@
           Tint = (FBASEFLUX / 5.670367E-5) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-5) ** 0.25
 
-          DO J = 1, NLAYER
-              dpe(J) = player(J)
-          END DO
-
-          DO J = 1, NLAYER-1
-              Tl(J) = t_pass(J)
-          END DO
-          Tl(NLAYER) = t_pass(NLAYER-1) + ABS(t_pass(NLAYER-1) - t_pass(NLAYER-2))
-
-
-          ! Pressure at the layers
-          Pl(1) = dpe(1)
-          do J = 2, NLAYER
-              Pl(J) = Pl(J-1) + dpe(J)
+          do J = 1, NLAYER
+             pe(J) = press(J) / 10 ! convert to pascals
           end do
+          pe(NLAYER + 1) = pe(NLAYER) + ABS(pe(NLAYER) - pe(NLAYER-1))
 
-          CALL calculate_opacities(NLAYER, NSOLP, NIRP,
+          DO J = 1, NLAYER
+              dpe(J) = pe(J+1) - pe(J)
+          END DO
+
+          if (tt(1) .ge. 100.0) then
+              DO J = 1, NZ
+                  Tl(J) = tt(J)
+              END DO
+          else
+              DO J = 1, NLAYER
+                  Tl(J) = t_pass(J)
+              END DO
+          end if
+
+!         Tl = (/718.78183337991857, 718.78196091148016,718.78214656096566,718.78239803706924,718.78273476562697,
+!     &           718.78319220410356,718.78383172427198,718.78475875694073,718.78615568539703,718.78834193123851,
+!     &           718.79188473388683,718.79780493261580,718.80796128319946,718.82577081906561,718.85756232909739,
+!     &           718.91512323959023,719.02049599727252,719.21501129307808,719.57628412807946,720.25010577821195,
+!     &           721.50993516436063,723.86654051086100,728.26518647629769,736.42299633394953,751.34799183336133,
+!     &           777.95722188917193,823.47593814010361,876.10034134591615,935.84511854567438,1002.8896470966265,
+!     &           1077.2723727565547,1158.1148589946081,1241.5667790992175,1316.5397902652905,1364.5635331171977,
+!     &           1385.1226548601949,1413.9046140350752,1465.7626232167763,1524.0924098449020,1567.7408353719700,
+!     &           1584.8527305053142,1587.3708376723982,1587.8967927077658,1588.7533923968615,1590.3067227028648,
+!     &           1593.1331676256652,1598.2831166374394,1607.6522157406928,1624.5976694257308,1654.8784620830322,
+!     &           1707.9304181965206,1798.5183231978438,1949.8101424451597,2157.3218077666902/)
+
+!         dpe = (/0.20859733251215448,0.22044416870542050,0.23805758824042167,0.26424454167295941,0.30317829492372228,
+!     &            0.36106349894703027,0.44712498968589842,0.57507789774188556,0.76531335078162543,1.0481480916489416,
+!     &            1.4686558853501106,2.0938506687815250,3.0233661809425669,4.4053340255971900,6.4599905629787742,
+!     &            9.5147747266870759,14.056510105357699,20.808987250855296,30.848310064465466,45.774388359017564,
+!     &            67.965906391795158,100.95940025406642,150.01285552611540,222.94364255254089,331.37432631977185,
+!     &            492.58488857477539,732.26654029583096,1088.6159839561274,1618.4226048850774,2406.1186728147713,
+!     &            3577.2348327903010,5318.4052105484952,7907.1102322996994,11755.897103041276,17478.125109680550,
+!     &            25985.713204227170,38634.467343784374,57440.147579469718,85399.708278087812,126968.90570473982,
+!     &            188772.38657207199,280659.42033206439,417273.52126489556,620386.10211536102,922366.06039229129,
+!     &            1371338.2255782168,2038852.7396602808,3031287.5965643590,4506801.4983895328,6700538.7087804656,
+!     &            9962102.6576534621,14811270.252659660,22020825.770522781,32739705.094676733/)
+
+         do k = 1, NLAYER
+             pl(k) = dpe(k) / log(pe(k+1)/pe(k))
+         end do
+
+
+         CALL calculate_opacities(NLAYER, NSOLP, NIRP,
      &                             mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V, Beta_IR,gravity_SI)
-
 
       end subroutine opacity_wrapper
 
@@ -65,7 +101,7 @@
         real :: gam_1, gam_2, tau_lim, gam_P
         real, dimension(NSOLP) :: Beta_V, gam_V
         real, dimension(NIRP) :: Beta_IR
-        integer :: k, NLAYER,J, NSOLP, NIRP
+        integer :: k, NLAYER, J, NSOLP, NIRP, i
         real :: Teff, Tint, Tirr, mu_0
 
         real :: R,gravity_SI
@@ -74,9 +110,10 @@
         real :: aB, bB
         real :: l10T, l10T2, RT
 
-        real, dimension(NLAYER) :: dpe, Tl, Pl
-        real, dimension(NIRP,NLAYER) :: k_IRl, tau_IRe
-        real, dimension(NSOLP,NLAYER) :: k_Vl, tau_Ve
+        real, dimension(NLAYER) :: dpe, Pl, Tl
+
+        real, dimension(NIRP,NLAYER+1) :: k_IRl, tau_IRe
+        real, dimension(NSOLP,NLAYER+1) :: k_Vl, tau_Ve
         real :: grav
 
         grav = gravity_SI
@@ -117,15 +154,15 @@
           aV3 = -6.97 ; bV3 = 1.94
           aB = 0.84  ; bB = 0.0
         else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
-          aV1 = -1.68 ; bV1 = 0.75
-          aV2 = 6.96 ; bV2 = -2.21
-          aV3 = 0.02 ; bV3 = -0.28
-          aB = 3.0  ; bB = -0.69
+          aV1 = -23.75 ; bV1 = 7.76
+          aV2 = -19.95 ; bV2 = 6.34
+          aV3 = -3.65 ; bV3 = 0.89
+          aB = 0.84  ; bB = 0.0
         else if (Teff >= 2000.0) then
-          aV1 = 10.37 ; bV1 = -2.91
-          aV2 = -2.4 ; bV2 = 0.62
-          aV3 = -16.54 ; bV3 = 4.74
-          aB = 3.0  ; bB = -0.69
+          aV1 = 12.65 ; bV1 = -3.27
+          aV2 = 13.56 ; bV2 = -3.81
+          aV3 = -6.02 ; bV3 = 1.61
+          aB = 6.21  ; bB = -1.63
         end if
 
         !gam_P coefficents
@@ -172,22 +209,22 @@
         tau_Ve(:,1) = 0.0
         tau_IRe(:,1) = 0.0
 
+        ! SOMETHING IS OFF HERE, WHY CAN"T I CALL THIS FOR NLAYERS????
+        ! MALSKY STOP BEING LAZY! AND FIGURE THIS OUT
         do k = 1, NLAYER-1
-
-
           call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
           k_Vl(:,k) = k_IRl(1,k) * gam_V(:)
+
           k_IRl(2,k) = k_IRl(1,k) * gam_2
           k_IRl(1,k) = k_IRl(1,k) * gam_1
 
-          tau_Ve(:,k+1)  = (k_Vl(:,k) * dpe(k)) / grav
+          tau_Ve(:,k+1)  = (k_Vl(:,k) * dpe(k))  / grav
           tau_IRe(:,k+1) = (k_IRl(:,k) * dpe(k)) / grav
         end do
 
-
       end subroutine calculate_opacities
-
 
 
 
@@ -236,8 +273,6 @@
      &    (c3/(Pl10 + c4))*exp((Tl10 - c5)**2) +
      &    c6*met + c7
 
-
-
       ! Temperature split for coefficents = 800 K
         if (T <= 800.0) then
           k_hiP = c8_l + c9_l*Tl10 +
@@ -248,16 +283,15 @@
      &    c10_h*Tl10**2 + Pl10*(c11_h + c12_h*Tl10) +
      &    c13_h * met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
         end if
-
-
         ! Total Rosseland mean opacity - coNLAYERed to m2 kg-1
         k_IR = (10.0**k_lowP + 10.0**k_hiP) / 10.0
 
         ! Avoid divergence in fit for large values
         k_IR = min(k_IR,1.0e30)
-
-
       end subroutine k_Ross_Freedman
+
+
+
 
 
       subroutine Bond_Parmentier(Teff0, grav,  AB)
@@ -293,3 +327,80 @@
         ! Final Bond Albedo expression
         AB = 10.0**(a + b * log10(Teff0))
       end subroutine Bond_Parmentier
+
+
+
+
+
+
+
+
+
+
+
+      !! Calculates the IR band Rosseland mean opacity (local T) according to the
+      !! Valencia et al. (2013) fit and coefficents
+      subroutine k_Ross_Valencia(Tin, Pin, met, k_IR)
+        implicit none
+
+        ! Input:
+        ! T - Local gas temperature [K]
+        ! P - Local gas pressure [pa]
+        ! met - Local metallicity [M/H] (log10 from solar, solar [M/H] = 0.0)
+
+        ! Output:
+        ! k_IR - IR band Rosseland mean opacity [m2 kg-1]
+
+        real Tin, Pin, met
+        real k_IR
+
+        real k_lowP, k_hiP
+        real Tl10, Pl10
+        real T, P
+
+        !! Coefficents parameters for the Valencia et al. (2013) table fit
+        real :: c1_v = -37.50
+        real :: c2_v = 0.00105
+        real :: c3_v = 3.2610
+        real :: c4_v = 0.84315
+        real :: c5_v = -2.339
+        real :: c6_vl = -14.051, c6_vh = 82.241
+        real :: c7_vl = 3.055, c7_vh = -55.456
+        real :: c8_vl = 0.024, c8_vh = 8.754
+        real :: c9_vl = 1.877, c9_vh = 0.7048
+        real :: c10_vl = -0.445, c10_vh = -0.0414
+        real :: c11_vl = 0.8321, c11_vh = 0.8321
+        real :: onedivpi = 1.0 / 3.141592653
+
+
+        T = Tin
+        P = Pin * 10.0 ! Convert to dyne
+
+        Tl10 = log10(T)
+        Pl10 = log10(P)
+
+        k_lowP = c1_v * (Tl10-c2_v*Pl10-c3_v)**2 + (c4_v*met + c5_v)
+
+        ! Temperature split for coefficents = 800 K
+        if (T <= 800.0) then
+          k_hiP = (c6_vl+c7_vl*Tl10+c8_vl*Tl10**2)
+     &     + Pl10*(c9_vl+c10_vl*Tl10)
+     &     + met*c11_vl*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
+        else
+          k_hiP = (c6_vh+c7_vh*Tl10+c8_vh*Tl10**2)
+     &     + Pl10*(c9_vh+c10_vh*Tl10)
+     &     + met*c11_vh*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
+
+        end if
+
+        ! Total Rosseland mean opacity - converted to m2 kg-1
+        k_IR = (10.0**k_lowP + 10.0**k_hiP) / 10.0
+
+        ! Avoid divergence in fit for large values
+        k_IR = min(k_IR,1.0e30)
+      end subroutine k_Ross_Valencia
+
+
+
+
+

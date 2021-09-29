@@ -307,6 +307,10 @@ CC     :                     1,mg,1,jgg,1,nl,inetcount,inetcount)
            TOUTLAT=ALAT(J)
                   WRITE (26,107) TOUTLON,TOUTLAT,L,
      &  TOUTST(L,J,I,1),TOUTST(L,J,I,2),TOUTST(L,J,I,3)
+                  write(*,*) 'Look in xsect2 for stuff', TOUTST(L,J,I,3)
+
+
+
               IF (L.EQ.NL) WRITE (50,102) TOUTLON,TOUTLAT,TOUTSP(J,I)
    22            CONTINUE         
    21    CONTINUE                 
@@ -385,7 +389,7 @@ C      CALL PGENV(1., float(n), -8., 8.,  0,  0)
 C Label the axes (note use of \u and \d for raising exponent).
 C      CALL PGLAB('Latitude grid', 'Temperature', 'Latitudinal Profiles')
 
-!       CALL PGWNAD(0.0, 1.0+nx, 0.0, 1.0+ny)palett
+!       CALL PGWNAD(0.0, 1.0+nx, 0.0, 1.0+ny)
 !       CALL pgimag(f)
      
 C       TRMAT(1) = 0.0
@@ -493,7 +497,8 @@ C&&&&&&&&&&&&&&& ADDED PGPLOT ROUTINE &&&&&&&&&&&&&&
 
 c      SUBROUTINE PALETT(TYPE, CONTRA, BRIGHT)
 C-----------------------------------------------------------------------
-C Set a "palette" of colors in the range of color indices used byC PGIMAG.
+C Set a "palette" of colors in the range of color indices used by
+C PGIMAG.
 C-----------------------------------------------------------------------
 c      INTEGER TYPE
 c      REAL*4 CONTRA, BRIGHT
@@ -552,7 +557,10 @@ c      END
 
 c      SUBROUTINE SETVP
 C-----------------------------------------------------------------------
-C Set the viewport, allowing margins around the edge for annotation.C (This is similar in effect to PGVSTD, but has different margins.)C The routine determines the view-surface size and allocates marginsC as fractions of the minimum of width and height.
+C Set the viewport, allowing margins around the edge for annotation.
+C (This is similar in effect to PGVSTD, but has different margins.)
+C The routine determines the view-surface size and allocates margins
+C as fractions of the minimum of width and height.
 C-----------------------------------------------------------------------
 c      REAL*4 D, VPX1, VPX2, VPY1, VPY2
 c      CALL PGSVP(0.0, 1.0, 0.0, 1.0)

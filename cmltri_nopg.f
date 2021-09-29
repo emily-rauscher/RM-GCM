@@ -243,7 +243,7 @@ C-----------------------------------------------------------------------
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,AERLAYERS
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,MOLEF,AERLAYERS
    
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
@@ -337,6 +337,8 @@ C     (if nightside nothing needed from scheme because TRS=RESTTT=tnight,eq for 
                   ENDDO
                ENDDO
             ENDDO
+
+
 C        Go from grid point space to spectral space using   
 C        direct Legendre and Fourier transforms           
 C                                                         
@@ -358,7 +360,7 @@ C
          REWIND(7)
          REWIND(2)
          REWIND(60)
-         CALL INISET
+         CALL INISET                                                         
 C        &&&&&&&&&&&&&&& END MODIFIED START &&&&&&&&&&&&&&& 
       ENDIF
 
@@ -386,6 +388,7 @@ C     ER modif for output management
 !            DO   IHEM = 1,NHEM
 !         READ(71,*)  CLAT,CLAY,CHEM,CLON,TAUVAL
 C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
+
           IF(AEROSOLS) THEN
            DO JH=1,JG
            poslats(JH)=alat(JH)
@@ -399,6 +402,7 @@ C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
           PI0AERLW   =  0.0
           ASYMLW     =  0.0
           ENDIF
+
 C         The loop for the radiative transfer code is as follows:
 !        DO_LATLOOP (below in cmltr_nopg.f)
 !            DO_HEMLOOP (in rradiation.f aka formally cmorc)
@@ -414,7 +418,6 @@ C         The loop for the radiative transfer code is as follows:
 !        So for speed, innermost is leftmost (and should ideally be
 !        smallest)  
 !        THEREFORE, INDEX ORDER SHOULD BE: TAUAER(NL,MG,IHEM,JH)
-
 
 
 
@@ -471,6 +474,7 @@ C     Main loop over latitudes
 C                                                                         
 C!$omp parallel default(shared) private(IH,JH,JL,WORK) 
 C!$omp do
+
       DO 5 IH=1,JG                                                        
          JH=IH                                                            
          IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP                          
@@ -796,7 +800,8 @@ CC!$omp end parallel
 C                                                                         
 C        Calculate diabatic terms                                         
 C                                                                         
-            CALL DGRMLT(IH)                                                   
+            CALL DGRMLT(IH)
+
 C                                                                         
 C        Write accumulated diagnostics to history file.                   
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad                        
@@ -884,10 +889,14 @@ CC      call netout2
              RODATA(6+IDDZ*2)=RNTAPE                                      
              WRITE (9) (RODATA(J),J=1,IDDZ*2+6)                           
              RIH=RIH+1                                                    
-             RODATA(5)=RIH                                                
+             RODATA(5)=RIH
+
+
              DO J=1,IGP                                                   
-               RODATA(J+5)=R8TT(J)                                        
-             ENDDO                                                        
+               RODATA(J+5)=R8TT(J)
+             ENDDO
+
+
              RODATA(IGP+6)=RNTAPE                                         
              WRITE (9) (RODATA(J),J=1,IGP+6)                              
            ELSE                                                           

@@ -31,9 +31,17 @@
           DO 200 L = NSOLP+1,NTOTAL
               PTEMP(L,J)  = IT1
               SLOPE(L,J)  = (PTEMP(L,J)-PTEMP(L,KINDEX))/TAUL(L,J)
-              if(TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
+              if (SLOPE(L,J) .le. 1e-10) then
+                  slope(L,J) = 0.0
+              end if
+
+              ! MALSKY TAG, it used to be 1.0e-6
+              if (TAUL(L,J) .le. 1.0E-6) THEN
+                  SLOPE(L,J) = 0.
+              END IF
  200      CONTINUE
  300  CONTINUE
+
       RETURN
       END
 
