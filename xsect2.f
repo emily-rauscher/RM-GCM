@@ -167,17 +167,6 @@ C--- erin for binary flux output
 
       LOGICAL LBIN
 
-C PGPLOT map variables
-C      REAL*4 TRMAT(6)
-C      REAL*4 BRIGHT
-C      REAL*4 CONTRA
-C      REAL*4 PLOTMAP(MG,JG*2),UPLOT(MG,JG*2),VPLOT(MG,JG*2)
-C      REAL*4 VMIN, VMAX
-C      INTEGER NLPLOTMAP
-C      INTEGER C1,C2,NC
-
-C      VMIN=1e30
-C      VMAX=-1e30
 
 C------ Emily modif 2/3 
 C     Initialize TOUTU, TOUTT
@@ -263,11 +252,7 @@ C
                   JJ=JGGP-J                                               
                ENDIF                                                      
             IOF=MGPP*(IHEM-1)+(L-1)*IGC                                   
-            DO I=1,MG                                                     
-!                  TOUTST(L,JG*NHEM-(JJ-1),I,1)=0.1*SEC*UG(I+IOF)
-!                  TOUTST(L,JG*NHEM-(JJ-1),I,2)=0.1*SEC*VG(I+IOF)
-!                  TOUTST(L,JG*NHEM-(JJ-1),I,3)=CT*(TG(I+IOF)+T0(L)) 
-
+            DO I=1,MG
                   UB=UG(IOF+I)*SEC
                   VB=VG(IOF+I)*SEC
                   TB=(TG(IOF+I)+T0(L))*CT
@@ -307,10 +292,6 @@ CC     :                     1,mg,1,jgg,1,nl,inetcount,inetcount)
            TOUTLAT=ALAT(J)
                   WRITE (26,107) TOUTLON,TOUTLAT,L,
      &  TOUTST(L,J,I,1),TOUTST(L,J,I,2),TOUTST(L,J,I,3)
-                  write(*,*) 'Look in xsect2 for stuff', TOUTST(L,J,I,3)
-
-
-
               IF (L.EQ.NL) WRITE (50,102) TOUTLON,TOUTLAT,TOUTSP(J,I)
    22            CONTINUE         
    21    CONTINUE                 
@@ -381,89 +362,6 @@ C 111              FORMAT(3E13.5)
         ENDDO         
        ENDDO
 
-
-C Define coordinate range of graph and draw axes     
-C      CALL PGSCI(1)
-C      CALL PGENV(1., float(n), 200., 340.,  0,  0)
-C      CALL PGENV(1., float(n), -8., 8.,  0,  0)
-C Label the axes (note use of \u and \d for raising exponent).
-C      CALL PGLAB('Latitude grid', 'Temperature', 'Latitudinal Profiles')
-
-!       CALL PGWNAD(0.0, 1.0+nx, 0.0, 1.0+ny)
-!       CALL pgimag(f)
-     
-C       TRMAT(1) = 0.0
-C       TRMAT(2) = 1.0/(MG)
-C       TRMAT(3) = 0.0
-C       TRMAT(4) = 0.0
-C       TRMAT(5) = 0.0
-C       TRMAT(6) = 1.0/(JG*2)
-
-!        NLPLOTMAP=NL
-!        NLPLOTMAP=1
-!        NLPLOTMAP=(NL+1)/2  ! Plot mid-level
-C       NLPLOTMAP=NLPLOTMAP_IN
-
-C      CALL PGQCIR(C1, C2)
-C      NC = MAX(0, C2-C1+1)
-C      WRITE (*,*) 'Number of color indices used for image: ', NC
-C      IF (NC .LT.8) THEN 
-C         WRITE (*,*) 'Not enough colors available on this device'
-C         STOP
-C      ELSE
-C         WRITE (*,*)
-C      END IF
-
-!       write(*,*) LPLOTMAP
-
-C       IF(LPLOTMAP) THEN
-
-C      CALL PGPAGE
-!      CALL SETVP
-!      CALL PGWNAD(0.0, (1.0+MG), 0.0, (1.0+JG*2))
-C Set up the color map.
-C      BRIGHT = 0.5      
-C      CONTRA  = 1.0
-C      CALL PALETT(2, CONTRA, BRIGHT)
-
-C       DO L=1,NL   
-C       DO I=1,MG 
-C          TOUTLON= 360.0*(I-1)/MG
-C        DO J=1,JG*2
-C           TOUTLAT=ALAT(J)
-
-C           IF (L.EQ.NLPLOTMAP) THEN
-C              PLOTMAP(I,J)=REAL(TOUTST(L,J,I,3))
-C              UPLOT(I,J)=REAL(TOUTST(L,J,I,1))
-C              VPLOT(I,J)=REAL(TOUTST(L,J,I,2))
-!              PLOTMAP(J,I)=REAL(cos(TOUTLON)*cos(TOUTLAT))
-!              write(*,*) 'PLOTMAP', J, I, PLOTMAP(J,I)
-C              VMIN=MIN(PLOTMAP(I,J),VMIN)
-C              VMAX=MAX(PLOTMAP(I,J),VMAX)
-C           ENDIF
-C         ENDDO
-C        ENDDO
-C       ENDDO
-
-C      write(*,*) VMIN, VMAX
-    
-
-C Draw the map with PGIMAG.
-C      CALL PGIMAG(PLOTMAP,MG,JG*2,1,MG,1,JG*2,VMIN,VMAX,TRMAT)
-!!      CALL PGSCH(2.0)
-
-!      CALL PGSAH(1,45.0,0.3)
-!      CALL PGVECT(UPLOT, VPLOT, MG, JG*2, 1, MG, 1, JG*2, 1.0, 0, 
-!     & TRMAT,0.0)
-
-!!       CALL PGSCH(1.0)
-      
-
-C  Annotate the plot
-C      CALL PGMTXT('t',1.0,0.0,0.0,
-C     & 'TEMPERATURE MAP AND VELOCITY VECTORS')
-
-C      ENDIF
 
       IF (PORB.NE.0) THEN 
          SSLON=(1./PORB-1.)*KOUNT*360./ITSPD  ! in degrees

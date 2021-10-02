@@ -35,6 +35,7 @@
       enddo
 
 !     INTERPOLATE TEMPERATURE FROM LAYER CENTER (T) TO LAYER EDGE (TT)
+      TT(1) = tabove_aerad
       DO 12 J = 2, NVERT
          TT(J) = T(J-1) * (PRESS(J)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
 12    CONTINUE
@@ -145,23 +146,6 @@
 
       IF(IR .NE. 0) THEN
           CALL NEWFLUX1
-
-!         NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
-!         FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
-!         CLEAR SKY AND COMBINE IN A WEIGHTED AVERAGE ASSUMING MAXIMUM OVERLAP.
-
-!         HERE WE TAKE THE DOUBLE RESOLUTION FLUXES AND EXTRACT JUST
-!         THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
-!         LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
-!         WITHOUT DOUBLING
-
-         !IF(FLXLIMDIF) THEN
-         !    DO L =  NSOLP+1,NTOTAL
-         !        IF(OPD(L,NLAYER) .GT. TAULIMIT) THEN !ASSUMES DOUBLE GRAY,REMOVE THIS LINE OTHERWISE!!
-         !            CALL FLUXLD
-         !        ENDIF
-         !    END DO
-         !ENDIF
       ENDIF
 
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
@@ -225,17 +209,6 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
-
-
-!     Here we Calculate (4 * pi * mean_intensity) for the IR.
-!
-      !IF (IR .NE. 0) THEN
-      !  DO J = 1, NVERT
-      !    DO L = NSOLP+1, NTOTAL
-      !      TMI(L,J) = (TMIU(L,J)+TMID(L,J))
-      !    end do
-      !  end do
-      !ENDIF
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
@@ -374,8 +347,6 @@
               tiru = tiru + firu(i)
  529      continue
 
-
-
 !         Load fluxes into interface common block
 
           do j = 1, nlayer
@@ -437,7 +408,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
-
 
 
       return

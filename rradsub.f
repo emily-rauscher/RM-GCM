@@ -168,6 +168,7 @@ C ER modif for non-zero obliquity
               heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
               heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
 
+
               radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz) * SCDAY-cheats(iz)
      &             + heati_aerad(jz)*SCDAY - cheati(iz)
           enddo
@@ -184,6 +185,7 @@ C ER modif for non-zero obliquity
       htlw    = heati_aerad_tot
       htsw    = heats_aerad_tot
       rfluxes = rfluxes_aerad
+
 
       return
       end

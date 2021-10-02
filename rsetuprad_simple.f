@@ -23,7 +23,7 @@
       !REAL :: p(NZ)
       real, dimension(2,NLAYER) :: tau_IRe
       real, dimension(3,NLAYER) :: tau_Ve
-      real, dimension(NWAVE) :: ABSCOEFF(NWAVE)
+      real, dimension(NWAVE) :: MALSKY_ABSCOEFF(NWAVE)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       dimension rup_1(NGROUP)
@@ -59,6 +59,8 @@
       DATA GANGLE  / 0.2123405382, 0.5905331356,0.9114120405/
       DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
       DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
+
+
 !
 !
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
@@ -81,11 +83,11 @@
       AM= RGAS/R_AIR
 
       DO L = 1,NSOLP
-          ABSCOEFF(L)=ABSSW
+          MALSKY_ABSCOEFF(L)=ABSSW
       END DO
 
       DO L = NSOLP+1,NTOTAL
-          ABSCOEFF(L)=ABSLW
+          MALSKY_ABSCOEFF(L)=ABSLW
       END DO
 
       SQ3     =   SQRT(3.)
@@ -167,6 +169,7 @@
          DPG(J)   = (PRESS(J)-PRESS(J-1)) / G
       END DO
 
+
 !        Here we are saying that the top layer has a thickness that
 !        extends from the top of the atmosphere (pressure = 0) down to
 !        the interface ABOVE the top sigma levels. The atmosphere
@@ -197,7 +200,7 @@
       END DO
 
 
-      malsky_switch = 0
+      malsky_switch = 1
 
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
@@ -223,21 +226,22 @@
               END DO
           END DO
 
+
       else
           if (NSOLP .gt. 1) then
-              Beta_V(1) = 0.33333
-              Beta_V(2) = 0.33333
-              Beta_V(3) = 0.33333
+              !Beta_V(1) = 0.33333
+              !Beta_V(2) = 0.33333
+              !Beta_V(3) = 0.33333
 
-              Beta_IR(1) = 0.84
-              Beta_IR(2) = 0.16
+              !Beta_IR(1) = 0.84
+              !Beta_IR(2) = 0.16
 
-              !Beta_V(1) = 1.0
-              !Beta_V(2) = 0.0
-              !Beta_V(3) = 0.0
+              Beta_V(1) = 1.0
+              Beta_V(2) = 0.0
+              Beta_V(3) = 0.0
 
-              !Beta_IR(1) = 1.0
-              !Beta_IR(2) = 0.0
+              Beta_IR(1) = 1.0
+              Beta_IR(2) = 0.0
           else
               Beta_V(1)  = 1.0
               Beta_IR(1) = 1.0
@@ -246,7 +250,7 @@
           DO L = LLS,NSOLP
               DO J     =   1,NLAYER
                   PM          =   DPG(J)
-                  TAUGAS(L,J) = ABSCOEFF(L)*PM
+                  TAUGAS(L,J) = MALSKY_ABSCOEFF(L)*PM
               END DO
           END DO
 
@@ -255,27 +259,27 @@
              DO J     =   1,NLAYER
                  PM          =   DPG(J)
                  IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
-                     TAUGAS(L,J)=ABSCOEFF(L)*PM
+                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
                  ELSE IF (OPACIR_POWERLAW.eq.1) THEN
-                     TAUGAS(L,J)=ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
+                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
                  ELSE IF (OPACIR_POWERLAW.eq.2) THEN
-                     TAUGAS(L,J)=ABSCOEFF(L)*PM
+                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
      &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
      &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
                  ELSE IF (OPACIR_POWERLAW.eq.3) THEN
-                     TAUGAS(L,J)=ABSCOEFF(L)*PM
+                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
      &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
      &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
      &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
                  ELSE
-                     TAUGAS(L,J)=ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
+                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
                  ENDIF
              END DO
           END DO
       END IF
 
       DO  L = NSOLP+1,NTOTAL
-          TAUCONST(L)=ABSCOEFF(L)/GA/100.
+          TAUCONST(L)=MALSKY_ABSCOEFF(L)/GA/100.
       ENDDO
 
 !@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  
@@ -335,5 +339,16 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
+
+      MALSKY_INDEX_NUMBER = MALSKY_INDEX_NUMBER + 1
+
+      !IF (mod(MALSKY_INDEX_NUMBER,50000) .eq. 0) THEN
+      !  DO J=1,NLAYER    ! Start of loop over column.
+      !      write(*,*) TAUGAS(1,J), TAUGAS(2, J), TAUGAS(4,J)
+      !  ENDDO
+      !  write(*,*)
+      !END IF
+
+
       RETURN
       END

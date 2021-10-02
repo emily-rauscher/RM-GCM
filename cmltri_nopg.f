@@ -769,20 +769,6 @@ C         The loop for the radiative transfer code is as follows:
 !            ENDDO_HEMLOOP
 !        ENDDO_LATLOOP
 !
-!       IF(AEROSOLS) THEN
-!       AERO4LAT=TAUAEROSOL(:,:,:,IH) 
-!       ENDIF
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,1,16)
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,10,16)
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,20,16)
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,30,16)
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,40,16)
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,50,16)
-!         WRITE(*,*) 'TEST',TAUAEROSOL(:,1,60,16)
-!         write(*,*) tauaerosol
-C                                                                         
-C        Go from spectral space to grid point space using                 
-C        inverse Legendre and Fourier transforms                          
 C                                                                         
             CALL LTI                                                      
 
@@ -799,9 +785,9 @@ CC!$omp end parallel
      +                  1,MGPP,MG,NRSTWG,1)                               
 C                                                                         
 C        Calculate diabatic terms                                         
-C                                                                         
+C
+            ! This is the important radiative transfer stuff
             CALL DGRMLT(IH)
-
 C                                                                         
 C        Write accumulated diagnostics to history file.                   
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad                        
@@ -829,10 +815,12 @@ C        Write accumulated diagnostics to history file.
                   ENDDO                                                     
                   RODATA(NGRPAD+6)=RNTAPE                                   
                   DO J=1,IGD                                                
-                     RODATA(NGRPAD+6+J)=TNLG(J)                              
+                     RODATA(NGRPAD+6+J)=TNLG(J)
+
 C  TNLG (gridded heating) is not required in history file. When new       
 C  version of flux programme is created TNLG should be removed            
-C  from RODATA.                                                           
+C  from RODATA.
+
                   ENDDO                                                     
                   RODATA(NGRPAD+7+IGD)=RNTAPE                               
                   WRITE (9) (RODATA(J),J=1,NGRPAD+IGD+7)                    

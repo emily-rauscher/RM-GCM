@@ -104,6 +104,7 @@
       DO 43 JD         =  2,JDBLE,2
          J             =  J + 1
          DO 43 L       =  NSOLP+1,LLA
+
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
@@ -112,6 +113,8 @@
      &                    EL1(L,J) * (CMB(L,J) - CM(L,J+1))
 
    43  CONTINUE
+
+
 !     HERE ARE THE TOP AND BOTTOM BOUNDARY CONDITIONS AS WELL AS THE
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME NO
 !     DIFFUSE RADIATION IS INCIDENT AT THE TOP.
@@ -212,11 +215,6 @@
         enddo
       enddo
 
-
-      !DO J = 1, NLAYER
-      !    write(*,*) DIRECT(4,J), DIRECT(5,J), 'stopping in radd'
-      !END DO
-      !STOP
 
       RETURN
       END

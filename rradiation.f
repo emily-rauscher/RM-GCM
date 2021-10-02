@@ -207,13 +207,15 @@ c  ntstep is the number of timesteps to skip.
       ntstep=NTSTEP_IN
       nskip=NSKIP_IN
 
+      MALSKY_INDEX_NUMBER = MALSKY_INDEX_NUMBER + 1
+
 c --------------------------------- Now start the radiation bit.
 c
 C loop over hemispheres
       IOFM=0
 
       DO 800 ihem=1,nhem
-        IF (mod(kount,ntstep).eq.1) then
+        IF (mod(kount,ntstep).eq.0) then
           ilast=0
           DO i=1,mg
             im=i+iofm
@@ -284,10 +286,9 @@ c ----------------------------------------------------- And alat1
 ! TO COMPUTE HEATING RATES AT THESE CENTERS, WE NEED TO DEFINE
 ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
              DO LD    = 1,NL-1
-             PRFLUX(LD+1)=(pr(LD)+pr(LD+1))/2.
+                 PRFLUX(LD+1)=(pr(LD)+pr(LD+1))/2.
              ENDDO
              PRFLUX(NL+1)=PR(NL+1)
-!             write(*,*),'PR',PR
              PRFLUX(1)=pr(1)*0.5
 !             write(*,*)'fluxes',fluxes
 C cloud cf and ic passed. fluxes returned.
@@ -318,10 +319,10 @@ C Call radiation scheme
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
            pr=prb2t
 
-                  PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-
-     $                 fluxes(2,2,1)
-                  SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-
-     $                 fluxes(2,2,2)
+                  PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-fluxes(2,2,1)
+                  SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-fluxes(2,2,2)
+
+
                   rrflux(im,jh,1)=fluxes(1,1,2)
                   rrflux(im,jh,2)=fluxes(1,2,2)
                   rrflux(im,jh,3)=fluxes(2,1,2)
@@ -329,14 +330,14 @@ C Call radiation scheme
                   rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
                   rrflux(im,jh,6)=fluxes(2,2,1)
 
-
                   DO l=nl,1,-1
 c  bottom heating rate is zero in morecret
                      LD=NL+1-L
                      IM=I+IOFM
                      HTNETO=HTNET(IHem,JH,I,LD)
 
-               htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
+                     htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
+
 
                      TTRD(IM,LD)=(HTNETO
      $                    +HTNET(IHEM,JH,I,LD))/(CHRF*2.)
@@ -433,6 +434,14 @@ C end of conditional execution of morcrette code
             ENDDO
          ENDDO
       ENDIF
+
+
+      !IF (mod(MALSKY_INDEX_NUMBER,50000) .eq. 0) THEN
+      !  DO LD=1,NL    ! Start of loop over column.
+      !      write(*,*) T(LD), ','
+      !  ENDDO
+      !  write(*,*)
+      !END IF
 
       RETURN
       END
