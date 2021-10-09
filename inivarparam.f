@@ -57,7 +57,8 @@ C     differencing. Also counters.
      +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
      +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
      +              ,BEGDOY,DOY                                           
-C                                                                                                                                            
+C
+
        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
      & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 

@@ -13,6 +13,7 @@
 
           real, dimension(NLAYER + 1) :: pe
 
+
           ! This is to calculate the incident fraction of the starlight
           mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)
 
@@ -21,8 +22,8 @@
           END IF
 
           ! DOUBLE CHECK THESE VALUES
-          Tint = (FBASEFLUX / 5.670367E-5) ** 0.25
-          Tirr = (SOLC_IN   / 5.670367E-5) ** 0.25
+          Tint = TEMPERATURE_INTERNAL
+          Tirr = TEMPERATURE_IRRAD
 
           do J = 1, NLAYER
              pe(J) = press(J) / 10 ! convert to pascals
