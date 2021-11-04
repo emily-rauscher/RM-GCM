@@ -78,7 +78,7 @@
 
 !     Solar zenith angle
       u0 = u0_aerad
-!
+
 !     SURFACE REFLECTIVITY AND EMISSIVITY
 !     Hack: use spectrally dependent surface albedo
       DO 20 L =  1,NSOLP
@@ -408,7 +408,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
-
 
       return
       END

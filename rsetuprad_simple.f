@@ -21,8 +21,8 @@
 
       REAL G,WVO,AM
       !REAL :: p(NZ)
-      real, dimension(2,NLAYER) :: tau_IRe
-      real, dimension(3,NLAYER) :: tau_Ve
+      real, dimension(NIR,NLAYER) :: tau_IRe
+      real, dimension(NSOL,NLAYER) :: tau_Ve
       real, dimension(NWAVE) :: MALSKY_ABSCOEFF(NWAVE)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -60,9 +60,6 @@
       DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
       DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
 
-
-!
-!
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
 !     AM     - MOLECULAR WEIGHT OF AIR (G/MOL)
 !     AVG    - AVAGODROS' NUMBER (#/MOL)
@@ -200,8 +197,7 @@
       END DO
 
 
-      malsky_switch = 1
-
+      malsky_switch = 0
       if (malsky_switch .gt. 0) then
           CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
@@ -220,12 +216,17 @@
               END DO
           END DO
 
+
           DO L = NSOLP+1, NTOTAL
               DO J = 1,NLAYER
                   TAUGAS(L,J) = tau_IRe(L - NSOLP,J)
               END DO
           END DO
 
+          !DO J = 1, NLAYER
+          !    write(*,*) TAUGAS(1,J),',',TAUGAS(2,J),',',TAUGAS(3,J),',',TAUGAS(4,J), ',',TAUGAS(5,J),',',t_pass(J),','
+          !END DO
+          !STOP
 
       else
           if (NSOLP .gt. 1) then
@@ -339,15 +340,6 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
-
-      MALSKY_INDEX_NUMBER = MALSKY_INDEX_NUMBER + 1
-
-      !IF (mod(MALSKY_INDEX_NUMBER,50000) .eq. 0) THEN
-      !  DO J=1,NLAYER    ! Start of loop over column.
-      !      write(*,*) TAUGAS(1,J), TAUGAS(2, J), TAUGAS(4,J)
-      !  ENDDO
-      !  write(*,*)
-      !END IF
 
 
       RETURN

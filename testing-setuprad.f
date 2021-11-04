@@ -13,7 +13,6 @@
 
           real, dimension(NLAYER + 1) :: pe
 
-
           ! This is to calculate the incident fraction of the starlight
           mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)
 
@@ -21,18 +20,21 @@
               mu_0 = 0
           END IF
 
-          ! DOUBLE CHECK THESE VALUES
-          Tint = TEMPERATURE_INTERNAL
-          Tirr = TEMPERATURE_IRRAD
+          Tint = (FBASEFLUX / 5.670367E-5) ** 0.25
+          Tirr = (SOLC_IN   / 5.670367E-5) ** 0.25
 
           do J = 1, NLAYER
-             pe(J) = press(J) / 10 ! convert to pascals
+             pe(J) = press(J) / 10! convert to pascals
           end do
           pe(NLAYER + 1) = pe(NLAYER) + ABS(pe(NLAYER) - pe(NLAYER-1))
 
           DO J = 1, NLAYER
               dpe(J) = pe(J+1) - pe(J)
+              pl(J) = dpe(J) / log(pe(J+1)/pe(J))
           END DO
+
+          dpe(NLAYER) = dpe(NLAYER-1) + ABS(dpe(NLAYER-1) - dpe(NLAYER-2))
+          dpe(1) = ABS(dpe(2) - ABS(dpe(3) - dpe(2)))
 
           if (tt(1) .ge. 100.0) then
               DO J = 1, NZ
@@ -44,19 +46,15 @@
               END DO
           end if
 
-         do k = 1, NLAYER
-             pl(k) = dpe(k) / log(pe(k+1)/pe(k))
-         end do
 
-         CALL calculate_opacities(NLAYER, NSOLP, NIRP,
-     &                             mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V, Beta_IR,gravity_SI)
-
+         CALL calculate_opacities(NLAYER, NSOLP, NIRP, mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
+     &                            Beta_IR,gravity_SI, with_TiO_and_VO)
 
 
       end subroutine opacity_wrapper
 
-      subroutine calculate_opacities(NLAYER, NSOLP, NIRP,
-     &                               mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V, Beta_IR,gravity_SI)
+      subroutine calculate_opacities(NLAYER, NSOLP, NIRP, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
+     &                               Beta_IR,gravity_SI, with_TiO_and_VO)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -89,6 +87,7 @@
         real, dimension(NIRP,NLAYER+1) :: k_IRl, tau_IRe
         real, dimension(NSOLP,NLAYER+1) :: k_Vl, tau_Ve
         real :: grav
+        real :: with_TiO_and_VO
 
         grav = gravity_SI
 
@@ -106,37 +105,73 @@
         l10T = log10(Teff)
         l10T2 = l10T * l10T
 
-        ! Appendix table from Parmentier et al. (2015) - without TiO and VO
-        if (Teff <= 200.0) then
-          aV1 = -5.51 ; bV1 = 2.48
-          aV2 = -7.37 ; bV2 = 2.53
-          aV3 = -3.03 ; bV3 = -0.20
-          aB = 0.84  ; bB = 0.0
-        else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
-          aV1 = 1.23 ; bV1 = -0.45
-          aV2 = 13.99 ; bV2 = -6.75
-          aV3 = -13.87 ; bV3 = 4.51
-          aB = 0.84  ; bB = 0.0
-        else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
-          aV1 = 8.65 ; bV1 = -3.45
-          aV2 = -15.18 ; bV2 = 5.02
-          aV3 = -11.95 ; bV3 = 3.74
-          aB = 0.84  ; bB = 0.0
-        else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
-          aV1 = -12.96 ; bV1 = 4.33
-          aV2 = -10.41 ; bV2 = 3.31
-          aV3 = -6.97 ; bV3 = 1.94
-          aB = 0.84  ; bB = 0.0
-        else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
-          aV1 = -23.75 ; bV1 = 7.76
-          aV2 = -19.95 ; bV2 = 6.34
-          aV3 = -3.65 ; bV3 = 0.89
-          aB = 0.84  ; bB = 0.0
-        else if (Teff >= 2000.0) then
-          aV1 = 12.65 ; bV1 = -3.27
-          aV2 = 13.56 ; bV2 = -3.81
-          aV3 = -6.02 ; bV3 = 1.61
-          aB = 6.21  ; bB = -1.63
+        if (with_TiO_and_VO .gt. 0) THEN
+            ! First table in Parmentier et al. (2015) w. TiO/VO
+            ! Start large if statements with visual band and Beta coefficents
+            if (Teff <= 200.0) then
+              aV1 = -5.51 ; bV1 = 2.48
+              aV2 = -7.37 ; bV2 = 2.53
+              aV3 = -3.03 ; bV3 = -0.20
+              aB = 0.84  ; bB = 0.0
+            else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
+              aV1 = 1.23 ; bV1 = -0.45
+              aV2 = 13.99 ; bV2 = -6.75
+              aV3 = -13.87; bV3 = 4.51
+              aB = 0.84 ; bB = 0.0
+            else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
+              aV1 = 8.65 ; bV1 = -3.45
+              aV2 = -15.18 ; bV2 = 5.02
+              aV3 = -11.95; bV3 = 3.74
+              aB = 0.84 ; bB = 0.0
+            else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
+              aV1 = -12.96; bV1 = 4.33
+              aV2 = -10.41 ; bV2 = 3.31
+              aV3 = -6.97; bV3 = 1.94
+              aB = 0.84 ; bB = 0.0
+            else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
+              aV1 = -23.75 ; bV1 = 7.76
+              aV2 = -19.95 ; bV2 = 6.34
+              aV3 = -3.65 ; bV3 = 0.89
+              aB = 0.84; bB = 0.0
+            else if (Teff >= 2000.0) then
+              aV1 = 12.65; bV1 = -3.27
+              aV2 = 13.56 ; bV2 = -3.81
+              aV3 = -6.02; bV3 = 1.61
+              aB = 6.21 ; bB = -1.63
+            end if
+        else
+            ! Appendix table from Parmentier et al. (2015) - without TiO and VO
+            if (Teff <= 200.0) then
+              aV1 = -5.51 ; bV1 = 2.48
+              aV2 = -7.37 ; bV2 = 2.53
+              aV3 = -3.03 ; bV3 = -0.20
+              aB = 0.84  ; bB = 0.0
+            else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
+              aV1 = 1.23 ; bV1 = -0.45
+              aV2 = 13.99 ; bV2 = -6.75
+              aV3 = -13.87 ; bV3 = 4.51
+              aB = 0.84  ; bB = 0.0
+            else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
+              aV1 = 8.65 ; bV1 = -3.45
+              aV2 = -15.18 ; bV2 = 5.02
+              aV3 = -11.95 ; bV3 = 3.74
+              aB = 0.84  ; bB = 0.0
+            else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
+              aV1 = -12.96 ; bV1 = 4.33
+              aV2 = -10.41 ; bV2 = 3.31
+              aV3 = -6.97 ; bV3 = 1.94
+              aB = 0.84  ; bB = 0.0
+            else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
+              aV1 = -1.68 ; bV1 = 0.75
+              aV2 = 6.96 ; bV2 = -2.21
+              aV3 = 0.02 ; bV3 = -0.28
+              aB = 3.0  ; bB = -0.69
+            else if (Teff >= 2000.0) then
+              aV1 = 10.37 ; bV1 = -2.91
+              aV2 = -2.4 ; bV2 = 0.62
+              aV3 = -16.54 ; bV3 = 4.74
+              aB = 3.0  ; bB = -0.69
+            end if
         end if
 
         !gam_P coefficents

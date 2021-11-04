@@ -121,7 +121,7 @@ C
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
      & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
-     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS,TEMPERATURE_INTERNAL,TEMPERATURE_IRRAD
+     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS,with_TiO_and_VO
 
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
@@ -216,6 +216,7 @@ C loop over hemispheres
       IOFM=0
 
       DO 800 ihem=1,nhem
+        ! MALSKY CHECK, I THINK THIS SHOULD BE 0 instead of 1
         IF (mod(kount,ntstep).eq.0) then
           ilast=0
           DO i=1,mg
@@ -331,6 +332,7 @@ C Call radiation scheme
                   rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
                   rrflux(im,jh,6)=fluxes(2,2,1)
 
+
                   DO l=nl,1,-1
 c  bottom heating rate is zero in morecret
                      LD=NL+1-L
@@ -435,14 +437,6 @@ C end of conditional execution of morcrette code
             ENDDO
          ENDDO
       ENDIF
-
-
-      !IF (mod(MALSKY_INDEX_NUMBER,50000) .eq. 0) THEN
-      !  DO LD=1,NL    ! Start of loop over column.
-      !      write(*,*) T(LD), ','
-      !  ENDDO
-      !  write(*,*)
-      !END IF
 
       RETURN
       END

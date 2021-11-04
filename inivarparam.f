@@ -94,9 +94,9 @@ C
        READ(7,INBINVAL)
        WRITE(2,INBINVAL)
        
-       !TAULIMIT=2.*LOG(1.e-2)/1.66/(10.**(-1.*OOM_IN/NL)-10.**(OOM_IN/NL))
+       TAULIMIT=2.*LOG(1.e-2)/1.66/(10.**(-1.*OOM_IN/NL)-10.**(OOM_IN/NL))
 
        ! Isaac is guessing
-       TAULIMIT=100
+       !TAULIMIT=100
 
       END                                                                 
