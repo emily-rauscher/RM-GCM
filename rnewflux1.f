@@ -12,16 +12,16 @@
       include 'rcommons.h'
 !
 !     LOCAL DIMENSIONS
-      DIMENSION Y1(NTOTAL,NGAUSS,NLAYER),     
-     &           Y2(NTOTAL,NGAUSS,NLAYER),     
-     &           Y4(NTOTAL,NGAUSS,NLAYER),     
-     &           Y8(NTOTAL,NGAUSS,NLAYER),     
-     &           A1(NTOTAL,NLAYER),A2(NTOTAL,NLAYER),     
-     &           A3(NTOTAL,NLAYER),A4(NTOTAL,NLAYER),     
-     &           A7(NTOTAL,NLAYER),Y5(NTOTAL,NLAYER)
+      DIMENSION Y1(NTOTAL,NGAUSS,NDBL),
+     &           Y2(NTOTAL,NGAUSS,NDBL),
+     &           Y4(NTOTAL,NGAUSS,NDBL),
+     &           Y8(NTOTAL,NGAUSS,NDBL),
+     &           A1(NTOTAL,NDBL),A2(NTOTAL,NDBL),
+     &           A3(NTOTAL,NDBL),A4(NTOTAL,NDBL),
+     &           A7(NTOTAL,NDBL),Y5(NTOTAL,NDBL)
 !
 
-      DO 200 J           =  1,NLAYER
+      DO 200 J           =  1,NDBL
           kindex         = max( 1, j-1 )
           DO 100  L      =  NSOLP+1,NTOTAL
 !            HERE WE DO NO SCATTERING COEFFICIENTS
@@ -45,7 +45,7 @@
 !
 !     CALCULATIONS FOR ALL GAUSS POINTS. HERE WE DO NO SCATTERING COEFFI
 !
-      DO 400       J         =  1,NLAYER
+      DO 400       J         =  1,NDBL
          DO 350    I         =  1,NGAUSS
             DO 300 L         =  NSOLP+1,NTOTAL
                Y1(L,I,J)  =  0.0
@@ -58,19 +58,19 @@
             IF(IRS .NE. 0) THEN
               DO 325 L    =  NSOLP+1,NTOTAL
                  YA        =  A1(L,J)*(Y3(L,I,J)-EE1(L,J))/
-     &                             (AK(L,J)*GANGLE(I)-1.)            
+     &                             (AK(L,J)*GANGLE(I)-1.)
                  YB        =  A2(L,J)*(1.- EE1(L,J)*Y3(L,I,J))/
-     &                             (AK(L,J)*GANGLE(I)+1.)            
+     &                             (AK(L,J)*GANGLE(I)+1.)
                  CKP= CK1(L,J)+CK2(L,J)
                  CKM= CK1(L,J) -CK2(L,J)
-                 Y1(L,I,J) =  CKP*YB+CKM*YA                    
-                 Y2(L,I,J) =  CKP*YA+ CKM*YB                   
+                 Y1(L,I,J) =  CKP*YB+CKM*YA
+                 Y2(L,I,J) =  CKP*YA+ CKM*YB
  325          CONTINUE
             ENDIF
  350     CONTINUE
  400  CONTINUE
 !
-      DO 450 J             =  1,NLAYER
+      DO 450 J             =  1,NDBL
          DO 425  L         =  NSOLP+1,NTOTAL
             TMID(L,J) = 0.0
             TMIU(L,J) = 0.0
@@ -85,11 +85,11 @@
        DO 500 I             = 1,NGAUSS
           DO 475 L          = NSOLP+1,NTOTAL
              if( iblackbody_above .eq. 1 )then
-               DINTENT(L,I,1) = PTEMPT(L)*Y3(L,I,1)*TPI     
-     &                           +Y1(L,I,1)+     
+               DINTENT(L,I,1) = PTEMPT(L)*Y3(L,I,1)*TPI
+     &                           +Y1(L,I,1)+
      &                           (1.-Y3(L,I,1))*Y4(L,I,1)
              else
-               DINTENT(L,I,1) = (1.-Y3(L,I,1))*Y4(L,I,1)     
+               DINTENT(L,I,1) = (1.-Y3(L,I,1))*Y4(L,I,1)
      &                           +Y1(L,I,1)
              endif
              TMID(L,1)      = TMID(L,1)+DINTENT(L,I,1)*GRATIO(I)
@@ -100,14 +100,14 @@
 !
 !      DINTENT IS DOWNWARD INTENSITY * TPI. DIREC IS THE DOWNWARD FLUX.
 !
-       DO 530        J           = 2,NLAYER
+       DO 530        J           = 2,NDBL
            DO 520    I           = 1,NGAUSS
               DO 510 L           = NSOLP+1,NTOTAL
-                 DINTENT(L,I,J)  = DINTENT(L,I,J-1)*Y3(L,I,J)     
-     &                              +Y1(L,I,J)+Y5(L,J)+     
+                 DINTENT(L,I,J)  = DINTENT(L,I,J-1)*Y3(L,I,J)
+     &                              +Y1(L,I,J)+Y5(L,J)+
      &                              (1.-Y3(L,I,J))*Y4(L,I,J)
                  TMID(L,J)       = TMID(L,J)+DINTENT(L,I,J)*GRATIO(I)
-                 DIREC(L,J)      = DIREC(L,J)+DINTENT(L,I,J)*     
+                 DIREC(L,J)      = DIREC(L,J)+DINTENT(L,I,J)*
      &                              GWEIGHT(I)
  510          CONTINUE
  520       CONTINUE
@@ -115,34 +115,32 @@
 !
 !     UINTENT IS THE UPWARD INTENSITY * TPI. DIRECTU IS THE UPWARD FLUX.
 !     ASSUME THAT THE REFLECTIVITY IS LAMBERT.
-          
+
 
        DO 570     I               =  1,NGAUSS
           DO 560  L               =  NSOLP+1,NTOTAL
-             UINTENT(L,I,NLAYER)  =  PTEMPG(L)*EMIS(L)     
-     &                               *TPI+2.*RSFX(L)*DIREC(L,NLAYER)
-             TMIU(L,NLAYER)       =  TMIU(L,NLAYER)+     
-     &                               UINTENT(L,I,NLAYER)*GRATIO(I)
-             DIRECTU(L,NLAYER)    =  DIRECTU(L,NLAYER)+     
-     &                               UINTENT(L,I,NLAYER)*GWEIGHT(I)
+             UINTENT(L,I,NDBL)  =  PTEMPG(L)*EMIS(L)
+     &                               *TPI+2.*RSFX(L)*DIREC(L,NDBL)
+             TMIU(L,NDBL)       =  TMIU(L,NDBL)+
+     &                               UINTENT(L,I,NDBL)*GRATIO(I)
+             DIRECTU(L,NDBL)    =  DIRECTU(L,NDBL)+
+     &                               UINTENT(L,I,NDBL)*GWEIGHT(I)
  560      CONTINUE
  570   CONTINUE
 !
-      DO 650        M              = 2,NLAYER
-          J                        = NLAYER-M+1
+      DO 650        M              = 2,NDBL
+          J                        = NDBL-M+1
           DO 640    I              = 1,NGAUSS
              DO 630 L              = NSOLP+1,NTOTAL
-                  UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))
-     &                               *Y3(L,I,J+1)+Y2(L,I,J+1)+     
+                 UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))
+     &                               *Y3(L,I,J+1)+Y2(L,I,J+1)+
      &                               (1.-Y3(L,I,J+1))*Y8(L,I,J+1)
                   TMIU(L,J)        = TMIU(L,J)+UINTENT(L,I,J)*GRATIO(I)
-                  DIRECTU(L,J)     = DIRECTU(L,J) +     
+                  DIRECTU(L,J)     = DIRECTU(L,J) +
      &                               GWEIGHT(I)*UINTENT(L,I,J)
  630         CONTINUE
  640      CONTINUE
  650  CONTINUE
 
-
       RETURN
       END
-

@@ -16,7 +16,8 @@
 !     USES A TRIDIAGONAL ROUTINE TO FIND RADIATION IN THE ENTIRE
 !     ATMOSPHERE.
 !
-      
+
+
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *
 !     ******************************
@@ -54,9 +55,9 @@
                CM(L,J)     =  CM1 * X4
 
   10  CONTINUE
-
-
+!
 !       CALCULATE SFCS, THE SOURCE AT THE BOTTOM.
+!
         DO 20 L            =  1,NSOLP
           SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
   20  CONTINUE
@@ -66,7 +67,7 @@
 !     ******************************
 !
       IF(IRS .NE. 0)  THEN
-        DO 30 J           =   1,NLAYER
+        DO 30 J           =   1,NDBL
            KINDEX         = max(1,J-1)
            DO 30 L        = NSOLP+1,NTOTAL
               B3(L,J)     = 1.0/(B1(L,J)+B2(L,J))
@@ -101,10 +102,9 @@
 
 !     AGAIN FOR THE IR
       J                =  0
-      DO 43 JD         =  2,JDBLE,2
+      DO 43 JD         =  2,JN2,2
          J             =  J + 1
          DO 43 L       =  NSOLP+1,LLA
-
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
@@ -113,8 +113,6 @@
      &                    EL1(L,J) * (CMB(L,J) - CM(L,J+1))
 
    43  CONTINUE
-
-
 !     HERE ARE THE TOP AND BOTTOM BOUNDARY CONDITIONS AS WELL AS THE
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME NO
 !     DIFFUSE RADIATION IS INCIDENT AT THE TOP.
@@ -128,9 +126,9 @@
 !IR
       DO 45 L        = NSOLP+1,LLA
          DF(L,1)     = -CM(L,1)
-         DF(L,JDBLE) = SFCS(L)+RSFX(L)*CMB(L,NLAYER)-CPB(L,NLAYER)
-         DS(L,JDBLE) = DF(L,JDBLE)/BF(L,JDBLE)
-  45     AS(L,JDBLE) = AF(L,JDBLE)/BF(L,JDBLE)
+         DF(L,JDBLEDBLE) = SFCS(L)+RSFX(L)*CMB(L,NDBL)-CPB(L,NDBL)
+         DS(L,JDBLEDBLE) = DF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
+  45     AS(L,JDBLEDBLE) = AF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
 
 
 
@@ -153,13 +151,13 @@
 
 
 !   NOW IR
-      DO 47 J               = 2, JDBLE
+      DO 47 J               = 2, JDBLEDBLE
          DO 47 L            = NSOLP+1,LLA
-            X               = 1./(BF(L,JDBLE+1-J) -
-     &                         EF(L,JDBLE+1-J)*AS(L,JDBLE+2-J))
-            AS(L,JDBLE+1-J) = AF(L,JDBLE+1-J)*X
-        DS(L,JDBLE+1-J) = (DF(L,JDBLE+1-J) - EF(L,JDBLE+1-J)
-     &                         *DS(L,JDBLE+2-J))*X
+            X               = 1./(BF(L,JDBLEDBLE+1-J) -
+     &                         EF(L,JDBLEDBLE+1-J)*AS(L,JDBLEDBLE+2-J))
+            AS(L,JDBLEDBLE+1-J) = AF(L,JDBLEDBLE+1-J)*X
+        DS(L,JDBLEDBLE+1-J) = (DF(L,JDBLEDBLE+1-J) - EF(L,JDBLEDBLE+1-J)
+     &                         *DS(L,JDBLEDBLE+2-J))*X
   47  CONTINUE
 
       DO 48 L       = LLS,LLA
@@ -170,12 +168,13 @@
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
   50  CONTINUE
 
-      DO 51 J       = 2, JDBLE
+      DO 51 J       = 2, JDBLEDBLE
          DO 51 L    = NSOLP+1,LLA
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
   51  CONTINUE
 
 
+!
 !  ***************************************************************
 !     CALCULATE LAYER COEFFICIENTS, NET FLUX AND MEAN INTENSITY
 !  ***************************************************************
@@ -189,8 +188,8 @@
      &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
      &                  CMB(L,J) - DIRECT(L,J)
 !
-          TMI(L,J)   =  EL3(L,J) + U1I(L) *(CK1(L,J)  *
-     &                  (EL1(L,J) + EL2(L,J))   +
+          TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
+     &                  ( EL1(L,J) + EL2(L,J))   +
      &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
      &                   CPB(L,J) + CMB(L,J) )
         enddo
@@ -198,24 +197,21 @@
 
 !  AND AGAIN FOR IR
 
-      do J = 1,NLAYER
+      do J = 1,NDBL
         do L = NSOLP+1,NTOTAL
-
-          CK1(L,J)   = XK(L,2*J-1)                                         
+          CK1(L,J)   = XK(L,2*J-1)
           CK2(L,J)   = XK(L,2*J)
 
-          FNET(L,J)  = CK1(L,J) * (EL1(L,J) -EL2(L,J))   +
-     &                 CK2(L,J) * (EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
+          FNET(L,J)  = CK1(L,J)  *( EL1(L,J) -EL2(L,J))   +
+     &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
      &                  CMB(L,J) - DIRECT(L,J)
-!                                                            
+!
           TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
      &                  ( EL1(L,J) + EL2(L,J))   +
-     &                   CK2(L,J) * (EM1(L,J)+EM2(L,J) ) +
-     &                   CPB(L,J) + CMB(L,J) )                             
+     &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
+     &                   CPB(L,J) + CMB(L,J) )
         enddo
       enddo
 
-
       RETURN
       END
-
