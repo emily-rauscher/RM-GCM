@@ -89,8 +89,12 @@
 
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
+      JDBLEDBLE = 2*JDBLE
       JN      =   JDBLE-1
+      JN2     =   2*JDBLE-1
       TPI     =   2.*PI
+      CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K
+      FDEGDAY =   1.0E-4*G*SCDAY/CPCON
 
 !     Get scalars from interface common block:
 !     ISL        - do solar calculations when = 1
@@ -155,94 +159,80 @@
 !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
 !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
-      PRESSMID = PLAYER*10.
-      PRESS    = P_aerad*10.
+!      write(*,*) 'G in rsetuprad',G
+!      write(*,*) 'NLAYER',NLAYER
+!      write(*,*) 'NL',NL
+      PRESSMID=PLAYER*10.
+      PRESS=P_aerad*10.
       PBAR(1)  = P_AERAD(1)*1e-5
-      DPG(1)   = PRESS(1)/G
-      t_pass(NZ) = t_pass(NZ-1)
-
-      DO J  = 2,NLAYER
+      DPG(1)= PRESS(1)/G
+      DO 45 J  = 2,NLAYER
          PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-         DPG(J)   = (PRESS(J)-PRESS(J-1)) / G
-      END DO
+         DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+ 45    CONTINUE
+                 K  =  1
+      DO 46 J  = 2, NDBL,2
+                 L  =  J
+         PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
+         DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
+                 K  =  K+1
+                 L  =  L+1
+         PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
+         DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
+ 46    CONTINUE
+
+         PBARsub(1) = PBAR(1)
+         DPGsub(1)  = DPG(1)
+!
+      DO 100  J             = 1,NDBL !NLAYER
+          DO 50 L           = 1,NTOTAL
+               TAUAER(L,J)  = 0.
+               TAUCLD(L,J)  = 0.
+               WCLD(L,J)    = 0.
+               WOL(L,J)     = 0.
+               GOL(L,J)     = 0.
+               GCLD(L,J)    = 0.
+               TAURAY(L,J)    = 0.
+50        CONTINUE
+100   CONTINUE
 
 
-!        Here we are saying that the top layer has a thickness that
-!        extends from the top of the atmosphere (pressure = 0) down to
-!        the interface ABOVE the top sigma levels. The atmosphere
-!        above the upper most flux boundary (Press(1)) is not explicitly
-!        heated or emitting; it simply attenuates the incoming and
-!        outgoing radiation by a very small amount.
-!        In practice, the small amount of mass is non very signicant,
-!        and the absorption coefficient at such rarified pressures and
-!        temperatures is probably not very valid. 
-!        DPG and PBAR include this mass above the model in index.  Since
-!        there are N vertical levels and N+1 layers (i.e. boundaries,
-!        interfaces), the arrays of DPG and PBAR have N+1 too account
-!        for this cap above the model.  The attenuation through it must
-!        still be calculated using these values.
+      malsky_switch = 1
+      IF (malsky_switch .gt. 0) THEN
+      CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
-!        CALCULATE CLOUD AND AEROSOL OPACITY.
-
-      DO J = 1,NLAYER
-          DO L = 1,NTOTAL
-               TAUAER(L,J)  = 0.0
-               TAUCLD(L,J)  = 0.0
-               WCLD(L,J)    = 0.0
-               WOL(L,J)     = 0.0
-               GOL(L,J)     = 0.0
-               GCLD(L,J)    = 0.0
-               TAURAY(L,J)  = 0.0
+      DO L = LLS,NSOLP
+          DO J = 1,NLAYER
+              TAUGAS(L,J) = tau_Ve(L,J)
           END DO
       END DO
 
 
-      malsky_switch = 0
-      if (malsky_switch .gt. 0) then
-          CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
-
-
-          DO L = LLS,NSOLP
-              tau_Ve(L, 1)  = ABS(tau_Ve(L,3) - tau_Ve(L,2))
+      DO L = NSOLP+1, NTOTAL
+          k  =  1
+          DO  J = 1,NDBL,2
+              TAUGAS(L, J)   = tau_IRe(L - NSOLP, k)
+              TAUGAS(L, J+1) = tau_IRe(L - NSOLP, k)+ ABS(tau_IRe(L - NSOLP,k) - tau_IRe(L - NSOLP,k+1)) / 2.0
+              k = k + 1
           END DO
-
-          DO L = NSOLP+1, NTOTAL
-              tau_IRe(L - NSOLP,1) = ABS(tau_IRe(L - NSOLP,3) - tau_IRe(L - NSOLP,2))
-          END DO
-
-          DO L = LLS,NSOLP
-              DO J = 1,NLAYER
-                  TAUGAS(L,J) = tau_Ve(L,J)
-              END DO
-          END DO
+      END DO
 
 
-          DO L = NSOLP+1, NTOTAL
-              DO J = 1,NLAYER
-                  TAUGAS(L,J) = tau_IRe(L - NSOLP,J)
-              END DO
-          END DO
-
-          !DO J = 1, NLAYER
-          !    write(*,*) TAUGAS(1,J),',',TAUGAS(2,J),',',TAUGAS(3,J),',',TAUGAS(4,J), ',',TAUGAS(5,J),',',t_pass(J),','
-          !END DO
-          !STOP
-
-      else
+      ELSE
           if (NSOLP .gt. 1) then
-              !Beta_V(1) = 0.33333
-              !Beta_V(2) = 0.33333
-              !Beta_V(3) = 0.33333
+              Beta_V(1) = 0.33333
+              Beta_V(2) = 0.33333
+              Beta_V(3) = 0.33333
 
-              !Beta_IR(1) = 0.84
-              !Beta_IR(2) = 0.16
+              Beta_IR(1) = 0.84
+              Beta_IR(2) = 0.16
 
-              Beta_V(1) = 1.0
-              Beta_V(2) = 0.0
-              Beta_V(3) = 0.0
+              !Beta_V(1) = 1.0
+              !Beta_V(2) = 0.0
+              !Beta_V(3) = 0.0
 
-              Beta_IR(1) = 1.0
-              Beta_IR(2) = 0.0
+              !Beta_IR(1) = 1.0
+              !Beta_IR(2) = 0.0
           else
               Beta_V(1)  = 1.0
               Beta_IR(1) = 1.0
@@ -255,29 +245,31 @@
               END DO
           END DO
 
-
           DO L  = NSOLP+1,NTOTAL
-             DO J     =   1,NLAYER
-                 PM          =   DPG(J)
-                 IF (OPACIR_POWERLAW.eq.0) THEN !MTR Modif to avoid exponent
-                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
-                 ELSE IF (OPACIR_POWERLAW.eq.1) THEN
-                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                 ELSE IF (OPACIR_POWERLAW.eq.2) THEN
-                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
-     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                 ELSE IF (OPACIR_POWERLAW.eq.3) THEN
-                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
-     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-     &                       *MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES))
-                 ELSE
-                     TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM*MAX(1E-6,(PRESS(J)/10./OPACIR_REFPRES)**OPACIR_POWERLAW)
-                 ENDIF
+             DO J     =   1,NDBL
+                 PM          =   DPGsub(J)
+                 TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
              END DO
           END DO
       END IF
+
+      DO J = 1, NLAYER
+          DO L = LLS,NSOLP
+              FNET(L,J)   = 0.0
+              TMI(L,J)    = 0.0
+              DIRECT(L,J) = 0.0
+          END DO
+      END DO
+
+      DO J = 1, NDBL
+          DO L = NSOLP+1, NTOTAL
+              FNET(L,J)   = 0.0
+              TMI(L,J)    = 0.0
+              DIRECT(L,J) = 0.0
+          END DO
+      END DO
+
+
 
       DO  L = NSOLP+1,NTOTAL
           TAUCONST(L)=MALSKY_ABSCOEFF(L)/GA/100.

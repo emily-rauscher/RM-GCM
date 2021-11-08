@@ -1,4 +1,4 @@
-      SUBROUTINE OPPR1(Beta_IR)
+      SUBROUTINE OPPR1
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *
@@ -10,34 +10,40 @@
 !     * ********************************************************
 !
       include 'rcommons.h'
-
       real  ITP, ITG, IT1, SBK, SBKoverPI,g11
-      real, dimension(2) :: Beta_IR
       DIMENSION  PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
       DIMENSION  T(NLAYER)
       integer kindex
-
+!     **************************************
+!     * CALCULATE PTEMP AND SLOPE          *
+!     **************************************
+!
 !     CALCULATE THE WAVELENGTH DEPENDENT PLANK FUNCTION AT THE GROUND.
+!       ITG                 = ANINT(100.*TGRND) - NLOW
+!       write(*,*) 'TAUL top of OPPR1',TAUL
+!
+!
 
+
+!      g11=g0(1,1)
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
 
       T=t_aerad
-      DO 300 J            =   1,NLAYER
-          kindex          = max( 1, j-1 )
 
-          IT1 = TT(J)*TT(J)*TT(J)*TT(J)*SBKoverPI
 
-          DO 200 L = NSOLP+1,NTOTAL
-              PTEMP(L,J)  = IT1
+        DO 300 J            =   1,NDBL ! NLAYER ! MTR
+           kindex          = max( 1, j-1 )
 
-              SLOPE(L,J)  = (PTEMP(L,J)-PTEMP(L,KINDEX))/(TAUL(L,J) + 1.0E-6)
+            IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
 
-              if (TAUL(L,J) .le. 1.0E-6) THEN
-                  SLOPE(L,J) = 0.
-              END IF
- 200      CONTINUE
- 300  CONTINUE
+            DO 200 L        = NSOLP+1,NTOTAL
+               PTEMP(L,J)=IT1
+
+              SLOPE(L,J)   = (PTEMP(L,J)-PTEMP(L,KINDEX))/TAUL(L,J)
+               if( TAUL(L,J) .le. 1.0E-6 ) SLOPE(L,J) = 0.
+ 200        CONTINUE
+ 300     CONTINUE
 
       RETURN
       END

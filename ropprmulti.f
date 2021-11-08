@@ -126,19 +126,28 @@
       END DO
 
 
-
-!     LW AT STANDARD VERTICAL RESOLUTION
-      DO L = NSOLP+1,NTOTAL
-          DO J = 1,NLAYER
-              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
-
-              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
-     &                       PI0_TEMP(L,J,1:NCLOUDS))
-              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
-     &                       G0_TEMP(L, J,1:NCLOUDS))
-
+!     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
+      k = 1
+      DO J = 1,NDBL,2
+          JJ = J
+          DO L = NSOLP+1,NTOTAL
+              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS))
+              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8) *
+     &                        PI0_TEMP(L,K,1:NCLOUDS))
+              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8) *
+     &                        G0_TEMP(L,K,1:NCLOUDS))
           END DO
+          JJ = J+1
+          DO L = NSOLP+1,NTOTAL
+              TAUAER(L,JJ) = TAUAER(L,JJ-1)
+              WOL(L,JJ)    = WOL(L,JJ-1)
+              GOL(L,JJ)    = GOL(L,JJ-1)
+          END DO
+          k = k+1
       END DO
+
+
+
 
       iradgas = 1
       DO J = 1,NLAYER
@@ -205,7 +214,7 @@
 
 
 !     NOW AGAIN FOR THE IR
-      DO J = 1,NLAYER
+      DO J = 1,NDBL
           j1 = max( 1, j-1 )
           DO L = NSOLP+1,NTOTAL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
@@ -214,7 +223,7 @@
                   tauL(L,j) = tauaer(L,j)
               endif
 
-              if(TAUL(L,J) .lt. EPSILON) then
+              if( TAUL(L,J) .lt. EPSILON ) then
                   TAUL(L,J) = EPSILON
               endif
 
@@ -226,7 +235,7 @@
 
               WOT         = min(1.-EPSILON,WOT)
               uw0(L,j)    = WOT
-              DENOM       = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))
+              DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
 
               if( DENOM .LE. EPSILON ) then
                   DENOM = EPSILON
@@ -275,6 +284,7 @@
               END DO
           END IF
       END DO
+
 
 
       RETURN

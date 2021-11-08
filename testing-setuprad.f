@@ -20,8 +20,8 @@
               mu_0 = 0
           END IF
 
-          Tint = (FBASEFLUX / 5.670367E-5) ** 0.25
-          Tirr = (SOLC_IN   / 5.670367E-5) ** 0.25
+          Tint = (FBASEFLUX * 1000.0 / 5.670367E-5) ** 0.25
+          Tirr = (SOLC_IN   * 1000.0 / 5.670367E-5) ** 0.25
 
           do J = 1, NLAYER
              pe(J) = press(J) / 10! convert to pascals
@@ -84,8 +84,11 @@
 
         real, dimension(NLAYER) :: dpe, Pl, Tl
 
-        real, dimension(NIRP,NLAYER+1) :: k_IRl, tau_IRe
-        real, dimension(NSOLP,NLAYER+1) :: k_Vl, tau_Ve
+        real, dimension(NIRP, NLAYER) :: k_IRl
+        real, dimension(NSOLP,NLAYER) :: k_Vl
+
+        real, dimension(NIRP,NLAYER+1) :: tau_IRe
+        real, dimension(NSOLP,NLAYER+1) :: tau_Ve
         real :: grav
         real :: with_TiO_and_VO
 
@@ -220,17 +223,16 @@
 
         ! SOMETHING IS OFF HERE, WHY CAN"T I CALL THIS FOR NLAYERS????
         ! MALSKY STOP BEING LAZY! AND FIGURE THIS OUT
-        do k = 1, NLAYER-1
-          call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
-          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
+        do k = 1, NLAYER
+          !call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
           k_Vl(:,k) = k_IRl(1,k) * gam_V(:)
-
           k_IRl(2,k) = k_IRl(1,k) * gam_2
           k_IRl(1,k) = k_IRl(1,k) * gam_1
 
-          tau_Ve(:,k+1)  = (k_Vl(:,k) * dpe(k))  / grav
-          tau_IRe(:,k+1) = (k_IRl(:,k) * dpe(k)) / grav
+          tau_Ve(:,k)  = ((k_Vl(:,k) * dpe(k))  / grav)
+          tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
 
       end subroutine calculate_opacities
@@ -401,8 +403,3 @@
         ! Avoid divergence in fit for large values
         k_IR = min(k_IR,1.0e30)
       end subroutine k_Ross_Valencia
-
-
-
-
-

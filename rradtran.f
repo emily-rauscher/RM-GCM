@@ -40,18 +40,6 @@
          TT(J) = T(J-1) * (PRESS(J)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
 12    CONTINUE
 
-      if (TT(1) .eq. 0) then
-          tt(1) = tt(2)
-      end if
-
-
-      DO L = 1,NSOLP
-          DO J = 1,NLAYER
-              FNET(L,J)   = 0.0
-              TMI(L,J)    = 0.0
-              DIRECT(L,J) = 0.0
-          END DO
-      END DO
 
 !     SINCE WE DON'T HAVE A GROUND (YET,...ERIN)
 !     EXTRAPOLATE FOR THE BOUNDARY TEMPERATURES
@@ -74,7 +62,18 @@
 
 !     WATER VAPOR (G / CM**2)
 !     create a T array for the double resolution IR by combinging the
-!     layer center and edge temperatures 
+!     layer center and edge temperatures
+
+      K  =  1
+      DO 46 J  = 1, NDBL-1,2
+          L  =  J
+          TTsub(L) = TT(K)
+          L  =  L+1
+          TTsub(L) = T(K)
+          K  =  K+1
+ 46   CONTINUE
+
+
 
 !     Solar zenith angle
       u0 = u0_aerad
@@ -111,8 +110,6 @@
           LLA =  NSOLP
       ENDIF
 
-
-
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
           CALL OPPRMULTI
@@ -126,7 +123,7 @@
 !     THE PLANK FUNCTION
 
       IF(IR .NE. 0) THEN
-          CALL OPPR1(beta_ir)
+          CALL OPPR1
       ENDIF
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
@@ -148,6 +145,40 @@
           CALL NEWFLUX1
       ENDIF
 
+
+         !CLOUD FRACTION
+!        NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
+!        FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
+!        CLEAR SKY AND COMBINE IN A WEIGHTED AVERAGE ASSUMING MAXIMUM OVERLAP.
+
+!        HERE WE TAKE THE DOUBLE RESOLUTION FLUXES AND EXTRACT JUST
+!        THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
+!        LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
+!        WITHOUT DOUBLING
+
+
+
+      DO L = NSOLP+1, NTOTAL
+          K     =  1
+          DO        J     =  1,NLAYER
+            FNET(L,J)      =  DIRECTU(L,k)-DIREC(L,k)
+            DIRECTU(L,J)   =  DIRECTU(L,K)
+            DIREC(L,J)     =  DIREC(L,K)
+            OPD(L,J)       =  OPD(L,K)
+            TAUL(L,J)      =  TAUL(L,K)
+            W0(L,J)        =  W0(L,K)
+            G0(L,J)        =  G0(L,K)
+            ug0(L,J)       =  ug0(L,K)
+            uOPD(L,J)      =  uOPD(L,K)
+            uTAUL(L,j)     =  uTAUL(L,K)
+            uW0(L,J)       =  uW0(L,k)
+            TMIU(L,J)      =  TMIU(L,k)
+            TMID(L,J)      =  TMID(L,k)
+            K     =  K+2.0
+          ENDDO
+      END DO
+
+
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
@@ -164,6 +195,8 @@
 !     HERE WE DERIVE THE UPWARD FLUX FROM THE NET FLUX, SELF CONSISTENT
 !     WITH BOTTOM BOUNDARY CONDITION
 
+!     MALSKY CHECK THAT THIS IS THE RIGHT BOUNDARY
+!     MAYBE IT SHOULD BE NDBL
       DO L =  NSOLP+1,NTOTAL
           DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
       END DO
@@ -180,8 +213,6 @@
            END DO
       END DO
 
-      CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K
-      FDEGDAY =   1.0E-4*G*SCDAY/CPCON
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
@@ -198,7 +229,7 @@
 
           IF (IR .NE. 0) THEN
               DO L    =  NSOLP+1,NTOTAL
-                  HEATI(J) = HEATI(J) + (DIRECTU(L,J+1)-DIREC(L,J+1) - (DIRECTU(L,J)-DIREC(L,J))) * TERM1
+                  HEATI(J)   =  HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
               END DO
           ENDIF
 
@@ -209,6 +240,7 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
+
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
