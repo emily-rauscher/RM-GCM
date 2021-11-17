@@ -20,24 +20,21 @@
               mu_0 = 0
           END IF
 
-          Tint = (FBASEFLUX * 1000.0 / 5.670367E-5) ** 0.25
-          Tirr = (SOLC_IN   * 1000.0 / 5.670367E-5) ** 0.25
+          Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
+          Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
 
           do J = 1, NLAYER
              pe(J) = press(J) / 10! convert to pascals
           end do
-          pe(NLAYER + 1) = pe(NLAYER) + ABS(pe(NLAYER) - pe(NLAYER-1))
 
-          DO J = 1, NLAYER
+          DO J = 1, NLAYER-1
               dpe(J) = pe(J+1) - pe(J)
               pl(J) = dpe(J) / log(pe(J+1)/pe(J))
           END DO
 
-          dpe(NLAYER) = dpe(NLAYER-1) + ABS(dpe(NLAYER-1) - dpe(NLAYER-2))
-          dpe(1) = ABS(dpe(2) - ABS(dpe(3) - dpe(2)))
 
           if (tt(1) .ge. 100.0) then
-              DO J = 1, NZ
+              DO J = 1, NLAYER
                   Tl(J) = tt(J)
               END DO
           else
@@ -46,15 +43,21 @@
               END DO
           end if
 
+          dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
+          pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
+          Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-         CALL calculate_opacities(NLAYER, NSOLP, NIRP, mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
-     &                            Beta_IR,gravity_SI, with_TiO_and_VO)
+          mu_0 = 0.99
+
+
+          CALL calculate_opacities(NLAYER, NSOLP, NIRP, mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
+     &                            Beta_IR,gravity_SI, with_TiO_and_VO, pe)
 
 
       end subroutine opacity_wrapper
 
       subroutine calculate_opacities(NLAYER, NSOLP, NIRP, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
-     &                               Beta_IR,gravity_SI, with_TiO_and_VO)
+     &                               Beta_IR,gravity_SI, with_TiO_and_VO, pe)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -82,7 +85,7 @@
         real :: aB, bB
         real :: l10T, l10T2, RT
 
-        real, dimension(NLAYER) :: dpe, Pl, Tl
+        real, dimension(NLAYER) :: dpe, Pl, Tl, pe
 
         real, dimension(NIRP, NLAYER) :: k_IRl
         real, dimension(NSOLP,NLAYER) :: k_Vl
@@ -91,101 +94,107 @@
         real, dimension(NSOLP,NLAYER+1) :: tau_Ve
         real :: grav
         real :: with_TiO_and_VO
+        real :: Bond_Albedo
 
         grav = gravity_SI
 
         !! Parmentier opacity profile parameters - first get Bond albedo
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 / sqrt(3.0)) *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
-
-        call Bond_Parmentier(Teff, grav, AB)
+        call Bond_Parmentier(Teff, grav, Bond_Albedo)
 
         !! Recalculate Teff and then find parameters
-        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - AB) * mu_0 *
+        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * mu_0 *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         ! Log 10 T_eff variables
         l10T = log10(Teff)
         l10T2 = l10T * l10T
 
-        if (with_TiO_and_VO .gt. 0) THEN
-            ! First table in Parmentier et al. (2015) w. TiO/VO
-            ! Start large if statements with visual band and Beta coefficents
-            if (Teff <= 200.0) then
-              aV1 = -5.51 ; bV1 = 2.48
-              aV2 = -7.37 ; bV2 = 2.53
-              aV3 = -3.03 ; bV3 = -0.20
-              aB = 0.84  ; bB = 0.0
-            else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
-              aV1 = 1.23 ; bV1 = -0.45
-              aV2 = 13.99 ; bV2 = -6.75
-              aV3 = -13.87; bV3 = 4.51
-              aB = 0.84 ; bB = 0.0
-            else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
-              aV1 = 8.65 ; bV1 = -3.45
-              aV2 = -15.18 ; bV2 = 5.02
-              aV3 = -11.95; bV3 = 3.74
-              aB = 0.84 ; bB = 0.0
-            else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
-              aV1 = -12.96; bV1 = 4.33
-              aV2 = -10.41 ; bV2 = 3.31
-              aV3 = -6.97; bV3 = 1.94
-              aB = 0.84 ; bB = 0.0
-            else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
-              aV1 = -23.75 ; bV1 = 7.76
-              aV2 = -19.95 ; bV2 = 6.34
-              aV3 = -3.65 ; bV3 = 0.89
-              aB = 0.84; bB = 0.0
-            else if (Teff >= 2000.0) then
-              aV1 = 12.65; bV1 = -3.27
-              aV2 = 13.56 ; bV2 = -3.81
-              aV3 = -6.02; bV3 = 1.61
-              aB = 6.21 ; bB = -1.63
-            end if
-        else
-            ! Appendix table from Parmentier et al. (2015) - without TiO and VO
-            if (Teff <= 200.0) then
-              aV1 = -5.51 ; bV1 = 2.48
-              aV2 = -7.37 ; bV2 = 2.53
-              aV3 = -3.03 ; bV3 = -0.20
-              aB = 0.84  ; bB = 0.0
-            else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
-              aV1 = 1.23 ; bV1 = -0.45
-              aV2 = 13.99 ; bV2 = -6.75
-              aV3 = -13.87 ; bV3 = 4.51
-              aB = 0.84  ; bB = 0.0
-            else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
-              aV1 = 8.65 ; bV1 = -3.45
-              aV2 = -15.18 ; bV2 = 5.02
-              aV3 = -11.95 ; bV3 = 3.74
-              aB = 0.84  ; bB = 0.0
-            else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
-              aV1 = -12.96 ; bV1 = 4.33
-              aV2 = -10.41 ; bV2 = 3.31
-              aV3 = -6.97 ; bV3 = 1.94
-              aB = 0.84  ; bB = 0.0
-            else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
-              aV1 = -1.68 ; bV1 = 0.75
-              aV2 = 6.96 ; bV2 = -2.21
-              aV3 = 0.02 ; bV3 = -0.28
-              aB = 3.0  ; bB = -0.69
-            else if (Teff >= 2000.0) then
-              aV1 = 10.37 ; bV1 = -2.91
-              aV2 = -2.4 ; bV2 = 0.62
-              aV3 = -16.54 ; bV3 = 4.74
-              aB = 3.0  ; bB = -0.69
-            end if
-        end if
+        if (with_TiO_and_VO .eq. 1) then
+          ! First table in Parmentier et al. (2015) w. TiO/VO
+          ! Start large if statements with visual band and Beta coefficents
+          if (Teff <= 200.0) then
+            aV1 = -5.51 ; bV1 = 2.48
+            aV2 = -7.37 ; bV2 = 2.53
+            aV3 = -3.03 ; bV3 = -0.20
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
+            aV1 = 1.23 ; bV1 = -0.45
+            aV2 = 13.99 ; bV2 = -6.75
+            aV3 = -13.87 ; bV3 = 4.51
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
+            aV1 = 8.65 ; bV1 = -3.45
+            aV2 = -15.18 ; bV2 = 5.02
+            aV3 = -11.95 ; bV3 = 3.74
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
+            aV1 = -12.96 ; bV1 = 4.33
+            aV2 = -10.41 ; bV2 = 3.31
+            aV3 = -6.97 ; bV3 = 1.94
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
+            aV1 = -23.75 ; bV1 = 7.76
+            aV2 = -19.95 ; bV2 = 6.34
+            aV3 = -3.65 ; bV3 = 0.89
+            aB = 0.84  ; bB = 0.0
+          else if (Teff >= 2000.0) then
+            aV1 = 12.65 ; bV1 = -3.27
+            aV2 = 13.56 ; bV2 = -3.81
+            aV3 = -6.02 ; bV3 = 1.61
+            aB = 6.21  ; bB = -1.63
+          end if
 
-        !gam_P coefficents
-        if (Teff <= 1400.0) then
+          ! gam_P coefficents
           aP = -2.36
           bP = 13.92
           cP = -19.38
-        else
-          aP = -12.45
-          bP = 82.25
-          cP = -134.42
+
+        else if (with_TiO_and_VO .eq. 2)then
+          ! Appendix table from Parmentier et al. (2015) - without TiO and VO
+          if (Teff <= 200.0) then
+            aV1 = -5.51 ; bV1 = 2.48
+            aV2 = -7.37 ; bV2 = 2.53
+            aV3 = -3.03 ; bV3 = -0.20
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 200.0) .and. (Teff <= 300.0)) then
+            aV1 = 1.23 ; bV1 = -0.45
+            aV2 = 13.99 ; bV2 = -6.75
+            aV3 = -13.87 ; bV3 = 4.51
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 300.0) .and. (Teff <= 600.0)) then
+            aV1 = 8.65 ; bV1 = -3.45
+            aV2 = -15.18 ; bV2 = 5.02
+            aV3 = -11.95 ; bV3 = 3.74
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 600.0) .and. (Teff <= 1400.0)) then
+            aV1 = -12.96 ; bV1 = 4.33
+            aV2 = -10.41 ; bV2 = 3.31
+            aV3 = -6.97 ; bV3 = 1.94
+            aB = 0.84  ; bB = 0.0
+          else if ((Teff > 1400.0) .and. (Teff < 2000.0)) then
+            aV1 = -1.68 ; bV1 = 0.75
+            aV2 = 6.96 ; bV2 = -2.21
+            aV3 = 0.02 ; bV3 = -0.28
+            aB = 3.0  ; bB = -0.69
+          else if (Teff >= 2000.0) then
+            aV1 = 10.37 ; bV1 = -2.91
+            aV2 = -2.4 ; bV2 = 0.62
+            aV3 = -16.54 ; bV3 = 4.74
+            aB = 3.0  ; bB = -0.69
+          end if
+
+          !gam_P coefficents
+          if (Teff <= 1400.0) then
+            aP = -2.36
+            bP = 13.92
+            cP = -19.38
+          else
+            aP = -12.45
+            bP = 82.25
+            cP = -134.42
+          end if
         end if
 
         ! Calculation of all values
@@ -194,8 +203,10 @@
         gam_V(2) = 10.0**(aV2 + bV2 * l10T)
         gam_V(3) = 10.0**(aV3 + bV3 * l10T)
 
+
         ! Visual band fractions
         Beta_V(:) = 1.0/3.0
+
 
         ! gamma_Planck - if < 1 then make it grey approximation (k_Planck = k_Ross, gam_P = 1)
         gam_P = 10.0**(aP * l10T2 + bP * l10T + cP)
@@ -221,18 +232,23 @@
         tau_Ve(:,1) = 0.0
         tau_IRe(:,1) = 0.0
 
+
         ! SOMETHING IS OFF HERE, WHY CAN"T I CALL THIS FOR NLAYERS????
         ! MALSKY STOP BEING LAZY! AND FIGURE THIS OUT
         do k = 1, NLAYER
-          !call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
-          call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
-          k_Vl(:,k) = k_IRl(1,k) * gam_V(:)
+          k_Vl(1,k) = k_IRl(1,k) * gam_V(1)
+          k_Vl(2,k) = k_IRl(1,k) * gam_V(2)
+          k_Vl(3,k) = k_IRl(1,k) * gam_V(3)
+
           k_IRl(2,k) = k_IRl(1,k) * gam_2
           k_IRl(1,k) = k_IRl(1,k) * gam_1
 
           tau_Ve(:,k)  = ((k_Vl(:,k) * dpe(k))  / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
+
         end do
 
       end subroutine calculate_opacities
@@ -279,6 +295,7 @@
         Tl10 = log10(T)
         Pl10 = log10(P)
 
+
         ! Low pressure expression
         k_lowP = c1*atan(Tl10 - c2) -
      &    (c3/(Pl10 + c4))*exp((Tl10 - c5)**2) +
@@ -305,7 +322,8 @@
 
 
 
-      subroutine Bond_Parmentier(Teff0, grav,  AB)
+
+      subroutine Bond_Parmentier(Teff0, grav,  Bond_Albedo)
         implicit none
 
         ! Input:
@@ -313,10 +331,10 @@
         ! grav - Surface gravity of planet [m s-2]
 
         ! Output:
-        ! AB - Bond albedo
+        ! Bond_Albedo - Bond_Albedo
 
         real, intent(in) :: Teff0, grav
-        real, intent(out) :: AB
+        real, intent(out) :: Bond_Albedo
 
         real :: a, b
 
@@ -336,7 +354,7 @@
         end if
 
         ! Final Bond Albedo expression
-        AB = 10.0**(a + b * log10(Teff0))
+        Bond_Albedo = 10.0**(a + b * log10(Teff0))
       end subroutine Bond_Parmentier
 
 

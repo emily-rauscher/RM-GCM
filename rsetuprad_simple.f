@@ -41,6 +41,7 @@
       DATA PI     /3.14159265359/
 
       integer :: malsky_switch
+      integer :: testing
 
 
 ! ******************************************
@@ -137,52 +138,90 @@
       PTOP         =p_aerad(1)*10.
       PBOT         =p_aerad(NL+1)*10.
 
-      ALBEDO_SFC = ALBSW !SFC_ALB MTR
+      ALBEDO_SFC = ALBSW
 
-!     Get atmospheric pressure profile from interface common block
-!     [ dyne / cm^2 ]
 
-      do k = 1,NZ
-        press(k)=p_aerad(k)*10.
-      enddo
+      testing = 1
+      if (testing .eq. 1) then
+          p_aerad(1) = 10.0 ** (LOG10(p_aerad(2)) - (LOG10(p_aerad(3)) - LOG10(p_aerad(2))))
 
-!     The layer thickness in pressure should be the difference between
-!     the top and bottom edge of the layer.  Eg. So for layer 3, the layer thickness
-!     is the pressure at the boundaries 4 minus at the boundary 3.  
-!     These boundary pressures are given in p_full (NZ+1 of them). 
-!     The mass of these layers is this pressure thickness divide by G.
-!    
-!     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
-!     P_aerad=PRESSURE AT EDGES OF LAYERS (PASCALS) 
-!     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
-!     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR 
-!     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
-!     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
+          PRESSMID = PLAYER*10.
+          PRESS    = P_aerad*10.
 
-!      write(*,*) 'G in rsetuprad',G
-!      write(*,*) 'NLAYER',NLAYER
-!      write(*,*) 'NL',NL
-      PRESSMID=PLAYER*10.
-      PRESS=P_aerad*10.
-      PBAR(1)  = P_AERAD(1)*1e-5
-      DPG(1)= PRESS(1)/G
-      DO 45 J  = 2,NLAYER
-         PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-         DPG(J) = (PRESS(J)-PRESS(J-1)) / G
- 45    CONTINUE
-                 K  =  1
-      DO 46 J  = 2, NDBL,2
-                 L  =  J
-         PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
-         DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
-                 K  =  K+1
-                 L  =  L+1
-         PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
-         DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
- 46    CONTINUE
+          DO J  = 2,NLAYER
+             PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
+             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+          END DO
 
-         PBARsub(1) = PBAR(1)
-         DPGsub(1)  = DPG(1)
+          PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
+          DPG(1)   = 10.0 ** (LOG10(DPG(2))  - (LOG10(DPG(3))  - LOG10(DPG(2))))
+
+           k = 1
+           DO J = 1, NDBL-4, 2
+               PBARsub(J)   = PBAR(k)
+               PBARsub(J+1) = PBAR(k) + ABS(PBAR(k+2) - PBAR(k+1)) / 2.0
+
+               DPGsub(J)   = DPG(k)
+               DPGsub(J+1) = DPG(k) + ABS(DPG(k+2) - DPG(k+1)) / 2.0
+               k = k + 1
+           END DO
+
+           PBARsub(NDBL-3) = PBARsub(NDBL-4) + ABS(PBARsub(NDBL-5) - PBARsub(NDBL-6))
+           PBARsub(NDBL-2) = PBARsub(NDBL-3) + ABS(PBARsub(NDBL-4) - PBARsub(NDBL-5))
+           PBARsub(NDBL-1) = PBARsub(NDBL-2) + ABS(PBARsub(NDBL-3) - PBARsub(NDBL-4))
+           PBARsub(NDBL)   = PBARsub(NDBL-1) + ABS(PBARsub(NDBL-2) - PBARsub(NDBL-3))
+
+           DPGsub(NDBL-3) = DPGsub(NDBL-4) + ABS(DPGsub(NDBL-5) - DPGsub(NDBL-6))
+           DPGsub(NDBL-2) = DPGsub(NDBL-3) + ABS(DPGsub(NDBL-4) - DPGsub(NDBL-5))
+           DPGsub(NDBL-1) = DPGsub(NDBL-2) + ABS(DPGsub(NDBL-3) - DPGsub(NDBL-4))
+           DPGsub(NDBL)   = DPGsub(NDBL-1) + ABS(DPGsub(NDBL-2) - DPGsub(NDBL-3))
+
+           PBARsub(1)  = 10.0 ** (LOG10(PBARsub(2)) - (LOG10(PBARsub(3)) - LOG10(PBARsub(2))))
+           DPGsub(1)   = 10.0 ** (LOG10(DPGsub(2))  - (LOG10(DPGsub(3))  - LOG10(DPGsub(2))))
+      else
+    !     Get atmospheric pressure profile from interface common block
+    !     [ dyne / cm^2 ]
+
+          do k = 1,NZ
+            press(k)=p_aerad(k)*10.
+          enddo
+
+    !     The layer thickness in pressure should be the difference between
+    !     the top and bottom edge of the layer.  Eg. So for layer 3, the layer thickness
+    !     is the pressure at the boundaries 4 minus at the boundary 3.
+    !     These boundary pressures are given in p_full (NZ+1 of them).
+    !     The mass of these layers is this pressure thickness divide by G.
+    !
+    !     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
+    !     P_aerad=PRESSURE AT EDGES OF LAYERS (PASCALS)
+    !     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
+    !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR
+    !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
+    !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
+
+          PRESSMID=PLAYER*10.
+          PRESS=P_aerad*10.
+          PBAR(1)  = P_AERAD(1)*1e-5
+          DPG(1)= PRESS(1)/G
+
+          DO J  = 2,NLAYER
+             PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
+             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+          END DO
+                     K  =  1
+          DO J  = 2, NDBL,2
+                     L  =  J
+             PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
+             DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
+                     K  =  K+1
+                     L  =  L+1
+             PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
+             DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
+          END DO
+             PBARsub(1) = PBAR(1)
+             DPGsub(1)  = DPG(1)
+      end if
+
 !
       DO 100  J             = 1,NDBL !NLAYER
           DO 50 L           = 1,NTOTAL
@@ -196,43 +235,44 @@
 50        CONTINUE
 100   CONTINUE
 
-
       malsky_switch = 1
       IF (malsky_switch .gt. 0) THEN
-      CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
+        CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
-      DO L = LLS,NSOLP
-          DO J = 1,NLAYER
-              TAUGAS(L,J) = tau_Ve(L,J)
-          END DO
-      END DO
+        DO L = LLS,NSOLP
+          tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
+        END DO
+
+        DO L = NSOLP+1, NTOTAL
+            tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
+     &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
+        END DO
+
+        DO L = LLS,NSOLP
+            DO J = 1,NLAYER
+                TAUGAS(L,J) = tau_Ve(L,J)
+            END DO
+        END DO
 
 
-      DO L = NSOLP+1, NTOTAL
-          k  =  1
-          DO  J = 1,NDBL,2
-              TAUGAS(L, J)   = tau_IRe(L - NSOLP, k)
-              TAUGAS(L, J+1) = tau_IRe(L - NSOLP, k)+ ABS(tau_IRe(L - NSOLP,k) - tau_IRe(L - NSOLP,k+1)) / 2.0
-              k = k + 1
-          END DO
-      END DO
+        DO L = NSOLP+1, NTOTAL
+            k  =  1
+            DO  J = 1,NDBL,2
+                TAUGAS(L, J)   = tau_IRe(L - NSOLP, k)
+                TAUGAS(L, J+1) = tau_IRe(L - NSOLP, k)+ ABS(tau_IRe(L - NSOLP,k) - tau_IRe(L - NSOLP,k+1)) / 2.0
+                k = k + 1
+            END DO
+        END DO
 
 
       ELSE
           if (NSOLP .gt. 1) then
-              Beta_V(1) = 0.33333
-              Beta_V(2) = 0.33333
-              Beta_V(3) = 0.33333
+              Beta_V(1) = 1.0
+              Beta_V(2) = 0.0
+              Beta_V(3) = 0.0
 
-              Beta_IR(1) = 0.84
-              Beta_IR(2) = 0.16
-
-              !Beta_V(1) = 1.0
-              !Beta_V(2) = 0.0
-              !Beta_V(3) = 0.0
-
-              !Beta_IR(1) = 1.0
-              !Beta_IR(2) = 0.0
+              Beta_IR(1) = 1.0
+              Beta_IR(2) = 0.0
           else
               Beta_V(1)  = 1.0
               Beta_IR(1) = 1.0
