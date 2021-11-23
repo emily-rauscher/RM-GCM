@@ -26,9 +26,8 @@ C
      +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)           
 C     Number of 2D (surface) output fields. This value is                 
 C     Doubled due to averaged and instantaneous fields.                   
-      PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)                           
-C                                                                         
-C                                                                         
+      PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)
+
 C     Basic planetary parameters for run plus information about           
 C     vertical grid structure                                             
 C                                                                         
@@ -101,7 +100,13 @@ C     Restoration fields and timescale
 C                                                                         
       COMMON/RESTOR/ZRES(IGN),DRES(IGN),TRES(IGN),SPRES(IGM),DAMP         
 C                                                                         
-      COMMON/STATS/GMSP0,GMSPMI,LMASCOR,LMASOLD,LMASPRT                   
+      COMMON/STATS/GMSP0,GMSPMI,LMASCOR,LMASOLD,LMASPRT
+
+      COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+     &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,MOLEF,AERLAYERS
+
       LOGICAL LMASCOR,LMASOLD,LMASPRT                                     
 C                                                                         
 C-----------------------------------------------------------------------  
@@ -424,6 +429,7 @@ CDIR$    IVDEP
    42    CONTINUE                                                         
       END IF
 
-      CALL get_cloud_scattering_properties(NL)
+
+      CALL get_cloud_scattering_properties_wrapper
 
       END                                                                 

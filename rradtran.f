@@ -122,6 +122,8 @@
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
 
+
+
       IF(IR .NE. 0) THEN
           CALL OPPR1
       ENDIF
@@ -240,7 +242,6 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
-
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and

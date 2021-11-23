@@ -51,8 +51,7 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                
      +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT                           
-C                                                                         
-C      CALL INISET                                                         
+
       CALL INIGAU 
 
 !!KM Modif

@@ -1,194 +1,203 @@
-      SUBROUTINE get_cloud_scattering_properties(NL)
+      SUBROUTINE get_cloud_scattering_properties_wrapper
+          include 'rcommons.h'
+
+          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP)
+
+      END SUBROUTINE get_cloud_scattering_properties_wrapper
+
+
+      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP)
           implicit none
-          integer :: J, L, K, NL
+          integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
 
           ! Define all the arrays
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
           ! That can change but use to code from Elsie and Isaac
-          real, dimension(50,50) :: KCl_rosselandMean_gg
-          real, dimension(50,50) :: KCl_rosselandMean_qext
-          real, dimension(50,50) :: KCl_rosselandMean_qscat
-          real, dimension(50,50) :: KCl_vis_500_gg
-          real, dimension(50,50) :: KCl_vis_500_qext
-          real, dimension(50,50) :: KCl_vis_500_qscat
-          real, dimension(50,50) :: KCl_vis_650_gg
-          real, dimension(50,50) :: KCl_vis_650_qext
-          real, dimension(50,50) :: KCl_vis_650_qscat
-          real, dimension(50,50) :: KCl_vis_800_gg
-          real, dimension(50,50) :: KCl_vis_800_qext
-          real, dimension(50,50) :: KCl_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: KCl_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: KCl_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: KCl_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: KCl_vis_500_gg
+          real, dimension(NVERT,NVERT) :: KCl_vis_500_qext
+          real, dimension(NVERT,NVERT) :: KCl_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: KCl_vis_650_gg
+          real, dimension(NVERT,NVERT) :: KCl_vis_650_qext
+          real, dimension(NVERT,NVERT) :: KCl_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: KCl_vis_800_gg
+          real, dimension(NVERT,NVERT) :: KCl_vis_800_qext
+          real, dimension(NVERT,NVERT) :: KCl_vis_800_qscat
           
-          real, dimension(50,50) :: ZnS_rosselandMean_gg
-          real, dimension(50,50) :: ZnS_rosselandMean_qext
-          real, dimension(50,50) :: ZnS_rosselandMean_qscat
-          real, dimension(50,50) :: ZnS_vis_500_gg
-          real, dimension(50,50) :: ZnS_vis_500_qext
-          real, dimension(50,50) :: ZnS_vis_500_qscat
-          real, dimension(50,50) :: ZnS_vis_650_gg
-          real, dimension(50,50) :: ZnS_vis_650_qext
-          real, dimension(50,50) :: ZnS_vis_650_qscat
-          real, dimension(50,50) :: ZnS_vis_800_gg
-          real, dimension(50,50) :: ZnS_vis_800_qext
-          real, dimension(50,50) :: ZnS_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: ZnS_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: ZnS_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: ZnS_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: ZnS_vis_500_gg
+          real, dimension(NVERT,NVERT) :: ZnS_vis_500_qext
+          real, dimension(NVERT,NVERT) :: ZnS_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: ZnS_vis_650_gg
+          real, dimension(NVERT,NVERT) :: ZnS_vis_650_qext
+          real, dimension(NVERT,NVERT) :: ZnS_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: ZnS_vis_800_gg
+          real, dimension(NVERT,NVERT) :: ZnS_vis_800_qext
+          real, dimension(NVERT,NVERT) :: ZnS_vis_800_qscat
           
-          real, dimension(50,50) :: Na2S_rosselandMean_gg
-          real, dimension(50,50) :: Na2S_rosselandMean_qext
-          real, dimension(50,50) :: Na2S_rosselandMean_qscat
-          real, dimension(50,50) :: Na2S_vis_500_gg
-          real, dimension(50,50) :: Na2S_vis_500_qext
-          real, dimension(50,50) :: Na2S_vis_500_qscat
-          real, dimension(50,50) :: Na2S_vis_650_gg
-          real, dimension(50,50) :: Na2S_vis_650_qext
-          real, dimension(50,50) :: Na2S_vis_650_qscat
-          real, dimension(50,50) :: Na2S_vis_800_gg
-          real, dimension(50,50) :: Na2S_vis_800_qext
-          real, dimension(50,50) :: Na2S_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: Na2S_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: Na2S_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: Na2S_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: Na2S_vis_500_gg
+          real, dimension(NVERT,NVERT) :: Na2S_vis_500_qext
+          real, dimension(NVERT,NVERT) :: Na2S_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: Na2S_vis_650_gg
+          real, dimension(NVERT,NVERT) :: Na2S_vis_650_qext
+          real, dimension(NVERT,NVERT) :: Na2S_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: Na2S_vis_800_gg
+          real, dimension(NVERT,NVERT) :: Na2S_vis_800_qext
+          real, dimension(NVERT,NVERT) :: Na2S_vis_800_qscat
           
-          real, dimension(50,50) :: MnS_rosselandMean_gg
-          real, dimension(50,50) :: MnS_rosselandMean_qext
-          real, dimension(50,50) :: MnS_rosselandMean_qscat
-          real, dimension(50,50) :: MnS_vis_500_gg
-          real, dimension(50,50) :: MnS_vis_500_qext
-          real, dimension(50,50) :: MnS_vis_500_qscat
-          real, dimension(50,50) :: MnS_vis_650_gg
-          real, dimension(50,50) :: MnS_vis_650_qext
-          real, dimension(50,50) :: MnS_vis_650_qscat
-          real, dimension(50,50) :: MnS_vis_800_gg
-          real, dimension(50,50) :: MnS_vis_800_qext
-          real, dimension(50,50) :: MnS_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: MnS_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: MnS_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: MnS_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: MnS_vis_500_gg
+          real, dimension(NVERT,NVERT) :: MnS_vis_500_qext
+          real, dimension(NVERT,NVERT) :: MnS_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: MnS_vis_650_gg
+          real, dimension(NVERT,NVERT) :: MnS_vis_650_qext
+          real, dimension(NVERT,NVERT) :: MnS_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: MnS_vis_800_gg
+          real, dimension(NVERT,NVERT) :: MnS_vis_800_qext
+          real, dimension(NVERT,NVERT) :: MnS_vis_800_qscat
           
-          real, dimension(50,50) :: Cr_rosselandMean_gg
-          real, dimension(50,50) :: Cr_rosselandMean_qext
-          real, dimension(50,50) :: Cr_rosselandMean_qscat
-          real, dimension(50,50) :: Cr_vis_500_gg
-          real, dimension(50,50) :: Cr_vis_500_qext
-          real, dimension(50,50) :: Cr_vis_500_qscat
-          real, dimension(50,50) :: Cr_vis_650_gg
-          real, dimension(50,50) :: Cr_vis_650_qext
-          real, dimension(50,50) :: Cr_vis_650_qscat
-          real, dimension(50,50) :: Cr_vis_800_gg
-          real, dimension(50,50) :: Cr_vis_800_qext
-          real, dimension(50,50) :: Cr_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: Cr_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: Cr_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: Cr_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: Cr_vis_500_gg
+          real, dimension(NVERT,NVERT) :: Cr_vis_500_qext
+          real, dimension(NVERT,NVERT) :: Cr_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: Cr_vis_650_gg
+          real, dimension(NVERT,NVERT) :: Cr_vis_650_qext
+          real, dimension(NVERT,NVERT) :: Cr_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: Cr_vis_800_gg
+          real, dimension(NVERT,NVERT) :: Cr_vis_800_qext
+          real, dimension(NVERT,NVERT) :: Cr_vis_800_qscat
           
-          real, dimension(50,50) :: SiO2_rosselandMean_gg
-          real, dimension(50,50) :: SiO2_rosselandMean_qext
-          real, dimension(50,50) :: SiO2_rosselandMean_qscat
-          real, dimension(50,50) :: SiO2_vis_500_gg
-          real, dimension(50,50) :: SiO2_vis_500_qext
-          real, dimension(50,50) :: SiO2_vis_500_qscat
-          real, dimension(50,50) :: SiO2_vis_650_gg
-          real, dimension(50,50) :: SiO2_vis_650_qext
-          real, dimension(50,50) :: SiO2_vis_650_qscat
-          real, dimension(50,50) :: SiO2_vis_800_gg
-          real, dimension(50,50) :: SiO2_vis_800_qext
-          real, dimension(50,50) :: SiO2_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: SiO2_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: SiO2_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: SiO2_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: SiO2_vis_500_gg
+          real, dimension(NVERT,NVERT) :: SiO2_vis_500_qext
+          real, dimension(NVERT,NVERT) :: SiO2_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: SiO2_vis_650_gg
+          real, dimension(NVERT,NVERT) :: SiO2_vis_650_qext
+          real, dimension(NVERT,NVERT) :: SiO2_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: SiO2_vis_800_gg
+          real, dimension(NVERT,NVERT) :: SiO2_vis_800_qext
+          real, dimension(NVERT,NVERT) :: SiO2_vis_800_qscat
           
-          real, dimension(50,50) :: Mg2SiO4_rosselandMean_gg
-          real, dimension(50,50) :: Mg2SiO4_rosselandMean_qext
-          real, dimension(50,50) :: Mg2SiO4_rosselandMean_qscat
-          real, dimension(50,50) :: Mg2SiO4_vis_500_gg
-          real, dimension(50,50) :: Mg2SiO4_vis_500_qext
-          real, dimension(50,50) :: Mg2SiO4_vis_500_qscat
-          real, dimension(50,50) :: Mg2SiO4_vis_650_gg
-          real, dimension(50,50) :: Mg2SiO4_vis_650_qext
-          real, dimension(50,50) :: Mg2SiO4_vis_650_qscat
-          real, dimension(50,50) :: Mg2SiO4_vis_800_gg
-          real, dimension(50,50) :: Mg2SiO4_vis_800_qext
-          real, dimension(50,50) :: Mg2SiO4_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_500_gg
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_500_qext
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_650_gg
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_650_qext
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_800_gg
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_800_qext
+          real, dimension(NVERT,NVERT) :: Mg2SiO4_vis_800_qscat
           
-          real, dimension(50,50) :: VO_rosselandMean_gg
-          real, dimension(50,50) :: VO_rosselandMean_qext
-          real, dimension(50,50) :: VO_rosselandMean_qscat
-          real, dimension(50,50) :: VO_vis_500_gg
-          real, dimension(50,50) :: VO_vis_500_qext
-          real, dimension(50,50) :: VO_vis_500_qscat
-          real, dimension(50,50) :: VO_vis_650_gg
-          real, dimension(50,50) :: VO_vis_650_qext
-          real, dimension(50,50) :: VO_vis_650_qscat
-          real, dimension(50,50) :: VO_vis_800_gg
-          real, dimension(50,50) :: VO_vis_800_qext
-          real, dimension(50,50) :: VO_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: VO_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: VO_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: VO_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: VO_vis_500_gg
+          real, dimension(NVERT,NVERT) :: VO_vis_500_qext
+          real, dimension(NVERT,NVERT) :: VO_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: VO_vis_650_gg
+          real, dimension(NVERT,NVERT) :: VO_vis_650_qext
+          real, dimension(NVERT,NVERT) :: VO_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: VO_vis_800_gg
+          real, dimension(NVERT,NVERT) :: VO_vis_800_qext
+          real, dimension(NVERT,NVERT) :: VO_vis_800_qscat
           
-          real, dimension(50,50) :: Ni_rosselandMean_gg
-          real, dimension(50,50) :: Ni_rosselandMean_qext
-          real, dimension(50,50) :: Ni_rosselandMean_qscat
-          real, dimension(50,50) :: Ni_vis_500_gg
-          real, dimension(50,50) :: Ni_vis_500_qext
-          real, dimension(50,50) :: Ni_vis_500_qscat
-          real, dimension(50,50) :: Ni_vis_650_gg
-          real, dimension(50,50) :: Ni_vis_650_qext
-          real, dimension(50,50) :: Ni_vis_650_qscat
-          real, dimension(50,50) :: Ni_vis_800_gg
-          real, dimension(50,50) :: Ni_vis_800_qext
-          real, dimension(50,50) :: Ni_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: Ni_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: Ni_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: Ni_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: Ni_vis_500_gg
+          real, dimension(NVERT,NVERT) :: Ni_vis_500_qext
+          real, dimension(NVERT,NVERT) :: Ni_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: Ni_vis_650_gg
+          real, dimension(NVERT,NVERT) :: Ni_vis_650_qext
+          real, dimension(NVERT,NVERT) :: Ni_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: Ni_vis_800_gg
+          real, dimension(NVERT,NVERT) :: Ni_vis_800_qext
+          real, dimension(NVERT,NVERT) :: Ni_vis_800_qscat
           
-          real, dimension(50,50) :: Fe_rosselandMean_gg
-          real, dimension(50,50) :: Fe_rosselandMean_qext
-          real, dimension(50,50) :: Fe_rosselandMean_qscat
-          real, dimension(50,50) :: Fe_vis_500_gg
-          real, dimension(50,50) :: Fe_vis_500_qext
-          real, dimension(50,50) :: Fe_vis_500_qscat
-          real, dimension(50,50) :: Fe_vis_650_gg
-          real, dimension(50,50) :: Fe_vis_650_qext
-          real, dimension(50,50) :: Fe_vis_650_qscat
-          real, dimension(50,50) :: Fe_vis_800_gg
-          real, dimension(50,50) :: Fe_vis_800_qext
-          real, dimension(50,50) :: Fe_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: Fe_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: Fe_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: Fe_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: Fe_vis_500_gg
+          real, dimension(NVERT,NVERT) :: Fe_vis_500_qext
+          real, dimension(NVERT,NVERT) :: Fe_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: Fe_vis_650_gg
+          real, dimension(NVERT,NVERT) :: Fe_vis_650_qext
+          real, dimension(NVERT,NVERT) :: Fe_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: Fe_vis_800_gg
+          real, dimension(NVERT,NVERT) :: Fe_vis_800_qext
+          real, dimension(NVERT,NVERT) :: Fe_vis_800_qscat
           
-          real, dimension(50,50) :: CaSiO4_rosselandMean_gg
-          real, dimension(50,50) :: CaSiO4_rosselandMean_qext
-          real, dimension(50,50) :: CaSiO4_rosselandMean_qscat
-          real, dimension(50,50) :: CaSiO4_vis_500_gg
-          real, dimension(50,50) :: CaSiO4_vis_500_qext
-          real, dimension(50,50) :: CaSiO4_vis_500_qscat
-          real, dimension(50,50) :: CaSiO4_vis_650_gg
-          real, dimension(50,50) :: CaSiO4_vis_650_qext
-          real, dimension(50,50) :: CaSiO4_vis_650_qscat
-          real, dimension(50,50) :: CaSiO4_vis_800_gg
-          real, dimension(50,50) :: CaSiO4_vis_800_qext
-          real, dimension(50,50) :: CaSiO4_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: CaSiO4_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: CaSiO4_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: CaSiO4_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_500_gg
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_500_qext
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_650_gg
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_650_qext
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_800_gg
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_800_qext
+          real, dimension(NVERT,NVERT) :: CaSiO4_vis_800_qscat
           
-          real, dimension(50,50) :: CaTiO3_rosselandMean_gg
-          real, dimension(50,50) :: CaTiO3_rosselandMean_qext
-          real, dimension(50,50) :: CaTiO3_rosselandMean_qscat
-          real, dimension(50,50) :: CaTiO3_vis_500_gg
-          real, dimension(50,50) :: CaTiO3_vis_500_qext
-          real, dimension(50,50) :: CaTiO3_vis_500_qscat
-          real, dimension(50,50) :: CaTiO3_vis_650_gg
-          real, dimension(50,50) :: CaTiO3_vis_650_qext
-          real, dimension(50,50) :: CaTiO3_vis_650_qscat
-          real, dimension(50,50) :: CaTiO3_vis_800_gg
-          real, dimension(50,50) :: CaTiO3_vis_800_qext
-          real, dimension(50,50) :: CaTiO3_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: CaTiO3_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: CaTiO3_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: CaTiO3_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_500_gg
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_500_qext
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_650_gg
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_650_qext
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_800_gg
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_800_qext
+          real, dimension(NVERT,NVERT) :: CaTiO3_vis_800_qscat
           
-          real, dimension(50,50) :: Al2O3_rosselandMean_gg
-          real, dimension(50,50) :: Al2O3_rosselandMean_qext
-          real, dimension(50,50) :: Al2O3_rosselandMean_qscat
-          real, dimension(50,50) :: Al2O3_vis_500_gg
-          real, dimension(50,50) :: Al2O3_vis_500_qext
-          real, dimension(50,50) :: Al2O3_vis_500_qscat
-          real, dimension(50,50) :: Al2O3_vis_650_gg
-          real, dimension(50,50) :: Al2O3_vis_650_qext
-          real, dimension(50,50) :: Al2O3_vis_650_qscat
-          real, dimension(50,50) :: Al2O3_vis_800_gg
-          real, dimension(50,50) :: Al2O3_vis_800_qext
-          real, dimension(50,50) :: Al2O3_vis_800_qscat
+          real, dimension(NVERT,NVERT) :: Al2O3_rosselandMean_gg
+          real, dimension(NVERT,NVERT) :: Al2O3_rosselandMean_qext
+          real, dimension(NVERT,NVERT) :: Al2O3_rosselandMean_qscat
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_500_gg
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_500_qext
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_500_qscat
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_650_gg
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_650_qext
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_650_qscat
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_800_gg
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_800_qext
+          real, dimension(NVERT,NVERT) :: Al2O3_vis_800_qscat
 
 
-          REAL TconKCl(51) 
-          REAL TconZnS(51)
-          REAL TconNa2S(51)
-          REAL TCONMnS(51)
-          REAL TconCr2O3(51)
-          REAL TCONSiO2(51)
-          REAL TCONMg2SiO4(51) 
-          REAL TconVO(51)
-          REAL TconNi(51)
-          REAL TCONFe(51)
-          REAL TconCa2SiO4(51)
-          REAL TconCaTiO3(51)
-          REAL TCONAl2O3(51)
+          REAL TconKCl(NLAYER)
+          REAL TconZnS(NLAYER)
+          REAL TconNa2S(NLAYER)
+          REAL TCONMnS(NLAYER)
+          REAL TconCr2O3(NLAYER)
+          REAL TCONSiO2(NLAYER)
+          REAL TCONMg2SiO4(NLAYER)
+          REAL TconVO(NLAYER)
+          REAL TconNi(NLAYER)
+          REAL TCONFe(NLAYER)
+          REAL TconCa2SiO4(NLAYER)
+          REAL TconCaTiO3(NLAYER)
+          REAL TCONAl2O3(NLAYER)
 
+          ! MALSKY THESE NEED TO BE FIXED BUT IT'S NOT THAT EASY
           REAL CORFACT(51)
           REAL TCONDS(51, 13)
 
@@ -749,17 +758,44 @@
 
 
           DENSITY = (/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3/)
-          FMOLW   = (/31.59,41.30,33.07,36.87,64.40,25.46,59.61,28.37,24.87, 23.66, 72.99, 50.83, 43.20/)
+          FMOLW   = (/31.59,41.30,33.07,36.87,64.40,25.46,59.61,28.37,24.87,23.66,72.99,50.83,43.20/)
 
-          MOLEF   = (/1.23e-07,4.06e-08,9.35e-07,3.11e-07,4.4e-07,3.26e-05,
-     &                1.745e-05,9.56e-09,1.61e-06,2.94e-05,9.95e-07,7.83e-08,1.385e-06/)
+!          MOLEF   = (/1.23e-07,4.06e-08,9.35e-07,3.11e-07,4.4e-07,3.26e-05,
+!     &                1.745e-05,9.56e-09,1.61e-06,2.94e-05,9.95e-07,7.83e-08,1.385e-06/)
 
-  !        MOLEF   = (/1.23e-07,4.06e-08,9.35e-07,3.11e-07,4.4e-07,3.26e-05,
-  !   &                1.745e-05,
-  !   &                9.56e-09,1.61e-06,2.94e-05,0.0,7.83e-08,1.385e-06/)
+          ! This is missing that annoying species I can't find
+          !MOLEF=(/1.23e-7,4.06e-8,9.35e-7,3.11e-7,4.4e-7,3.26e-5,1.745e-5,9.56e-9,1.61e-6,2.94e-5,0.,7.83e-8,1.385e-6/)
 
+          !  1) KCl     || 1.23e-7
+          !  2) ZnS     || 4.06e-8
+          !  3) Na2S    || 9.35e-7
+          !  4) MnS     || 3.11e-7,
+          !  5) Cr203   || 4.4e-7
+          !  6) SiO2    || 3.26e-5
+          !  7) MgSi04  || 1.745e-5
+          !  8) VO      || 9.56e-9
+          !  9) Ni      || 1.61e-6
+          ! 10) Fe      || 2.94e-5
+          ! 11) Ca2Si04 || 0.0
+          ! 12) CaTiO3  || 7.83e-8
+          ! 13) Al2O3   || 1.385e-6
+
+          MOLEF   = (/0.,        ! KCl
+     &                0.,        ! ZnS
+     &                0.,        ! Na2S
+     &                3.11e-7,   ! MnS
+     &                0.,        ! Cr203
+     &                0.,        ! SiO2
+     &                1.745e-5,  ! MgSi04
+     &                0.,        ! VO
+     &                0.,        ! Ni
+     &                2.94e-5,   ! Fe
+     &                0.,        ! Ca2Si04
+     &                0.,        ! CaTiO3
+     &                1.385e-6/) ! Al2O3
 
           MOLEF   = (/0,0,0,0,0,0,0,0,0,0,0,0,0/)
+
 
           CORFACT = (/0.005,0.018,0.050,0.135,.367,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
@@ -771,13 +807,13 @@
 
 !    KCl
       TconKCl = (/617.032,621.573,626.038,630.552,635.053, 639.555,
-     &         644.050,648.556,653.049,657.552,662.043,666.609,671.436,
-     &         676.532,681.879,687.233,692.462,697.665,702.916,708.306,
-     &         713.767,719.366,725.024,730.775,736.460,742.266,748.065,
-     &        753.932,759.779,765.571, 771.346,777.201,783.301,789.715,
-     &         796.379,803.117,809.863,816.737,823.798,831.052,838.426,
-     &         845.980,853.873,862.074,870.494,878.913,887.351,895.768,
-     &           904.198,912.867,917.385/)
+     &            644.050,648.556,653.049,657.552,662.043,666.609,671.436,
+     &            676.532,681.879,687.233,692.462,697.665,702.916,708.306,
+     &            713.767,719.366,725.024,730.775,736.460,742.266,748.065,
+     &            753.932,759.779,765.571, 771.346,777.201,783.301,789.715,
+     &            796.379,803.117,809.863,816.737,823.798,831.052,838.426,
+     &            845.980,853.873,862.074,870.494,878.913,887.351,895.768,
+     &            904.198,912.867,917.385/)
 
 
 !ZnS

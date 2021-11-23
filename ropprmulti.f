@@ -15,32 +15,32 @@
       include 'rcommons.h'
 
       REAL TAUFACT
-      REAL TAUAER_OPPR(NTOTAL, NL+1, 13)
+      REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
 
-      REAL CONDFACT(NL+1,13)
-      REAL CLOUDLOC(NL+1,13)
+      REAL CONDFACT(NLAYER,NCLOUDS)
+      REAL CLOUDLOC(NLAYER,NCLOUDS)
 
-      REAL TCONDS(51,13)
+      REAL TCONDS(NLAYER,NCLOUDS)
 
-      REAL QE_OPPR(5, 50, 50, 13)
-      REAL PI0_OPPR(5, 50, 50, 13)
-      REAL G0_OPPR(5, 50, 50, 13)
+      REAL QE_OPPR(NSOL + NIR, NVERT, NVERT, NCLOUDS)
+      REAL PI0_OPPR(NSOL + NIR, NVERT, NVERT, NCLOUDS)
+      REAL G0_OPPR(NSOL + NIR, NVERT, NVERT, NCLOUDS)
 
-      REAL QE_TEMP(5, 50, 13)
-      REAL PI0_TEMP(5, 50, 13)
-      REAL G0_TEMP(5, 50, 13)
+      REAL QE_TEMP(NSOL + NIR, NVERT, NCLOUDS)
+      REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
+      REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
 
-      REAL DENSITY(13)
-      REAL FMOLW(13)
-      REAL MOLEF(13)
+      REAL DENSITY(NCLOUDS)
+      REAL FMOLW(NCLOUDS)
+      REAL MOLEF(NCLOUDS)
 
-      REAL CORFACT(51)
+      REAL CORFACT(NLAYER)
 
-      real, dimension(50) :: input_particle_size_array_in_meters
-      real, dimension(50) :: input_temperature_array
-      real, dimension(50) :: particle_size_vs_layer_array_in_meters
+      real, dimension(NVERT) :: input_particle_size_array_in_meters
+      real, dimension(NVERT) :: input_temperature_array
+      real, dimension(NVERT) :: particle_size_vs_layer_array_in_meters
 
-      INTEGER K,J,BASELEV,TOPLEV, NCLOUDS
+      INTEGER K,J,BASELEV,TOPLEV
 
 !     The mass of these layers is this pressure thickness divide by G.
 !     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
@@ -56,8 +56,6 @@
      &                              input_particle_size_array_in_meters,
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters
-
-      NCLOUDS = 13
 
       DO J = 1,NLAYER -1
           size_loc = MINLOC(ABS(input_particle_size_array_in_meters -
@@ -90,7 +88,7 @@
           END DO
 
           ! uncomment this section for compact cloud
-          BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
+          BASELEV = MAXVAL(CLOUDLOC(1:NVERT,I),1)
           TOPLEV  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
 
           DO J = 1,TOPLEV
@@ -145,9 +143,6 @@
           END DO
           k = k+1
       END DO
-
-
-
 
       iradgas = 1
       DO J = 1,NLAYER
@@ -284,8 +279,6 @@
               END DO
           END IF
       END DO
-
-
 
       RETURN
       END

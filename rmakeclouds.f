@@ -1,5 +1,4 @@
       SUBROUTINE MAKECLOUDS(poslats,p0,sigma)
-!      SUBROUTINE MAKECLOUDS(poslats,mg,jg,nl,p0,sigma)
 !      *****************************************************************
 !      * This routine generates an array of aerosol optical depths.    *
 !      * It returns this (layer x lon x hem x lat) array and writes it *
@@ -34,7 +33,7 @@
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,AERLAYERS
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,AERLAYERS, NCLOUDS
 
        NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,MTLX,AERLAYERS,
      &  AERTOTTAU,CLOUDBASE,CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,

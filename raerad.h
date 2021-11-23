@@ -11,13 +11,6 @@
 !
 !
 !  Define # grid pts in x, y, z directions
-!
-!      parameter( NZ = 3200 )  ! dbg n84
-!      parameter( NZ = 1600 )  ! dbg n84
-!
-!     parameter( NZ = 50 )  ! n84
-!
-!     parameter( NZ = 75 )  ! atex
       parameter( NZ= NL+1)
 !
 !
@@ -50,7 +43,6 @@
 !  Define # infrared wavelength bins
       parameter( NSOL = 3)
       parameter( NIR  = 2)
-!
 !
 !  Define # layers in rad xfer model domain underlying aerosol model domain
 !

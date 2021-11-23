@@ -245,17 +245,7 @@ C-----------------------------------------------------------------------
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
      &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,MOLEF,AERLAYERS
-   
-!       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
-!     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-!     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,AERO4LAT,AEROPROF,
-!     &   TAUAEROSOL
-!       CHARACTER(20) :: AEROSOLMODEL       
-!       REAL AERO4LAT(NL+1,MG,2),AEROPROF(NL+1)
-!       REAL TAUAEROSOL(nl+1,mg,2,jg) 
-!       LOGICAL DELTASCALE
 
-!       REAL TAUAEROSOL(nl+1,mg,2,jg)
 
       NAMELIST/COMMENT/THECOMMENT
       CHARACTER(70) :: THECOMMENT
@@ -380,22 +370,17 @@ C     ER modif for output management
       ISFOUT=6400
 
 
-!      HERE WE MAKE OR READ IN THE AEROSOLS     
-!      CALL READ_AEROSOLS
-!           IF (AEROSOLS) THEN
-!         DO      L  = 1, NL
-!          DO     I  = 1, MG
-!           DO    JH = 1, JG
-!            DO   IHEM = 1,NHEM
-!         READ(71,*)  CLAT,CLAY,CHEM,CLON,TAUVAL
-C          write(*,*) CLAT,CLAY,CHEM,CLON,TAUVAL
-
           IF(AEROSOLS) THEN
            DO JH=1,JG
            poslats(JH)=alat(JH)
            ENDDO
+
+
+          ! Do I need this one?
           CALL MAKECLOUDS(poslats,p0,sigma)
-!          CALL MAKECLOUDS(poslats,mg,jg,nl,p0,sigma)
+
+
+
           ELSE
           PI0AERSW   =  0.0
           ASYMSW     =  0.0
