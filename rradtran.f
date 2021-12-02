@@ -176,7 +176,7 @@
             uW0(L,J)       =  uW0(L,k)
             TMIU(L,J)      =  TMIU(L,k)
             TMID(L,J)      =  TMID(L,k)
-            K     =  K+2.0
+            K     =  K+2
           ENDDO
       END DO
 

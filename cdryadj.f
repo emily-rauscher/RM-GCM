@@ -126,18 +126,20 @@ C ER Modif to set convective adjustment timescale
       SINT=SSUM(NLEV,DSIGMA(NCRT),1)                                      
       SKINT=SDOT(NLEV,SKAP(NCRT),1,DSIGMA(NCRT),1)                        
       TINT=SDOT(NLEV,TG(J,NCRT),IGC,DSIGMA(NCRT),1)/SKINT                 
-      QINT=SDOT(NLEV,QG(J,NCRT),IGC,DSIGMA(NCRT),1)/SINT                  
-      DO 10 L=NCRT,NCRB                                                   
+      QINT=SDOT(NLEV,QG(J,NCRT),IGC,DSIGMA(NCRT),1)/SINT
+
+      DO 10 L=NCRT,NCRB
         TL=SKAP(L)*TINT                                                   
         QL=QINT                                                           
         TTDC(L)=(TL-TG(J,L))/ATSTEP
         QTDC(L)=(QL-QG(J,L))/ATSTEP
-C        TTDC(L)=(TL-TG(J,L))/DELT2C                                     
-C        QTDC(L)=(QL-QG(J,L))/DELT2C                                       
-        TG(J,L)=TL                                                        
+
+        TG(J,L)=TL
         QG(J,L)=QL                                                        
         CTCR(L,IHEM)=CTCR(L,IHEM)+2.0                                     
-   10 CONTINUE                                                            
+   10 CONTINUE
+
+
       CTCR(NCRB,IHEM)=CTCR(NCRB,IHEM)-2.0                                 
       RETURN                                                              
       END                                                                 

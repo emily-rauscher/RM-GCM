@@ -379,8 +379,6 @@ C     ER modif for output management
           ! Do I need this one?
           CALL MAKECLOUDS(poslats,p0,sigma)
 
-
-
           ELSE
           PI0AERSW   =  0.0
           ASYMSW     =  0.0

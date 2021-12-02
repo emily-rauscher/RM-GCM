@@ -38,6 +38,7 @@
       clearheat_file_suffix = '.dat'
       ibinm = ibinmin
       ifsetup = 0
+
       if( iffirst.eq. 1 ) ifsetup = 1
 
 !@ Keep an Eye on this, Mike
@@ -45,7 +46,6 @@
 
       heats_aerad_tot = 0.
       heati_aerad_tot = 0.
-
 
        t_aerad=t_pass
        p_aerad=p_pass

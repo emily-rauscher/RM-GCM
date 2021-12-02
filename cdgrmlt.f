@@ -238,8 +238,9 @@ C
             TTLR(J,L)=0.0                                                     
             QTLR(J,L)=0.0                                                     
             TTRD(J,L)=0.0                                                     
-            TG(J,L)=TG(J,L)+T0(L)                                             
- 20   CONTINUE                                                            
+            TG(J,L)=TG(J,L)+T0(L)
+ 20   CONTINUE
+
       DO 30 J=1,IGC                                                       
 C sets ICFLAG and CFRAC to ZERO at each timestep                          
          DO L=1,5                                                          
@@ -288,9 +289,9 @@ C
          if (LBL) call BLAYER                                             
       else                                                                
          if (LBL) call BLSURF                                             
-      endif                                                               
+      endif
       IF(LVD) CALL VDIFF
-      IF(LCR) CALL CONVEC            
+      IF(LCR) CALL CONVEC
       IF(LLR) CALL LSCRN
       IF(LRD) CALL RADIATION(TROPHT,IH)
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM

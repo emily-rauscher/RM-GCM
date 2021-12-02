@@ -15,76 +15,97 @@
       include 'rcommons.h'
 
       REAL TAUFACT
-      REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
 
       REAL CONDFACT(NLAYER,NCLOUDS)
       REAL CLOUDLOC(NLAYER,NCLOUDS)
 
-      REAL TCONDS(NLAYER,NCLOUDS)
-
-      REAL QE_OPPR(NSOL + NIR, NVERT, NVERT, NCLOUDS)
-      REAL PI0_OPPR(NSOL + NIR, NVERT, NVERT, NCLOUDS)
-      REAL G0_OPPR(NSOL + NIR, NVERT, NVERT, NCLOUDS)
-
       REAL QE_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
+      REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
+
+      ! These are hardcoded to 50 but they are just lookup tables
+      ! Don't worry about expanding the GCM to more levels
+      real, dimension(50) :: input_temperature_array
+      real, dimension(50) :: input_pressure_array_cgs
+
+      real, dimension(50) :: input_particle_size_array_in_meters
+      real, dimension(50) :: particle_size_vs_layer_array_in_meters
+
+      REAL QE_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
+      REAL PI0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
+      REAL G0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
+
+      REAL TCONDS(51,NCLOUDS)
+      REAL CORFACT(51)
 
       REAL DENSITY(NCLOUDS)
       REAL FMOLW(NCLOUDS)
       REAL MOLEF(NCLOUDS)
 
-      REAL CORFACT(NLAYER)
-
-      real, dimension(NVERT) :: input_particle_size_array_in_meters
-      real, dimension(NVERT) :: input_temperature_array
-      real, dimension(NVERT) :: particle_size_vs_layer_array_in_meters
-
       INTEGER K,J,BASELEV,TOPLEV
+      INTEGER size_loc, temp_loc, pressure_loc
+      real particle_size
 
-!     The mass of these layers is this pressure thickness divide by G.
-!     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
-!     P_aerad=PRESSURE AT EDGES OF LAYERS (PASCALS) 
-!     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
-!     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR 
-!     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
-!     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW, MOLEF,
      &                              CORFACT,
      &                              input_particle_size_array_in_meters,
      &                              input_temperature_array,
-     &                              particle_size_vs_layer_array_in_meters
+     &                              particle_size_vs_layer_array_in_meters,
+     &                              input_pressure_array_cgs
 
-      DO J = 1,NLAYER -1
-          size_loc = MINLOC(ABS(input_particle_size_array_in_meters -
-     &                      (particle_size_vs_layer_array_in_meters(J))), 1)
+      DO J = 1,NLAYER-1
+          ! Get the index of the closest pressure
+          pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (PRESS(J))),1)
+
+          ! Using the pressure, find the particle size
+          particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
+
+          ! Find the location of the particle size
+          ! Is this necessary, can I just use the pressure?
+          size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
           ! Get the array index of the closest temperature
           temp_loc = MINLOC(ABS(input_temperature_array - (TT(J))),1)
 
           DO I = 1,NCLOUDS
               DO L = 1,NTOTAL
-                  QE_TEMP(L, J, I) = QE_OPPR(L,temp_loc,size_loc,I)
+                  QE_TEMP(L, J, I) = QE_OPPR(L, temp_loc,size_loc,I)
                   PI0_TEMP(L,J, I) = PI0_OPPR(L,temp_loc,size_loc,I)
-                  G0_TEMP(L, J, I) = G0_OPPR(L,temp_loc,size_loc, I)
+                  G0_TEMP(L,J, I)  = G0_OPPR(L, temp_loc,size_loc,I)
               END DO
           END DO
       END DO
 
-
-      DO I = 1,NCLOUDS
+      !DO I = 1,NCLOUDS
+      DO I = 6,6
           DO J = 1,NLAYER-1
-              CONDFACT(J,I) = min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
-              TAUFACT = DPG(J)*10.*molef(I)*3./4./ particle_size_vs_layer_array_in_meters(J)
-     &                  /density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(J)
+              pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (PRESS(J))),1)
+              temp_loc     = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+
+              particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
+              size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
+
+              CONDFACT(J,I) = min(max((Tconds(pressure_loc,I)-TT(J)) / 10.0, 0.0), 1.0)
+
+              TAUFACT = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
+     &                  CONDFACT(J,I)*MTLX*CORFACT(pressure_loc) * 0.1
 
               DO L = 1,NTOTAL
                   TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
 
+              ! These are if you want to test the old version
+              !TAUAER_OPPR(1,J,I) = TAUFACT*qevis(J,I)
+              !TAUAER_OPPR(2,J,I) = TAUFACT*qevis(J,I)
+              !TAUAER_OPPR(3,J,I) = TAUFACT*qevis(J,I)
+              !TAUAER_OPPR(4,J,I) = TAUFACT*qeir(J,I)
+              !TAUAER_OPPR(5,J,I) = TAUFACT*qeir(J,I)
+
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
+
           END DO
 
           ! uncomment this section for compact cloud
@@ -104,17 +125,11 @@
           END DO
       END DO
 
-      DO L =1, NTOTAL
-          DO I =1, NCLOUDS
-              TAUAER_OPPR(L,NLAYER,I) = 0.0
-          END DO
-      END DO
 
 !     SW AT STANDARD VERTICAL RESOLUTION
       DO L = LLS,NSOLP
           DO J = 1,NLAYER
               TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
-
               WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
      &                       PI0_TEMP(L,J,1:NCLOUDS))
               GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
@@ -122,6 +137,16 @@
 
           END DO
       END DO
+
+! If you want to test the old version
+!     SW AT STANDARD VERTICAL RESOLUTION
+!      DO L = LLS,NSOLP
+!          DO J = 1,NLAYER
+!              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
+!              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) * PI0vis(J,1:13))
+!              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) * g0vis(J,1:13))
+!          END DO
+!      END DO
 
 
 !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
@@ -142,6 +167,35 @@
               GOL(L,JJ)    = GOL(L,JJ-1)
           END DO
           k = k+1
+      END DO
+
+
+! If you want to test the old version
+!     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
+!      k = 1
+!      DO J = 1,NDBL,2
+!        JJ = J
+!        DO L = NSOLP+1,NTOTAL
+!            TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS))
+!            WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8)*PI0ir(k,1:13))
+!            GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8)*g0ir(k,1:13))
+!        END DO
+!        JJ = J+1
+!        DO L = NSOLP+1,NTOTAL
+!            TAUAER(L,JJ) = TAUAER(L,JJ-1)
+!            WOL(L,JJ)    = WOL(L,JJ-1)
+!            GOL(L,JJ)    = GOL(L,JJ-1)
+!        END DO
+!        k = k+1
+!      END DO
+
+      ! Smooth out the cloud properties after doubling
+      DO L = NSOLP+1,NTOTAL
+          DO J = 2, NDBL-1, 2
+              TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
+              WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
+              GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
+          END DO
       END DO
 
       iradgas = 1

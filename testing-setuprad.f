@@ -47,7 +47,7 @@
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-          mu_0 = 0.99
+
 
 
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
@@ -203,10 +203,8 @@
         gam_V(2) = 10.0**(aV2 + bV2 * l10T)
         gam_V(3) = 10.0**(aV3 + bV3 * l10T)
 
-
         ! Visual band fractions
         Beta_V(:) = 1.0/3.0
-
 
         ! gamma_Planck - if < 1 then make it grey approximation (k_Planck = k_Ross, gam_P = 1)
         gam_P = 10.0**(aP * l10T2 + bP * l10T + cP)
@@ -226,15 +224,12 @@
         gam_1 = Beta_IR(1) + R - Beta_IR(1)*R
         gam_2 = gam_1 / R
 
-        ! Calculate tau_lim parameter
-        tau_lim = 1.0/(gam_1*gam_2) * sqrt(gam_P/3.0)
+
 
         tau_Ve(:,1) = 0.0
         tau_IRe(:,1) = 0.0
 
 
-        ! SOMETHING IS OFF HERE, WHY CAN"T I CALL THIS FOR NLAYERS????
-        ! MALSKY STOP BEING LAZY! AND FIGURE THIS OUT
         do k = 1, NLAYER
           call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
           !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
@@ -246,9 +241,8 @@
           k_IRl(2,k) = k_IRl(1,k) * gam_2
           k_IRl(1,k) = k_IRl(1,k) * gam_1
 
-          tau_Ve(:,k)  = ((k_Vl(:,k) * dpe(k))  / grav)
+          tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
-
         end do
 
       end subroutine calculate_opacities
@@ -311,16 +305,12 @@
      &    c10_h*Tl10**2 + Pl10*(c11_h + c12_h*Tl10) +
      &    c13_h * met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
         end if
-        ! Total Rosseland mean opacity - coNLAYERed to m2 kg-1
+        ! Total Rosseland mean opacity - coverted to m2 kg-1
         k_IR = (10.0**k_lowP + 10.0**k_hiP) / 10.0
 
         ! Avoid divergence in fit for large values
         k_IR = min(k_IR,1.0e30)
       end subroutine k_Ross_Freedman
-
-
-
-
 
 
       subroutine Bond_Parmentier(Teff0, grav,  Bond_Albedo)

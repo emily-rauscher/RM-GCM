@@ -11,14 +11,14 @@
   kappa SW:   4.000000000000000E-003 (cm^2/g)
   kappa LW:   1.000000000000000E-002 (cm^2/g)
   tau per bar (absorption):
-        SW:    4.23998304006784     
-        LW:    10.5999576001696     
- Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1  0.157233333333333     
- Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1  6.289333333333331E-002
+        SW:    1.60000000000000     
+        LW:    4.00000000000000     
+ Pressure (bars) of SW clear gas tau = 2/3 @ mu0=1  0.416666666666667     
+ Pressure (bars) of LW clear gas tau = 2/3 @ mu0=1  0.166666666666667     
  RAYLEIGH SCATTERING
- RAYLEIGH OPTICAL DEPTH PER BAR:   0.857583957252874     
- KM-AMAGATS OF GAS PER BAR:    100.672912715702     
-  Pressure of SW Two-way gaseous (inc.ray) tau= 1:   9.808600853363976E-002
+ RAYLEIGH OPTICAL DEPTH PER BAR:   0.323617882108945     
+ KM-AMAGATS OF GAS PER BAR:    37.9899303423974     
+  Pressure of SW Two-way gaseous (inc.ray) tau= 1:   0.259926882906614     
   N.B. Assumes molecular composition with:
        H2 fraction =   0.924998817295865     
        He fraction =   0.800000000000000     

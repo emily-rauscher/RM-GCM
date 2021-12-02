@@ -615,8 +615,7 @@ C makes sure bottom cloud isn't in bottom level
 
 C cloud cf and ic passed. fluxes returned.                                
 C which is net flux at TOA in profile                                     
-C Call radiation scheme                                                   
-                  alon=REAL(i-1)/REAL(mg)*360.0                                   
+                  alon=REAL(i-1)/REAL(mg)*360.0
                   call nikosrad(pr,t,h2o,o3,alat1,htlw,htsw,DOY,cf,ic,            
      $                 fluxes,swalb,alon,kount,itspd)
           

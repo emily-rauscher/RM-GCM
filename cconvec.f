@@ -126,11 +126,9 @@ c
       TMIN=0.31000418E+29   !  Minimum parcel temperature (dedim.) for        
                         !  which moist convection is attempted.           
       LTOP=NL-NLCR      !  NLCR gives highest level for which             
-                        !  convection is attempted.                       
+                        !  convection is attempted.
 
-
-
-      DO 800 IHEM=1,NHEM                                                  
+      DO 800 IHEM=1,NHEM
         IOFM=(IHEM-1)*MGPP                                                
         DO 700 I=1,MG                                                     
           J=I+IOFM                                                        
@@ -143,7 +141,9 @@ C         IPH=J
             ESCON(L)=1./(PLG(J)*SIGMA(L))                                 
             QGO(L)=QG(J,L)                                                
    10     CONTINUE                                                        
-c Water vapour fix                                                        
+c Water vapour fix
+
+
           IFL=0                                                           
           DO L=1,NL-1                                                     
             IF (QG(J,L).LT.1.0E-6) THEN                                   
@@ -165,44 +165,51 @@ c assumes no large scale rain here in layer
               QG(J,L)=1.0E-6                                              
               QG(J,L+1)=QG(J,L+1)-QEX                                     
             ENDIF                                                         
-          ENDDO                                                           
-C                                                                         
-C     DRY ADJUSTMENT                                                      
-C                                                                         
-          L=NL                                                            
-C     BEGIN NEW PARCEL CURVE                                              
+          ENDDO
+
+C         DRY ADJUSTMENT
+          L=NL
+
+C         BEGIN NEW PARCEL CURVE
+
    20     NCRB=L                                                          
           LCDRY=.FALSE.                                                   
           TCLP=TG(J,L)                                                    
-          QCL=QG(J,L)                                                     
-C     DRY ADIABAT TO NEXT LEVEL                                           
-   30     L=L-1                                                           
-          IF(L.LT.LTOP) GOTO 40                                           
+          QCL=QG(J,L)
+
+C         DRY ADIABAT TO NEXT LEVEL
+
+   30     L=L-1
+
+          IF(L.LT.LTOP) GOTO 40
           TCL=TCLP*SK(L)                                                  
-          IF(TCL.LE.TG(J,L)) GOTO 40  !If stable layer                    
+          IF(TCL.LE.TG(J,L)) GOTO 40  !If stable layer
+
 C ER Modif: commenting out saturation check
-C     BUOYANT - IF SATURATED - MOIST CONVECTION - IGNORE                  
-c          QSL=ESCON(L)*PQSAT(TCL)                                         
-c          IF ( QCL.GE.QSL ) THEN   ! Is parcel supersaturated?            
+C     BUOYANT - IF SATURATED - MOIST CONVECTION - IGNORE
 c!KM Bypass supersaturation issue and Tmin criterion avoided
-c            IF ( ( (SIGMA(NCRB)*PLG(J)).GE.PRESSMIN )                     
-c     :        .AND.( TG(J,NCRB).GE.TMIN ) ) GOTO 40                       
+
 C If parcel is in stratosphere, do dry rather than moist convection       
 C as the dry and moist adiabats are approximately parallel and            
-C dry convection is a lot cheaper.                                        
-c          ENDIF                                                           
-C     DRY CONVECTION - CONTINUE PARCEL CURVE UP                           
+C dry convection is a lot cheaper.
+
+C     DRY CONVECTION - CONTINUE PARCEL CURVE UP
+
    35     LCDRY=.TRUE.                                                    
           TCLP=TCL                                                        
           GOTO 30                                                         
-   40     CONTINUE                                                        
-C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW         
+   40     CONTINUE
+
+C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW
           IF(LCDRY) THEN                                                  
             NCRT=L+1            
-!      write(*,*) 'Calling Dry Convection between levels:',NCRB,NCRT     
-            CALL DRYADJ(NCRB,NCRT,J,IHEM)                                 
+!      write(*,*) 'Calling Dry Convection between levels:',NCRB,NCRT
+
+            CALL DRYADJ(NCRB,NCRT,J,IHEM)
+
           ENDIF                                                           
           IF(L.GT.LTOP) GOTO 20                                           
+
 
 ! KM Bypass Moist convection
 !          GOTO 900
@@ -277,5 +284,6 @@ C
   800 CONTINUE                                                            
 C                                                                         
  900  CONTINUE
-      RETURN                                                              
+
+      RETURN
       END                                                                 

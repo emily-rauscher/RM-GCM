@@ -200,6 +200,7 @@ c     The following for parallel testing --MTR
       RHSCL=288.0*GASCON/GA
       CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates
 
+
 c  Skipping part set up here.
 c  Radiation scheme only called every nskip longitudes
 c  nskip must divide exactly into mg for longitude.
@@ -295,7 +296,6 @@ c ----------------------------------------------------- And alat1
 !             write(*,*)'fluxes',fluxes
 C cloud cf and ic passed. fluxes returned.
 C which is net flux at TOA in profile
-C Call radiation scheme
                   alon=REAL(i-1)/REAL(mg)*360.0
 
 !     PR in pascals for layer boundaries (NL+1), T in Kelvin for layer
@@ -307,19 +307,17 @@ C Call radiation scheme
 ! WHERE DISTRIBUTIONS ARE HARDWIRED (ROMAN & RAUSCHER 2017)
 
             IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN
-!            IF(AEROSOLS.AND.) THEN
+!           IF(AEROSOLS.AND.) THEN
 !           AEROSOLS TIME!
 !           Extract a single column from the array AER4LAT(NLEV,LON,HEM)
-!            AEROPROF=AERO4LAT(:,mg,ihem)
+!           AEROPROF=AERO4LAT(:,mg,ihem)
               DO  LD=1,NL +1
-              AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
-             ENDDO
-
+                AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
+              ENDDO
             ENDIF
- !           call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,
- !    $                 ic,fluxes,swalb,kount,itspd)
+
             call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
-           pr=prb2t
+            pr=prb2t
 
                   PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-fluxes(2,2,1)
                   SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-fluxes(2,2,2)

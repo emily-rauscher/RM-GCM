@@ -135,8 +135,8 @@
       ENDIF
 
       EMISIR       = SURFEMIS
-      PTOP         =p_aerad(1)*10.
-      PBOT         =p_aerad(NL+1)*10.
+      PTOP         = p_aerad(1)*10.
+      PBOT         = p_aerad(NL+1)*10.
 
       ALBEDO_SFC = ALBSW
 
