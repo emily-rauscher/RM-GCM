@@ -141,7 +141,7 @@
       ALBEDO_SFC = ALBSW
 
 
-      testing = 1
+      testing = 0
       if (testing .eq. 1) then
           p_aerad(1) = 10.0 ** (LOG10(p_aerad(2)) - (LOG10(p_aerad(3)) - LOG10(p_aerad(2))))
 
@@ -235,7 +235,8 @@
 50        CONTINUE
 100   CONTINUE
 
-      malsky_switch = 1
+
+      malsky_switch = 0
       IF (malsky_switch .gt. 0) THEN
         CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
 
@@ -308,6 +309,7 @@
               DIRECT(L,J) = 0.0
           END DO
       END DO
+
 
 
 

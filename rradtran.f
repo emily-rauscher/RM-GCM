@@ -112,7 +112,15 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          CALL OPPRMULTI
+          !CALL OPPRMULTI
+
+          ! This one only works with 50 layers
+          IF (NL .eq. 50) THEN
+              CALL DOUBLEGRAY_OPPRMULTI
+          ELSE
+              write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
+              stop
+          END IF
       ELSE
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP

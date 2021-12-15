@@ -20,13 +20,8 @@ C
 C     Determines model resolution                                         
       use omp_lib                                                              
       include 'params.i'
-C      PARAMETER(NN=21,MM=21,NHEM=2,NL=5,MOCT=1,MG=64,JG=16,NWJ2=121       
-C     P         ,NCRAY=64,JGL=JG,NTRAC=1,NLEVRF=1)                         
-                                                                          
-C                                                                         
-C                                                                         
-C     Sets basic constants, especially those needed for array dimensions  
-C                                                                         
+
+C     Sets basic constants, especially those needed for array dimensions
       PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
      +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
      +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
@@ -37,12 +32,12 @@ C
       PARAMETER(IGA=NWJ2*NHEM,IGB=IDB*NHEM,IGC=MGPP*NHEM,IGD=IDD*NHEM     
      +,IGG=IDG*NHEM,IGL=IDL*NHEM,IGM=IDM*NHEM,IGN=IDN*NHEM                
      +,IGO=IGA+IGA,IGP=IGB+IGB,NFTWG=(5+NTRAC)*NL+3                       
-     +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)           
+     +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)
+
 C     Number of 2D (surface) output fields. This value is                 
 C     Doubled due to averaged and instantaneous fields.                   
       PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)                           
-C                                                                         
-C                                                                         
+
 C     Basic planetary parameters for run plus information about           
 C     vertical grid structure                                             
 
@@ -111,29 +106,31 @@ C
      +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
      +              ,BEGDOY,DOY                                           
 C                                                                         
-            COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
+      COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
      :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)         
      :              ,tdeep(igc,jg),hsnow(igc,jg),sqstar(igc,jg)           
      :              ,SALB(IGC,JG),SBAL(IGC,JG),BLCD(IGC)                  
      :              ,SVEGE(IGC,JG),CD,DRAG,BLVAD,BLA,BLRH,BLVB(IGC)       
      :              ,AKVV,AKTV,AKQV,ESCONA,ESCONB,EPSIQ,CTQ,CCC           
-     : ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw             
-     :        ,ssmc,sdsnd,sasnow,saice,shsstar,shsmax
-     :     ,LOC,LNOICE,LOLDBL,LCOND,LNNSK
+     :              ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw
+     :              ,ssmc,sdsnd,sasnow,saice,shsstar,shsmax
+     :              ,LOC,LNOICE,LOLDBL,LCOND,LNNSK
      :              ,NLCR,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP
      :              ,SKAP(NL),SK(NLM),FWS(NL),CLR(NL),FB(NLM)             
      :              ,TTDC(NL),QTDC(NL),TTMC(NL),QTMC(NL),TC(NL),QC(NL)    
      :              ,CTCR(NL,NHEM),CTLR(NL,NHEM)
      :              ,LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ
      :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
-                LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC                    
-     :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
+
+      LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC
+     :        ,LNOICE,LOLDBL,LCOND,LNNSK
 C
-       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
+      COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
      & JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,ABSSW1,ABSSTRAT,PRMIN,ALBSW1,
      & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE, with_TiO_and_VO
-       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR
+
+      LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
      +              ,RNTAPO                                               
@@ -141,25 +138,27 @@ C
      +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY                          
      +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG                 
      +              ,LSPO(NL),LGPO(NL)                                    
-     $              ,LSHIST,LMINIH                                        
+     $              ,LSHIST,LMINIH
+
       LOGICAL LSHIST,LMINIH                                               
       LOGICAL LSPO,LGPO    
-C                                                                         
-C                                                                         
+
 C     Setup moisture variables by equivilencing them to                   
 C     Tracer No. 1                                                        
-C                                                                         
+
       REAL QG(IGC,NL),QNLG(IGC,NL),QTLR(IGC,NL),QTCR(IGC,NL)              
       EQUIVALENCE (QG(1,1),TRAG(1,1,1)) , (QNLG(1,1),TRANLG(1,1,1))       
      *            ,(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))      
 C                                                                         
       COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)            
      :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)                       
-     :     ,TTSW(IGC,NL),TTLW(IGC,NL)                           
+     :     ,TTSW(IGC,NL),TTLW(IGC,NL)
+
       COMMON/GSG/GSG(IGC,JG)                                             
       REAL htnet                                                         
       COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)                                
-      REAL TAVE(IGP) 
+      REAL TAVE(IGP)
+
 c Climatology ozone and water values. '1' is current month, '2' is        
 c the next month. (SMR 30-05-97)                                          
 c 11-03-97 i.e. nl=15 read in from climatology. Interpolated to           
@@ -213,7 +212,8 @@ c Morcrette profiles (have extra level).
                                     ! getting sfc pressure).              
                                                                           
       integer ic(4,2)    !cloud positions (deep,h,m,l;bottom,top)         
-      real cf(4,2)       !cloud fraction,lwp deep,high,mid,low            
+      real cf(4,2)       !cloud fraction,lwp deep,high,mid,low
+
 C     Array to hold fluxes at top and bottom of atmosphere                
 C     1st index - flux 1=SW, 2=LW                                         
 C     2nd index - Direction 1=DN, 2=UP                                    
@@ -222,54 +222,40 @@ C     3rd index - Where 1=TOP, 2=SURFACE
 
 c     The following for parallel testing --MTR
       integer TID, NTHREADS             
-      double precision test_wctime                              
-                                                                        
+      double precision test_wctime
       save                          ! Want to keep things like dcompl.    
                                                                           
       data mn/'dec','jan','feb','mar','apr','may','jun','jul',            
      &          'aug','sep','oct','nov','dec'/                            
-                                                                          
-                                                                          
+
       DATA IFIRST/1/                                                      
       data ifirstcol/1/                                                   
                                                                           
       RHSCL=288.0*GASCON/GA                                               
-      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates     
+      CHRF=86400.*WW*CT   ! factor to non-dimensionalise heating rates
+
 c  Skipping part set up here.                                             
 c  Radiation scheme only called every nskip longitudes                    
 c  nskip must divide exactly into mg for longitude.                       
 c  ntstep is the number of timesteps to skip.                             
-                                                                          
-C      ntstep=max(2,itspd/100000)       ! N.B. No point any more frequent as      
-      ntstep=NTSTEP_IN
-                         ! Morcrette doing diurnal averages anyway.       
 
-!      write(*,*) 'ntstep',ntstep
-      nskip=NSKIP_IN                                                       
+      ntstep=NTSTEP_IN
+      nskip=NSKIP_IN
 
 C this sets the non-dimensional gridpoint temperature tendency (TTRD)     
-C to get to TTRD from K/day divide the K/day heating rate by              
-C     (86400*WW*CT)                                                       
-C     TTRD(non-dim)=HTRT(k/day)/(86400*WW*CT)                             
-C                                                                         
-c                                                                         
+C to get to TTRD from K/day divide the K/day heating rate by
+
 C Reads in bogus ozone and water vapour on first call                     
-C other data such as albedo and number of levels is in the include file   
-C                                                                         
-                                                                          
+C other data such as albedo and number of levels is in the include file
                                                                           
 c ---------- Read in required ozone and water vapour from climatology     
                                                                           
-      IF (LCLIM) THEN    !!KM Modif to avoid reading files if not using clim.  
-                         
-         IF (ifirst.eq.1) then  ! First time through (read in two months of o3 and h2o if       
-                                      ! lperpet .false. or just one if lperpet .true.).                  
+      IF (LCLIM) THEN    !!KM Modif to avoid reading files if not using clim.
+         IF (ifirst.eq.1) then  ! First time through (read in two months of o3 and h2o if
             IF (JH.EQ.1) THEN                                                  
                CALL CALNDR(DOY,MTH1,AMFRAC)                                      
-               CMTH=MTH1+1                                                       
-                                      ! in first.                         
-               IF(cmth.eq.13) cmth=1 ! Wrap-around to January.            
-                                                                          
+               CMTH=MTH1+1
+               IF(cmth.eq.13) cmth=1 ! Wrap-around to January.
                                                                           
 c ------------------------- Make the filenames and open the files:        
 c                           N.B. Read in from global climatology.         
@@ -411,7 +397,12 @@ c end smrdebug
             ENDIF                                                              
          ENDIF            
       ENDIF                     !! KM Modif 
-                                                   
+
+
+
+
+
+
 c --------------------------------- Now start the radiation bit.          
 c                                                                         
 C loop over hemispheres                                                   
@@ -419,18 +410,26 @@ C loop over hemispheres
 C                                                                         
       DO 800 ihem=1,nhem                                                  
                                                                           
-c calculates heating rates every ntstep time steps                        
-         IF (mod(kount,ntstep).eq.1) then                                   
+c calculates heating rates every ntstep time steps
+         write(*,*) 'here', kount,ntstep
+
+         IF (mod(kount,ntstep).eq.1) then
 
 !          write(*,*) 'Starting Radiation scheme'
 C                                                                         
 C  Does do Radn scheme                                                    
 C                                                                         
 C loop over longitudes for radn calculation                               
-            ilast=0                                                             
-c             write(*,*) 'line431'
-c            TID = OMP_GET_MAX_THREADS()
-c            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
+            ilast=0
+
+            write(*,*) 'line431'
+            !TID = OMP_GET_MAX_THREADS()
+            write(*,*) 'MAXTHREADS:',TID, ' MG=',mg
+
+
+            write(*,*) "Stopping here"
+            stop
+
 c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 
 !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
@@ -472,8 +471,8 @@ c IMPLEMENTING PARALLEL PROCESSING! ENDS AT LN 642 --MTR
 !$OMP& TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSLD, TSTAR, TSTARO, TTCR,
 !$OMP& TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
 !$OMP& UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
-            DO i=1,mg                                                         
-         !      write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
+            DO i=1,mg
+            write(*,*) 'i (cmorc ln 433)',i  !MTR MODIF
 c         write(*,*),mg
 cM         write(*,*), 'Thread id=', omp_get_thread_num(),i
 cm               test_wctime=omp_get_wtime()
@@ -638,7 +637,32 @@ c  bottom heating rate is zero in morecret
                      LD=NL+1-L                                                      
                      IM=I+IOFM                                                      
                      HTNETO=HTNET(IHem,JH,I,LD)                                     
-C           htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)                        
+C           htnet(ihem,jh,i,ld)=htlw(l+1)+htsw(l+1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 C ER Modif to turn off radiative heating for first 1 days (if not 1D and not PORB gt 0)
                      IF (((KOUNT/ITSPD).LE.1).AND.(.NOT.L1DZENITH)) THEN
                         IF (PORB.EQ.0) THEN

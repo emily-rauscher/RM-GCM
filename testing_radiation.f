@@ -218,50 +218,9 @@ c     ntstep is the number of timesteps to skip.
 
       IOFM=0
 
-      DO 800 ihem=1,nhem
-        IF (mod(kount,ntstep).eq.0) then
+      DO ihem=1,nhem
+        IF (mod(kount,ntstep).eq.1) then
           ilast=0
-
-          ! Do all the parallel stuff here
-          !$OMP PARALLEL DO private(test_wctime),
-     &    private(im,idocalc,imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw,
-     &    htsw,HTNETO,a,b),
-     &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
-     &    QG,SSLAT,SSLON,fluxes,CHRF),
-     &    firstprivate(ilast),
-     &    lastprivate(ilast),
-     &    shared(ABSLW, ABSSW, ACLD, AIOCT, AK,
-     &    AKAP, AKQC, AKQV, AKTC, AKTV, AKVV, ALAT, ALBSW1, ALP, ALPHA,
-     &    ALPJ, AQ, ARFLUX, ARRCR, ARRLR, ASFLD, ASHBL, ASLBL, ASSBL,
-     &    ASYMSW2, AW, BEGDAY, BEGDOY, BLA, BLCD, BLRH, BLVAD, BLVB, BM1,
-     &    BOTRELAXTIME, C, CBADJP, CBADJT, CCC, CCR, CD, CFRAC, CG, CHIG,
-     &    CLATNT, CLD, CLR, CPD, CQ, CS, CSSQ, CT, CTCR, CTLR, CTQ, CTQI,
-     &    CTRA, CUBMT, CURHM, CUT1, CUT2, CV, DALP, DALPJ, DAY, DELT,
-     &    DELT2, DELT2C, DOY, DRAG, DSIGMA, DTBUOY, EAM1, EAM2, ECCEN,
-     &    EPSIQ, ESCONA, ESCONB, EZ, FB, FBASEFLUX, FORCE1DDAYS, FRAD, FWS,
-     &    G, GA, GASCON, GSG, GWT, HSNOW, HTNET, ICFLAG, INLAT, INSPC,
-     &    ITSLL, ITSLO, ITSPD, JH, JINC, JL, JSKIPLAT, JSKIPLON, JZF, KITS,
-     &    KOLOUR, KOUNT, KOUNTE, KOUNTH, KOUNTP, KOUNTR, KOUTE, KOUTH,
-     &    KOUTP, KOUTR, KRUN, KSTART, KTOTAL, L1DZENITH, L22L, LBALAN, LBL,
-     &    LCBADJ, LCLIM, LCOND, LCR, LCSFCT, LCUBM, LDIUR, LFLUX,
-     &    LFLUXDIAG, LGPO, LLOGPLEV, LLR, LMINIH, LNNSK, LNOICE, LNOISE,
-     &    LOC, LOGICALLBL, LOGICALLLOGPLEV, LOLDBL, LOROG, LPERPET,
-     &    LPLOTMAP, LRD, LRESTIJ, LRSTRT, LSHIST, LSHORT, LSL, LSPO,
-     &    LSTRETCH, LTVEC, LVD, MF, MFP, NAVRD, NAVWT, NCOEFF, NCUTOP,
-     &    NEWTB, NEWTE, NF, NFP, NLAT, NLCR, NLPLOTMAP_IN, NLWMODEL,
-     &    NSKIP_IN, NSWMODEL, NTRACO, NTSTEP_IN, OBLIQ, OOM_IN,
-     &    OPACIR_POWERLAW, OPACIR_REFPRES, P0, PFAC, PLG, PNET, PNU, PNU2,
-     &    PNU21, PORB, PRFLUX, PRMIN, QC, QSTAR, QTDC, QTMC, QTVD, RADEA, RCON, RD,
-     &    RDLP, RDSIG, RFCOEFF_IN, RFLUX, RGG, RLP, RMG, RNTAPE, RNTAPO,
-     &    RRCR, RRFLUX, RRLR, RSQ, RSQR2, RV, SAICE, SALB, SASNOW, SBAL,
-     &    SCATSW2, SD1, SD2, SDSN, SDSND, SDW, SECSQ, SFG, SFLD, SHBL,
-     &    SHCI, SHCO, SHCS, SHCSN, SHCSP, SHSMAX, SHSSTAR, SI, SIGMA,
-     &    SIGMAH, SISQ, SK, SKAP, SKSE, SKSN, SLBL, SLHF, SMSTAR, SNET,
-     &    SOLC_IN, SPG, SQ, SQH, SQR2, SQSTAR, SSBL, SSMC, SVEGE, T0,
-     &    T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
-     &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSLD, TSTAR, TSTARO, TTCR,
-     &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
-     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
 
           DO i=1,mg
             im=i+iofm
@@ -386,7 +345,6 @@ c             bottom heating rate is zero in morecret
                     write(*,*),'Please set nskip=0 in fort.7'
                     STOP
 
-
                     HTNETO=HTNET(IHEM,JH,J,LD)
                     htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,i,ld)+b*htnet(ihem,jh,ilast,ld)
                     im=j+iofm
@@ -399,6 +357,7 @@ c             bottom heating rate is zero in morecret
                       DO k=1,6
                         rrflux(im,jh,k)=a*rrflux(i+iofm,jh,k)+b*rrflux(ilast+iofm,jh,k)
                       ENDDO
+
                     ENDIF
 
                   ENDDO
@@ -409,6 +368,7 @@ c             bottom heating rate is zero in morecret
 !             end of conditional execution of morcrette code
             ENDIF
           ENDDO
+
 
           IF (nskip.ne.0) then
              write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
@@ -452,7 +412,7 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDIF
         IOFM=MGPP
- 800  CONTINUE
+      END DO
 
       IF (LSHORT.AND.(KOUNT.eq.1)) then
         DO l=1,nl
@@ -461,14 +421,6 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDDO
       ENDIF
-
-      write(*,*) ttrd(1,:)
-      write(*,*)
-      write(*,*)
-      write(*,*) rrflux(im,jh,1), rrflux(im,jh,2), rrflux(im,jh,3)
-      write(*,*) rrflux(im,jh,4), rrflux(im,jh,5), rrflux(im,jh,6)
-      write(*,*) 'Stopping in radiation'
-      stop
 
       RETURN
       END

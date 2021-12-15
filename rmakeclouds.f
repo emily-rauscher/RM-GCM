@@ -421,28 +421,16 @@
              WRITE(61,*)''
              ENDDO
           ENDDO
-       ENDDO
+      ENDDO
 !
 
       write(*,*) 'In rmakeclouds, aerosolcomp =',aerosolcomp
-         IF(AEROSOLCOMP.EQ.'MnS') THEN
-           TCON   =  TCONMnS 
-          ELSE IF(AEROSOLCOMP.EQ.'SiO2') THEN
-           TCON   =  TCONSiO2
-          ELSE IF(AEROSOLCOMP.EQ.'Mg2SiO4') THEN
-           TCON   =  TCONMg2SiO4
-          ELSE IF(AEROSOLCOMP.EQ.'MgSiO3') THEN
-           TCON   =  TCONMgSiO3
-          ELSE IF(AEROSOLCOMP.EQ.'Al2O3') THEN
-           TCON   =  TCONAl2O3
-          
-          ELSE IF(AEROSOLCOMP.EQ.'Fe') THEN
-           TCON   =  TCONFE
-          ELSE IF(AEROSOLCOMP.EQ.'All') THEN
-           TCON   =  TCONMnS*0.
-          ELSE
-            WRITE(*,*)'NO VALID AEROSOLCOMP SPECIFIED! STOPPING' 
-            STOP
-         END IF
+      IF(AEROSOLCOMP.EQ.'All') THEN
+          TCON   =  TCONMnS*0.
+      ELSE
+          WRITE(*,*)'NO VALID AEROSOLCOMP SPECIFIED! STOPPING'
+          STOP
+      END IF
 
-       END
+
+      END

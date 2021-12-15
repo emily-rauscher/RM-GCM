@@ -79,8 +79,7 @@
           END DO
       END DO
 
-      !DO I = 1,NCLOUDS
-      DO I = 6,6
+      DO I = 1,NCLOUDS
           DO J = 1,NLAYER-1
               pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (PRESS(J))),1)
               temp_loc     = MINLOC(ABS(input_temperature_array - (TT(J))),1)
@@ -91,7 +90,7 @@
               CONDFACT(J,I) = min(max((Tconds(pressure_loc,I)-TT(J)) / 10.0, 0.0), 1.0)
 
               TAUFACT = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                  CONDFACT(J,I)*MTLX*CORFACT(pressure_loc) * 0.1
+     &                  CONDFACT(J,I)*MTLX*CORFACT(pressure_loc)
 
               DO L = 1,NTOTAL
                   TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,temp_loc,size_loc,I)
@@ -197,6 +196,12 @@
               GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
           END DO
       END DO
+
+
+
+
+
+
 
       iradgas = 1
       DO J = 1,NLAYER
