@@ -50,10 +50,10 @@
       RdCp = Rd/Cpd
       player=pr
 
+
       call radsub(iffirst, pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V)
 
       iffirst = 0
-      
 
       IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.NTSTEP_IN)) THEN !-1)) THEN
          WRITE(63,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON

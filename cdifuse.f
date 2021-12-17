@@ -178,8 +178,8 @@ C
 C                                                                         
 C     Add in biharmonic diffusion if required                             
 C                                                                         
-      IF (AK(2).GT.0.0) THEN                                              
-         DO 820 IHEM=1,NHEM                                               
+      IF (AK(2).GT.0.0) THEN
+         DO 820 IHEM=1,NHEM
             DO 821 L=1,NL                                                 
                JOFF=(L-1)*IGA+(IHEM-1)*NWJ2                               
                J=JOFF                                                     

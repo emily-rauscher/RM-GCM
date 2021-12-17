@@ -11,7 +11,8 @@
           real, dimension(NSOLP,NLAYER+1) :: tau_Ve
           real, dimension(NLAYER) :: dpe, Pl, Tl, t_pass
 
-          real, dimension(NLAYER + 1) :: pe
+          ! Malsky check whether this is NLAYER+1
+          real, dimension(NLAYER) :: pe
 
           ! This is to calculate the incident fraction of the starlight
           mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)

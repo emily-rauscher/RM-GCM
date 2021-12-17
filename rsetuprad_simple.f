@@ -19,47 +19,23 @@
 !
 ! **********************************************************************
 
-      REAL G,WVO,AM
-      !REAL :: p(NZ)
+      REAL AM
       real, dimension(NIR,NLAYER) :: tau_IRe
       real, dimension(NSOL,NLAYER) :: tau_Ve
       real, dimension(NWAVE) :: MALSKY_ABSCOEFF(NWAVE)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
-      dimension rup_1(NGROUP)
-      dimension rhoi(NRAD), dbnds(NRAD+1)
-      dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
-      dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
-      dimension temparr(6,NWAVE)
-      dimension pbndsm(6)
-
       real t_pass(NZ)
-
-      integer i1, i2, indorder(5)
-      logical all_ok
-      DATA AVG    /6.02252E+23/
-      DATA PI     /3.14159265359/
 
       integer :: malsky_switch
       integer :: testing
 
-
-! ******************************************
-!            DEFINE CONSTANTS
-! *****************************************
-!
-!     UNITS ARE (CM**2)/GM
-!
-!     ***********************
-!     *  DATA FOR INFRARED  *
-!     ***********************
-!
-!     GAUSS ANGLES AND GAUSS WEIGHTS FOR GAUSSIAN INTEGRATION
-!     MOMENTS (USE FIRST MOMENT VALUES) N=3
 !
       DATA GANGLE  / 0.2123405382, 0.5905331356,0.9114120405/
       DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
       DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
+      DATA AVG    /6.02252E+23/
+      DATA PI     /3.14159265359/
 
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
 !     AM     - MOLECULAR WEIGHT OF AIR (G/MOL)
@@ -70,15 +46,14 @@
 !     SCDAY  - NUMBER OF SECONDS IN ONE DAY (S)
 
       AM= RGAS/R_AIR
+
+
       DATA ALOS   / 2.68719E19   /
-      G = GA*100.
       DATA RGAS   / 8.31430E+07  /
       DATA SBK    / 5.6697E-8    /
       DATA SCDAY  / 86400.0      /
-
       DATA EPSILON / ALMOST_ZERO  /
 
-      AM= RGAS/R_AIR
 
       DO L = 1,NSOLP
           MALSKY_ABSCOEFF(L)=ABSSW
@@ -88,6 +63,8 @@
           MALSKY_ABSCOEFF(L)=ABSLW
       END DO
 
+
+
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
       JDBLEDBLE = 2*JDBLE
@@ -95,7 +72,7 @@
       JN2     =   2*JDBLE-1
       TPI     =   2.*PI
       CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K
-      FDEGDAY =   1.0E-4*G*SCDAY/CPCON
+      FDEGDAY =   1.0E-4*(GA*100.0)*SCDAY/CPCON
 
 !     Get scalars from interface common block:
 !     ISL        - do solar calculations when = 1
@@ -141,6 +118,7 @@
       ALBEDO_SFC = ALBSW
 
 
+
       testing = 0
       if (testing .eq. 1) then
           p_aerad(1) = 10.0 ** (LOG10(p_aerad(2)) - (LOG10(p_aerad(3)) - LOG10(p_aerad(2))))
@@ -150,7 +128,7 @@
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+             DPG(J) = (PRESS(J)-PRESS(J-1)) / (GA*100.0)
           END DO
 
           PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
@@ -202,27 +180,26 @@
           PRESSMID=PLAYER*10.
           PRESS=P_aerad*10.
           PBAR(1)  = P_AERAD(1)*1e-5
-          DPG(1)= PRESS(1)/G
+          DPG(1)= PRESS(1)/(GA*100.0)
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+             DPG(J) = (PRESS(J)-PRESS(J-1)) / (GA*100.0)
           END DO
                      K  =  1
           DO J  = 2, NDBL,2
                      L  =  J
              PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
-             DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
+             DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / (GA*100.0)
                      K  =  K+1
                      L  =  L+1
              PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
-             DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
+             DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / (GA*100.0)
           END DO
              PBARsub(1) = PBAR(1)
              DPGsub(1)  = DPG(1)
       end if
 
-!
       DO 100  J             = 1,NDBL !NLAYER
           DO 50 L           = 1,NTOTAL
                TAUAER(L,J)  = 0.
@@ -234,6 +211,7 @@
                TAURAY(L,J)    = 0.
 50        CONTINUE
 100   CONTINUE
+
 
 
       malsky_switch = 0
@@ -264,8 +242,6 @@
                 k = k + 1
             END DO
         END DO
-
-
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0
@@ -310,14 +286,11 @@
           END DO
       END DO
 
-
-
-
       DO  L = NSOLP+1,NTOTAL
           TAUCONST(L)=MALSKY_ABSCOEFF(L)/GA/100.
       ENDDO
 
-!@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  
+!@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 !     WAVE MUST BE IN MICRONS
 !     CALCULATE RAYLEIGH OPTICAL DEPTH PARAMETERS.
 
@@ -365,7 +338,7 @@
 !
 !     Set <iblackbody_above> = 1 to include a source of radiation
 !     at the top of the radiative transfer model domain
-!    
+!
       iblackbody_above = ir_above_aerad
       t_above = tabove_aerad
 !
@@ -374,7 +347,6 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
-
 
       RETURN
       END

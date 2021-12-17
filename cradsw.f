@@ -60,6 +60,10 @@ C      REAL PPSOL(NLON),PR(NLON,NLEV),
 
 C---------- KM Modified Version. One needs PDPs for heating rate calculation
 
+      write(*,*) 'In cradsw, shouldnt be here I think'
+      write(*,*) 'I wrote this flag because I (Malsky) redefined some variables here'
+      stop
+
       DO 113 JLON = 1 , KDLON                                             
          ZALBSU(JLON,1)=SWALB                                             
          ZALBSU(JLON,2)=SWALB                                             

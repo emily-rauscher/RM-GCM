@@ -125,7 +125,6 @@
 !--inactive--c
 !--inactive--c  Define smallest possible number such that ONE + ALMOST_ZERO > ONE
 !--inactive--c
-!      parameter( ALMOST_ZERO = 1.d-15 )
       parameter( ALMOST_ZERO = 1.d-15 )
 !--inactive--c
 !--inactive--c

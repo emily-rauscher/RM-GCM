@@ -179,9 +179,6 @@
      &   fsl_up_aerad(NZ_RAD), fsl_dn_aerad(NZ_RAD),
      &   fir_up_aerad(NZ_RAD), fir_dn_aerad(NZ_RAD),
      &   fir_net_aerad(NZ_RAD),fsl_net_aerad(NZ_RAD),
-   
-
-
      &   iaerad2
 !
 !

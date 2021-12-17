@@ -171,6 +171,7 @@ C
 
       REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
 
+
       real PRB2T(NL+1),adum
 
       integer ifirst                ! If =1, first time reading o3
@@ -203,6 +204,181 @@ c     The following for parallel testing --MTR
       DATA IFIRST/1/
       data ifirstcol/1/
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!     THINGS ISAAC IS ADDING
+
+      COMMON /irad1/
+     &  O3MIX(NL+1), O3MIXP(6), O3C, VRAT,
+     &  PTOP, PBOT, RMIN(1), R(1,1),
+     &  is_grp_ice(1)
+
+      COMMON /irad2/
+     &  U0EXT,
+     &  ALBEDO_SFC, EMISIR
+
+      COMMON /irad3/
+     &  HEATI(NL+1), HEATS(NL+1), HEAT(NL+1),
+     &  SOLNET, XIRDOWN, XIRUP
+
+    ! I GOT RID OF G AND PI. MIGHT CHANGE THE ORDER???
+      COMMON /irad4/
+     &   LLA, LLS, JDBLE,JDBLEDBLE,JN,JN2, EPSILON, EXPMAX,
+     &   TPI, SQ3, SBK,
+     &   AM, AVG, ALOS, SCDAY, RGAS,
+     &   GANGLE, GWEIGHT, SFLX, WVLN,
+     &   GRATIO,
+     &   EMIS, RSFX,LTEMP,NPROB,
+     &   SOL,RAYPERBAR,WEIGHT,
+     &   GCLD(  5,2*NL+1),   GOL(5,2*NL+1),
+     &   TAURAY( 5,2*NL+1),TAUAER(5,2*NL+1),
+     &   WCLD(5,2*NL+1),
+     &   TAUCLD(5,2*NL+1),WOL(5,2*NL+1),
+     &   TREAL(2,5), TTMAG(2,5),
+     &   contnm(2), nprobi(5,2),TAUCONST(5)     
+
+      COMMON/irad5/
+     &        iblackbody_above,       t_above,
+     &        ACO2,           AH2O,
+     &        AO2,            AO3,
+     &        PACO2(5,NL+1),   PAH2O(5,NL+1),
+     &        PAO2(5,NL+1),    PAO3(5,NL+1),
+     &        PLANK(2+1,1),
+     &        PSCO2,          PSH2O,
+     &        PSO2,           PSO3,
+     &        SOLFX,            WAVE(5+1),
+     &        TAUGAS(5,2*NL+1),
+     &        XSECTA(1,1),    RUP(1,1),
+     &       QSCAT(1,1,5),
+     &       QBRQS(1,1,5),
+     &        RDQEXT(1,1,5)
+
+      COMMON/irad6/   CO2(NL+1), RDH2O(NL+1),   O2(NL+1),
+     &                 O3(NL+1), CAER(1,NL+1,1),
+     &                 PBAR(NL+1),PLAYER(NL+1),
+     &                 DPG(NL+1), TT(NL+1), Y3(5,3,2*NL+1),
+     &                 PRESSMID(NL+1), DPGsub(2*NL+1) , PBARsub(2*NL+1),
+     &                 TTsub(2*NL+1),
+     &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
+
+      COMMON /irad7/
+     &   WOT, GOT,
+     &   PTEMPG,      PTEMPT,
+     &   G0(5,2*NL+1),     OPD( 5,2*NL+1),
+     &   PTEMP(5,2*NL+1),  TAUL(5,2*NL+1),
+     &   TAUH2O(5,2*NL+1), TAUS(5,2*NL+1),
+     &   TAUA(5,2*NL+1),    G01(5,2*NL+1),
+     &   uG0(5,2*NL+1),    uTAUL(5,2*NL+1),
+     &   W0(5,2*NL+1),     uW0(5,2*NL+1),
+     &   uopd(5,2*NL+1)
+
+      COMMON /irad8/
+     &  U1S( 5),           U1I( 5),
+     &   ACON(5,2*NL+1),   TOON_AK(  5,2*NL+1),
+     &   BCON(5,2*NL+1),   B1(  5,2*NL+1),
+     &   B2(  5,2*NL+1),   EE1( 5,2*NL+1),
+     &   EM1(5,2*NL+1),
+     &   EM2(5,2*NL+1),    EL1( 5,2*NL+1),
+     &   EL2(5,2*NL+1),    GAMI(5,2*NL+1),
+     &   AF(5,4*NL+4), BF(5,4*NL+4), EF(5,4*NL+4)
+
+      COMMON /irad9/
+     &   SFCS,
+     &   B3(  5,2*NL+1),   CK1(   5,2*NL+1),
+     &   CK2( 5,2*NL+1),   CP(    5,2*NL+1),
+     &   CPB( 5,2*NL+1),   CM(    5,2*NL+1),
+     &   CMB( 5,2*NL+1),   DIRECT(5,2*NL+1),
+     &   EE3( 5,2*NL+1),   EL3(   5,2*NL+1),
+     &   FNET(5,2*NL+1),   TMI(   5,2*NL+1),
+     &   AS(  5,4*NL+4),     DF(    5,4*NL+4),
+     &   DS(  5,4*NL+4),     XK(    5,4*NL+4)
+
+      COMMON /irad10/
+     &   WEIT(   5),
+     &   DIREC(  5,2*NL+1), DIRECTU(5,2*NL+1),
+     &   SLOPE(  5,2*NL+1),
+     &   DINTENT(5,3,2*NL+1),
+     &   UINTENT(5,3,2*NL+1),
+     &   TMID(5,2*NL+1),TMIU(5,2*NL+1)
+
+    ! TOOK OUT tsld
+      common /irad11/
+     &   tslu,alb_tot,tiru,firu(2),fird(2),fsLu,
+     &   fsLd,fsLn,alb_toa,
+     &   fupbs(NL+1),fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1),
+     &   fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1),
+     &   qrad(NL+1),alb_tomi,alb_toai
+
+    ! TOOK OUT MOLEF
+      COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
+     &                              DENSITY, FMOLW,
+     &                              CORFACT,
+     &                              input_particle_size_array_in_meters,
+     &                              input_temperature_array,
+     &                              particle_size_vs_layer_array_in_meters,
+     &                              input_pressure_array_cgs
+
+      common / aerad1 /
+     &   isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,
+     &   ifsetup, ibinm,
+     &   riwp,rfluxes_aerad(2,2,2),
+     &   r_aerad(1,1),
+     &   rup_aerad(1,1),
+     &   p_aerad(NL+1), t_aerad(NL+1),PRESS(NL+1),
+     &   pc_aerad(NL+1,1,1),
+     &   qv_aerad(NL+1), tabove_aerad,
+     &   ptop_aerad, pbot_aerad, u0_aerad,
+     &   emisir_aerad, tsfc_aerad, h2ocol_aerad,
+     &   iaerad1,psol_aerad
+
+      common / aerad2 /
+     &   wave_aerad(5+1),
+     &   heati_aerad(NL+1), heats_aerad(NL+1),
+     &   qrad_aerad(NL+1,1,1),
+     &   alb_tomi_aerad, alb_toai_aerad,
+     &   alb_toa_aerad(3), opd_aerad(3), opd_tot_aerad,
+     &   fsl_up_aerad(NL+1), fsl_dn_aerad(NL+1),
+     &   fir_up_aerad(NL+1), fir_dn_aerad(NL+1),
+     &   fir_net_aerad(NL+1),fsl_net_aerad(NL+1),iaerad2
+
+      common / aerad3 /
+     &   is_grp_ice_aerad(1), do_mie_aerad,
+     &   ienconc_aerad(1),
+     &   sfc_alb_aerad, sfc_wind_aerad, dr_aerad(1,1),
+     &   iaerad3
+
+
       RHSCL=288.0*GASCON/GA
 
       ! factor to non-dimensionalise heating rates
@@ -223,14 +399,122 @@ c     ntstep is the number of timesteps to skip.
           ilast=0
 
           ! Do all the parallel stuff here
-          !$OMP PARALLEL DO private(test_wctime),
-     &    private(im,idocalc,imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw,
-     &    htsw,HTNETO,a,b),
-     &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
-     &    QG,SSLAT,SSLON,fluxes,CHRF),
+          !$OMP PARALLEL DO schedule(guided), default(none),
+     &    private(im,idocalc,imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
+     &    htsw,HTNETO,a,b,
+     &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL, TAUAEROSOL, IH,
+     &    O3MIX, O3MIXP, O3C, VRAT,
+     &    PTOP, PBOT, RMIN, R,
+     &    is_grp_ice,
+     &    U0EXT,
+     &    ALBEDO_SFC, EMISIR,
+     &    HEATI, HEATS, HEAT,
+     &    SOLNET, XIRDOWN, XIRUP,
+     &    LLA, LLS, JDBLE,JDBLEDBLE,JN,JN2, EPSILON, EXPMAX,
+     &    TPI, SQ3, SBK,
+     &    AM, AVG, ALOS, SCDAY, RGAS,
+     &    GANGLE, GWEIGHT, SFLX, WVLN,
+     &    GRATIO,
+     &    EMIS, RSFX,LTEMP,NPROB,
+     &    SOL,RAYPERBAR,WEIGHT,
+     &    GCLD, GOL,
+     &    TAURAY,TAUAER,
+     &    WCLD,
+     &    TAUCLD,WOL,
+     &    TREAL, TTMAG,
+     &    contnm, nprobi,TAUCONST,
+     &    iblackbody_above, t_above,
+     &    ACO2,AH2O,
+     &    AO2,AO3,
+     &    PACO2, PAH2O,
+     &    PAO2, PAO3,
+     &    PLANK,
+     &    PSCO2,PSH2O,
+     &    PSO2,PSO3,
+     &    SOLFX,WAVE,
+     &    TAUGAS,
+     &    XSECTA, RUP,
+     &    QSCAT,
+     &    QBRQS,
+     &    RDQEXT,
+     &    CO2, RDH2O, O2,
+     &    O3, CAER,
+     &    PBAR,PLAYER,
+     &    DPG, TT, Y3,
+     &    PRESSMID, DPGsub, PBARsub,
+     &    TTsub,
+     &    TGRND, U0,  ISL, IR, IRS, FDEGDAY,
+     &    WOT, GOT,
+     &    PTEMPG, PTEMPT,
+     &    G0, OPD,
+     &    PTEMP,  TAUL,
+     &    TAUH2O, TAUS,
+     &    TAUA, G01,
+     &    uG0, uTAUL,
+     &    W0,uW0,
+     &    uopd,
+     &    U1S,U1I,
+     &    ACON, TOON_AK,
+     &    BCON, B1,
+     &    B2, EE1,
+     &    EM1,
+     &    EM2, EL1,
+     &    EL2,    GAMI,
+     &    AF, BF, EF
+     &    SFCS,
+     &    B3,   CK1,
+     &    CK2,   CP,
+     &    CPB,   CM,
+     &    CMB,   DIRECT,
+     &    EE3,   EL3,
+     &    FNET,   TMI,
+     &    AS,     DF,
+     &    DS,     XK,
+     &    WEIT,
+     &    DIREC, DIRECTU,
+     &    SLOPE,
+     &    DINTENT,
+     &    UINTENT,
+     &    TMID,TMIU,
+     &    tslu,tsld,alb_tot,tiru,firu,fird,fsLu,
+     &    fsLd,fsLn,alb_toa,
+     &    fupbs,fdownbs,fnetbs,fdownbs2,
+     &    fupbi,fdownbi,fnetbi,
+     &    qrad,alb_tomi,alb_toai
+     &    TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
+     &    DENSITY, FMOLW, MOLEF,
+     &    CORFACT,
+     &    input_particle_size_array_in_meters,
+     &    input_temperature_array,
+     &    particle_size_vs_layer_array_in_meters,
+     &    input_pressure_array_cgs,
+     &    isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,
+     &    ifsetup, ibinm,
+     &    riwp,rfluxes_aerad,
+     &    r_aerad,
+     &    rup_aerad,
+     &    p_aerad, t_aerad,PRESS,
+     &    pc_aerad,
+     &    qv_aerad, tabove_aerad,
+     &    ptop_aerad, pbot_aerad, u0_aerad,
+     &    emisir_aerad, tsfc_aerad, h2ocol_aerad,
+     &    iaerad1,psol_aerad,
+     &    wave_aerad,
+     &    heati_aerad, heats_aerad,
+     &    qrad_aerad,
+     &    alb_tomi_aerad, alb_toai_aerad,
+     &    alb_toa_aerad, opd_aerad, opd_tot_aerad,
+     &    fsl_up_aerad, fsl_dn_aerad,
+     &    fir_up_aerad, fir_dn_aerad,
+     &    fir_net_aerad,fsl_net_aerad,iaerad2,
+     &    is_grp_ice_aerad, do_mie_aerad,
+     &    ienconc_aerad,
+     &    sfc_alb_aerad, sfc_wind_aerad, dr_aerad,
+     &    iaera)
      &    firstprivate(ilast),
      &    lastprivate(ilast),
-     &    shared(ABSLW, ABSSW, ACLD, AIOCT, AK,
+     &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
+     &    QG,SSLAT,SSLON,CHRF, ABSLW, ABSSW, ACLD, AIOCT, AK,
      &    AKAP, AKQC, AKQV, AKTC, AKTV, AKVV, ALAT, ALBSW1, ALP, ALPHA,
      &    ALPJ, AQ, ARFLUX, ARRCR, ARRLR, ASFLD, ASHBL, ASLBL, ASSBL,
      &    ASYMSW2, AW, BEGDAY, BEGDOY, BLA, BLCD, BLRH, BLVAD, BLVB, BM1,
@@ -239,7 +523,7 @@ c     ntstep is the number of timesteps to skip.
      &    CTRA, CUBMT, CURHM, CUT1, CUT2, CV, DALP, DALPJ, DAY, DELT,
      &    DELT2, DELT2C, DOY, DRAG, DSIGMA, DTBUOY, EAM1, EAM2, ECCEN,
      &    EPSIQ, ESCONA, ESCONB, EZ, FB, FBASEFLUX, FORCE1DDAYS, FRAD, FWS,
-     &    G, GA, GASCON, GSG, GWT, HSNOW, HTNET, ICFLAG, INLAT, INSPC,
+     &    GASCON, GSG, GWT, HSNOW, HTNET, ICFLAG, INLAT, INSPC,
      &    ITSLL, ITSLO, ITSPD, JH, JINC, JL, JSKIPLAT, JSKIPLON, JZF, KITS,
      &    KOLOUR, KOUNT, KOUNTE, KOUNTH, KOUNTP, KOUNTR, KOUTE, KOUTH,
      &    KOUTP, KOUTR, KRUN, KSTART, KTOTAL, L1DZENITH, L22L, LBALAN, LBL,
@@ -259,11 +543,12 @@ c     ntstep is the number of timesteps to skip.
      &    SIGMAH, SISQ, SK, SKAP, SKSE, SKSN, SLBL, SLHF, SMSTAR, SNET,
      &    SOLC_IN, SPG, SQ, SQH, SQR2, SQSTAR, SSBL, SSMC, SVEGE, T0,
      &    T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
-     &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSLD, TSTAR, TSTARO, TTCR,
+     &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSTAR, TSTARO, TTCR,
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
      &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
-
           DO i=1,mg
+            !$ print *, 'Hello from thread', omp_get_thread_num(), i
+
             im=i+iofm
             idocalc=0
 
@@ -351,6 +636,7 @@ c     ntstep is the number of timesteps to skip.
                 ENDDO
               ENDIF
 
+
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
 
               pr=prb2t
@@ -370,14 +656,10 @@ c             bottom heating rate is zero in morecret
                 LD=NL+1-L
                 IM=I+IOFM
                 HTNETO=HTNET(IHem,JH,I,LD)
-
                 htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
-
                 TTRD(IM,LD)=(HTNETO+HTNET(IHEM,JH,I,LD))/(CHRF*2.0)
 
                 IF ((i-ilast.gt.1).and.(nskip.gt.0)) then
-                  write(*,*),i,last
-
                   DO j=ilast+1,i-1
                     a=REAL(j-ilast)/REAL(i-ilast)
                     b=1.-a
@@ -406,9 +688,11 @@ c             bottom heating rate is zero in morecret
               ENDDO
 
               ilast=i
+
 !             end of conditional execution of morcrette code
             ENDIF
-          ENDDO
+          enddo
+          !$OMP END PARALLEL DO
 
           IF (nskip.ne.0) then
              write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
@@ -462,13 +746,8 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      write(*,*) ttrd(1,:)
-      write(*,*)
-      write(*,*)
-      write(*,*) rrflux(im,jh,1), rrflux(im,jh,2), rrflux(im,jh,3)
-      write(*,*) rrflux(im,jh,4), rrflux(im,jh,5), rrflux(im,jh,6)
-      write(*,*) 'Stopping in radiation'
-      stop
+      !write(*,*) 'Stopping in radiation'
+      !stop
 
       RETURN
       END

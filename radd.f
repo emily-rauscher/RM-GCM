@@ -38,7 +38,7 @@
                if( ABS(C1).lt.EPSILON ) THEN
                c1 = SIGN(EPSILON,C1)
                endif
-               C2          =  AK(L,J)*AK(L,J) - DU0*DU0
+               C2          =  TOON_AK(L,J)*TOON_AK(L,J) - DU0*DU0
                if( ABS(C2) .le. EPSILON ) then
                c2 = EPSILON
                endif

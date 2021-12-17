@@ -50,7 +50,7 @@
 !
       character*(50) prtofil
       character*(50) radofil
-       logical is_grp_ice
+      logical is_grp_ice
 
       COMMON /irad1/
      &  O3MIX(NLAYER), O3MIXP(6), O3C, VRAT,
@@ -61,8 +61,7 @@
 !
       COMMON /irad2/
      &  U0EXT,
-     &  ALBEDO_SFC, EMISIR !,
-!     &  P(NVERT), T(NVERT), Q(NVERT)
+     &  ALBEDO_SFC, EMISIR
 !
 ! OUTPUT VARIABLES, CALCULATED BY THE RADIATION MODEL, THAT MIGHT
 ! BE USED BY THE EXTERNAL MODEL
@@ -130,7 +129,7 @@
 !
       COMMON /irad8/
      &  U1S( NTOTAL),           U1I( NTOTAL),
-     &   ACON(NTOTAL,NDBL),   AK(  NTOTAL,NDBL),
+     &   ACON(NTOTAL,NDBL),   TOON_AK(  NTOTAL,NDBL),
      &   BCON(NTOTAL,NDBL),   B1(  NTOTAL,NDBL),
      &   B2(  NTOTAL,NDBL),   EE1( NTOTAL,NDBL),
      &   EM1(NTOTAL,NDBL),

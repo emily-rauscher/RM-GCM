@@ -4,32 +4,6 @@ C**********************************************************
        SUBROUTINE NIKOSRAD(PR,T,H2O,O3,alat,HTLW,HTSW,DOY,CF,IC,          
      $     RFLUXES,SWALB,ALON,KOUNT,ITSPD)
 
-C
-C No aerosols                                                             
-c Morcrette SW combined with Nikos LW scheme                              
-C Piers 27-1-98                                                           
-C                                                                         
-C P  Pressure on Full levels(Pa) level 1 is ground                        
-C T Temperature on Full levels(K) level 1 is ground                       
-C H2O water vapour mmr on full levels level 1 is ground                   
-C O3 ozone mmr on full levels level 1 is ground                           
-C DOY Julian Day wanted (real)                                            
-C NLEV number of levels                                                   
-C ALAT Latitude in degrees                                                
-C ALON longitude in degrees                                               
-C HTLW Output: lomgwave Heating Rate full levels etc (K/day)              
-C HTSW Output: shortwave heating rate (K/DAY)                             
-C RFLUXES  Array to hold fluxes at top and bottom of atmosphere           
-C     1st index - flux 1=SW, 2=LW                                         
-C     2nd index - Direction 1=DN, 2=UP                                    
-C     3rd index - Where 1=TOP, 2=SURFACE                                  
-C SWALB SW albedo                                                         
-C CF   CF(*,1) CLOUD fractions and CF(*,2) CLOUD LWP(g/m^2)               
-C  Index 1-deep convective, 2-high,3-mid,4-low                            
-C IC   IC(*,1) cloud start level, IC(*,2) cloud stop level                
-C  level 1 is ground                                                      
-C  same index as cloud                                                    
-                                                                          
        include 'params.i'
 C                                                                       
        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
@@ -50,7 +24,8 @@ C
      +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY                          
      +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG                 
      +              ,LSPO(NL),LGPO(NL)                                    
-     $              ,LSHIST,LMINIH                                        
+     $              ,LSHIST,LMINIH
+
       LOGICAL LSHIST,LMINIH                                               
       LOGICAL LSPO,LGPO    
 

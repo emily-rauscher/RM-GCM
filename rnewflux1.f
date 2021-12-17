@@ -35,8 +35,8 @@
           IF(IRS .NE. 0) THEN
               DO 50 L    =  NSOLP+1,NTOTAL
                 X4       =  SLOPE(L,J)*(TPI*B3(L,J)-U1S(L))
-                A1(L,J)  =  U1I(L) - AK(L,J)
-                A2(L,J)  =  GAMI(L,J)*(AK(L,J)+U1I(L))
+                A1(L,J)  =  U1I(L) - TOON_AK(L,J)
+                A2(L,J)  =  GAMI(L,J)*(TOON_AK(L,J)+U1I(L))
                 A3(L,J)  =  A3(L,J)+X4
                 A7(L,J)  =  A7(L,J)-X4
  50           CONTINUE
@@ -58,9 +58,9 @@
             IF(IRS .NE. 0) THEN
               DO 325 L    =  NSOLP+1,NTOTAL
                  YA        =  A1(L,J)*(Y3(L,I,J)-EE1(L,J))/
-     &                             (AK(L,J)*GANGLE(I)-1.)
+     &                             (TOON_AK(L,J)*GANGLE(I)-1.)
                  YB        =  A2(L,J)*(1.- EE1(L,J)*Y3(L,I,J))/
-     &                             (AK(L,J)*GANGLE(I)+1.)
+     &                             (TOON_AK(L,J)*GANGLE(I)+1.)
                  CKP= CK1(L,J)+CK2(L,J)
                  CKM= CK1(L,J) -CK2(L,J)
                  Y1(L,I,J) =  CKP*YB+CKM*YA
