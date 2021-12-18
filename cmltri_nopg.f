@@ -257,15 +257,6 @@ C
  2020 FORMAT(/' RESTORATION RECORD WRITTEN TO CHANNEL ',I3,/              
      +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)                      
 
-C!$omp parallel 
-C!$     print *,'thread',int(omp_get_thread_num()),'started'
-C!$omp do
-C      do i=1,16
-C      write(*,*) 'Hello',i
-C      enddo
-C!$omp end do
-C!$omp end parallel
-C     FIRST THE COMMENT
       READ(7,COMMENT)
       WRITE(2,COMMENT)
       WRITE(*,*) THECOMMENT  

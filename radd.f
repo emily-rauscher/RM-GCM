@@ -1,4 +1,4 @@
-      SUBROUTINE ADD
+      SUBROUTINE ADD(TAUL)
 
 !
 !     ***************************************************************
@@ -15,8 +15,8 @@
 !     THIS SUBROUTINE FORMS THE MATRIX FOR THE MULTIPLE LAYERS AND
 !     USES A TRIDIAGONAL ROUTINE TO FIND RADIATION IN THE ENTIRE
 !     ATMOSPHERE.
-!
 
+      real, dimension(5,2*NL+2) :: TAUL
 
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *

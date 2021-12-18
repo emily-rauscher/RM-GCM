@@ -1,8 +1,8 @@
-      subroutine opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, gravity_SI)
+      subroutine opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, gravity_SI, incident_starlight_fraction)
           include 'rcommons.h'
 
           integer :: NLAYER, J, k
-          real :: mu_0, Tirr, Tint, gravity_SI
+          real :: mu_0, Tirr, Tint, gravity_SI, incident_starlight_fraction
 
           real, dimension(NIRP) :: Beta_IR
           real, dimension(NSOLP) :: Beta_V
@@ -14,12 +14,7 @@
           ! Malsky check whether this is NLAYER+1
           real, dimension(NLAYER) :: pe
 
-          ! This is to calculate the incident fraction of the starlight
-          mu_0 = COS(ALAT * PI / 180.0) * COS(ALON * PI / 180.0)
-
-          IF (mu_0 .le. 0) THEN
-              mu_0 = 0
-          END IF
+          mu_0 = incident_starlight_fraction
 
           Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25

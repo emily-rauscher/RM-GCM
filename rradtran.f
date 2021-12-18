@@ -1,4 +1,4 @@
-      SUBROUTINE RADTRAN(Beta_V, Beta_IR)
+      SUBROUTINE RADTRAN(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.  
@@ -20,8 +20,9 @@
 
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
-      real u0
+      real u0, incident_starlight_fraction
 
       integer jflip
 
@@ -78,7 +79,8 @@
  46   CONTINUE
 
 !     Solar zenith angle
-      u0 = u0_aerad
+      !u0 = u0_aerad
+      u0 = incident_starlight_fraction
 
 !     SURFACE REFLECTIVITY AND EMISSIVITY
 !     Hack: use spectrally dependent surface albedo
@@ -113,28 +115,25 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          !CALL OPPRMULTI
+          CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
 
           ! This one only works with 50 layers
-          IF (NL .eq. 50) THEN
-              CALL DOUBLEGRAY_OPPRMULTI
-          ELSE
-              write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
-              stop
-          END IF
+          !IF (NL .eq. 50) THEN
+          !    CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+          !ELSE
+          !    write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
+          !    stop
+          !END IF
       ELSE
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
       ENDIF
 
-
-
-
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
 !     THE PLANK FUNCTION
 
       IF(IR .NE. 0) THEN
-          CALL OPPR1
+          CALL OPPR1(TAUL)
       ENDIF
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
@@ -145,17 +144,16 @@
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
       IF(ISL .NE. 0 .OR. IRS .NE. 0 ) THEN
-          CALL TWOSTR
-          CALL ADD
+          CALL TWOSTR(TAUL)
+          CALL ADD(TAUL)
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
 
       IF(IR .NE. 0) THEN
-          CALL NEWFLUX1
+          CALL NEWFLUX1(TAUL)
       ENDIF
-
 
 !     CLOUD FRACTION
 !     NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
@@ -319,8 +317,9 @@
 
 510      CONTINUE
 
+
           do  i = 1, nsoL
-              fsLd(i) = psol_aerad*u0_aerad !u0*solfx(i)
+              fsLd(i) = psol_aerad*incident_starlight_fraction
               alb_toa(i) = fsLu(i)/fsLd(i)
               tsLu = tsLu + fsLu(i)
               tsLd = tsLd + fsLd(i)
@@ -397,8 +396,6 @@
               fsl_up_aerad(j)  = fupbs(jflip)
               fsl_dn_aerad(j)  = fdownbs(jflip)
               fsl_net_aerad(j) = fnetbs(jflip)
-
-              !write(*,*) fir_up_aerad(j), fir_up_aerad(j), fir_net_aerad(j)
           enddo
       ENDIF
 

@@ -81,12 +81,10 @@
      &   EMIS(NTOTAL), RSFX(NTOTAL),LTEMP(NTOTAL),NPROB(NTOTAL),
      &   SOL(NTOTAL),RAYPERBAR(NTOTAL),WEIGHT(NTOTAL),
      &   GCLD(  NTOTAL,NDBL),   GOL(NTOTAL,NDBL),
-     &   TAURAY( NTOTAL,NDBL),TAUAER(NTOTAL,NDBL),
      &   WCLD(NTOTAL,NDBL),
-     &   TAUCLD(NTOTAL,NDBL),WOL(NTOTAL,NDBL),
      &   TREAL(2,NWAVE), TTMAG(2,NWAVE),
-     &   contnm(NIRP), nprobi(NWAVE,2),TAUCONST(NWAVE)
-!
+     &   contnm(NIRP), nprobi(NWAVE,2)
+
       COMMON/irad5/
      &        iblackbody_above,       t_above,
      &        ACO2(NTOTAL),           AH2O(NTOTAL),
@@ -97,11 +95,11 @@
      &        PSCO2(NTOTAL),          PSH2O(NTOTAL),
      &        PSO2(NTOTAL),           PSO3(NTOTAL),
      &        SOLFX(NSOL),            WAVE(NWAVE+1),
-     &        TAUGAS(NTOTAL,NDBL),
      &        XSECTA(NRAD,NGROUP),    RUP(NRAD,NGROUP),
-     &       QSCAT(NRAD,NGROUP,NWAVE),
-     &       QBRQS(NRAD,NGROUP,NWAVE),
-     &        RDQEXT(NRAD,NGROUP,NWAVE)
+     &        QSCAT(NRAD,NGROUP,NWAVE),
+     &        QBRQS(NRAD,NGROUP,NWAVE),
+     &        RDQEXT(NRAD,NGROUP,NWAVE),
+     &        TAUCLD(NTOTAL,NDBL),WOL(NTOTAL,NDBL), TAUCONST(NWAVE)
 !
       COMMON/irad6/   CO2(NLAYER), RDH2O(NLAYER),   O2(NLAYER),
      &                 O3(NLAYER), CAER(NRAD,NLAYER,NGROUP),
@@ -117,7 +115,7 @@
      &   WOT, GOT,
      &   PTEMPG(NTOTAL),      PTEMPT(NTOTAL),
      &   G0(NTOTAL,NDBL),     OPD( NTOTAL,NDBL),
-     &   PTEMP(NTOTAL,NDBL),  TAUL(NTOTAL,NDBL),
+     &   PTEMP(NTOTAL,NDBL),
      &   TAUH2O(NTOTAL,NDBL), TAUS(NWAVE,NDBL),
      &   TAUA(NWAVE,NDBL),    G01(NWAVE,NDBL),
      &   uG0(NTOTAL,NDBL),    uTAUL(NTOTAL,NDBL),

@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -23,6 +23,7 @@
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
       ! These are hardcoded to 50 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
@@ -43,7 +44,7 @@
       REAL FMOLW(NCLOUDS)
       REAL MOLEF(NCLOUDS)
 
-      INTEGER K,J,BASELEV,TOPLEV
+      INTEGER K,J,BASELEV,TOPLEV,L
       INTEGER size_loc, temp_loc, pressure_loc
       real particle_size
 
@@ -96,15 +97,7 @@
                   TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
 
-              ! These are if you want to test the old version
-              !TAUAER_OPPR(1,J,I) = TAUFACT*qevis(J,I)
-              !TAUAER_OPPR(2,J,I) = TAUFACT*qevis(J,I)
-              !TAUAER_OPPR(3,J,I) = TAUFACT*qevis(J,I)
-              !TAUAER_OPPR(4,J,I) = TAUFACT*qeir(J,I)
-              !TAUAER_OPPR(5,J,I) = TAUFACT*qeir(J,I)
-
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-
           END DO
 
           ! uncomment this section for compact cloud
@@ -119,8 +112,8 @@
 
           ! MALSKY CODE
           DO L = 1,NTOTAL
-              TAUAER_OPPR(L,TOPLEV+2,I) = TAUAER_OPPR(L,TOPLEV+2,I) * 0.367879
-              TAUAER_OPPR(L,TOPLEV+1,I) = TAUAER_OPPR(L,TOPLEV+1,I) * 0.135335
+              TAUAER_OPPR(L,TOPLEV+2,I) = TAUAER_OPPR(L,TOPLEV+2,I) * 0.135335
+              TAUAER_OPPR(L,TOPLEV+1,I) = TAUAER_OPPR(L,TOPLEV+1,I) * 0.367879
           END DO
       END DO
 
@@ -129,24 +122,12 @@
       DO L = LLS,NSOLP
           DO J = 1,NLAYER
               TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
-              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
+              WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
      &                       PI0_TEMP(L,J,1:NCLOUDS))
-              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
+              GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
      &                       G0_TEMP(L, J,1:NCLOUDS))
-
           END DO
       END DO
-
-! If you want to test the old version
-!     SW AT STANDARD VERTICAL RESOLUTION
-!      DO L = LLS,NSOLP
-!          DO J = 1,NLAYER
-!              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
-!              WOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) * PI0vis(J,1:13))
-!              GOL(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) * g0vis(J,1:13))
-!          END DO
-!      END DO
-
 
 !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
       k = 1
@@ -168,26 +149,6 @@
           k = k+1
       END DO
 
-
-! If you want to test the old version
-!     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
-!      k = 1
-!      DO J = 1,NDBL,2
-!        JJ = J
-!        DO L = NSOLP+1,NTOTAL
-!            TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS))
-!            WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8)*PI0ir(k,1:13))
-!            GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8)*g0ir(k,1:13))
-!        END DO
-!        JJ = J+1
-!        DO L = NSOLP+1,NTOTAL
-!            TAUAER(L,JJ) = TAUAER(L,JJ-1)
-!            WOL(L,JJ)    = WOL(L,JJ-1)
-!            GOL(L,JJ)    = GOL(L,JJ-1)
-!        END DO
-!        k = k+1
-!      END DO
-
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
           DO J = 2, NDBL-1, 2
@@ -197,12 +158,6 @@
           END DO
       END DO
 
-
-
-
-
-
-
       iradgas = 1
       DO J = 1,NLAYER
           j1 = max(1, j-1)
@@ -211,7 +166,7 @@
           DO L = LLS,NSOLP
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
-              if( TAUL(L,J) .lt. EPSILON ) then
+              if(TAUL(L,J) .lt. EPSILON ) then
                   TAUL(L,J) = EPSILON
               endif
 
@@ -243,6 +198,8 @@
               uOPD(L,J)   = 0.0
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
+
+
               IF (deltascale) THEN
                   FO          = GOT*GOT
                   DEN         = 1.-WOT*FO
@@ -263,9 +220,9 @@
                   write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
                   stop
               endif
+
           END DO
       END DO
-
 
 !     NOW AGAIN FOR THE IR
       DO J = 1,NDBL
@@ -338,6 +295,7 @@
               END DO
           END IF
       END DO
+
 
       RETURN
       END

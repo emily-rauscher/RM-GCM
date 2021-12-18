@@ -136,7 +136,7 @@
 !   psol_aerad     = incoming flux adjusted for latituded and daylength
 
       common / aerad1 /     
-     &   isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,      
+     &   isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,
      &   ifsetup, ibinm,  
      &   riwp,rfluxes_aerad(2,2,2),
      &   r_aerad(NBIN,NGROUP),      

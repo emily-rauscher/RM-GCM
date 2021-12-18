@@ -1,4 +1,4 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -19,23 +19,47 @@
 !
 ! **********************************************************************
 
-      REAL AM
+      REAL G,WVO,AM, incident_starlight_fraction
       real, dimension(NIR,NLAYER) :: tau_IRe
       real, dimension(NSOL,NLAYER) :: tau_Ve
       real, dimension(NWAVE) :: MALSKY_ABSCOEFF(NWAVE)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
+      dimension rup_1(NGROUP)
+      dimension rhoi(NRAD), dbnds(NRAD+1)
+      dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
+      dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
+      dimension temparr(6,NWAVE)
+      dimension pbndsm(6)
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+
       real t_pass(NZ)
 
-      integer :: malsky_switch
-      integer :: testing
+      integer i1, i2, indorder(5)
+      logical all_ok
+      DATA AVG    /6.02252E+23/
+      DATA PI     /3.14159265359/
 
+      integer :: malsky_switch
+      integer :: testing, L, J
+
+
+! ******************************************
+!            DEFINE CONSTANTS
+! *****************************************
+!
+!     UNITS ARE (CM**2)/GM
+!
+!     ***********************
+!     *  DATA FOR INFRARED  *
+!     ***********************
+!
+!     GAUSS ANGLES AND GAUSS WEIGHTS FOR GAUSSIAN INTEGRATION
+!     MOMENTS (USE FIRST MOMENT VALUES) N=3
 !
       DATA GANGLE  / 0.2123405382, 0.5905331356,0.9114120405/
       DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
       DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
-      DATA AVG    /6.02252E+23/
-      DATA PI     /3.14159265359/
 
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
 !     AM     - MOLECULAR WEIGHT OF AIR (G/MOL)
@@ -46,14 +70,14 @@
 !     SCDAY  - NUMBER OF SECONDS IN ONE DAY (S)
 
       AM= RGAS/R_AIR
-
-
       DATA ALOS   / 2.68719E19   /
       DATA RGAS   / 8.31430E+07  /
       DATA SBK    / 5.6697E-8    /
       DATA SCDAY  / 86400.0      /
       DATA EPSILON / ALMOST_ZERO  /
 
+      G = GA*100.
+      AM= RGAS/R_AIR
 
       DO L = 1,NSOLP
           MALSKY_ABSCOEFF(L)=ABSSW
@@ -63,8 +87,6 @@
           MALSKY_ABSCOEFF(L)=ABSLW
       END DO
 
-
-
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
       JDBLEDBLE = 2*JDBLE
@@ -72,7 +94,7 @@
       JN2     =   2*JDBLE-1
       TPI     =   2.*PI
       CPCON   =   GASCON/AKAP/1000.  ! Cp in J/gm/K
-      FDEGDAY =   1.0E-4*(GA*100.0)*SCDAY/CPCON
+      FDEGDAY =   1.0E-4*G*SCDAY/CPCON
 
 !     Get scalars from interface common block:
 !     ISL        - do solar calculations when = 1
@@ -90,18 +112,18 @@
       IR           = 0
       IRS          = 0
       IF(DOSWRAD) THEN
-         ISL = 1
+        ISL = 1
       ENDIF
       IF(DOLWRAD) THEN
-         IR  = 1
+        IR  = 1
       ENDIF
       IF(LWSCAT) THEN
         IRS  = 1
       ENDIF
 
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
-      LLA                   =  NTOTAL
-      LLS                   =  1
+      LLA = NTOTAL
+      LLS = 1
 
       IF(ISL .EQ. 0) THEN
           LLS =  NSOLP+1
@@ -117,8 +139,6 @@
 
       ALBEDO_SFC = ALBSW
 
-
-
       testing = 0
       if (testing .eq. 1) then
           p_aerad(1) = 10.0 ** (LOG10(p_aerad(2)) - (LOG10(p_aerad(3)) - LOG10(p_aerad(2))))
@@ -128,7 +148,7 @@
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-             DPG(J) = (PRESS(J)-PRESS(J-1)) / (GA*100.0)
+             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
           END DO
 
           PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
@@ -180,43 +200,38 @@
           PRESSMID=PLAYER*10.
           PRESS=P_aerad*10.
           PBAR(1)  = P_AERAD(1)*1e-5
-          DPG(1)= PRESS(1)/(GA*100.0)
+          DPG(1)= PRESS(1)/G
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-             DPG(J) = (PRESS(J)-PRESS(J-1)) / (GA*100.0)
+             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
           END DO
                      K  =  1
           DO J  = 2, NDBL,2
                      L  =  J
              PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
-             DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / (GA*100.0)
+             DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
                      K  =  K+1
                      L  =  L+1
              PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
-             DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / (GA*100.0)
+             DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
           END DO
              PBARsub(1) = PBAR(1)
              DPGsub(1)  = DPG(1)
       end if
 
-      DO 100  J             = 1,NDBL !NLAYER
-          DO 50 L           = 1,NTOTAL
-               TAUAER(L,J)  = 0.
-               TAUCLD(L,J)  = 0.
-               WCLD(L,J)    = 0.
-               WOL(L,J)     = 0.
-               GOL(L,J)     = 0.
-               GCLD(L,J)    = 0.
-               TAURAY(L,J)    = 0.
-50        CONTINUE
-100   CONTINUE
+      TAUAER(:,:)  = 0.
+      TAUCLD(:,:)  = 0.
 
+      WCLD(:,:)    = 0.
+      WOL(:,:)     = 0.
+      GOL(:,:)     = 0.
+      GCLD(:,:)    = 0.
 
 
       malsky_switch = 0
       IF (malsky_switch .gt. 0) THEN
-        CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA)
+        CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction)
 
         DO L = LLS,NSOLP
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
@@ -242,6 +257,8 @@
                 k = k + 1
             END DO
         END DO
+
+
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0
@@ -286,6 +303,9 @@
           END DO
       END DO
 
+
+
+
       DO  L = NSOLP+1,NTOTAL
           TAUCONST(L)=MALSKY_ABSCOEFF(L)/GA/100.
       ENDDO
@@ -304,31 +324,34 @@
 !Lo=2.6867630*10^25 m^-3, gravity= 24.40 m s^-2
 !molec. weight for mole fraction .86 H2 and .136 He (von Zahn)
 ! 2.27 *10^-3 kg/mole
-      IF (RAYSCAT) THEN
-          DO  L = 1,NTOTAL
-               RAYPERBAR(L) = RAYPERBARCONS
-          END DO
 
-               DO 330 J          =   1,NLAYER
-                DO 335 L         =   1,NTOTAL
-             if( L .LE. NSOLP )then
-               TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
-             else
-               TAURAY(L,J) = 0.0
-             endif
-335             CONTINUE
-330            CONTINUE
+
+
+      IF (RAYSCAT) THEN
+        DO  L = 1,NTOTAL
+          RAYPERBAR(L) = RAYPERBARCONS
+        END DO
+
+        DO 330 J          =   1,NLAYER
+          DO 335 L         =   1,NTOTAL
+            if( L .LE. NSOLP )then
+              TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
+            else
+              TAURAY(L,J)= 0.0
+            endif
+335     CONTINUE
+330   CONTINUE
       ELSE
-         DO 320 J     = 1,NLAYER
+        DO 320 J     = 1,NLAYER
           DO 325 L    = 1,NTOTAL
-           TAURAY(L,J)= 0.0
+            TAURAY(L,J)= 0.0
 325       CONTINUE
-320      CONTINUE
+320     CONTINUE
       ENDIF
 
-       DO 360 L   =   1,NSOLP
-          SOL(L)  = PSOL_aerad
-  360  CONTINUE
+      DO 360 L   =   1,NSOLP
+        SOL(L)  = PSOL_aerad
+ 360  CONTINUE
 ! *********************************************************************
 !
 !     COMPUTE PLANCK FUNCTION TABLE. WAVE IS IN UNITS OF MICRONS.

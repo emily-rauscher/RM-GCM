@@ -1,4 +1,4 @@
-      SUBROUTINE DOUBLEGRAY_OPPRMULTI
+      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -62,6 +62,7 @@
       REAL CONDFACT(NL+1,13),TAUAERSW(NL+1,13),TAUAERLW(NL+1,13)
       REAL CLOUDLOC(NL+1,13),ZEROARR(NL+1),CORFACT(NL+1)
       INTEGER K,JJ,J,NCLOUD,BASELEV,TOPLEV
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
 
 
       DATA NCLOUD/13/
@@ -1155,7 +1156,6 @@
           GOL(L,:)    = GOL(2,:)
       END DO
 
-
 !     iradgas = 0: no gas in radiative xfer!
       iradgas = 1
 
@@ -1166,7 +1166,7 @@
           DO 400 L       = LLS,NSOLP
 !M          DO 400 L       = LLS,LLA
 
-          TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
+             TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
              if (iradgas.eq.0) then
              tauL(L,j) = tauaer(L,j)
@@ -1311,7 +1311,6 @@
  450         CONTINUE
           ENDIF
  501  CONTINUE
-
 
       RETURN
       END

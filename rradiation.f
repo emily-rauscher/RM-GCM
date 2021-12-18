@@ -124,7 +124,7 @@ C
      & ALBSW, NEWTB, NEWTE,RAYPERBARCONS,with_TiO_and_VO
 
       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
-     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
+     + ,LWSCAT, FLXLIMDIF,AEROSOLS
 
       CHARACTER(30) :: AEROSOLMODEL
 
@@ -171,6 +171,7 @@ C
 
       REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
 
+      real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       real PRB2T(NL+1),adum
 
@@ -194,6 +195,8 @@ C     3rd index - Where 1=TOP, 2=SURFACE
 
       real fluxes(2,2,2)
 
+      real incident_starlight_fraction
+
 c     The following for parallel testing --MTR
       integer TID, NTHREADS
 
@@ -203,39 +206,6 @@ c     The following for parallel testing --MTR
 
       DATA IFIRST/1/
       data ifirstcol/1/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 !     THINGS ISAAC IS ADDING
 
@@ -261,12 +231,10 @@ c     The following for parallel testing --MTR
      &   GRATIO,
      &   EMIS, RSFX,LTEMP,NPROB,
      &   SOL,RAYPERBAR,WEIGHT,
-     &   GCLD(  5,2*NL+1),   GOL(5,2*NL+1),
-     &   TAURAY( 5,2*NL+1),TAUAER(5,2*NL+1),
-     &   WCLD(5,2*NL+1),
-     &   TAUCLD(5,2*NL+1),WOL(5,2*NL+1),
+     &   GCLD(5,2*NL+2), GOL(5,2*NL+2),
+     &   WCLD(5,2*NL+2),
      &   TREAL(2,5), TTMAG(2,5),
-     &   contnm(2), nprobi(5,2),TAUCONST(5)     
+     &   contnm(2), nprobi(5,2)
 
       COMMON/irad5/
      &        iblackbody_above,       t_above,
@@ -278,59 +246,59 @@ c     The following for parallel testing --MTR
      &        PSCO2,          PSH2O,
      &        PSO2,           PSO3,
      &        SOLFX,            WAVE(5+1),
-     &        TAUGAS(5,2*NL+1),
      &        XSECTA(1,1),    RUP(1,1),
-     &       QSCAT(1,1,5),
-     &       QBRQS(1,1,5),
-     &        RDQEXT(1,1,5)
+     &        QSCAT(1,1,5),
+     &        QBRQS(1,1,5),
+     &        RDQEXT(1,1,5),
+     &        TAUCLD(5,2*NL+2),WOL(5,2*NL+2), TAUCONST(5)
 
       COMMON/irad6/   CO2(NL+1), RDH2O(NL+1),   O2(NL+1),
      &                 O3(NL+1), CAER(1,NL+1,1),
      &                 PBAR(NL+1),PLAYER(NL+1),
-     &                 DPG(NL+1), TT(NL+1), Y3(5,3,2*NL+1),
-     &                 PRESSMID(NL+1), DPGsub(2*NL+1) , PBARsub(2*NL+1),
-     &                 TTsub(2*NL+1),
+     &                 DPG(NL+1), TT(NL+1), Y3(5,3,2*NL+2),
+     &                 PRESSMID(NL+1), DPGsub(2*NL+2) , PBARsub(2*NL+2),
+     &                 TTsub(2*NL+2),
      &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
 
       COMMON /irad7/
      &   WOT, GOT,
      &   PTEMPG,      PTEMPT,
-     &   G0(5,2*NL+1),     OPD( 5,2*NL+1),
-     &   PTEMP(5,2*NL+1),  TAUL(5,2*NL+1),
-     &   TAUH2O(5,2*NL+1), TAUS(5,2*NL+1),
-     &   TAUA(5,2*NL+1),    G01(5,2*NL+1),
-     &   uG0(5,2*NL+1),    uTAUL(5,2*NL+1),
-     &   W0(5,2*NL+1),     uW0(5,2*NL+1),
-     &   uopd(5,2*NL+1)
+     &   G0(5,2*NL+2),     OPD( 5,2*NL+2),
+     &   PTEMP(5,2*NL+2),
+     &   TAUH2O(5,2*NL+2), TAUS(5,2*NL+2),
+     &   TAUA(5,2*NL+2),    G01(5,2*NL+2),
+     &   uG0(5,2*NL+2),    uTAUL(5,2*NL+2),
+     &   W0(5,2*NL+2),     uW0(5,2*NL+2),
+     &   uopd(5,2*NL+2)
 
       COMMON /irad8/
      &  U1S( 5),           U1I( 5),
-     &   ACON(5,2*NL+1),   TOON_AK(  5,2*NL+1),
-     &   BCON(5,2*NL+1),   B1(  5,2*NL+1),
-     &   B2(  5,2*NL+1),   EE1( 5,2*NL+1),
-     &   EM1(5,2*NL+1),
-     &   EM2(5,2*NL+1),    EL1( 5,2*NL+1),
-     &   EL2(5,2*NL+1),    GAMI(5,2*NL+1),
+     &   ACON(5,2*NL+2),   TOON_AK(  5,2*NL+2),
+     &   BCON(5,2*NL+2),   B1(  5,2*NL+2),
+     &   B2(  5,2*NL+2),   EE1( 5,2*NL+2),
+     &   EM1(5,2*NL+2),
+     &   EM2(5,2*NL+2),    EL1( 5,2*NL+2),
+     &   EL2(5,2*NL+2),    GAMI(5,2*NL+2),
      &   AF(5,4*NL+4), BF(5,4*NL+4), EF(5,4*NL+4)
 
       COMMON /irad9/
      &   SFCS,
-     &   B3(  5,2*NL+1),   CK1(   5,2*NL+1),
-     &   CK2( 5,2*NL+1),   CP(    5,2*NL+1),
-     &   CPB( 5,2*NL+1),   CM(    5,2*NL+1),
-     &   CMB( 5,2*NL+1),   DIRECT(5,2*NL+1),
-     &   EE3( 5,2*NL+1),   EL3(   5,2*NL+1),
-     &   FNET(5,2*NL+1),   TMI(   5,2*NL+1),
+     &   B3(  5,2*NL+2),   CK1(   5,2*NL+2),
+     &   CK2( 5,2*NL+2),   CP(    5,2*NL+2),
+     &   CPB( 5,2*NL+2),   CM(    5,2*NL+2),
+     &   CMB( 5,2*NL+2),   DIRECT(5,2*NL+2),
+     &   EE3( 5,2*NL+2),   EL3(   5,2*NL+2),
+     &   FNET(5,2*NL+2),   TMI(   5,2*NL+2),
      &   AS(  5,4*NL+4),     DF(    5,4*NL+4),
      &   DS(  5,4*NL+4),     XK(    5,4*NL+4)
 
       COMMON /irad10/
      &   WEIT(   5),
-     &   DIREC(  5,2*NL+1), DIRECTU(5,2*NL+1),
-     &   SLOPE(  5,2*NL+1),
-     &   DINTENT(5,3,2*NL+1),
-     &   UINTENT(5,3,2*NL+1),
-     &   TMID(5,2*NL+1),TMIU(5,2*NL+1)
+     &   DIREC(  5,2*NL+2), DIRECTU(5,2*NL+2),
+     &   SLOPE(  5,2*NL+2),
+     &   DINTENT(5,3,2*NL+2),
+     &   UINTENT(5,3,2*NL+2),
+     &   TMID(5,2*NL+2),TMIU(5,2*NL+2)
 
     ! TOOK OUT tsld
       common /irad11/
@@ -399,10 +367,11 @@ c     ntstep is the number of timesteps to skip.
           ilast=0
 
           ! Do all the parallel stuff here
-          !$OMP PARALLEL DO schedule(guided), default(none),
-     &    private(im,idocalc,imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
+          !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
+     &    private(im,idocalc, incident_starlight_fraction, RAYSCAT,
+     &    imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
-     &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL, TAUAEROSOL, IH,
+     &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
      &    O3MIX, O3MIXP, O3C, VRAT,
      &    PTOP, PBOT, RMIN, R,
      &    is_grp_ice,
@@ -416,13 +385,12 @@ c     ntstep is the number of timesteps to skip.
      &    GANGLE, GWEIGHT, SFLX, WVLN,
      &    GRATIO,
      &    EMIS, RSFX,LTEMP,NPROB,
-     &    SOL,RAYPERBAR,WEIGHT,
+     &    SOL,RAYPERBAR, RAYPERBARCONS, WEIGHT,
      &    GCLD, GOL,
-     &    TAURAY,TAUAER,
      &    WCLD,
-     &    TAUCLD,WOL,
+     &    WOL,
      &    TREAL, TTMAG,
-     &    contnm, nprobi,TAUCONST,
+     &    contnm, nprobi,
      &    iblackbody_above, t_above,
      &    ACO2,AH2O,
      &    AO2,AO3,
@@ -432,7 +400,7 @@ c     ntstep is the number of timesteps to skip.
      &    PSCO2,PSH2O,
      &    PSO2,PSO3,
      &    SOLFX,WAVE,
-     &    TAUGAS,
+     &    TAUGAS, TAURAY, TAUAER, TAUAEROSOL, TAUL, TAUS, TAUH2O, TAUA, uTAUL, TAUCLD, TAUCONST,
      &    XSECTA, RUP,
      &    QSCAT,
      &    QBRQS,
@@ -447,10 +415,9 @@ c     ntstep is the number of timesteps to skip.
      &    WOT, GOT,
      &    PTEMPG, PTEMPT,
      &    G0, OPD,
-     &    PTEMP,  TAUL,
-     &    TAUH2O, TAUS,
-     &    TAUA, G01,
-     &    uG0, uTAUL,
+     &    PTEMP,
+     &    G01,
+     &    uG0,
      &    W0,uW0,
      &    uopd,
      &    U1S,U1I,
@@ -510,7 +477,7 @@ c     ntstep is the number of timesteps to skip.
      &    is_grp_ice_aerad, do_mie_aerad,
      &    ienconc_aerad,
      &    sfc_alb_aerad, sfc_wind_aerad, dr_aerad,
-     &    iaera)
+     &    iaera),
      &    firstprivate(ilast),
      &    lastprivate(ilast),
      &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
@@ -547,7 +514,6 @@ c     ntstep is the number of timesteps to skip.
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
      &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
           DO i=1,mg
-            !$ print *, 'Hello from thread', omp_get_thread_num(), i
 
             im=i+iofm
             idocalc=0
@@ -636,8 +602,13 @@ c     ntstep is the number of timesteps to skip.
                 ENDDO
               ENDIF
 
+              TAURAY(:,:) = 0.0
+              TAUL(:,:)   = 0.0
+              TAUGAS(:,:) = 0.0
+              TAUAER(:,:) = 0.0
 
-              call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd)
+              call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
+     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS, TAUAER)
 
               pr=prb2t
 
@@ -745,6 +716,7 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDDO
       ENDIF
+
 
       !write(*,*) 'Stopping in radiation'
       !stop

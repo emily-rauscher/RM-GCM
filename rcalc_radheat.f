@@ -2,7 +2,7 @@
 !*                         SUBROUTINE CALC_RADHEAT                     *  
 !*********************************************************************** 
       SUBROUTINE CALC_RADHEAT(pr,t,prflux,alat1,alon,htlw,htsw,
-     $             DOY,cf,ic,rfluxes,swalb,kount,itspd)
+     $             DOY,cf,ic,rfluxes,swalb,kount,itspd, incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER)
 
 !...Calculate radiative heating rate profiles and corresponding vertical
 !...wind speed.
@@ -36,6 +36,9 @@
       real, dimension(2,2,2) :: rfluxes
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
+
+      real alat1, alon, incident_starlight_fraction
 
       t_full=t
       tgrnd=t(NZ)
@@ -50,8 +53,8 @@
       RdCp = Rd/Cpd
       player=pr
 
-
-      call radsub(iffirst, pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V)
+      call radsub(iffirst, pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+     &            incident_starlight_fraction,TAURAY, TAUL, TAUGAS, TAUAER)
 
       iffirst = 0
 

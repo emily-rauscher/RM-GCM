@@ -1,4 +1,4 @@
-      SUBROUTINE NEWFLUX1
+      SUBROUTINE NEWFLUX1(TAUL)
 !
 !     **************************************************************
 !     *  Purpose             :  Calculate upward and downward      *
@@ -10,6 +10,8 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
+
+      real, dimension(5,2*NL+2) :: TAUL
 !
 !     LOCAL DIMENSIONS
       DIMENSION Y1(NTOTAL,NGAUSS,NDBL),

@@ -1,5 +1,6 @@
       subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass,
-     &                radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V)
+     &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+     &                  incident_starlight_fraction, TAURAY, TAUL, TAUGAS,TAUAER)
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
@@ -19,11 +20,12 @@
       real cheats(NZ), cheati(NZ), cheat(NZ)
       real htlw(NZ), htsw(NZ)
       real PSOL,PSOL_aerad
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
 
       integer itime, ntime
 
       ! Malsky add
-      REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC
+      REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT, incident_starlight_fraction
 
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -39,7 +41,7 @@
 
       if( iffirst.eq. 1 ) ifsetup = 1
 
-!@ Keep an Eye on this, Mike
+!     @ Keep an Eye on this, Mike
       if_diurnal = 0
 
       heats_aerad_tot = 0.
@@ -92,6 +94,7 @@ C Setup SW code
         SOLC=SOLC_IN*(1.0-TOAALB)
       ENDIF
 
+
 C     globally averaged solar constant, vertical rays
       AMU0=1.0
       PSOL=SOLC/4.
@@ -113,12 +116,13 @@ C     globally averaged solar constant, vertical rays
          ENDIF
       ENDIF
 
+
       if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
           AMU0 = 0.0
       endif
 
-      u0_aerad = MAX(0.0, AMU0)
-
+      !u0_aerad = MAX(0.0, AMU0)
+      incident_starlight_fraction = MAX(0.0, AMU0)
 
       PSOL_aerad=PSOL
       do_mie_aerad = .false.
@@ -138,10 +142,9 @@ C     globally averaged solar constant, vertical rays
 
 
       do itime = 1, ntime
-          !write(*,*) 'broke', u0_aerad, AMU0
-          call setuprad_simple(Beta_V, Beta_IR, t_pass)
+          call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
           pc_aerad = 0.
-          call radtran(Beta_V, Beta_IR)
+          call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
           cheats = 0.
           cheati = 0.
           cheat = 0.

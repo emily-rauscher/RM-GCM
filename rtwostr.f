@@ -1,4 +1,4 @@
-      SUBROUTINE TWOSTR
+      SUBROUTINE TWOSTR(TAUL)
 !
 !    ******************************************************************
 !    *  Purpose             :  Defines matrix properties and sets up  *
@@ -10,6 +10,9 @@
 !    * ****************************************************************
 !
       include 'rcommons.h'
+
+      real, dimension(5,2*NL+2) :: TAUL
+
        DO 10 L    =  LLS,LLA
           if( L .LE. NSOLP )then
             U1I(L) = SQ3  !2.d0 !SQ3
