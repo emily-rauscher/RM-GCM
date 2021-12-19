@@ -1,6 +1,7 @@
       subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass,
      &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
-     &                  incident_starlight_fraction, TAURAY, TAUL, TAUGAS,TAUAER)
+     &                  incident_starlight_fraction)
+! REPLACEME, TAURAY, TAUL, TAUGAS,TAUAER)
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
@@ -20,7 +21,7 @@
       real cheats(NZ), cheati(NZ), cheat(NZ)
       real htlw(NZ), htsw(NZ)
       real PSOL,PSOL_aerad
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
+      ! real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER REPLACEME
 
       integer itime, ntime
 
@@ -142,9 +143,11 @@ C     globally averaged solar constant, vertical rays
 
 
       do itime = 1, ntime
-          call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
+          call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction)
+!         REPLACEME,TAURAY,TAUL,TAUGAS,TAUAER)
           pc_aerad = 0.
-          call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
+          call radtran(Beta_V, Beta_IR, incident_starlight_fraction)
+!         REPLACEME,TAURAY,TAUL,TAUGAS,TAUAER)
           cheats = 0.
           cheati = 0.
           cheat = 0.

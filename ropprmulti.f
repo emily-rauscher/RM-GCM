@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE OPPRMULTI!(TAURAY,TAUL,TAUGAS,TAUAER) REPLACEME
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -23,7 +23,8 @@
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
+
+      !real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER REPLACEME
 
       ! These are hardcoded to 50 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
@@ -50,12 +51,12 @@
 
 
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW, MOLEF,
-     &                              CORFACT,
-     &                              input_particle_size_array_in_meters,
-     &                              input_temperature_array,
-     &                              particle_size_vs_layer_array_in_meters,
-     &                              input_pressure_array_cgs
+     &                           DENSITY, FMOLW, MOLEF,
+     &                           CORFACT,
+     &                           input_particle_size_array_in_meters,
+     &                           input_temperature_array,
+     &                           particle_size_vs_layer_array_in_meters,
+     &                           input_pressure_array_cgs
 
       DO J = 1,NLAYER-1
           ! Get the index of the closest pressure

@@ -1,4 +1,5 @@
-      SUBROUTINE ADD(TAUL)
+!      SUBROUTINE ADD(TAUL)
+      SUBROUTINE ADD !REPLACEME
 
 !
 !     ***************************************************************
@@ -16,7 +17,7 @@
 !     USES A TRIDIAGONAL ROUTINE TO FIND RADIATION IN THE ENTIRE
 !     ATMOSPHERE.
 
-      real, dimension(5,2*NL+2) :: TAUL
+      !real, dimension(5,2*NL+2) :: TAUL REPLACEME
 
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *

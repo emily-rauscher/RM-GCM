@@ -50,7 +50,7 @@
 !
       character*(50) prtofil
       character*(50) radofil
-      logical is_grp_ice
+       logical is_grp_ice
 
       COMMON /irad1/
      &  O3MIX(NLAYER), O3MIXP(6), O3C, VRAT,
@@ -61,7 +61,8 @@
 !
       COMMON /irad2/
      &  U0EXT,
-     &  ALBEDO_SFC, EMISIR
+     &  ALBEDO_SFC, EMISIR !,
+!     &  P(NVERT), T(NVERT), Q(NVERT)
 !
 ! OUTPUT VARIABLES, CALCULATED BY THE RADIATION MODEL, THAT MIGHT
 ! BE USED BY THE EXTERNAL MODEL
@@ -81,10 +82,12 @@
      &   EMIS(NTOTAL), RSFX(NTOTAL),LTEMP(NTOTAL),NPROB(NTOTAL),
      &   SOL(NTOTAL),RAYPERBAR(NTOTAL),WEIGHT(NTOTAL),
      &   GCLD(  NTOTAL,NDBL),   GOL(NTOTAL,NDBL),
+     &   TAURAY( NTOTAL,NDBL),TAUAER(NTOTAL,NDBL),
      &   WCLD(NTOTAL,NDBL),
+     &   TAUCLD(NTOTAL,NDBL),WOL(NTOTAL,NDBL),
      &   TREAL(2,NWAVE), TTMAG(2,NWAVE),
-     &   contnm(NIRP), nprobi(NWAVE,2)
-
+     &   contnm(NIRP), nprobi(NWAVE,2),TAUCONST(NWAVE)
+!
       COMMON/irad5/
      &        iblackbody_above,       t_above,
      &        ACO2(NTOTAL),           AH2O(NTOTAL),
@@ -95,11 +98,11 @@
      &        PSCO2(NTOTAL),          PSH2O(NTOTAL),
      &        PSO2(NTOTAL),           PSO3(NTOTAL),
      &        SOLFX(NSOL),            WAVE(NWAVE+1),
+     &        TAUGAS(NTOTAL,NDBL),
      &        XSECTA(NRAD,NGROUP),    RUP(NRAD,NGROUP),
-     &        QSCAT(NRAD,NGROUP,NWAVE),
-     &        QBRQS(NRAD,NGROUP,NWAVE),
-     &        RDQEXT(NRAD,NGROUP,NWAVE),
-     &        TAUCLD(NTOTAL,NDBL),WOL(NTOTAL,NDBL), TAUCONST(NWAVE)
+     &       QSCAT(NRAD,NGROUP,NWAVE),
+     &       QBRQS(NRAD,NGROUP,NWAVE),
+     &        RDQEXT(NRAD,NGROUP,NWAVE)
 !
       COMMON/irad6/   CO2(NLAYER), RDH2O(NLAYER),   O2(NLAYER),
      &                 O3(NLAYER), CAER(NRAD,NLAYER,NGROUP),
@@ -115,7 +118,7 @@
      &   WOT, GOT,
      &   PTEMPG(NTOTAL),      PTEMPT(NTOTAL),
      &   G0(NTOTAL,NDBL),     OPD( NTOTAL,NDBL),
-     &   PTEMP(NTOTAL,NDBL),
+     &   PTEMP(NTOTAL,NDBL),  TAUL(NTOTAL,NDBL),
      &   TAUH2O(NTOTAL,NDBL), TAUS(NWAVE,NDBL),
      &   TAUA(NWAVE,NDBL),    G01(NWAVE,NDBL),
      &   uG0(NTOTAL,NDBL),    uTAUL(NTOTAL,NDBL),

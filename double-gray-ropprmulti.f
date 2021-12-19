@@ -1,4 +1,4 @@
-      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE DOUBLEGRAY_OPPRMULTI!(TAURAY,TAUL,TAUGAS,TAUAER) REPLACEME
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -62,7 +62,8 @@
       REAL CONDFACT(NL+1,13),TAUAERSW(NL+1,13),TAUAERLW(NL+1,13)
       REAL CLOUDLOC(NL+1,13),ZEROARR(NL+1),CORFACT(NL+1)
       INTEGER K,JJ,J,NCLOUD,BASELEV,TOPLEV
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
+
+      !real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER REPLACEME
 
 
       DATA NCLOUD/13/

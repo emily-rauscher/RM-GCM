@@ -1,13 +1,14 @@
-      SUBROUTINE RADTRAN(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE RADTRAN(Beta_V, Beta_IR, incident_starlight_fraction)
+!     REPLACE ME,TAURAY,TAUL,TAUGAS,TAUAER)
 !
 !     **************************************************************
-!     Purpose:    Driver routine for radiative transfer model.  
+!     Purpose:    Driver routine for radiative transfer model.
 !
 !     Input:      Temperature, vapor, and aerosol profiles and solar
 !                 zenith angle are taken from interface common block.
 !
 !     Output:     Profiles of radiative fluxes, heating
-!                 rates for air and particles; vertically 
+!                 rates for air and particles; vertically
 !                 integrated optical depths; and albedos (which
 !                 are all loaded into interface common block).
 !     **************************************************************
@@ -20,7 +21,7 @@
 
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
+!     REPLACEME      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
       real u0, incident_starlight_fraction
 
@@ -51,7 +52,7 @@
 !     We need a top temperature boundary.  Zero degrees at zero pressure
 !     does not work since the slope of such a layer in log p cannot be
 !     computed.!     We instead introduce a pressure at 0.5 * P(1)
-!     (sigma level). 
+!     (sigma level).
 !     Since this is not logarithmically spaced, the extrapolation was
 !     treated differently at the top.
 !     TOP
@@ -115,15 +116,17 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+          !CALL OPPRMULTI ! REPLACEME
 
           ! This one only works with 50 layers
-          !IF (NL .eq. 50) THEN
+          IF (NL .eq. 50) THEN
           !    CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
-          !ELSE
-          !    write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
-          !    stop
-          !END IF
+              CALL DOUBLEGRAY_OPPRMULTI !REPLACEME
+          ELSE
+              write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
+              stop
+          END IF
       ELSE
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
@@ -133,7 +136,8 @@
 !     THE PLANK FUNCTION
 
       IF(IR .NE. 0) THEN
-          CALL OPPR1(TAUL)
+          !CALL OPPR1(TAUL)
+          CALL OPPR1 ! REPLACEME
       ENDIF
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
@@ -144,15 +148,20 @@
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
       IF(ISL .NE. 0 .OR. IRS .NE. 0 ) THEN
-          CALL TWOSTR(TAUL)
-          CALL ADD(TAUL)
+          !CALL TWOSTR(TAUL)
+          !CALL ADD(TAUL)
+
+          !REPLACEME
+          CALL TWOSTR
+          CALL ADD
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
 
       IF(IR .NE. 0) THEN
-          CALL NEWFLUX1(TAUL)
+          !CALL NEWFLUX1(TAUL)
+          CALL NEWFLUX1 !REPLACEME
       ENDIF
 
 !     CLOUD FRACTION
@@ -400,9 +409,9 @@
       ENDIF
 
 
-C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere           
-C     1st index - flux 1=SW, 2=LW                                         
-C     2nd index - Direction 1=DN, 2=UP                                    
+C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
+C     1st index - flux 1=SW, 2=LW
+C     2nd index - Direction 1=DN, 2=UP
 C     3rd index - Where 1=TOP, 2=SURFACE
 
       if (NSOLP .gt. 1) then

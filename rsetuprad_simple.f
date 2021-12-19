@@ -1,4 +1,5 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction)
+!     REPLACEME,TAURAY,TAUL,TAUGAS)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -31,14 +32,14 @@
       dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+!     REPLACEME real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+
 
       real t_pass(NZ)
 
       integer i1, i2, indorder(5)
       logical all_ok
-      DATA AVG    /6.02252E+23/
-      DATA PI     /3.14159265359/
+
 
       integer :: malsky_switch
       integer :: testing, L, J
@@ -61,6 +62,8 @@
       DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
       DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
 
+      DATA AVG    /6.02252E+23/
+      DATA PI     /3.14159265359/
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
 !     AM     - MOLECULAR WEIGHT OF AIR (G/MOL)
 !     AVG    - AVAGODROS' NUMBER (#/MOL)
