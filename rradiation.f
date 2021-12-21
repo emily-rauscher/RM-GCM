@@ -173,6 +173,9 @@ C
 
       real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
+      ! Malsky is adding these
+      integer solar_calculation_indexer
+
       real PRB2T(NL+1),adum
 
       integer ifirst                ! If =1, first time reading o3
@@ -370,7 +373,7 @@ c     ntstep is the number of timesteps to skip.
 
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
-     &    private(im,idocalc, incident_starlight_fraction, RAYSCAT,
+     &    private(im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer
      &    imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
@@ -604,9 +607,10 @@ c     ntstep is the number of timesteps to skip.
                 ENDDO
               ENDIF
 
+              solar_calculation_indexer = 1.0
 
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
+     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER, solar_calculation_indexer)
 
               pr=prb2t
 
@@ -714,7 +718,6 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDDO
       ENDIF
-
 
       !write(*,*) 'Stopping in radiation'
       !stop

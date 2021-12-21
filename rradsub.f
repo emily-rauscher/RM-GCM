@@ -1,6 +1,6 @@
       subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass,
      &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
-     &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER)
+     &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer)
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
@@ -22,7 +22,7 @@
       real PSOL,PSOL_aerad
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
 
-      integer itime, ntime
+      integer itime, ntime, solar_calculation_indexer
 
       ! Malsky add
       REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT, incident_starlight_fraction
@@ -121,8 +121,11 @@ C     globally averaged solar constant, vertical rays
           AMU0 = 0.0
       endif
 
-      !u0_aerad = MAX(0.0, AMU0)
       incident_starlight_fraction = MAX(0.0, AMU0)
+
+      if (incident_starlight_fraction .lt. 1e-5) THEN
+          solar_calculation_indexer = NSOLP + 1
+      END IF
 
       PSOL_aerad=PSOL
       do_mie_aerad = .false.
@@ -141,9 +144,11 @@ C     globally averaged solar constant, vertical rays
       if( if_diurnal.eq.1 ) ntime = 24
 
       do itime = 1, ntime
-          call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction, TAURAY,TAUL,TAUGAS,TAUAER)
+          call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction, TAURAY,TAUL,TAUGAS,TAUAER,
+     &                         solar_calculation_indexer)
           pc_aerad = 0.
-          call radtran(Beta_V, Beta_IR, incident_starlight_fraction, TAURAY,TAUL,TAUGAS,TAUAER)
+          call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+     &                 solar_calculation_indexer)
           cheats = 0.
           cheati = 0.
           cheat = 0.

@@ -1,4 +1,4 @@
-      SUBROUTINE TWOSTR(TAUL)
+      SUBROUTINE TWOSTR(TAUL,solar_calculation_indexer)
 !
 !    ******************************************************************
 !    *  Purpose             :  Defines matrix properties and sets up  *
@@ -12,8 +12,9 @@
       include 'rcommons.h'
 
       real, dimension(5,2*NL+2) :: TAUL
+      integer solar_calculation_indexer
 
-       DO 10 L    =  LLS,LLA
+       DO 10 L    =  solar_calculation_indexer,LLA
           if( L .LE. NSOLP )then
             U1I(L) = SQ3  !2.d0 !SQ3
           else
@@ -26,7 +27,7 @@
 !      NEEDED FOR MATRIX.
 !
        DO 14 J          =  1,NLAYER
-          DO 14 L       =  LLS,NSOLP
+          DO 14 L       =  solar_calculation_indexer,NSOLP
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
              B2(L,J)    =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
@@ -64,7 +65,7 @@
       J                 =  0
       DO 18 JD          =  2,JN,2
          J              =  J + 1
-         DO 18 L        =  LLS,NSOLP
+         DO 18 L        =  solar_calculation_indexer,NSOLP
 !          HERE ARE THE EVEN MATRIX ELEMENTS
              AF(L,JD)   =  EM1(L,J+1)*EL1(L,J)-EM2(L,J+1)*EL2(L,J)
              BF(L,JD)   =  EM1(L,J+1)* EM1(L,J)-EM2(L,J+1)*EM2(L,J)
@@ -93,7 +94,7 @@
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME
 !     NO DIFFUSE RADIATION IS INCIDENT AT UPPER BOUNDARY.
 !
-      DO 20 L        = LLS,NSOLP
+      DO 20 L        = solar_calculation_indexer,NSOLP
          AF(L,1)     = 0.0
          BF(L,1)     = EL1(L,1)
          EF(L,1)     = -EM1(L,1)

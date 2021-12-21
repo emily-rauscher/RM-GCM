@@ -1,4 +1,4 @@
-      SUBROUTINE ADD(TAUL)
+      SUBROUTINE ADD(TAUL,solar_calculation_indexer)
 
 !
 !     ***************************************************************
@@ -17,6 +17,7 @@
 !     ATMOSPHERE.
 
       real, dimension(5,2*NL+2) :: TAUL
+      integer solar_calculation_indexer
 
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *
@@ -88,7 +89,7 @@
       J                =  0
       DO 42 JD         =  2,JN,2
          J             =  J + 1
-         DO 42 L       =  LLS,NSOLP
+         DO 42 L       =  solar_calculation_indexer,NSOLP
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
@@ -118,7 +119,7 @@
 !     DIFFUSE RADIATION IS INCIDENT AT THE TOP.
 !
 !VIS
-      DO 44 L        = LLS,NSOLP
+      DO 44 L        = solar_calculation_indexer,NSOLP
          DF(L,1)     = -CM(L,1)
          DF(L,JDBLE) = SFCS(L)+RSFX(L)*CMB(L,NLAYER)-CPB(L,NLAYER)
          DS(L,JDBLE) = DF(L,JDBLE)/BF(L,JDBLE)
@@ -141,7 +142,7 @@
 
 
       DO 46 J               = 2, JDBLE
-         DO 46 L            = LLS,NSOLP
+         DO 46 L            = solar_calculation_indexer,NSOLP
             X               = 1./(BF(L,JDBLE+1-J) -
      &                         EF(L,JDBLE+1-J)*AS(L,JDBLE+2-J))
             AS(L,JDBLE+1-J) = AF(L,JDBLE+1-J)*X
@@ -160,16 +161,16 @@
      &                         *DS(L,JDBLEDBLE+2-J))*X
   47  CONTINUE
 
-      DO 48 L       = LLS,LLA
+      DO 48 L       = solar_calculation_indexer,NTOTAL
   48     XK(L,1)    = DS(L,1)
 !
       DO 50 J       = 2, JDBLE
-         DO 50 L    = LLS,LLA
+         DO 50 L    = solar_calculation_indexer,NTOTAL
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
   50  CONTINUE
 
       DO 51 J       = 2, JDBLEDBLE
-         DO 51 L    = NSOLP+1,LLA
+         DO 51 L    = NSOLP+1,NTOTAL
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
   51  CONTINUE
 
@@ -180,7 +181,7 @@
 !  ***************************************************************
 !
       do J = 1,NLAYER
-        do L = LLS,NSOLP
+        do L = solar_calculation_indexer,NSOLP
           CK1(L,J)   = XK(L,2*J-1)
           CK2(L,J)   = XK(L,2*J)
 

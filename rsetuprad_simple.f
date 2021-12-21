@@ -1,4 +1,5 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction, TAURAY,TAUL,TAUGAS)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V,Beta_IR,t_pass,incident_starlight_fraction,TAURAY,TAUL,TAUGAS,
+     &                           solar_calculation_indexer)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -36,9 +37,8 @@
 
       real t_pass(NZ)
 
-      integer i1, i2, indorder(5)
+      integer i1, i2, indorder(5), solar_calculation_indexer
       logical all_ok
-
 
       integer :: malsky_switch
       integer :: testing, L, J
@@ -238,7 +238,7 @@
       IF (malsky_switch .gt. 0) THEN
         CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction)
 
-        DO L = LLS,NSOLP
+        DO L = solar_calculation_indexer,NSOLP
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
         END DO
 
@@ -247,7 +247,7 @@
      &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
         END DO
 
-        DO L = LLS,NSOLP
+        DO L = solar_calculation_indexer,NSOLP
             DO J = 1,NLAYER
                 TAUGAS(L,J) = tau_Ve(L,J)
             END DO
@@ -277,7 +277,7 @@
               Beta_IR(1) = 1.0
           end if
 
-          DO L = LLS,NSOLP
+          DO L = solar_calculation_indexer,NSOLP
               DO J     =   1,NLAYER
                   PM          =   DPG(J)
                   TAUGAS(L,J) = MALSKY_ABSCOEFF(L)*PM
@@ -293,7 +293,7 @@
       END IF
 
       DO J = 1, NLAYER
-          DO L = LLS,NSOLP
+          DO L = solar_calculation_indexer,NSOLP
               FNET(L,J)   = 0.0
               TMI(L,J)    = 0.0
               DIRECT(L,J) = 0.0

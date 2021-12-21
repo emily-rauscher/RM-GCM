@@ -1,4 +1,5 @@
-      SUBROUTINE RADTRAN(Beta_V, Beta_IR, incident_starlight_fraction, TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+     &                   solar_calculation_indexer)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
@@ -24,7 +25,7 @@
 
       real u0, incident_starlight_fraction
 
-      integer jflip
+      integer jflip, solar_calculation_indexer
 
       MALSKY_INDEX_NUMBER = MALSKY_INDEX_NUMBER + 1
 
@@ -101,25 +102,13 @@
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
-!     SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
-      LLA                   =  NTOTAL
-      LLS                   =  1
-
-      IF(incident_starlight_fraction .LE. 1e-5) THEN
-          LLS =  NSOLP+1
-      ENDIF
-
-      IF(IR .EQ. 0) THEN
-          LLA =  NSOLP
-      ENDIF
-
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
-              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
           ELSE
               write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
               stop
@@ -129,24 +118,22 @@
           STOP
       ENDIF
 
-!     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALCULATE
-!     THE PLANK FUNCTION
-
-      IF(IR .NE. 0) THEN
-          CALL OPPR1(TAUL)
-      ENDIF
+      ! CALCULATE THE PLANK FUNCTION
+      CALL OPPR1(TAUL)
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
           LLA  =  NSOLP
+          write(*,*) "Something funny is going on, why no IR scattering?"
+          stop
       ENDIF
 
 !
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
-      IF(ISL .NE. 0 .OR. IRS .NE. 0 ) THEN
-          CALL TWOSTR(TAUL)
-          CALL ADD(TAUL)
+      IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
+          CALL TWOSTR(TAUL, solar_calculation_indexer)
+          CALL ADD(TAUL, solar_calculation_indexer)
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
@@ -229,7 +216,7 @@
 
           TERM1      =  FDEGDAY/(DPG(J+1)*G)
 
-          IF(ISL .NE. 0) THEN
+          IF(incident_starlight_fraction.ge. 0) THEN
               DO 480 L     =  1,NSOLP
                   HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J)) * TERM1
  480          CONTINUE
@@ -298,7 +285,7 @@
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
 !
       SOLNET  = 0.0
-      IF (ISL .NE. 0) THEN
+      IF (solar_calculation_indexer .gE. 0) THEN
           DO 510 L       =  1,NSOLP
               SOLNET  = SOLNET - FNET(L,NLAYER)
               fp      = ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)

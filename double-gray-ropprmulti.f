@@ -1,4 +1,4 @@
-      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -13,6 +13,7 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
+      real solar_calculation_indexer
 
       REAL TCONKCL(NL+1)
       REAL KCLQEVIS(NL),KCLG0VIS(NL),KCLPI0VIS(NL)
@@ -1272,13 +1273,11 @@
 
  401        CONTINUE
 
-          IF(IR .EQ. 1) THEN
              DO 450 I        =   1,NGAUSS
-                DO 425 L     =   LLS,LLA
+                DO 425 L     =   NSOLP+1,NTOTAL
                    Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
  425            CONTINUE
  450         CONTINUE
-          ENDIF
  501  CONTINUE
 
       RETURN

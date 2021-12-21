@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -46,7 +46,7 @@
       REAL MOLEF(NCLOUDS)
 
       INTEGER K,J,BASELEV,TOPLEV,L
-      INTEGER size_loc, temp_loc, pressure_loc
+      INTEGER size_loc, temp_loc, pressure_loc,solar_calculation_indexer
       real particle_size
 
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
@@ -119,7 +119,7 @@
 
 
 !     SW AT STANDARD VERTICAL RESOLUTION
-      DO L = LLS,NSOLP
+      DO L = solar_calculation_indexer,NSOLP
           DO J = 1,NLAYER
               TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
               WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
@@ -159,7 +159,7 @@
           j1 = max(1, j-1)
 
 !         First the solar at standard resolution
-          DO L = LLS,NSOLP
+          DO L = solar_calculation_indexer,NSOLP
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
               if(TAUL(L,J) .lt. EPSILON ) then
@@ -283,13 +283,11 @@
              endif
           END DO
 
-          IF(IR .EQ. 1) THEN
-              DO I = 1,NGAUSS
-                  DO L = LLS,LLA
-                      Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
-                  END DO
+          DO I = 1,NGAUSS
+              DO L = NSOLP+1,NTOTAL
+                  Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
               END DO
-          END IF
+          END DO
       END DO
 
 
