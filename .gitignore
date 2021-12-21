@@ -1,0 +1,6 @@
+# Ignore the fort files
+fort.*
+
+Isaac-Tests/
+
+CLOUD_DATA/
