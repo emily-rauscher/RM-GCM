@@ -259,8 +259,8 @@ c     The following for parallel testing --MTR
       COMMON/irad6/   CO2(NL+1), RDH2O(NL+1),   O2(NL+1),
      &                 O3(NL+1), CAER(1,NL+1,1),
      &                 PBAR(NL+1),PLAYER(NL+1),
-     &                 DPG(NL+1), TT(NL+1), Y3(5,3,2*NL+2),
-     &                 PRESSMID(NL+1), DPGsub(2*NL+2) , PBARsub(2*NL+2),
+     &                 TT(NL+1), Y3(5,3,2*NL+2),
+     &                 PRESSMID(NL+1), PBARsub(2*NL+2),
      &                 TTsub(2*NL+2),
      &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
 

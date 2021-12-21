@@ -1,5 +1,5 @@
       SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                   solar_calculation_indexer)
+     &                   solar_calculation_indexer, DPG)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
@@ -24,6 +24,7 @@
       integer jflip, solar_calculation_indexer
 
       real, dimension(NTOTAL,NDBL) :: SLOPE
+      real DPG(NLAYER)
 
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
@@ -103,11 +104,11 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG)
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
-              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG)
           ELSE
               write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
               stop

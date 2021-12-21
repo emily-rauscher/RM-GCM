@@ -1,4 +1,4 @@
-      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer,DPG)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -13,6 +13,8 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
+      REAL DPG(NLAYER)
+
       integer solar_calculation_indexer
 
       REAL TCONKCL(NL+1)

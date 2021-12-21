@@ -1,5 +1,5 @@
       SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                         solar_calculation_indexer)
+     &                         solar_calculation_indexer, DPG)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -33,6 +33,9 @@
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+
+      real DPG(NLAYER)
+      real DPGsub(NDBL)
 
 
       real t_pass(NZ)
