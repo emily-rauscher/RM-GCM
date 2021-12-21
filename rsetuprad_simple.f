@@ -19,11 +19,11 @@
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
-      integer :: testing, L, J, solar_calculation_indexer
+      integer :: testing, L, J, K, solar_calculation_indexer
       REAL G,WVO,AM, incident_starlight_fraction
       real, dimension(NIR,NLAYER) :: tau_IRe
       real, dimension(NSOL,NLAYER) :: tau_Ve
-      real, dimension(NWAVE) :: MALSKY_ABSCOEFF(NWAVE)
+      real, dimension(NIR+NSOL) :: MALSKY_ABSCOEFF
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       dimension rup_1(NGROUP)
@@ -36,7 +36,7 @@
 
       real DPG(NLAYER)
       real DPGsub(NDBL)
-
+      REAL PM
 
       real t_pass(NZ)
       integer i1, i2, indorder(5)
@@ -71,13 +71,14 @@
 !     RGAS   - UNIVERSAL GAS CONSTANT (ERG / MOL K)
 !     SCDAY  - NUMBER OF SECONDS IN ONE DAY (S)
 
-      AM= RGAS/R_AIR
+
       DATA ALOS   / 2.68719E19   /
       DATA RGAS   / 8.31430E+07  /
       DATA SBK    / 5.6697E-8    /
       DATA SCDAY  / 86400.0      /
       DATA EPSILON / ALMOST_ZERO  /
 
+      AM= RGAS/R_AIR
       G = GA*100.
       AM= RGAS/R_AIR
 
@@ -88,6 +89,8 @@
       DO L = NSOLP+1,NTOTAL
           MALSKY_ABSCOEFF(L)=ABSLW
       END DO
+
+
 
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
@@ -141,6 +144,7 @@
       PBOT         = p_aerad(NL+1)*10.
 
       ALBEDO_SFC = ALBSW
+
 
       testing = 0
       if (testing .eq. 1) then
@@ -209,19 +213,27 @@
              PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
              DPG(J) = (PRESS(J)-PRESS(J-1)) / G
           END DO
-                     K  =  1
-          DO J  = 2, NDBL,2
-                     L  =  J
+
+
+          K = 1
+          DO J  = 2, NDBL-1,2
+             L  =  J
              PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
              DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
-                     K  =  K+1
-                     L  =  L+1
+             K = K + 1
+             L = L + 1
              PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
              DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
           END DO
-             PBARsub(1) = PBAR(1)
-             DPGsub(1)  = DPG(1)
+
+          PBARsub(NDBL) = PBARsub(NDBL-1) + ABS(PBARsub(NDBL-2) - PBARsub(NDBL-3))
+          DPGsub(NDBL)  = DPGsub(NDBL-1)  + ABS(DPGsub(NDBL-2)  - DPGsub(NDBL-3))
+
+          PBARsub(1) = PBAR(1)
+          DPGsub(1)  = DPG(1)
+
       end if
+
 
       TAURAY(:,:) = 0.0
       TAUAER(:,:) = 0.0
@@ -233,6 +245,7 @@
       WOL(:,:)     = 0.
       GOL(:,:)     = 0.
       GCLD(:,:)    = 0.
+
 
 
       malsky_switch = 0
@@ -263,8 +276,6 @@
                 k = k + 1
             END DO
         END DO
-
-
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0
@@ -278,12 +289,13 @@
               Beta_IR(1) = 1.0
           end if
 
+
           DO L = 1,NSOLP
               DO J     =   1,NLAYER
-                  PM          =   DPG(J)
-                  TAUGAS(L,J) = MALSKY_ABSCOEFF(L)*PM
+                  TAUGAS(L,J) = MALSKY_ABSCOEFF(L) * DPG(J)
               END DO
           END DO
+
 
           DO L  = NSOLP+1,NTOTAL
              DO J     =   1,NDBL
@@ -361,7 +373,6 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
-
 
       RETURN
       END
