@@ -1,5 +1,5 @@
       SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                         solar_calculation_indexer, DPG)
+     &                         solar_calculation_indexer)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -33,8 +33,7 @@
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
-      real, dimension(NLAYER) :: DPG
-      real, dimension(NDBL)   :: DPGsub
+
 
       real t_pass(NZ)
       integer i1, i2, indorder(5)
@@ -280,8 +279,6 @@
               DO J     =   1,NLAYER
                   PM          =   DPG(J)
                   TAUGAS(L,J) = MALSKY_ABSCOEFF(L)*PM
-
-                  write(*,*) L, PM, TAUGAS(1,1)
               END DO
           END DO
 
@@ -296,6 +293,7 @@
       FNET(:,:)   = 0.0
       TMI(:,:)    = 0.0
       DIRECT(:,:) = 0.0
+
 
 
       DO  L = NSOLP+1,NTOTAL
@@ -361,6 +359,6 @@
 !
       ibeyond_spectrum = 0
 
-      stop
+
       RETURN
       END

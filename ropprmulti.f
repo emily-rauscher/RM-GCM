@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG)
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -13,7 +13,6 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
-      real, dimension(NLAYER) :: DPG
 
       REAL TAUFACT
 

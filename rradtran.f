@@ -1,5 +1,5 @@
       SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                   solar_calculation_indexer, DPG)
+     &                   solar_calculation_indexer)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
@@ -22,7 +22,7 @@
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
       real u0, incident_starlight_fraction
       integer jflip, solar_calculation_indexer
-      real, dimension(NLAYER) :: DPG
+
       real, dimension(NTOTAL,NDBL) :: SLOPE
 
 !     Reset flag for computation of solar fluxes
@@ -103,11 +103,11 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer,DPG)
+          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
-              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer,DPG)
+              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
           ELSE
               write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
               stop
@@ -120,6 +120,7 @@
       SLOPE(:,:) = 0.0
       ! CALCULATE THE PLANK FUNCTION
       CALL OPPR1(TAUL, SLOPE)
+
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
@@ -173,6 +174,8 @@
           ENDDO
       END DO
 
+
+
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
@@ -215,7 +218,7 @@
 
           TERM1      =  FDEGDAY/(DPG(J+1)*G)
 
-          IF(incident_starlight_fraction .ge. 0) THEN
+          IF(incident_starlight_fraction.ge. 0) THEN
               DO 480 L     =  1,NSOLP
                   HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J)) * TERM1
  480          CONTINUE
@@ -234,7 +237,6 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
-
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and

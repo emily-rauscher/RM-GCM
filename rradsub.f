@@ -21,7 +21,6 @@
       real htlw(NZ), htsw(NZ)
       real PSOL,PSOL_aerad
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
-      real, dimension(NLAYER) :: DPG
 
       integer itime, ntime, solar_calculation_indexer
 
@@ -141,10 +140,10 @@ C     globally averaged solar constant, vertical rays
 
       do itime = 1, ntime
           call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction, TAURAY,TAUL,TAUGAS,TAUAER,
-     &                         solar_calculation_indexer, DPG)
+     &                         solar_calculation_indexer)
           pc_aerad = 0.
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                 solar_calculation_indexer, DPG)
+     &                 solar_calculation_indexer)
           cheats = 0.
           cheati = 0.
           cheat = 0.
