@@ -259,8 +259,8 @@ c     The following for parallel testing --MTR
       COMMON/irad6/   CO2(NL+1), RDH2O(NL+1),   O2(NL+1),
      &                 O3(NL+1), CAER(1,NL+1,1),
      &                 PBAR(NL+1),PLAYER(NL+1),
-     &                 DPG(NL+1), TT(NL+1), Y3(5,3,2*NL+2),
-     &                 PRESSMID(NL+1), DPGsub(2*NL+2) , PBARsub(2*NL+2),
+     &                 TT(NL+1), Y3(5,3,2*NL+2),
+     &                 PRESSMID(NL+1), PBARsub(2*NL+2),
      &                 TTsub(2*NL+2),
      &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
 
@@ -300,7 +300,6 @@ c     The following for parallel testing --MTR
       COMMON /irad10/
      &   WEIT(   5),
      &   DIREC(  5,2*NL+2), DIRECTU(5,2*NL+2),
-     &   SLOPE(  5,2*NL+2),
      &   DINTENT(5,3,2*NL+2),
      &   UINTENT(5,3,2*NL+2),
      &   TMID(5,2*NL+2),TMIU(5,2*NL+2)
@@ -413,8 +412,8 @@ c     ntstep is the number of timesteps to skip.
      &    CO2, RDH2O, O2,
      &    O3, CAER,
      &    PBAR,PLAYER,
-     &    DPG, TT, Y3,
-     &    PRESSMID, DPGsub, PBARsub,
+     &    TT, Y3,
+     &    PRESSMID, PBARsub,
      &    TTsub,
      &    TGRND, U0,  ISL, IR, IRS, FDEGDAY,
      &    WOT, GOT,
@@ -444,7 +443,6 @@ c     ntstep is the number of timesteps to skip.
      &    DS,     XK,
      &    WEIT,
      &    DIREC, DIRECTU,
-     &    SLOPE,
      &    DINTENT,
      &    UINTENT,
      &    TMID,TMIU,
@@ -606,10 +604,8 @@ c     ntstep is the number of timesteps to skip.
                   AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
                 ENDDO
               ENDIF
-
-              solar_calculation_indexer = -99
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER, solar_calculation_indexer)
+     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 
               pr=prb2t
 
@@ -718,8 +714,8 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      !write(*,*) 'Stopping in radiation'
-      !stop
+      write(*,*) 'Stopping in radiation'
+      stop
 
       RETURN
       END

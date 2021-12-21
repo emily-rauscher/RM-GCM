@@ -1,4 +1,4 @@
-      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+      SUBROUTINE DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer,DPG)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -13,7 +13,8 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
-      real solar_calculation_indexer
+      integer solar_calculation_indexer
+      real, dimension(NLAYER) :: DPG
 
       REAL TCONKCL(NL+1)
       REAL KCLQEVIS(NL),KCLG0VIS(NL),KCLPI0VIS(NL)
@@ -1106,14 +1107,11 @@
 186   CONTINUE
 200   CONTINUE
 
-
 ! SW AT STANDARD VERTICAL RESOLUTION
       DO 220    J     =  1,NLAYER
        TAUAER(1,J)    = SUM(TAUAERSW(J,1:13))
-       WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
-     &                      * PI0vis(J,1:13))
-       GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)
-     &                      * g0vis(J,1:13))
+       WOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)* PI0vis(J,1:13))
+       GOL(1,J)       = SUM(TAUAERSW(J,1:13)/(TAUAER(1,J)+1e-8)* g0vis(J,1:13))
 220   CONTINUE
 
 ! LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
@@ -1145,8 +1143,6 @@
           WOL(L,:)    = WOL(2,:)
           GOL(L,:)    = GOL(2,:)
       END DO
-
-
 
 
       iradgas = 1

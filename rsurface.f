@@ -43,16 +43,6 @@
       trans_c=10E-3
       mass_molar=28.97
 
-!     size of timestep in SECONDS
-!      tday_sec=PI2/WW
-
-!     Mass and Density of bottom layer. Using T(NL) because this is the mid level temperature
-!     DPG is calculated as PRESS(J)-PRESS(J-1)/G in rsetup_simple.
-!      rcm=RADEA*100.    !to cgs
-!      csurf=csurf*1000. !to cgs
-
-!      SEC=ALAT(JH)/57.29578 
-!      mass_boa=DPG(NL)*rcm*rcm*(2.*PI/MG)*(PI/2./JG)*cos(SEC)
 
 !     P=(rho/m)k*T  ==> using pressure and temperature of mid level with mass of entire level
       dens_boa=(pboa/tboa)/(GASCON*10E4)
@@ -62,40 +52,11 @@
       FLWE=SURF_EMIS*stbltz*(TGRND0*TGRND0*TGRND0*TGRND0)
       SHEAT=dens_boa*(CPD*10E4)*trans_c*BOAWIND*(tboa-TGRND0)
 
-!      write(*,*) '-------------> RSURFACE'
-!      write(*,*) FLWE,SHEAT,FLWD,FWSD
-!      write(*,*) 'WIND=', BOAWIND
-!      write(*,*) 'MASS=', mass_boa
-!      write(*,*) 'Density=', dens_boa
-!      write(*,*) 'Pressure=', pboa
-!      write(*,*) 'FLWE=', FLWE
-!      write(*,*) 'SHEAT=', SHEAT
-!      write(*,*) 'FLWD=', FLWD
-!      write(*,*) 'FSWD=', FSWD
-!      write(*,*) 'Fbase=', FBASEFLUX*1E3
-!      write(*,*) '-- POSITIVE FLUXES=', FLWD+FSWD+(FBASEFLUX)*(1E3)
-!      write(*,*) '-- NEGATIVE FLUXES=', FLWE+SHEAT
-!      write(*,*) tboa, TGRND0, CPD, gascon
 
-!      IF (ISNAN(FLWE)) THEN
-!         FLWE=0.
-!      ENDIF
-!      IF (ISNAN(SHEAT)) THEN
-!         SHEAT=0.
-!      ENDIF
       IF (ISNAN(FLWD)) THEN
          FLWD=0.
       ENDIF
-!      IF (FSWD.eq.0) THEN 
-!         FSWD=0.
-!         FLWD=0.
-!         FLWE=0.
-!         SHEAT=0.
-!      ENDIF
 
-!      write(*,*) FLWE,SHEAT,FLWD,FWSD
-      
-!     FBASEFLUX*10E3
       Flux_sum=(FBASEFLUX*1E3)+FSWD+FLWD-FLWE-SHEAT
       SURFES=Flux_sum   
 !     above saves Flux Sum as W/m2 in Surface to be writen to array later

@@ -105,8 +105,8 @@
       COMMON/irad6/   CO2(NLAYER), RDH2O(NLAYER),   O2(NLAYER),
      &                 O3(NLAYER), CAER(NRAD,NLAYER,NGROUP),
      &                 PBAR(NLAYER),PLAYER(NLAYER),
-     &                 DPG(NLAYER), TT(NLAYER), Y3(NTOTAL,NGAUSS,NDBL),
-     &                 PRESSMID(NLAYER), DPGsub(NDBL) , PBARsub(NDBL),
+     &                 TT(NLAYER), Y3(NTOTAL,NGAUSS,NDBL),
+     &                 PRESSMID(NLAYER), PBARsub(NDBL),
      &                 TTsub(NDBL),
      &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
 !
@@ -154,7 +154,6 @@
       COMMON /irad10/
      &   WEIT(   NTOTAL),
      &   DIREC(  NTOTAL,NDBL), DIRECTU(NTOTAL,NDBL),
-     &   SLOPE(  NTOTAL,NDBL),
      &   DINTENT(NTOTAL,NGAUSS,NDBL),
      &   UINTENT(NTOTAL,NGAUSS,NDBL),
      &   TMID(NTOTAL,NDBL),TMIU(NTOTAL,NDBL)

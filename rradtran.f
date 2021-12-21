@@ -1,4 +1,5 @@
-      SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+      SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+     &                   solar_calculation_indexer, DPG)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
@@ -13,23 +14,23 @@
 !     **************************************************************
 !
       include 'rcommons.h'
-
       integer, parameter :: nwave_alb = NTOTAL
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
       real maxopd(nwave_alb)
-
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
-
       real u0, incident_starlight_fraction
-
       integer jflip, solar_calculation_indexer
-
-      MALSKY_INDEX_NUMBER = MALSKY_INDEX_NUMBER + 1
+      real, dimension(NLAYER) :: DPG
+      real, dimension(NTOTAL,NDBL) :: SLOPE
 
 !     Reset flag for computation of solar fluxes
-      ISL        = isl_aerad
+      if (incident_starlight_fraction .gt. 1e-5) then
+          ISL = 1
+      else
+          ISL = 0
+      endif
 
 !     Get atmospheric profiles from interface common block
       do k = 1,nvert
@@ -97,17 +98,16 @@
          if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
              rsfx(L) = albedoa(nwave_alb)
          endif
-
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer,DPG)
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
-              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer,DPG)
           ELSE
               write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
               stop
@@ -117,8 +117,9 @@
           STOP
       ENDIF
 
+      SLOPE(:,:) = 0.0
       ! CALCULATE THE PLANK FUNCTION
-      CALL OPPR1(TAUL)
+      CALL OPPR1(TAUL, SLOPE)
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
@@ -132,14 +133,14 @@
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
       IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
           CALL TWOSTR(TAUL, solar_calculation_indexer)
-          CALL ADD(TAUL, solar_calculation_indexer)
+          CALL ADD(TAUL, solar_calculation_indexer, SLOPE)
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
 
       IF(IR .NE. 0) THEN
-          CALL NEWFLUX1(TAUL)
+          CALL NEWFLUX1(TAUL,SLOPE)
       ENDIF
 
 !     CLOUD FRACTION
@@ -171,7 +172,6 @@
             K     =  K+2
           ENDDO
       END DO
-
 
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
@@ -215,7 +215,7 @@
 
           TERM1      =  FDEGDAY/(DPG(J+1)*G)
 
-          IF(incident_starlight_fraction.ge. 0) THEN
+          IF(incident_starlight_fraction .ge. 0) THEN
               DO 480 L     =  1,NSOLP
                   HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J)) * TERM1
  480          CONTINUE
@@ -234,6 +234,7 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
+
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and

@@ -1,5 +1,5 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V,Beta_IR,t_pass,incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUER,
-     &                           solar_calculation_indexer)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+     &                         solar_calculation_indexer, DPG)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -19,7 +19,7 @@
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
-      integer :: testing, L, J, solar_calculation_indexer, malsky_test_var
+      integer :: testing, L, J, solar_calculation_indexer
       REAL G,WVO,AM, incident_starlight_fraction
       real, dimension(NIR,NLAYER) :: tau_IRe
       real, dimension(NSOL,NLAYER) :: tau_Ve
@@ -33,6 +33,8 @@
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+      real, dimension(NLAYER) :: DPG
+      real, dimension(NDBL)   :: DPGsub
 
       real t_pass(NZ)
       integer i1, i2, indorder(5)
@@ -118,6 +120,7 @@
       IF(LWSCAT) THEN
         IRS  = 1
       ENDIF
+
 
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA = NTOTAL
@@ -239,7 +242,7 @@
         END DO
 
         DO L = NSOLP+1, NTOTAL
-            tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
+          tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
      &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
         END DO
 
@@ -273,10 +276,12 @@
               Beta_IR(1) = 1.0
           end if
 
-          DO L = solar_calculation_indexer,NSOLP
+          DO L = 1,NSOLP
               DO J     =   1,NLAYER
                   PM          =   DPG(J)
                   TAUGAS(L,J) = MALSKY_ABSCOEFF(L)*PM
+
+                  write(*,*) L, PM, TAUGAS(1,1)
               END DO
           END DO
 
@@ -288,21 +293,9 @@
           END DO
       END IF
 
-      DO J = 1, NLAYER
-          DO L = solar_calculation_indexer,NSOLP
-              FNET(L,J)   = 0.0
-              TMI(L,J)    = 0.0
-              DIRECT(L,J) = 0.0
-          END DO
-      END DO
-
-      DO J = 1, NDBL
-          DO L = NSOLP+1, NTOTAL
-              FNET(L,J)   = 0.0
-              TMI(L,J)    = 0.0
-              DIRECT(L,J) = 0.0
-          END DO
-      END DO
+      FNET(:,:)   = 0.0
+      TMI(:,:)    = 0.0
+      DIRECT(:,:) = 0.0
 
 
       DO  L = NSOLP+1,NTOTAL
@@ -323,8 +316,6 @@
 !Lo=2.6867630*10^25 m^-3, gravity= 24.40 m s^-2
 !molec. weight for mole fraction .86 H2 and .136 He (von Zahn)
 ! 2.27 *10^-3 kg/mole
-
-
 
       IF (RAYSCAT) THEN
         DO  L = 1,NTOTAL
@@ -370,5 +361,6 @@
 !
       ibeyond_spectrum = 0
 
+      stop
       RETURN
       END

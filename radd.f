@@ -1,4 +1,4 @@
-      SUBROUTINE ADD(TAUL,solar_calculation_indexer)
+      SUBROUTINE ADD(TAUL,solar_calculation_indexer, SLOPE)
 
 !
 !     ***************************************************************
@@ -18,6 +18,7 @@
 
       real, dimension(5,2*NL+2) :: TAUL
       integer solar_calculation_indexer
+      real, dimension(NTOTAL,NDBL) :: SLOPE
 
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *
