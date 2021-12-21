@@ -167,6 +167,7 @@
 !   fir_dn_aerad   infrared downwelling flux [W m^-2]
 !   fsl_net_aerad   solar net flux [W m^-2]
 !   fir_net_aerad   infrared net flux [W m^-2]!
+
       common / aerad2 /     
      &   wave_aerad(NWAVE+1),     
      &   heati_aerad(NZ_RAD), heats_aerad(NZ_RAD),     

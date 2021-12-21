@@ -1,4 +1,4 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, p_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                         solar_calculation_indexer, DPG)
 !
 !     *********************************************************
@@ -38,7 +38,7 @@
       real DPGsub(NDBL)
       REAL PM
 
-      real t_pass(NZ)
+      real t_pass(NZ), p_pass(NZ)
       integer i1, i2, indorder(5)
       logical all_ok
       integer :: malsky_switch
@@ -90,8 +90,6 @@
           MALSKY_ABSCOEFF(L)=ABSLW
       END DO
 
-
-
       SQ3     =   SQRT(3.)
       JDBLE   =   2*NLAYER
       JDBLEDBLE = 2*JDBLE
@@ -126,7 +124,6 @@
         IRS  = 1
       ENDIF
 
-
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA = NTOTAL
       LLS = 1
@@ -140,22 +137,21 @@
       ENDIF
 
       EMISIR       = SURFEMIS
-      PTOP         = p_aerad(1)*10.
-      PBOT         = p_aerad(NL+1)*10.
+      PTOP         = p_pass(1)*10.
+      PBOT         = p_pass(NL+1)*10.
 
       ALBEDO_SFC = ALBSW
 
-
       testing = 0
       if (testing .eq. 1) then
-          p_aerad(1) = 10.0 ** (LOG10(p_aerad(2)) - (LOG10(p_aerad(3)) - LOG10(p_aerad(2))))
+          p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
           PRESSMID = PLAYER*10.
-          PRESS    = P_aerad*10.
+          PRESS    = p_pass*10.
 
           DO J  = 2,NLAYER
-             PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
-             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+             PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
+             DPG(J)   = (PRESS(J)-PRESS(J-1)) / G
           END DO
 
           PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
@@ -188,7 +184,7 @@
     !     [ dyne / cm^2 ]
 
           do k = 1,NZ
-            press(k)=p_aerad(k)*10.
+            press(k)=p_pass(k)*10.
           enddo
 
     !     The layer thickness in pressure should be the difference between
@@ -198,19 +194,19 @@
     !     The mass of these layers is this pressure thickness divide by G.
     !
     !     (NOTE - THE TOP LAYER IS FROM PTOP TO 0, SO AVERAGE = PTOP/2)
-    !     P_aerad=PRESSURE AT EDGES OF LAYERS (PASCALS)
+    !     p_pass=PRESSURE AT EDGES OF LAYERS (PASCALS)
     !     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
     !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR
     !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
     !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
           PRESSMID=PLAYER*10.
-          PRESS=P_aerad*10.
-          PBAR(1)  = P_AERAD(1)*1e-5
+          PRESS=p_pass*10.
+          PBAR(1)  = p_pass(1)*1e-5
           DPG(1)= PRESS(1)/G
 
           DO J  = 2,NLAYER
-             PBAR(J)  = (p_aerad(J)-p_aerad(J-1))*1e-5
+             PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
              DPG(J) = (PRESS(J)-PRESS(J-1)) / G
           END DO
 
@@ -231,9 +227,7 @@
 
           PBARsub(1) = PBAR(1)
           DPGsub(1)  = DPG(1)
-
       end if
-
 
       TAURAY(:,:) = 0.0
       TAUAER(:,:) = 0.0

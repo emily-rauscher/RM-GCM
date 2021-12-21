@@ -15,7 +15,6 @@
 ! T is an array of Temperature, NL+1, in Kelvin, starting at the top
 ! mid-layer down to the bottom mid layer with an extra index for the
 ! base boundary temperature.
-!  PR and T are passed to P_full and T_full
 ! NZ is NL+1
 
 !Prflux is an array of NL+1, in pascals of pressurs at the edge of
@@ -31,7 +30,7 @@
        real, parameter :: L      = 2.5e10
        
       REAL PR(NZ),T(NZ),Cpd,PRFLUX(NZ)
-      real, dimension(NZ) :: p_full, t_full, radheat
+      real, dimension(NZ) :: radheat
       real, dimension(NZ) :: z, htsw,htlw
       real, dimension(45) :: wave_pass
       real, dimension(2,2,2) :: rfluxes
@@ -41,20 +40,18 @@
 
       real alat1, alon, incident_starlight_fraction
 
-      t_full=t
       tgrnd=t(NZ)
-      p_full=prflux  ! PRFLUX is the layer edge pressures
       rfluxes=fluxes
       iffirst = 1
       R_AIR = GASCON*10000.
       Cpd = GASCON/AKAP !1.004e+7
       PREF = P0
-      GRAV = GA *100.
+      GRAV = GA * 100.
       eps= Rd/Rv
       RdCp = Rd/Cpd
       player=pr
 
-      call radsub(iffirst, pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+      call radsub(iffirst,pr,prflux,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer)
 
       iffirst = 0
@@ -70,7 +67,7 @@
 
 C     ER Modif: output pressures in bar instead of mbar
          DO ILAY=NLAYER,1,-1                                                  
-          WRITE(63,2013),P_FULL(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),                            
+          WRITE(63,2013),prflux(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),
      $    FIR_DN_AERAD(ILAY),FIR_NET_AERAD(ILAY),
      $    FSL_UP_AERAD(ILAY),FSL_DN_AERAD(ILAY),FSL_NET_AERAD(ILAY)                         
      $
@@ -111,7 +108,7 @@ C     ER Modif: output pressures in bar instead of mbar
  2031    FORMAT(3X,A9,6X,A17,9X,A18,12X,A6,11x,A5,7x,A20,3x,A26)            
          
           DO IL=1,NLAYER                                                  
-          WRITE(62,2033),P_FULL(IL)*1e-5,uTAUL(1,IL),
+          WRITE(62,2033),prflux(IL)*1e-5,uTAUL(1,IL),
      $    uTAUL(2,IL),uOPD(1,IL),uOPD(2,IL),uW0(1,IL),uW0(2,IL),uG0(1,IL),
      $    uG0(2,IL),DIRECT(1,IL),TMI(1,IL),TMI(2,IL)                   
  2033       FORMAT(F12.6,2X,E12.5,1X,E12.5,2X,E12.5,1x,E12.5,3X,

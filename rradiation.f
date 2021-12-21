@@ -371,8 +371,8 @@ c     ntstep is the number of timesteps to skip.
           ilast=0
 
           ! Do all the parallel stuff here
-          !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
-     &    private(im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer,
+          !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
+     &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer,
      &    imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
@@ -480,7 +480,7 @@ c     ntstep is the number of timesteps to skip.
      &    is_grp_ice_aerad, do_mie_aerad,
      &    ienconc_aerad,
      &    sfc_alb_aerad, sfc_wind_aerad, dr_aerad,
-     &    iaera),
+     &    iaera, PRFLUX),
      &    firstprivate(ilast),
      &    lastprivate(ilast),
      &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
@@ -505,7 +505,7 @@ c     ntstep is the number of timesteps to skip.
      &    NEWTB, NEWTE, NF, NFP, NLAT, NLCR, NLPLOTMAP_IN, NLWMODEL,
      &    NSKIP_IN, NSWMODEL, NTRACO, NTSTEP_IN, OBLIQ, OOM_IN,
      &    OPACIR_POWERLAW, OPACIR_REFPRES, P0, PFAC, PLG, PNET, PNU, PNU2,
-     &    PNU21, PORB, PRFLUX, PRMIN, QC, QSTAR, QTDC, QTMC, QTVD, RADEA, RCON, RD,
+     &    PNU21, PORB, PRMIN, QC, QSTAR, QTDC, QTMC, QTVD, RADEA, RCON, RD,
      &    RDLP, RDSIG, RFCOEFF_IN, RFLUX, RGG, RLP, RMG, RNTAPE, RNTAPO,
      &    RRCR, RRFLUX, RRLR, RSQ, RSQR2, RV, SAICE, SALB, SASNOW, SBAL,
      &    SCATSW2, SD1, SD2, SDSN, SDSND, SDW, SECSQ, SFG, SFLD, SHBL,
@@ -604,6 +604,8 @@ c     ntstep is the number of timesteps to skip.
                   AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
                 ENDDO
               ENDIF
+
+
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 

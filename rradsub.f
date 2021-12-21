@@ -140,8 +140,10 @@ C     globally averaged solar constant, vertical rays
       if( if_diurnal.eq.1 ) ntime = 24
 
       do itime = 1, ntime
-          call setuprad_simple(Beta_V, Beta_IR, t_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+          call setuprad_simple(Beta_V, Beta_IR, t_pass, p_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                         solar_calculation_indexer, DPG)
+
+
           pc_aerad = 0.
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                 solar_calculation_indexer, DPG)
