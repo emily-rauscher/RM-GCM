@@ -1,8 +1,6 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
           include 'rcommons.h'
-
           call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP)
-
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 
@@ -25,7 +23,7 @@
           real, dimension(50,50) :: KCl_vis_800_gg
           real, dimension(50,50) :: KCl_vis_800_qext
           real, dimension(50,50) :: KCl_vis_800_qscat
-          
+
           real, dimension(50,50) :: ZnS_rosselandMean_gg
           real, dimension(50,50) :: ZnS_rosselandMean_qext
           real, dimension(50,50) :: ZnS_rosselandMean_qscat
@@ -38,7 +36,7 @@
           real, dimension(50,50) :: ZnS_vis_800_gg
           real, dimension(50,50) :: ZnS_vis_800_qext
           real, dimension(50,50) :: ZnS_vis_800_qscat
-          
+
           real, dimension(50,50) :: Na2S_rosselandMean_gg
           real, dimension(50,50) :: Na2S_rosselandMean_qext
           real, dimension(50,50) :: Na2S_rosselandMean_qscat
@@ -51,7 +49,7 @@
           real, dimension(50,50) :: Na2S_vis_800_gg
           real, dimension(50,50) :: Na2S_vis_800_qext
           real, dimension(50,50) :: Na2S_vis_800_qscat
-          
+
           real, dimension(50,50) :: MnS_rosselandMean_gg
           real, dimension(50,50) :: MnS_rosselandMean_qext
           real, dimension(50,50) :: MnS_rosselandMean_qscat
@@ -64,7 +62,7 @@
           real, dimension(50,50) :: MnS_vis_800_gg
           real, dimension(50,50) :: MnS_vis_800_qext
           real, dimension(50,50) :: MnS_vis_800_qscat
-          
+
           real, dimension(50,50) :: Cr_rosselandMean_gg
           real, dimension(50,50) :: Cr_rosselandMean_qext
           real, dimension(50,50) :: Cr_rosselandMean_qscat
@@ -77,7 +75,7 @@
           real, dimension(50,50) :: Cr_vis_800_gg
           real, dimension(50,50) :: Cr_vis_800_qext
           real, dimension(50,50) :: Cr_vis_800_qscat
-          
+
           real, dimension(50,50) :: SiO2_rosselandMean_gg
           real, dimension(50,50) :: SiO2_rosselandMean_qext
           real, dimension(50,50) :: SiO2_rosselandMean_qscat
@@ -90,7 +88,7 @@
           real, dimension(50,50) :: SiO2_vis_800_gg
           real, dimension(50,50) :: SiO2_vis_800_qext
           real, dimension(50,50) :: SiO2_vis_800_qscat
-          
+
           real, dimension(50,50) :: Mg2SiO4_rosselandMean_gg
           real, dimension(50,50) :: Mg2SiO4_rosselandMean_qext
           real, dimension(50,50) :: Mg2SiO4_rosselandMean_qscat
@@ -103,7 +101,7 @@
           real, dimension(50,50) :: Mg2SiO4_vis_800_gg
           real, dimension(50,50) :: Mg2SiO4_vis_800_qext
           real, dimension(50,50) :: Mg2SiO4_vis_800_qscat
-          
+
           real, dimension(50,50) :: VO_rosselandMean_gg
           real, dimension(50,50) :: VO_rosselandMean_qext
           real, dimension(50,50) :: VO_rosselandMean_qscat
@@ -116,7 +114,7 @@
           real, dimension(50,50) :: VO_vis_800_gg
           real, dimension(50,50) :: VO_vis_800_qext
           real, dimension(50,50) :: VO_vis_800_qscat
-          
+
           real, dimension(50,50) :: Ni_rosselandMean_gg
           real, dimension(50,50) :: Ni_rosselandMean_qext
           real, dimension(50,50) :: Ni_rosselandMean_qscat
@@ -129,7 +127,7 @@
           real, dimension(50,50) :: Ni_vis_800_gg
           real, dimension(50,50) :: Ni_vis_800_qext
           real, dimension(50,50) :: Ni_vis_800_qscat
-          
+
           real, dimension(50,50) :: Fe_rosselandMean_gg
           real, dimension(50,50) :: Fe_rosselandMean_qext
           real, dimension(50,50) :: Fe_rosselandMean_qscat
@@ -142,7 +140,7 @@
           real, dimension(50,50) :: Fe_vis_800_gg
           real, dimension(50,50) :: Fe_vis_800_qext
           real, dimension(50,50) :: Fe_vis_800_qscat
-          
+
           real, dimension(50,50) :: CaSiO4_rosselandMean_gg
           real, dimension(50,50) :: CaSiO4_rosselandMean_qext
           real, dimension(50,50) :: CaSiO4_rosselandMean_qscat
@@ -155,7 +153,7 @@
           real, dimension(50,50) :: CaSiO4_vis_800_gg
           real, dimension(50,50) :: CaSiO4_vis_800_qext
           real, dimension(50,50) :: CaSiO4_vis_800_qscat
-          
+
           real, dimension(50,50) :: CaTiO3_rosselandMean_gg
           real, dimension(50,50) :: CaTiO3_rosselandMean_qext
           real, dimension(50,50) :: CaTiO3_rosselandMean_qscat
@@ -168,7 +166,7 @@
           real, dimension(50,50) :: CaTiO3_vis_800_gg
           real, dimension(50,50) :: CaTiO3_vis_800_qext
           real, dimension(50,50) :: CaTiO3_vis_800_qscat
-          
+
           real, dimension(50,50) :: Al2O3_rosselandMean_gg
           real, dimension(50,50) :: Al2O3_rosselandMean_qext
           real, dimension(50,50) :: Al2O3_rosselandMean_qscat
@@ -1247,6 +1245,5 @@
       QE_OPPR(3,1:50,1:50,13)=Al2O3_vis_800_qext
       QE_OPPR(4,1:50,1:50,13)=Al2O3_rosselandMean_qext
       QE_OPPR(5,1:50,1:50,13)=Al2O3_rosselandMean_qext
-
 
       END SUBROUTINE get_cloud_scattering_properties

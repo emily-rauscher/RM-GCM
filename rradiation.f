@@ -171,8 +171,7 @@ C
 
       REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
 
-      !REPLACEME
-      !real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
+      real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       real PRB2T(NL+1),adum
 
@@ -236,7 +235,7 @@ c     The following for parallel testing --MTR
      &   WCLD(5,2*NL+2),
      &   TREAL(2,5), TTMAG(2,5),
      &   contnm(2), nprobi(5,2),
-     &   TAUGAS(5,2*NL+2), TAUCONST(5)
+     &   TAUCONST(5)
 
       COMMON/irad5/
      &        iblackbody_above,       t_above,
@@ -252,8 +251,7 @@ c     The following for parallel testing --MTR
      &        QSCAT(1,1,5),
      &        QBRQS(1,1,5),
      &        RDQEXT(1,1,5),
-     &        TAUCLD(5,2*NL+2),WOL(5,2*NL+2),
-     &        TAURAY(5,2*NL+2), TAUL(5,2*NL+2), TAUAER(5,2*NL+2)
+     &        TAUCLD(5,2*NL+2),WOL(5,2*NL+2)
 
       COMMON/irad6/   CO2(NL+1), RDH2O(NL+1),   O2(NL+1),
      &                 O3(NL+1), CAER(1,NL+1,1),
@@ -272,7 +270,7 @@ c     The following for parallel testing --MTR
      &   TAUA(5,2*NL+2),    G01(5,2*NL+2),
      &   uG0(5,2*NL+2),    uTAUL(5,2*NL+2),
      &   W0(5,2*NL+2),     uW0(5,2*NL+2),
-     &   uopd(5,2*NL+2)!REPLACEME
+     &   uopd(5,2*NL+2)
 
 
       COMMON /irad8/
@@ -608,8 +606,7 @@ c     ntstep is the number of timesteps to skip.
 
 
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction)
-      !REPLACEMME TAURAY,TAUL,TAUGAS,TAUAER)
+     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER)
 
               pr=prb2t
 

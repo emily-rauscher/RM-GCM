@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI!(TAURAY,TAUL,TAUGAS,TAUAER) REPLACEME
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -24,7 +24,7 @@
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
 
-      !real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER REPLACEME
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
       ! These are hardcoded to 50 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
@@ -48,7 +48,6 @@
       INTEGER K,J,BASELEV,TOPLEV,L
       INTEGER size_loc, temp_loc, pressure_loc
       real particle_size
-
 
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &                           DENSITY, FMOLW, MOLEF,
@@ -123,10 +122,8 @@
       DO L = LLS,NSOLP
           DO J = 1,NLAYER
               TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
-              WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
-     &                       PI0_TEMP(L,J,1:NCLOUDS))
-              GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,J,1:NCLOUDS))+1e-8) *
-     &                       G0_TEMP(L, J,1:NCLOUDS))
+              WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
+              GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L, J,1:NCLOUDS))
           END DO
       END DO
 
@@ -136,10 +133,8 @@
           JJ = J
           DO L = NSOLP+1,NTOTAL
               TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS))
-              WOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8) *
-     &                        PI0_TEMP(L,K,1:NCLOUDS))
-              GOL(L,JJ)    = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(SUM(TAUAER_OPPR(L,K,1:NCLOUDS))+1e-8) *
-     &                        G0_TEMP(L,K,1:NCLOUDS))
+              WOL(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
+              GOL(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
           END DO
           JJ = J+1
           DO L = NSOLP+1,NTOTAL

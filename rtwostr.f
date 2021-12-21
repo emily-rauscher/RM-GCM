@@ -1,5 +1,4 @@
-!      SUBROUTINE TWOSTR(TAUL)
-      SUBROUTINE TWOSTR !REPLACEME
+      SUBROUTINE TWOSTR(TAUL)
 !
 !    ******************************************************************
 !    *  Purpose             :  Defines matrix properties and sets up  *
@@ -12,7 +11,7 @@
 !
       include 'rcommons.h'
 
-      !real, dimension(5,2*NL+2) :: TAUL ! REPLACEME
+      real, dimension(5,2*NL+2) :: TAUL
 
        DO 10 L    =  LLS,LLA
           if( L .LE. NSOLP )then

@@ -1,5 +1,4 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction)
-!     REPLACEME,TAURAY,TAUL,TAUGAS)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, incident_starlight_fraction, TAURAY,TAUL,TAUGAS)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -32,7 +31,7 @@
       dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
-!     REPLACEME real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
 
 
       real t_pass(NZ)
@@ -223,7 +222,10 @@
              DPGsub(1)  = DPG(1)
       end if
 
-      TAUAER(:,:)  = 0.
+      TAURAY(:,:) = 0.0
+      TAUAER(:,:) = 0.0
+      TAUGAS(:,:) = 0.0
+
       TAUCLD(:,:)  = 0.
 
       WCLD(:,:)    = 0.
@@ -305,6 +307,8 @@
               DIRECT(L,J) = 0.0
           END DO
       END DO
+
+
 
 
 

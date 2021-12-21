@@ -82,7 +82,6 @@
      &   EMIS(NTOTAL), RSFX(NTOTAL),LTEMP(NTOTAL),NPROB(NTOTAL),
      &   SOL(NTOTAL),RAYPERBAR(NTOTAL),WEIGHT(NTOTAL),
      &   GCLD(  NTOTAL,NDBL),   GOL(NTOTAL,NDBL),
-     &   TAURAY( NTOTAL,NDBL),TAUAER(NTOTAL,NDBL),
      &   WCLD(NTOTAL,NDBL),
      &   TAUCLD(NTOTAL,NDBL),WOL(NTOTAL,NDBL),
      &   TREAL(2,NWAVE), TTMAG(2,NWAVE),
@@ -98,7 +97,6 @@
      &        PSCO2(NTOTAL),          PSH2O(NTOTAL),
      &        PSO2(NTOTAL),           PSO3(NTOTAL),
      &        SOLFX(NSOL),            WAVE(NWAVE+1),
-     &        TAUGAS(NTOTAL,NDBL),
      &        XSECTA(NRAD,NGROUP),    RUP(NRAD,NGROUP),
      &       QSCAT(NRAD,NGROUP,NWAVE),
      &       QBRQS(NRAD,NGROUP,NWAVE),
@@ -118,7 +116,7 @@
      &   WOT, GOT,
      &   PTEMPG(NTOTAL),      PTEMPT(NTOTAL),
      &   G0(NTOTAL,NDBL),     OPD( NTOTAL,NDBL),
-     &   PTEMP(NTOTAL,NDBL),  TAUL(NTOTAL,NDBL),
+     &   PTEMP(NTOTAL,NDBL),
      &   TAUH2O(NTOTAL,NDBL), TAUS(NWAVE,NDBL),
      &   TAUA(NWAVE,NDBL),    G01(NWAVE,NDBL),
      &   uG0(NTOTAL,NDBL),    uTAUL(NTOTAL,NDBL),
@@ -190,4 +188,5 @@
 !
 ! ensure all rad local variables are stored statically
 !
+
       save

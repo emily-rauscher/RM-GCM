@@ -1,5 +1,4 @@
-!      SUBROUTINE OPPR1(TAUL)
-      SUBROUTINE OPPR1 !REPLACEME
+      SUBROUTINE OPPR1(TAUL)
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *
@@ -14,7 +13,7 @@
       real  ITP, ITG, IT1, SBK, SBKoverPI,g11
       DIMENSION  PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
       DIMENSION  T(NLAYER)
-      !real, dimension(5,2*NL+2) :: TAUL REPLACEME
+      real, dimension(5,2*NL+2) :: TAUL
 
       integer kindex
 !     **************************************

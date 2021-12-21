@@ -1,5 +1,4 @@
-      SUBROUTINE RADTRAN(Beta_V, Beta_IR, incident_starlight_fraction)
-!     REPLACE ME,TAURAY,TAUL,TAUGAS,TAUAER)
+      SUBROUTINE RADTRAN(Beta_V, Beta_IR, incident_starlight_fraction, TAURAY,TAUL,TAUGAS,TAUAER)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
@@ -21,7 +20,7 @@
 
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
-!     REPLACEME      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
+      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
       real u0, incident_starlight_fraction
 
@@ -106,7 +105,7 @@
       LLA                   =  NTOTAL
       LLS                   =  1
 
-      IF(ISL .EQ. 0) THEN
+      IF(incident_starlight_fraction .LE. 1e-5) THEN
           LLS =  NSOLP+1
       ENDIF
 
@@ -117,12 +116,10 @@
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
           !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
-          !CALL OPPRMULTI ! REPLACEME
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
-          !    CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
-              CALL DOUBLEGRAY_OPPRMULTI !REPLACEME
+              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER)
           ELSE
               write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
               stop
@@ -136,32 +133,27 @@
 !     THE PLANK FUNCTION
 
       IF(IR .NE. 0) THEN
-          !CALL OPPR1(TAUL)
-          CALL OPPR1 ! REPLACEME
+          CALL OPPR1(TAUL)
       ENDIF
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
           LLA  =  NSOLP
       ENDIF
+
 !
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
       IF(ISL .NE. 0 .OR. IRS .NE. 0 ) THEN
-          !CALL TWOSTR(TAUL)
-          !CALL ADD(TAUL)
-
-          !REPLACEME
-          CALL TWOSTR
-          CALL ADD
+          CALL TWOSTR(TAUL)
+          CALL ADD(TAUL)
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
 !     A MORE ACCURATE SOLUTION
 
       IF(IR .NE. 0) THEN
-          !CALL NEWFLUX1(TAUL)
-          CALL NEWFLUX1 !REPLACEME
+          CALL NEWFLUX1(TAUL)
       ENDIF
 
 !     CLOUD FRACTION
