@@ -1,5 +1,4 @@
-      SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                   solar_calculation_indexer)
+      SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.

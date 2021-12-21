@@ -373,7 +373,7 @@ c     ntstep is the number of timesteps to skip.
 
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime),
-     &    private(im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer
+     &    private(im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer,
      &    imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
@@ -607,8 +607,7 @@ c     ntstep is the number of timesteps to skip.
                 ENDDO
               ENDIF
 
-              solar_calculation_indexer = 1.0
-
+              solar_calculation_indexer = -99
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER, solar_calculation_indexer)
 

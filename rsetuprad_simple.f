@@ -1,4 +1,4 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V,Beta_IR,t_pass,incident_starlight_fraction,TAURAY,TAUL,TAUGAS,
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V,Beta_IR,t_pass,incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUER,
      &                           solar_calculation_indexer)
 !
 !     *********************************************************
@@ -19,7 +19,7 @@
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
-
+      integer :: testing, L, J, solar_calculation_indexer, malsky_test_var
       REAL G,WVO,AM, incident_starlight_fraction
       real, dimension(NIR,NLAYER) :: tau_IRe
       real, dimension(NSOL,NLAYER) :: tau_Ve
@@ -34,14 +34,10 @@
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
 
-
       real t_pass(NZ)
-
-      integer i1, i2, indorder(5), solar_calculation_indexer
+      integer i1, i2, indorder(5)
       logical all_ok
-
       integer :: malsky_switch
-      integer :: testing, L, J
 
 
 ! ******************************************
@@ -307,10 +303,6 @@
               DIRECT(L,J) = 0.0
           END DO
       END DO
-
-
-
-
 
 
       DO  L = NSOLP+1,NTOTAL

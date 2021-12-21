@@ -130,13 +130,6 @@ C     globally averaged solar constant, vertical rays
       PSOL_aerad=PSOL
       do_mie_aerad = .false.
 
-!     DAY/NIGHT SW CONDITIONAL
-
-      IF (AMU0.GT.EPSILON) THEN
-          isl_aerad=1
-      ELSE
-           isl_aerad=0
-      ENDIF
 
       ir_aerad = 1
       ntime = 1
