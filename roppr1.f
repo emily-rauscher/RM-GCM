@@ -5,13 +5,12 @@
 !     *                         and its derivative at ground   *
 !     *                         and at all altitudes.          *
 !     *  Subroutines Called  :  None                           *
-!     *  Input               :  TGRND, NLOW, WEIGHT            *
+!     *  Input               :  NLOW, WEIGHT            *
 !     *  Output              :  PTEMP, PTEMPG, SLOPE           *
 !     * ********************************************************
 !
       include 'rcommons.h'
       real  ITP, ITG, IT1, SBK, SBKoverPI,g11
-      DIMENSION  PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
       DIMENSION  T(NLAYER), T_pass(NLAYER)
       real, dimension(5,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE

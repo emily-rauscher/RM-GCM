@@ -28,8 +28,11 @@
       integer jflip, solar_calculation_indexer
 
       real, dimension(NTOTAL,NDBL) :: SLOPE
-      real DPG(NLAYER), pr(NLAYER), t_pass(NLAYER), p_pass(NLAYER)
+      real pr(NLAYER), t_pass(NLAYER), p_pass(NLAYER)
       real TTsub(NDBL)
+
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
 
       integer ifsetup
       real ibinm
@@ -77,11 +80,6 @@
 !     treated differently at the top.
       TT(1)=((T(1)-TT(2))/log(P(1)/p_pass(2)))*log(p_pass(1)/P(1))+T(1)
       TT(NLAYER)=T(NVERT) * ((p_pass(NLAYER)*10)/P(NVERT)) ** (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
-
-!     HERE, INSTEAD OF SPECIFYING THE GROUND AND TOP TEMPERATURES, WE
-!     USE THE EXTRAPOLATED VALUES TO DEFINE THESE; ALTERNATIVELY THEY
-!     MAY BE DEFINED HERE, WHERE THEY WILL BE PASSED TO THE MODEL
-      TGRND=TT(NLAYER)
 
 !     WATER VAPOR (G / CM**2)
 !     create a T array for the double resolution IR by combinging the
@@ -139,7 +137,6 @@
       ENDIF
 
       SLOPE(:,:) = 0.0
-      ! CALCULATE THE PLANK FUNCTION
       CALL OPPR1(TAUL, SLOPE,TTsub,t_pass)
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
@@ -266,11 +263,11 @@
 !     Not all of the calculated quantities are presently being
 !     loaded into the interface common block.
 !     Load optical depths into interface common block
-!     <tsLu> and <tsLd> are total upwelling and downwelling solar
+!     <tsLu> and <total_downwelling> are total upwelling and downwelling solar
 !     fluxes at top-of-atmosphere
 
       tsLu = 0.
-      tsLd = 0.
+      total_downwelling = 0.
 
 !     <fupbs>, <fdownbs>, and <fnetbs> are total upwelling, downwelling,
 !     and net solar fluxes at grid boundaries
@@ -299,7 +296,7 @@
       alb_toai = 0.
 !
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
-!     DOWNWARD LONGWAVE FLUXES AT SURFACE, XIRUP AND XIRDOWN (WATTS/M**2)
+!     DOWNWARD LONGWAVE FLUXES AT SURFACE
 !
       SOLNET  = 0.0
       IF (solar_calculation_indexer .gE. 0) THEN
@@ -327,11 +324,11 @@
               fsLd(i) = psol_aerad*incident_starlight_fraction
               alb_toa(i) = fsLu(i)/fsLd(i)
               tsLu = tsLu + fsLu(i)
-              tsLd = tsLd + fsLd(i)
+              total_downwelling = total_downwelling + fsLd(i)
           END DO
 
           alb_tomi = fupbs(1)/fdownbs(1)
-          alb_toai = tsLu/tsLd
+          alb_toai = tsLu/total_downwelling
 !
 !         Load fluxes into interface common block
 !
@@ -362,13 +359,9 @@
           firu(i) = 0.
  609  continue
 
-      XIRDOWN = 0.0
-      XIRUP   = 0.0
 
       IF (IR .NE. 0) THEN
           DO 520 L        =  NSOLP+1,NTOTAL
-             XIRDOWN = XIRDOWN + DIREC  (L,NLAYER)
-             XIRUP   = XIRUP   + DIRECTU(L,NLAYER)
              firu(L-nsol ) = firu( L-nsol ) + directu(L,1)
 
              do 520 j = 1, nlayer

@@ -2,7 +2,6 @@
 
 !...Define physical constants
 
-       real, parameter :: EXPMAX = 50.
        real, parameter :: PI = 3.14159
        real, parameter :: BK = 1.38054e-16
        real, parameter :: RGAS = 8.31430e+07

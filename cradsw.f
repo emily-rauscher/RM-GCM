@@ -13,8 +13,7 @@ C PQLWP - cloud Liquid water path  g/m^2
 C PR - flux pressures (mb)                                                
 C -sWALB  surface albedo                                                  
 C -AMU0    cosine                                                         
-C                                                                         
-C ZCARDI Co2 mass mixing ratio                                            
+C
 C ZSCT - solar constant * day length * earth-sun factor(Wm2)              
 C                                                                         
 C Outputs                                                                 

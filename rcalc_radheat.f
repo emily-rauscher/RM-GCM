@@ -33,15 +33,14 @@
       real, parameter :: L      = 2.5e10
        
       REAL PR(NZ),T(NZ),Cpd,p_pass(NZ)
-      real dpg(nl+1), pbar(nl+1)
-      real dpgsub(2*nl+2), pbarsub(2*nl+2)
+      real dpg(NLAYER), pbar(NLAYER)
+      real dpgsub(NDBL), pbarsub(NDBL)
       real, dimension(NZ) :: radheat
       real, dimension(NZ) :: z, htsw,htlw
-      real, dimension(45) :: wave_pass
       real, dimension(2,2,2) :: rfluxes
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
+      real, dimension(NIR+NSOL,NDBL) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       real alat1, alon, incident_starlight_fraction
 
@@ -74,6 +73,7 @@
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &             pbar, dpgsub, pbarsub)
+
 
 
       iffirst = 0
@@ -119,7 +119,7 @@ C     ER Modif: output pressures in bar instead of mbar
          WRITE(62,*)'  Upwelling LW Flux at top-of-atmopshere: '
      &                 ,tiru
          Write(62,*)'  Up- & Downward SW flux at TOA: '
-         WRITE(62,*)   tslu,tsld
+         WRITE(62,*)   tslu,total_downwelling
          WRITE(62,2031)'1)P(Bars)',
      &        '2)TAULS (SW & LW)', 
      &        '3)CUMMULATIVE TAUS',

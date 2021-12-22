@@ -202,22 +202,7 @@ C    Setup for LW scheme
 C set up default values.                                                  
       IF (IFIRST.EQ.1) THEN                                               
        IFIRST=0                                                           
-C       IF(LLBLM)THEN                                                      
-C        PRINT *,'Transmittance tables created by lblm'                    
-C       ELSE                                                               
-C        PRINT *,'Transmittance tables created by nbm'                     
-C       ENDIF                                                              
-C                                                                         
-C  absorber index   Gas   yes(1)/no (0)  vol. mixing ratio  C             
-C                                                           C             
-C      1            H2O      1           by model           C             
-C      2            CO2      1           358ppmv            C             
-C      3            O3       1           by model           C             
-C      4            CH4      0           1.72ppmv           C             
-C      5            N2O      0           312ppbv            C             
-C      6          CO2(minor) 0           358ppmv            C             
-C      7          O3(minor)  0           by model           C             
-C      8          Halocarbon 0           797x10-14          C             
+
 C                                                                         
        GAS(1)=1                                                           
        GAS(2)=1                                                           

@@ -6,7 +6,6 @@
 !    *                         on zenith angle or temperature.        *
 !    *  Subroutines Called  :  None                                   *
 !    *  Input               :  W0, G0                                 *
-!    *  Output              :  B1, B2, GAMI, ACON, EL1, AF, ETC       *
 !    * ****************************************************************
 !
       include 'rcommons.h'

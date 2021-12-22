@@ -26,7 +26,6 @@
 !      include 'params.i'
       include 'rcommons.h'
 
-!     JH holds current lat. Need to pull prev timestep fluxes and TGRND
       COMMON/LEGAU/ ALPJ(MJP),DALPJ(MJP)                                                                                                                  
      +              ,ALP(NWJ2,2,JGL),DALP(NWJ2,2,JGL)                                                                                                         
      +              ,RLP(NWJ2,2,JGL),RDLP(NWJ2,2,JGL)                                                                                                          
@@ -61,14 +60,8 @@
       SURFES=Flux_sum   
 !     above saves Flux Sum as W/m2 in Surface to be writen to array later
 !     used to calculate the energy stored in surface
-!      write(*,*) 'FLUX_SUM=', Flux_sum
 
       deltaTs=DELTAT*(Flux_sum)/(1000.*CSURF*RHOSURF*GRNDZ)
-!      write(*,*) 'CONSTATS=', CSURF*RHOSURF*GRNDZ
-!      write(*,*) 'DELTA_Ts=', deltaTs
-
       TGRND0=TGRND0+deltaTs
-!      write(*,*) 'Updated TGRND0=', TGRND0
-!      write(*,*) Flux_sum, TT(NL+1),deltaTs,TGRND0
  
       END SUBROUTINE

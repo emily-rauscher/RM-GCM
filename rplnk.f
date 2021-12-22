@@ -4,7 +4,6 @@
 !     *  Purpose             :  Calculate Planck Function  *
 !     *  Subroutines Called  :  None                       *
 !     *  Input               :  WAVE, NCOUNT               *
-!     *  Output              :  PLANK                      *
 !     * ****************************************************
 !
 !  THIS SUBROUTINE COMPUTES THE INTEGRAL OF THE PLANCK FUNCTION BETWEEN

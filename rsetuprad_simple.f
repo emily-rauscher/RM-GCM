@@ -124,10 +124,7 @@
 !     FLXLIMDIF  - do flux limited diffusion correction = 1 ~MTR
 !     UO         - SOLAR ZENITH ANGLE
 !     EMISIR     - SURFACE IR EMISSIVITY
-!     PTOP       - PRESSURE AT TOP OF MODEL (DYNES/CM**2)
-!     PBOT       - PRESSURE AT BOTTOM OF MODEL (DYNES/CM**2)
 !     SFC_WIND   - wind speed at 10 m altitude (m/s)
-!     SFC_ALB    - surface albedo when fixed
 
       ISL          = 0
       IR           = 0
@@ -155,10 +152,7 @@
       ENDIF
 
       EMISIR       = SURFEMIS
-      PTOP         = p_pass(1)*10.
-      PBOT         = p_pass(NL+1)*10.
 
-      ALBEDO_SFC = ALBSW
 
       testing = 0
       if (testing .eq. 1) then
@@ -238,12 +232,8 @@
       TAUAER(:,:) = 0.0
       TAUGAS(:,:) = 0.0
 
-      TAUCLD(:,:)  = 0.
-
-      WCLD(:,:)    = 0.
       WOL(:,:)     = 0.
       GOL(:,:)     = 0.
-      GCLD(:,:)    = 0.
 
 
 
@@ -301,7 +291,6 @@
              END DO
           END DO
       END IF
-
 
       FNET(:,:)   = 0.0
       TMI(:,:)    = 0.0
@@ -364,8 +353,6 @@
 !     at the top of the radiative transfer model domain
 !
       iblackbody_above = 0.0
-      ! Malsky maybe this should be the top level temperature
-      t_above          = 0.0
 !
 !     Set <ibeyond_spectrum> = 1 to include blackbody radiation at
 !     wavelengths longer than WAVE(NWAVE+1) in PLANK(NWAVE+1-NSOL) and

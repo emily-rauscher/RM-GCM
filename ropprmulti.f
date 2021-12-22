@@ -8,7 +8,6 @@
 !     *                         wiLL have to be repLaced by the    *
 !     *                         user.                              *
 !     *  Subroutines Called  :  None                               *
-!     *  Input               :  PAH2O, RDH2O, CO2, O3, ETC         *
 !     *  Output              :  TAUL, W0, G0, OPD, Y3              *
 !     * ************************************************************
 !

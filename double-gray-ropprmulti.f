@@ -8,7 +8,6 @@
 !     *                         wiLL have to be repLaced by the    *
 !     *                         user.                              *
 !     *  Subroutines Called  :  None                               *
-!     *  Input               :  PAH2O, RDH2O, CO2, O3, ETC         *
 !     *  Output              :  TAUL, W0, G0, OPD, Y3              *
 !     * ************************************************************
 !
@@ -1216,7 +1215,7 @@
 !     First the solar at standard resolution
           DO 401 L       = NSOLP+1,NTOTAL
 
-             TAUL(L,J)  =  TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)!+TAUCLD(L,J)
+             TAUL(L,J)  =  TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
              if (iradgas.eq.0) then
              tauL(L,j) = tauaer(L,j)
              endif

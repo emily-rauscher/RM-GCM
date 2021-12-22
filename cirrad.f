@@ -455,28 +455,7 @@ C--- Smoothing of the irradiance profiles
          END DO                                                           
                                                                           
       END IF                                                              
-                                                                          
-C-----------------------------------------------------------              
-C  S P E C T R A L    B A N D S    I N    T H E    R W B M                
-C-----------------------------------------------------------              
-C  IBND     0:      0 - 3000 cm-1   H2O                                   
-C  IBND     1:    540 -  820 cm-1   H2O + CO2                             
-C  IBND     2:    980 - 1100 cm-1   H2O +  O3 + CO2                       
-C  IBND     3:   1200 - 1400 cm-1   H2O + CH4                             
-C  IBND     4:   2100 - 2300 cm-1   H2O + N2O                             
-C  IBND     5:    900 -  980 cm-1   H2O + CO2                             
-C  IBND     6:    650 -  770 cm-1   H2O +  O3 + CO2                       
-C  IBND     7:    550 -  630 cm-1   H2O + N2O + CO2                       
-C  IBND     8:   1100 - 1200 cm-1   H2O + N2O                             
-C  IBND  9-12:    820 -  900 cm-1   H2O + HALOCARBON                      
-C-----------------------------------------------------------              
-                                                                          
-C-----------------------                                                  
-C    Loop over bands                                                      
-C-----------------------                                                  
 
-
-                                                                          
       DO IBND=1,MXBAND                                                    
 
       GOTO 1975   !! KM Modif to avoid all bands
@@ -632,8 +611,7 @@ C Initialise the irradiances
                FGUP(ILAY)=PF(ILAY)                                        
                FGDWN(ILAY-1)=PF(ILAY)                                     
             END DO                                                        
-                                                                          
-                                    ! CO2 absorption                      
+
                                                                           
             DO IUP=1,NLEV                                                 
                DO IDWN=0,IUP-1                                            
@@ -1019,8 +997,7 @@ C Initialise the irradiances
                FGUP(ILAY)=PF(ILAY)                                        
                FGDWN(ILAY-1)=PF(ILAY)                                     
             END DO                                                        
-                                                                          
-                                    ! CO2 absorption                      
+
                                                                           
             DO IUP=1,NLEV                                                 
                DO IDWN=0,IUP-1                                            
@@ -2903,21 +2880,21 @@ C***********************************************************************
      $                     DH2O,AGAS,BGAS,CGAS,DGAS,AN03,BN03,CN03,       
      $                     DN03,AC02,BC02,CC02,DC02,AC06,BC06,CC06,       
      $                     DC06,AC07,BC07,CC07,DC07,TRANS)                
-                                                                          
-C Subroutine GASSEARCH calculates the transmittane of a homogeneous       
-C atmospheric path, using the data of pre-computed tables stored          
-C in 'gastab'                                                             
-C                                                                         
-C INPUT:  Gas index (IGAS)                                                
-C         Band index (IBND)                                               
-C         Absorber amount (UPATH)                                         
-C         Pressure (PEFF)                                                 
-C         Temperature (TEFF)                                              
-C         Pre-computed tables (AH2O,BH2O,CH2O,DH2O,AGAS,BGAS,CGAS,DGAS,   
-C                              AN03,BN03,CN03,DN03,AC02,BC02,CC02,DC02,   
-C                              AC06,BC06,CC06,DC06,AC07,BC07,CC07,DC07)   
-C                                                                         
-C OUTPUT: Transmittance (TRANS)                                           
+
+C Subroutine GASSEARCH calculates the transmittane of a homogeneous
+C atmospheric path, using the data of pre-computed tables stored
+C in 'gastab'
+C
+C INPUT:  Gas index (IGAS)
+C         Band index (IBND)
+C         Absorber amount (UPATH)
+C         Pressure (PEFF)
+C         Temperature (TEFF)
+C         Pre-computed tables (AH2O,BH2O,CH2O,DH2O,AGAS,BGAS,CGAS,DGAS,
+C                              AN03,BN03,CN03,DN03,AC02,BC02,CC02,DC02,
+C                              AC06,BC06,CC06,DC06,AC07,BC07,CC07,DC07)
+C
+C OUTPUT: Transmittance (TRANS)
                                                                           
       IMPLICIT NONE                                                       
 C***********************************************************************  
