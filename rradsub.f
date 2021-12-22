@@ -1,4 +1,4 @@
-      subroutine radsub(iffirst,pr, p_pass,t_pass,qh2o_pass,
+      subroutine radsub(iffirst,pr,p_pass,t_pass,qh2o_pass,
      &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer)
 
@@ -47,9 +47,6 @@
 
       heats_aerad_tot = 0.
       heati_aerad_tot = 0.
-
-      t_aerad=t_pass
-      p_aerad=p_pass
 
       ir_above_aerad = 0
       tabove_aerad = 0
@@ -140,13 +137,14 @@ C     globally averaged solar constant, vertical rays
       if( if_diurnal.eq.1 ) ntime = 24
 
       do itime = 1, ntime
-          call setuprad_simple(Beta_V, Beta_IR, t_pass, p_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+          t_pass(NLAYER) = t_pass(NLAYER-1)
+          call setuprad_simple(Beta_V, Beta_IR, t_pass, pr, p_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                         solar_calculation_indexer, DPG)
 
 
           pc_aerad = 0.
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                 solar_calculation_indexer, DPG)
+     &                 solar_calculation_indexer, DPG, pr, t_pass, p_pass)
 
           cheats = 0.
           cheati = 0.

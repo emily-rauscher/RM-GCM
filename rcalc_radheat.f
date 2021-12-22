@@ -49,7 +49,7 @@
       GRAV = GA * 100.
       eps= Rd/Rv
       RdCp = Rd/Cpd
-      player=pr
+
 
       call radsub(iffirst,pr,prflux,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer)

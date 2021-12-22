@@ -1,4 +1,4 @@
-      SUBROUTINE OPPR1(TAUL, SLOPE)
+      SUBROUTINE OPPR1(TAUL, SLOPE, TTsub, t_pass)
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *
@@ -12,9 +12,10 @@
       include 'rcommons.h'
       real  ITP, ITG, IT1, SBK, SBKoverPI,g11
       DIMENSION  PTEMP2(NTOTAL-NSOLP),PLTEMP1(NTOTAL-NSOLP)
-      DIMENSION  T(NLAYER)
+      DIMENSION  T(NLAYER), T_pass(NLAYER)
       real, dimension(5,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE
+      real, dimension(NDBL) :: TTsub
 
       integer kindex
 !     **************************************
@@ -23,10 +24,12 @@
 
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
-      T=t_aerad
+      T=t_pass
 
       DO 300 J            =   1,NDBL ! NLAYER ! MTR
           kindex          = max( 1, j-1 )
+
+
           IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
 
           DO 200 L        = NSOLP+1,NTOTAL

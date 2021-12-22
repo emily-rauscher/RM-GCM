@@ -1,5 +1,6 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, p_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                         solar_calculation_indexer, DPG)
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, pr, p_pass,
+     &                           incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
+     &                           solar_calculation_indexer, DPG)
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -34,11 +35,11 @@
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
 
-      real DPG(NLAYER)
-      real DPGsub(NDBL)
+      real DPG(NLAYER), temp_mid_pressure(NLAYER), temp_bound_pressure(NLAYER)
+      real DPGsub(NDBL), PBARSUB(NDBL)
       REAL PM
 
-      real t_pass(NZ), p_pass(NZ)
+      real t_pass(NZ), p_pass(NZ), pr(NZ), pbar(NZ)
       integer i1, i2, indorder(5)
       logical all_ok
       integer :: malsky_switch
@@ -146,12 +147,12 @@
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
-          PRESSMID = PLAYER*10.
-          PRESS    = p_pass*10.
+          temp_mid_pressure = p_pass * 10.
+          temp_bound_pressure    = pr     * 10.
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
-             DPG(J)   = (PRESS(J)-PRESS(J-1)) / G
+             DPG(J)   = (temp_bound_pressure(J)-temp_bound_pressure(J-1)) / G
           END DO
 
           PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
@@ -184,7 +185,7 @@
     !     [ dyne / cm^2 ]
 
           do k = 1,NZ
-            press(k)=p_pass(k)*10.
+            temp_bound_pressure(k)=p_pass(k)*10.
           enddo
 
     !     The layer thickness in pressure should be the difference between
@@ -198,28 +199,28 @@
     !     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
     !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR
     !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
-    !     PRESSMID- PRESSURE AT CENTER OF LAYER (dyne/cm^2
+    !     temp_mid_pressure- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
-          PRESSMID=PLAYER*10.
-          PRESS=p_pass*10.
-          PBAR(1)  = p_pass(1)*1e-5
-          DPG(1)= PRESS(1)/G
+          temp_mid_pressure      = pr        * 10.0
+          temp_bound_pressure    = p_pass    * 10.0
+          PBAR(1)                = p_pass(1) * 1e-5
+          DPG(1)                 = temp_bound_pressure(1)/G
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
-             DPG(J) = (PRESS(J)-PRESS(J-1)) / G
+             DPG(J) = (temp_bound_pressure(J)-temp_bound_pressure(J-1)) / G
           END DO
 
 
           K = 1
           DO J  = 2, NDBL-1,2
              L  =  J
-             PBARsub(L) =  (PRESSMID(K) - PRESS(K))*1e-6
-             DPGsub (L) =  (PRESSMID(K) - PRESS(K)) / G
+             PBARsub(L) =  (temp_mid_pressure(K) - temp_bound_pressure(K))*1e-6
+             DPGsub (L) =  (temp_mid_pressure(K) - temp_bound_pressure(K)) / G
              K = K + 1
              L = L + 1
-             PBARsub(L) =  (PRESS(K) - PRESSMID(K-1))*1e-6
-             DPGsub (L) =  (PRESS(K) - PRESSMID(K-1)) / G
+             PBARsub(L) =  (temp_bound_pressure(K) - temp_mid_pressure(K-1))*1e-6
+             DPGsub (L) =  (temp_bound_pressure(K) - temp_mid_pressure(K-1)) / G
           END DO
 
           PBARsub(NDBL) = PBARsub(NDBL-1) + ABS(PBARsub(NDBL-2) - PBARsub(NDBL-3))
@@ -244,7 +245,7 @@
 
       malsky_switch = 0
       IF (malsky_switch .gt. 0) THEN
-        CALL opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction)
+        CALL opacity_wrapper(t_pass, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction)
 
         DO L = solar_calculation_indexer,NSOLP
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))

@@ -1,4 +1,5 @@
-      subroutine opacity_wrapper(t_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, gravity_SI, incident_starlight_fraction)
+      subroutine opacity_wrapper(t_pass, p_pass, tau_IRe,
+     &                           tau_Ve, Beta_V, Beta_IR, gravity_SI, incident_starlight_fraction)
           include 'rcommons.h'
 
           integer :: NLAYER, J, k
@@ -20,7 +21,7 @@
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
 
           do J = 1, NLAYER
-             pe(J) = press(J) / 10! convert to pascals
+             pe(J) = p_pass(J) / 10! convert to pascals
           end do
 
           DO J = 1, NLAYER-1

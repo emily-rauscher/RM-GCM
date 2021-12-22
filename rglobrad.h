@@ -104,10 +104,7 @@
 !
       COMMON/irad6/   CO2(NLAYER), RDH2O(NLAYER),   O2(NLAYER),
      &                 O3(NLAYER), CAER(NRAD,NLAYER,NGROUP),
-     &                 PBAR(NLAYER),PLAYER(NLAYER),
      &                 TT(NLAYER), Y3(NTOTAL,NGAUSS,NDBL),
-     &                 PRESSMID(NLAYER), PBARsub(NDBL),
-     &                 TTsub(NDBL),
      &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
 !
 ! DEFINED IN 'OPPROP'

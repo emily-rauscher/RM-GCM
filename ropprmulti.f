@@ -1,4 +1,4 @@
-      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG)
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -15,7 +15,7 @@
       include 'rcommons.h'
 
       REAL TAUFACT
-      REAL DPG(NLAYER)
+      REAL DPG(NLAYER), p_pass(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
       REAL CLOUDLOC(NLAYER,NCLOUDS)
 
@@ -59,7 +59,7 @@
 
       DO J = 1,NLAYER-1
           ! Get the index of the closest pressure
-          pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (PRESS(J))),1)
+          pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J))),1)
 
           ! Using the pressure, find the particle size
           particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
@@ -82,7 +82,7 @@
 
       DO I = 1,NCLOUDS
           DO J = 1,NLAYER-1
-              pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (PRESS(J))),1)
+              pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J))),1)
               temp_loc     = MINLOC(ABS(input_temperature_array - (TT(J))),1)
 
               particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)

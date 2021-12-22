@@ -258,10 +258,7 @@ c     The following for parallel testing --MTR
 
       COMMON/irad6/   CO2(NL+1), RDH2O(NL+1),   O2(NL+1),
      &                 O3(NL+1), CAER(1,NL+1,1),
-     &                 PBAR(NL+1),PLAYER(NL+1),
      &                 TT(NL+1), Y3(5,3,2*NL+2),
-     &                 PRESSMID(NL+1), PBARsub(2*NL+2),
-     &                 TTsub(2*NL+2),
      &                 TGRND,  U0,  ISL, IR, IRS, FDEGDAY
 
       COMMON /irad7/
@@ -327,7 +324,6 @@ c     The following for parallel testing --MTR
      &   riwp,rfluxes_aerad(2,2,2),
      &   r_aerad(1,1),
      &   rup_aerad(1,1),
-     &   p_aerad(NL+1), t_aerad(NL+1),PRESS(NL+1),
      &   pc_aerad(NL+1,1,1),
      &   qv_aerad(NL+1), tabove_aerad,
      &   ptop_aerad, pbot_aerad, u0_aerad,
@@ -411,10 +407,7 @@ c     ntstep is the number of timesteps to skip.
      &    RDQEXT,
      &    CO2, RDH2O, O2,
      &    O3, CAER,
-     &    PBAR,PLAYER,
      &    TT, Y3,
-     &    PRESSMID, PBARsub,
-     &    TTsub,
      &    TGRND, U0,  ISL, IR, IRS, FDEGDAY,
      &    WOT, GOT,
      &    PTEMPG, PTEMPT,
@@ -463,7 +456,6 @@ c     ntstep is the number of timesteps to skip.
      &    riwp,rfluxes_aerad,
      &    r_aerad,
      &    rup_aerad,
-     &    p_aerad, t_aerad,PRESS,
      &    pc_aerad,
      &    qv_aerad, tabove_aerad,
      &    ptop_aerad, pbot_aerad, u0_aerad,
@@ -604,7 +596,6 @@ c     ntstep is the number of timesteps to skip.
                   AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
                 ENDDO
               ENDIF
-
 
               call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)

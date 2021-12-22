@@ -118,8 +118,6 @@
 !
 !   r_aerad        radius mid-pts from aerosol grids [cm]
 !   rup_aerad      upper radii from aerosol grids [cm]
-!   p_aerad        pressure [dyne/cm^2]
-!   t_aerad        temperature [K]
 !   pc_aerad       particle concentration [#/cm^3]
 !   qv_aerad       water vapor mixing ratio [g/g]
 !   tabove_aerad   blackbody temperature for downwelling IR flux into model [K]
@@ -141,7 +139,7 @@
      &   riwp,rfluxes_aerad(2,2,2),
      &   r_aerad(NBIN,NGROUP),      
      &   rup_aerad(NBIN,NGROUP),     
-     &   p_aerad(NZ_RAD), t_aerad(NZ_RAD),PRESS(NZ_RAD),      
+     &   t_aerad(NZ_RAD),
      &   pc_aerad(NZ_RAD,NBIN,NGROUP),     
      &   qv_aerad(NZ_RAD), tabove_aerad,     
      &   ptop_aerad, pbot_aerad, u0_aerad,      
