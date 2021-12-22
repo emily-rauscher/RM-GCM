@@ -176,6 +176,19 @@ C
       ! Malsky is adding these
       integer solar_calculation_indexer
 
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real psol_aerad
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
+
       real PRB2T(NL+1),adum
 
       integer ifirst                ! If =1, first time reading o3
@@ -318,34 +331,6 @@ c     The following for parallel testing --MTR
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs
 
-      common / aerad1 /
-     &   isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,
-     &   ifsetup, ibinm,
-     &   riwp,rfluxes_aerad(2,2,2),
-     &   r_aerad(1,1),
-     &   rup_aerad(1,1),
-     &   pc_aerad(NL+1,1,1),
-     &   qv_aerad(NL+1), tabove_aerad,
-     &   ptop_aerad, pbot_aerad, u0_aerad,
-     &   emisir_aerad, tsfc_aerad, h2ocol_aerad,
-     &   iaerad1,psol_aerad
-
-      common / aerad2 /
-     &   wave_aerad(5+1),
-     &   heati_aerad(NL+1), heats_aerad(NL+1),
-     &   qrad_aerad(NL+1,1,1),
-     &   alb_tomi_aerad, alb_toai_aerad,
-     &   alb_toa_aerad(3), opd_aerad(3), opd_tot_aerad,
-     &   fsl_up_aerad(NL+1), fsl_dn_aerad(NL+1),
-     &   fir_up_aerad(NL+1), fir_dn_aerad(NL+1),
-     &   fir_net_aerad(NL+1),fsl_net_aerad(NL+1),iaerad2
-
-      common / aerad3 /
-     &   is_grp_ice_aerad(1), do_mie_aerad,
-     &   ienconc_aerad(1),
-     &   sfc_alb_aerad, sfc_wind_aerad, dr_aerad(1,1),
-     &   iaerad3
-
 
       RHSCL=288.0*GASCON/GA
 
@@ -451,28 +436,14 @@ c     ntstep is the number of timesteps to skip.
      &    input_temperature_array,
      &    particle_size_vs_layer_array_in_meters,
      &    input_pressure_array_cgs,
-     &    isl_aerad, ir_aerad, irs_aerad, ir_above_aerad,
      &    ifsetup, ibinm,
-     &    riwp,rfluxes_aerad,
-     &    r_aerad,
-     &    rup_aerad,
-     &    pc_aerad,
-     &    qv_aerad, tabove_aerad,
-     &    ptop_aerad, pbot_aerad, u0_aerad,
-     &    emisir_aerad, tsfc_aerad, h2ocol_aerad,
-     &    iaerad1,psol_aerad,
-     &    wave_aerad,
+     &    rfluxes_aerad,
+     &    psol_aerad,
      &    heati_aerad, heats_aerad,
-     &    qrad_aerad,
-     &    alb_tomi_aerad, alb_toai_aerad,
-     &    alb_toa_aerad, opd_aerad, opd_tot_aerad,
      &    fsl_up_aerad, fsl_dn_aerad,
      &    fir_up_aerad, fir_dn_aerad,
-     &    fir_net_aerad,fsl_net_aerad,iaerad2,
-     &    is_grp_ice_aerad, do_mie_aerad,
-     &    ienconc_aerad,
-     &    sfc_alb_aerad, sfc_wind_aerad, dr_aerad,
-     &    iaera, p_pass, dpg),
+     &    fir_net_aerad,fsl_net_aerad,
+     &    p_pass, dpg),
      &    firstprivate(ilast),
      &    lastprivate(ilast),
      &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
@@ -598,7 +569,9 @@ c     ntstep is the number of timesteps to skip.
               ENDIF
 
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg)
+     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
+     &           ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &           fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
 
               pr=prb2t
 

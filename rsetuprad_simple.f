@@ -1,6 +1,9 @@
       SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, pr, p_pass,
      &                           incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                           solar_calculation_indexer, DPG)
+     &                           solar_calculation_indexer, DPG,
+     &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+
 !
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -43,6 +46,19 @@
       integer i1, i2, indorder(5)
       logical all_ok
       integer :: malsky_switch
+
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real psol_aerad
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
 
 
 ! ******************************************
@@ -347,8 +363,9 @@
 !     Set <iblackbody_above> = 1 to include a source of radiation
 !     at the top of the radiative transfer model domain
 !
-      iblackbody_above = ir_above_aerad
-      t_above = tabove_aerad
+      iblackbody_above = 0.0
+      ! Malsky maybe this should be the top level temperature
+      t_above          = 0.0
 !
 !     Set <ibeyond_spectrum> = 1 to include blackbody radiation at
 !     wavelengths longer than WAVE(NWAVE+1) in PLANK(NWAVE+1-NSOL) and

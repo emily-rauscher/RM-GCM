@@ -1,5 +1,8 @@
       SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                   solar_calculation_indexer, DPG, pr, t_pass, p_pass)
+     &                   solar_calculation_indexer, DPG, pr, t_pass, p_pass,
+     &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+
 !
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
@@ -27,6 +30,19 @@
       real DPG(NLAYER), pr(NLAYER), t_pass(NLAYER), p_pass(NLAYER)
       real TTsub(NDBL)
 
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real psol_aerad
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
+
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
           ISL = 1
@@ -44,8 +60,10 @@
       ! MALSKY CHECK THIS
       TT(1) = t_pass(1) ! MALSKY ADDED
       DO 12 J = 2, NVERT
-         TT(J) = T(J-1) * (p_pass(J)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
+          TT(J) = T(J-1) * ((p_pass(J)*10.0)/P(J-1)) **
+     &              (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
 12    CONTINUE
+
 
 
 !     SINCE WE DON'T HAVE A GROUND (YET,...ERIN)
@@ -56,16 +74,13 @@
 !     (sigma level).
 !     Since this is not logarithmically spaced, the extrapolation was
 !     treated differently at the top.
-!     TOP
       TT(1)=((T(1)-TT(2))/log(P(1)/p_pass(2)))*log(p_pass(1)/P(1))+T(1)
-!     BOTTOM
-      TT(NLAYER)=T(NVERT) * (p_pass(NLAYER)/P(NVERT)) ** (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
+      TT(NLAYER)=T(NVERT) * ((p_pass(NLAYER)*10)/P(NVERT)) ** (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
 
 !     HERE, INSTEAD OF SPECIFYING THE GROUND AND TOP TEMPERATURES, WE
 !     USE THE EXTRAPOLATED VALUES TO DEFINE THESE; ALTERNATIVELY THEY
 !     MAY BE DEFINED HERE, WHERE THEY WILL BE PASSED TO THE MODEL
       TGRND=TT(NLAYER)
-      TABOVE_AERAD=TT(1)
 
 !     WATER VAPOR (G / CM**2)
 !     create a T array for the double resolution IR by combinging the
@@ -74,7 +89,7 @@
       K  =  1
       DO 46 J  = 1, NDBL-2,2
           L  =  J
-          TTsub(L) = t_pass(K)
+          TTsub(L) = tt(K)
           L  =  L+1
           TTsub(L) = t_pass(K)
           K  =  K+1
@@ -84,7 +99,6 @@
       TTsub(NDBL-1) = t_pass(NLAYER-1)
 
 !     Solar zenith angle
-      !u0 = u0_aerad
       u0 = incident_starlight_fraction
 
 !     SURFACE REFLECTIVITY AND EMISSIVITY
@@ -102,6 +116,7 @@
          if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
              rsfx(L) = albedoa(nwave_alb)
          endif
+
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
@@ -250,11 +265,6 @@
 !     Not all of the calculated quantities are presently being
 !     loaded into the interface common block.
 !     Load optical depths into interface common block
-!
-      !do i = 1, nwave
-      !    opd_aerad(i) = uopd(i,nlayer)
-      !enddo
-
 !     <tsLu> and <tsLd> are total upwelling and downwelling solar
 !     fluxes at top-of-atmosphere
 
@@ -321,15 +331,6 @@
 
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/tsLd
-
-!         Load albedos into interface common block
-!
-          alb_toai_aerad = alb_toai
-          alb_tomi_aerad = alb_tomi
-
-          do i = 1, NSOL
-              alb_toa_aerad(i) = alb_toa(i)
-          enddo
 !
 !         Load fluxes into interface common block
 !
@@ -439,6 +440,9 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
+
+      write(*,*) 'stopping in radtran'
+      stop
 
       return
       END

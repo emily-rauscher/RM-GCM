@@ -1,6 +1,9 @@
       subroutine radsub(iffirst,pr,p_pass,t_pass,qh2o_pass,
      &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
-     &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer,dpg)
+     &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer,dpg,
+     &                  ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &                  fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
@@ -22,6 +25,18 @@
       real PSOL,PSOL_aerad
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
 
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
+
       integer itime, ntime, solar_calculation_indexer
 
       ! Malsky add
@@ -32,23 +47,23 @@
 
       real rfluxes(2,2,2)
       REAL SSLON,SSLAT  ! ER:
-      REAL DLENGTH  ! ER: half-length of solar dayinteger ibinmin
+      REAL DLENGTH  ! ER: half-length of solar day
       real PI2
  582  FORMAT(I4,5(F12.3))
 
+      ! Malsky what does this do???
       ibinm = ibinmin
       ifsetup = 0
 
-      if( iffirst.eq. 1 ) ifsetup = 1
+      if( iffirst.eq. 1 ) THEN
+          ifsetup = 1
+      END IF
 
 !     @ Keep an Eye on this, Mike
       if_diurnal = 0
 
       heats_aerad_tot = 0.
       heati_aerad_tot = 0.
-
-      ir_above_aerad = 0
-      tabove_aerad = 0
 
 !     @ The following lines of code are taken from cnikos and may require adjustment
 C     ER modif for non-synchronous orbit
@@ -127,23 +142,25 @@ C     globally averaged solar constant, vertical rays
       END IF
 
       PSOL_aerad=PSOL
-      do_mie_aerad = .false.
-
-!     DAY/NIGHT SW CONDITIONAL
-      ir_aerad = 1
       ntime = 1
 
       if( if_diurnal.eq.1 ) ntime = 24
 
       do itime = 1, ntime
           t_pass(NLAYER) = t_pass(NLAYER-1)
-          call setuprad_simple(Beta_V, Beta_IR, t_pass, pr, p_pass, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                         solar_calculation_indexer, DPG)
+          call setuprad_simple(Beta_V, Beta_IR, t_pass, pr, p_pass, incident_starlight_fraction,
+     &                          TAURAY,TAUL,TAUGAS,TAUAER,
+     &                          solar_calculation_indexer, DPG,
+     &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
 
 
-          pc_aerad = 0.
+
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                 solar_calculation_indexer, DPG, pr, t_pass, p_pass)
+     &                 solar_calculation_indexer, DPG, pr, t_pass, p_pass,
+     &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+
 
           cheats = 0.
           cheati = 0.

@@ -3,7 +3,9 @@
 !*********************************************************************** 
       SUBROUTINE CALC_RADHEAT(pr,t,p_pass,alat1,alon,htlw,htsw,
      $             DOY,cf,ic,rfluxes,swalb,kount,itspd, incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,
-     &             solar_calculation_indexer, dpg)
+     &             solar_calculation_indexer, dpg,
+     &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
 
 !...Calculate radiative heating rate profiles and corresponding vertical
 !...wind speed.
@@ -24,10 +26,10 @@
 
 !      use physical_constants
 
-       include 'rcommons.h'
+      include 'rcommons.h'
 
-       real, parameter :: BK = 1.38054e-16
-       real, parameter :: L      = 2.5e10
+      real, parameter :: BK = 1.38054e-16
+      real, parameter :: L      = 2.5e10
        
       REAL PR(NZ),T(NZ),Cpd,p_pass(NZ), dpg(NZ)
       real, dimension(NZ) :: radheat
@@ -39,6 +41,19 @@
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       real alat1, alon, incident_starlight_fraction
+
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real psol_aerad
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
 
       tgrnd=t(NZ)
       rfluxes=fluxes
@@ -52,7 +67,10 @@
 
 
       call radsub(iffirst,pr,p_pass,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
-     &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG)
+     &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
+     &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+
 
       iffirst = 0
 
