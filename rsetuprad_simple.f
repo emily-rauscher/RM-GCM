@@ -2,7 +2,8 @@
      &                           incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                           solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &             pbar, dpgsub, pbarsub)
 
 !
 !     *********************************************************
@@ -37,9 +38,9 @@
       dimension temparr(6,NWAVE)
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
 
-      real DPG(NLAYER), PBAR(NLAYER)
-      real DPGsub(NDBL), PBARSUB(NDBL)
       REAL PM
 
       real t_pass(NLAYER), p_pass(NLAYER), pr(NLAYER)
@@ -300,7 +301,6 @@
              END DO
           END DO
       END IF
-
 
 
       FNET(:,:)   = 0.0

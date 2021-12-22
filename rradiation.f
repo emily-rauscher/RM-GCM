@@ -169,7 +169,9 @@ C
 
       REAL TAVE(IGP)
 
-      REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1), dpg(nl+1)
+      REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1)
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
 
       real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
@@ -443,7 +445,7 @@ c     ntstep is the number of timesteps to skip.
      &    fsl_up_aerad, fsl_dn_aerad,
      &    fir_up_aerad, fir_dn_aerad,
      &    fir_net_aerad,fsl_net_aerad,
-     &    p_pass, dpg),
+     &    p_pass, dpg, pbar, dpgsub, pbarsub),
      &    firstprivate(ilast),
      &    lastprivate(ilast),
      &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
@@ -480,7 +482,6 @@ c     ntstep is the number of timesteps to skip.
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
      &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
           DO i=1,mg
-
             im=i+iofm
             idocalc=0
 
@@ -680,8 +681,8 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      !write(*,*) 'Stopping in radiation'
-      !stop
+      write(*,*) 'Stopping in radiation'
+      stop
 
       RETURN
       END

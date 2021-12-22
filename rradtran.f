@@ -1,7 +1,8 @@
       SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                   solar_calculation_indexer, DPG, pr, t_pass, p_pass,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &             pbar, dpgsub, pbarsub)
 
 !
 !     **************************************************************
@@ -120,6 +121,7 @@
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
+
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
           !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass)
@@ -139,7 +141,6 @@
       SLOPE(:,:) = 0.0
       ! CALCULATE THE PLANK FUNCTION
       CALL OPPR1(TAUL, SLOPE,TTsub,t_pass)
-
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
@@ -441,8 +442,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
 
-      write(*,*) 'stopping in radtran'
-      stop
 
       return
       END

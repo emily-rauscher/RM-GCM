@@ -5,7 +5,8 @@
      $             DOY,cf,ic,rfluxes,swalb,kount,itspd, incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,
      &             solar_calculation_indexer, dpg,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &             pbar, dpgsub, pbarsub)
 
 !...Calculate radiative heating rate profiles and corresponding vertical
 !...wind speed.
@@ -31,7 +32,9 @@
       real, parameter :: BK = 1.38054e-16
       real, parameter :: L      = 2.5e10
        
-      REAL PR(NZ),T(NZ),Cpd,p_pass(NZ), dpg(NZ)
+      REAL PR(NZ),T(NZ),Cpd,p_pass(NZ)
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
       real, dimension(NZ) :: radheat
       real, dimension(NZ) :: z, htsw,htlw
       real, dimension(45) :: wave_pass
@@ -69,7 +72,8 @@
       call radsub(iffirst,pr,p_pass,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &             pbar, dpgsub, pbarsub)
 
 
       iffirst = 0

@@ -2,7 +2,8 @@
      &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer,dpg,
      &                  ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &                  fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &                  fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &                  pbar, dpgsub, pbarsub)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -14,7 +15,9 @@
       include 'rcommons.h'
       PARAMETER(PI2=2.0*3.14159265359)
       integer iffirst
-      real t_pass(NZ), dpg(nz)
+      real t_pass(NZ)
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
       real p_pass(NZ)
       real qh2o_pass(NZ)
       real radheat(NZ)
@@ -152,14 +155,16 @@ C     globally averaged solar constant, vertical rays
      &                          TAURAY,TAUL,TAUGAS,TAUAER,
      &                          solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &             pbar, dpgsub, pbarsub)
 
 
 
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                 solar_calculation_indexer, DPG, pr, t_pass, p_pass,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad)
+     &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &             pbar, dpgsub, pbarsub)
 
 
           cheats = 0.

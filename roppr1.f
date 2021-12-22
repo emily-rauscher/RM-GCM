@@ -26,8 +26,8 @@
       SBKoverPI=SBK/PI
       T=t_pass
 
-      DO 300 J            =   1,NDBL ! NLAYER ! MTR
-          kindex          = max( 1, j-1 )
+      DO 300 J            =   1,NDBL
+          kindex          = max(1,j-1)
 
 
           IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
