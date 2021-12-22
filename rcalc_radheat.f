@@ -1,9 +1,9 @@
 !***********************************************************************  
 !*                         SUBROUTINE CALC_RADHEAT                     *  
 !*********************************************************************** 
-      SUBROUTINE CALC_RADHEAT(pr,t,prflux,alat1,alon,htlw,htsw,
+      SUBROUTINE CALC_RADHEAT(pr,t,p_pass,alat1,alon,htlw,htsw,
      $             DOY,cf,ic,rfluxes,swalb,kount,itspd, incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,
-     &             solar_calculation_indexer)
+     &             solar_calculation_indexer, dpg)
 
 !...Calculate radiative heating rate profiles and corresponding vertical
 !...wind speed.
@@ -17,7 +17,7 @@
 ! base boundary temperature.
 ! NZ is NL+1
 
-!Prflux is an array of NL+1, in pascals of pressurs at the edge of
+!p_pass is an array of NL+1, in pascals of pressurs at the edge of
 !layers, starting at the top of the atmosphere and working down. The
 !first is zero and the bottom is the bottom pressure with the same value
 !as the bottom pressure in Pr (i.e. P0 adjusted for dynamics).
@@ -29,7 +29,7 @@
        real, parameter :: BK = 1.38054e-16
        real, parameter :: L      = 2.5e10
        
-      REAL PR(NZ),T(NZ),Cpd,PRFLUX(NZ)
+      REAL PR(NZ),T(NZ),Cpd,p_pass(NZ), dpg(NZ)
       real, dimension(NZ) :: radheat
       real, dimension(NZ) :: z, htsw,htlw
       real, dimension(45) :: wave_pass
@@ -51,8 +51,8 @@
       RdCp = Rd/Cpd
 
 
-      call radsub(iffirst,pr,prflux,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
-     &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer)
+      call radsub(iffirst,pr,p_pass,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+     &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG)
 
       iffirst = 0
 
@@ -67,7 +67,7 @@
 
 C     ER Modif: output pressures in bar instead of mbar
          DO ILAY=NLAYER,1,-1                                                  
-          WRITE(63,2013),prflux(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),
+          WRITE(63,2013),p_pass(NLAYER-ILAY+1)*1e-5,FIR_UP_AERAD(ILAY),
      $    FIR_DN_AERAD(ILAY),FIR_NET_AERAD(ILAY),
      $    FSL_UP_AERAD(ILAY),FSL_DN_AERAD(ILAY),FSL_NET_AERAD(ILAY)                         
      $
@@ -108,7 +108,7 @@ C     ER Modif: output pressures in bar instead of mbar
  2031    FORMAT(3X,A9,6X,A17,9X,A18,12X,A6,11x,A5,7x,A20,3x,A26)            
          
           DO IL=1,NLAYER                                                  
-          WRITE(62,2033),prflux(IL)*1e-5,uTAUL(1,IL),
+          WRITE(62,2033),p_pass(IL)*1e-5,uTAUL(1,IL),
      $    uTAUL(2,IL),uOPD(1,IL),uOPD(2,IL),uW0(1,IL),uW0(2,IL),uG0(1,IL),
      $    uG0(2,IL),DIRECT(1,IL),TMI(1,IL),TMI(2,IL)                   
  2033       FORMAT(F12.6,2X,E12.5,1X,E12.5,2X,E12.5,1x,E12.5,3X,

@@ -35,11 +35,11 @@
       dimension pbndsm(6)
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
 
-      real DPG(NLAYER), temp_mid_pressure(NLAYER), temp_bound_pressure(NLAYER)
+      real DPG(NLAYER), PBAR(NLAYER)
       real DPGsub(NDBL), PBARSUB(NDBL)
       REAL PM
 
-      real t_pass(NZ), p_pass(NZ), pr(NZ), pbar(NZ)
+      real t_pass(NLAYER), p_pass(NLAYER), pr(NLAYER)
       integer i1, i2, indorder(5)
       logical all_ok
       integer :: malsky_switch
@@ -147,12 +147,10 @@
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
-          temp_mid_pressure = p_pass * 10.
-          temp_bound_pressure    = pr     * 10.
 
           DO J  = 2,NLAYER
              PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
-             DPG(J)   = (temp_bound_pressure(J)-temp_bound_pressure(J-1)) / G
+             DPG(J)   = ((p_pass(J) * 10.0)-(p_pass(J-1)*10.0)) / G
           END DO
 
           PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
@@ -181,13 +179,6 @@
            PBARsub(1)  = 10.0 ** (LOG10(PBARsub(2)) - (LOG10(PBARsub(3)) - LOG10(PBARsub(2))))
            DPGsub(1)   = 10.0 ** (LOG10(DPGsub(2))  - (LOG10(DPGsub(3))  - LOG10(DPGsub(2))))
       else
-    !     Get atmospheric pressure profile from interface common block
-    !     [ dyne / cm^2 ]
-
-          do k = 1,NZ
-            temp_bound_pressure(k)=p_pass(k)*10.
-          enddo
-
     !     The layer thickness in pressure should be the difference between
     !     the top and bottom edge of the layer.  Eg. So for layer 3, the layer thickness
     !     is the pressure at the boundaries 4 minus at the boundary 3.
@@ -199,28 +190,24 @@
     !     PRESS - PRESSURE AT EDGE OF LAYER (dyne/cm^2)
     !     DPG   - MASS OF LAYER (G / CM**2)!    D PBAR
     !     PBARS - THICKNESS OF LAYER IN PRESSURE (BARS)
-    !     temp_mid_pressure- PRESSURE AT CENTER OF LAYER (dyne/cm^2
 
-          temp_mid_pressure      = pr        * 10.0
-          temp_bound_pressure    = p_pass    * 10.0
           PBAR(1)                = p_pass(1) * 1e-5
-          DPG(1)                 = temp_bound_pressure(1)/G
+          DPG(1)                 = (p_pass(1) * 10.0)/G
 
           DO J  = 2,NLAYER
-             PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
-             DPG(J) = (temp_bound_pressure(J)-temp_bound_pressure(J-1)) / G
+              PBAR(J) = (p_pass(J)-p_pass(J-1))*1e-5
+              DPG(J)  = ((p_pass(J) * 10.0)-(p_pass(J-1)*10.0)) / G
           END DO
-
 
           K = 1
           DO J  = 2, NDBL-1,2
              L  =  J
-             PBARsub(L) =  (temp_mid_pressure(K) - temp_bound_pressure(K))*1e-6
-             DPGsub (L) =  (temp_mid_pressure(K) - temp_bound_pressure(K)) / G
+             PBARsub(L) =  ((pr(K)*10.0) - (p_pass(K) * 10.0))*1e-6
+             DPGsub (L) =  ((pr(K)*10.0) - (p_pass(K) * 10.0)) / G
              K = K + 1
              L = L + 1
-             PBARsub(L) =  (temp_bound_pressure(K) - temp_mid_pressure(K-1))*1e-6
-             DPGsub (L) =  (temp_bound_pressure(K) - temp_mid_pressure(K-1)) / G
+             PBARsub(L) =  ((p_pass(K) * 10.0) - (pr(K-1)*10.0))*1e-6
+             DPGsub (L) =  ((p_pass(K) * 10.0) - (pr(K-1)*10.0)) / G
           END DO
 
           PBARsub(NDBL) = PBARsub(NDBL-1) + ABS(PBARsub(NDBL-2) - PBARsub(NDBL-3))
@@ -291,14 +278,14 @@
               END DO
           END DO
 
-
           DO L  = NSOLP+1,NTOTAL
              DO J     =   1,NDBL
-                 PM          =   DPGsub(J)
-                 TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*PM
+                 TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*DPGsub(J)
              END DO
           END DO
       END IF
+
+
 
       FNET(:,:)   = 0.0
       TMI(:,:)    = 0.0

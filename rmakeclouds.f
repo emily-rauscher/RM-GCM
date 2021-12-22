@@ -112,7 +112,7 @@
        nlev     =  nl+1 !To define the layer above the top boundary 
 !       nhem     =   2
        psigma   = sigma*P0
-       ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
+       ! LAYER EDGES AT WHICH FLUXES ARE COMPUTED, p_pass.
              DO LD    = 1,NL-1
              pressure(LD+1)=(psigma(LD)+psigma(LD+1))/2.
              ENDDO

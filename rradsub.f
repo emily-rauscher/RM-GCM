@@ -1,6 +1,6 @@
       subroutine radsub(iffirst,pr,p_pass,t_pass,qh2o_pass,
      &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
-     &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer)
+     &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer,dpg)
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
@@ -11,7 +11,7 @@
       include 'rcommons.h'
       PARAMETER(PI2=2.0*3.14159265359)
       integer iffirst
-      real t_pass(NZ)
+      real t_pass(NZ), dpg(nz)
       real p_pass(NZ)
       real qh2o_pass(NZ)
       real radheat(NZ)
@@ -22,7 +22,6 @@
       real PSOL,PSOL_aerad
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
 
-      real DPG(NLAYER)
       integer itime, ntime, solar_calculation_indexer
 
       ! Malsky add

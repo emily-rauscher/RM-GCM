@@ -76,7 +76,7 @@
           L  =  J
           TTsub(L) = t_pass(K)
           L  =  L+1
-          TTsub(L) = t_pass(K) !(t_pass(K) + t_pass(K+1)) / 2.0
+          TTsub(L) = t_pass(K)
           K  =  K+1
  46   CONTINUE
 

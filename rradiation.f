@@ -169,7 +169,7 @@ C
 
       REAL TAVE(IGP)
 
-      REAL PR(NL+1),T(NL+1),PRFLUX(nl+1),htlw(nl+1),htsw(nl+1)
+      REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1), dpg(nl+1)
 
       real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
@@ -472,7 +472,7 @@ c     ntstep is the number of timesteps to skip.
      &    is_grp_ice_aerad, do_mie_aerad,
      &    ienconc_aerad,
      &    sfc_alb_aerad, sfc_wind_aerad, dr_aerad,
-     &    iaera, PRFLUX),
+     &    iaera, p_pass, dpg),
      &    firstprivate(ilast),
      &    lastprivate(ilast),
      &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
@@ -575,14 +575,14 @@ c     ntstep is the number of timesteps to skip.
 !             PR AND T ARE THE TEMPERATURE AND PRESSURE AT THE SIGMA LEVELS
 !             AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE.
 !             TO COMPUTE HEATING RATES AT THESE CENTERS, WE NEED TO DEFINE
-!             LAYER EDGES AT WHICH FLUXES ARE COMPUTED, PRFLUX.
+!             LAYER EDGES AT WHICH FLUXES ARE COMPUTED, p_pass.
 
               DO LD    = 1,NL-1
-                PRFLUX(LD+1)=(pr(LD)+pr(LD+1))/2.
+                p_pass(LD+1)=(pr(LD)+pr(LD+1))/2.
               ENDDO
 
-              PRFLUX(NL+1)=PR(NL+1)
-              PRFLUX(1)=pr(1)*0.5
+              p_pass(NL+1)=PR(NL+1)
+              p_pass(1)=pr(1)*0.5
 
               alon=REAL(i-1)/REAL(mg)*360.0
 
@@ -597,8 +597,8 @@ c     ntstep is the number of timesteps to skip.
                 ENDDO
               ENDIF
 
-              call calc_radheat(pr,t,prflux,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer)
+              call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
+     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg)
 
               pr=prb2t
 
