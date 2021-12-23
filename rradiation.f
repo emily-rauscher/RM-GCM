@@ -161,72 +161,7 @@ C
      :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)
      :     ,TTSW(IGC,NL),TTLW(IGC,NL)
 
-      COMMON/GSG/GSG(IGC,JG)
-
-      REAL htnet
-
-      COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
-
-      REAL TAVE(IGP)
-
-      REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1)
-      real dpg(nl+1), pbar(nl+1)
-      real dpgsub(2*nl+2), pbarsub(2*nl+2)
-
-      real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
-
-      ! Malsky is adding these
-      integer solar_calculation_indexer
-
-      integer ifsetup
-      real ibinm
-      real rfluxes_aerad(2,2,2)
-      real psol_aerad
-      real heati_aerad(NL+1)
-      real heats_aerad(NL+1)
-      real fsl_up_aerad(NL+1)
-      real fsl_dn_aerad(NL+1)
-      real fir_up_aerad(NL+1)
-      real fir_dn_aerad(NL+1)
-      real fir_net_aerad(NL+1)
-      real fsl_net_aerad(NL+1)
-
-      real PRB2T(NL+1),adum
-
-      integer ifirst                ! If =1, first time reading o3
-                                    ! and h2o (2 months' worth).
-      real amfrac                   ! fraction through month
-      integer ichange               ! =1 when in process of month change
-      integer ifirstcol             ! =1 first time through column
-                                    ! calculation (open new file).
-      real p0
-      real ps                       ! sfc pressure (used in
-                                    ! interpolation from climatology
-                                    ! to model).
-      integer im                    ! Pointer for array plg (for
-                                    ! getting sfc pressure).
-
-C     Array to hold fluxes at top and bottom of atmosphere
-C     1st index - flux 1=SW, 2=LW
-C     2nd index - Direction 1=DN, 2=UP
-C     3rd index - Where 1=TOP, 2=SURFACE
-
-      real fluxes(2,2,2)
-
-      real incident_starlight_fraction
-
-c     The following for parallel testing --MTR
-      integer TID, NTHREADS
-
-      double precision test_wctime
-
-      save                          ! Want to keep things like dcompl.
-
-      DATA IFIRST/1/
-      data ifirstcol/1/
-
-
-       COMMON /irradiation_parameters/
+      COMMON /irradiation_parameters/
      &  EMISIR,
      &  HEATI(NL+1),
      &  HEATS(NL+1), HEAT(NL+1),
@@ -299,9 +234,91 @@ c     The following for parallel testing --MTR
      &  fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1),
      &  qrad(NL+1),alb_tomi,alb_toai
 
+!      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
+!      REAL EPSILON, SOLNET, EMISIR, TPI, SQ3, SBK, AM, AVG, ALOS, SCDAY, RGAS
+!      REAL U0, FDEGDAY, WOT, GOT, tslu, total_downwelling, alb_tot,tiru, alb_tomi, alb_toai
+!      REAL HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5)
+!      REAL NPROB(5), SOL(5), RAYPERBAR(5), WEIGHT(5), GOL(5,2*NL+2), WOL(5,2*NL+2),TAUCONST(5)
+!      REAL WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2)
+!      REAL PTEMP(5,2*NL+2), uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2)
+!      REAL uopd(5,2*NL+2), U1S(5), U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1(5,2*NL+2)
+!      REAL EM1(5,2*NL+2), EM2(5,2*NL+2), EL1(5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
+!      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
+!      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2)
+!      REAL FNET(5,2*NL+2), EE3(5,2*NL+2),EL3(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4)
+!      REAL DF(5,4*NL+4), DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2)
+!      REAL DINTENT(5,3,2*NL+2), UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2)
+!      REAL firu(2), fird(2), fsLu(3), fsLd(3), fsLn(3), alb_toa(3), fupbs(NL+1), fdownbs(NL+1)
+!      REAL fnetbs(NL+1), fdownbs2(NL+1), fupbi(NL+1), fdownbi(NL+1), fnetbi(NL+1)
+
+
+      COMMON/GSG/GSG(IGC,JG)
+
+      REAL htnet
+
+      COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
+
+      REAL TAVE(IGP)
+
+      REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1)
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
+
+      real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
+
+      ! Malsky is adding these
+      integer solar_calculation_indexer
+
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real psol_aerad
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
+
+      real PRB2T(NL+1),adum
+
+      integer ifirst                ! If =1, first time reading o3
+                                    ! and h2o (2 months' worth).
+      real amfrac                   ! fraction through month
+      integer ichange               ! =1 when in process of month change
+      integer ifirstcol             ! =1 first time through column
+                                    ! calculation (open new file).
+      real p0
+      real ps                       ! sfc pressure (used in
+                                    ! interpolation from climatology
+                                    ! to model).
+      integer im                    ! Pointer for array plg (for
+                                    ! getting sfc pressure).
+
+C     Array to hold fluxes at top and bottom of atmosphere
+C     1st index - flux 1=SW, 2=LW
+C     2nd index - Direction 1=DN, 2=UP
+C     3rd index - Where 1=TOP, 2=SURFACE
+
+      real fluxes(2,2,2)
+
+      real incident_starlight_fraction
+
+c     The following for parallel testing --MTR
+      integer TID, NTHREADS
+
+      double precision test_wctime
+
+      save                          ! Want to keep things like dcompl.
+
+      DATA IFIRST/1/
+      data ifirstcol/1/
+
+
       common /irradiation_variables_kept_in_global/
      & zsin,O2(NL+1), O3(NL+1), AH2O(NL+1), TAUA(5,2*NL+2), dz(NL+1)
-
 
     ! TOOK OUT MOLEF
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
@@ -311,9 +328,6 @@ c     The following for parallel testing --MTR
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs
-
-
-
 
       RHSCL=288.0*GASCON/GA
 
@@ -337,6 +351,7 @@ c     ntstep is the number of timesteps to skip.
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer,
+     &    EF, SFCS,
      &    imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
@@ -392,7 +407,7 @@ c     ntstep is the number of timesteps to skip.
      &    fsLd,fsLn,alb_toa,
      &    fupbs,fdownbs,fnetbs,fdownbs2,
      &    fupbi,fdownbi,fnetbi,
-     &    qrad,alb_tomi,alb_toai
+     &    alb_tomi,alb_toai
      &    TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &    DENSITY, FMOLW, MOLEF,
      &    CORFACT,
@@ -533,10 +548,22 @@ c     ntstep is the number of timesteps to skip.
               ENDIF
 
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
+     &           incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
      &           ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &           fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &           pbar, dpgsub, pbarsub)
+!     &           NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &           WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &           PTEMP, uG0, uTAUL, W0, uW0,
+!    &           uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!    &           EM1, EM2, EL1, EL2, GAMI, AF,
+!     &           BF, EF, SFCS, B3, CK1, CK2,
+!     &           CP, CPB, CM, CMB, DIRECT,
+!     &           FNET, EE3,EL3, TMI, AS,
+!     &           DF, DS, XK, DIREC, DIRECTU,
+!     &           DINTENT, UINTENT, TMID, TMIU,
+!     &           firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &           fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
 
               pr=prb2t
 
@@ -645,8 +672,6 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      !write(*,*) 'Stopping in radiation'
-      !stop
 
       RETURN
       END

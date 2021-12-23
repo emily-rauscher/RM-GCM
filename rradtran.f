@@ -3,8 +3,20 @@
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &             pbar, dpgsub, pbarsub)
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
 
-!
+
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
 !
@@ -18,13 +30,13 @@
 !     **************************************************************
 !
       include 'rcommons.h'
-      integer, parameter :: nwave_alb = NTOTAL
+      integer  nwave_alb
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
-      real maxopd(nwave_alb)
+      real maxopd(nwave_alb), u0
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
-      real u0, incident_starlight_fraction
+      real incident_starlight_fraction
       integer jflip, solar_calculation_indexer
 
       real, dimension(NTOTAL,NDBL) :: SLOPE
@@ -46,6 +58,25 @@
       real fir_dn_aerad(NL+1)
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
+
+      nwave_alb = NTOTAL
+
+!      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
+!      REAL EPSILON, SOLNET, EMISIR, TPI, SQ3, SBK, AM, AVG, ALOS, SCDAY, RGAS
+!      REAL FDEGDAY, WOT, GOT, tslu, total_downwelling, alb_tot,tiru, alb_tomi, alb_toai
+!      REAL HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5)
+!      REAL NPROB(5), SOL(5), RAYPERBAR(5), WEIGHT(5), GOL(5,2*NL+2), WOL(5,2*NL+2),TAUCONST(5)
+!      REAL WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2)
+!      REAL PTEMP(5,2*NL+2), uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2)
+!      REAL uopd(5,2*NL+2), U1S(5), U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1(5,2*NL+2)
+!      REAL EM1(5,2*NL+2), EM2(5,2*NL+2), EL1(5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
+!      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
+!      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2)
+!      REAL FNET(5,2*NL+2), EE3(5,2*NL+2),EL3(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4)
+!      REAL DF(5,4*NL+4), DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2)
+!      REAL DINTENT(5,3,2*NL+2), UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2)
+!      REAL firu(2), fird(2), fsLu(3), fsLd(3), fsLn(3), alb_toa(3), fupbs(NL+1), fdownbs(NL+1)
+!      REAL fnetbs(NL+1), fdownbs2(NL+1), fupbi(NL+1), fdownbi(NL+1), fnetbi(NL+1)
 
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
@@ -122,11 +153,35 @@
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
-          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass)
+          !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass,
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
               CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG)
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
           ELSE
               write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
               stop
@@ -138,6 +193,18 @@
 
       SLOPE(:,:) = 0.0
       CALL OPPR1(TAUL, SLOPE,TTsub,t_pass)
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
@@ -151,7 +218,31 @@
 !     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
       IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
           CALL TWOSTR(TAUL, solar_calculation_indexer)
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
           CALL ADD(TAUL, solar_calculation_indexer, SLOPE)
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
       ENDIF
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
@@ -159,6 +250,18 @@
 
       IF(IR .NE. 0) THEN
           CALL NEWFLUX1(TAUL,SLOPE)
+!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
+!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
+!     &   PTEMP, uG0, uTAUL, W0, uW0,
+!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
+!     &   EM1, EM2, EL1, EL2, GAMI, AF,
+!     &   BF, EF, SFCS, B3, CK1, CK2,
+!     &   CP, CPB, CM, CMB, DIRECT,
+!     &   FNET, EE3,EL3, TMI, AS,
+!     &   DF, DS, XK, DIREC, DIRECTU,
+!     &   DINTENT, UINTENT, TMID, TMIU,
+!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
+!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
       ENDIF
 
 !     CLOUD FRACTION
