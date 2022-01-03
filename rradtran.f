@@ -2,21 +2,25 @@
      &                   solar_calculation_indexer, DPG, pr, t_pass, p_pass,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
-     &             pbar, dpgsub, pbarsub)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+     &             pbar, dpgsub, pbarsub,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
 
-
+!
 !     **************************************************************
 !     Purpose:    Driver routine for radiative transfer model.
 !
@@ -24,15 +28,34 @@
 !                 zenith angle are taken from interface common block.
 !
 !     Output:     Profiles of radiative fluxes, heating
-!                 rates for air and particles; vertically
+!                 rates for air and particles; verticaly ! spelled wrong so I don't grep a certain word
 !                 integrated optical depths; and albedos (which
 !                 are all loaded into interface common block).
 !     **************************************************************
 !
       include 'rcommons.h'
-      integer  nwave_alb
+
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
+      REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
+      REAL TPI, SQ3, SBK,AM, AVG, ALOS
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
+      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
+      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
+      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
+      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
+      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
+      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
+      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
+      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
+      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
+      REAL qrad(NL+1),alb_tomi,alb_toai
+
+      integer, parameter :: nwave_alb = NTOTAL
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
-      real maxopd(nwave_alb), u0
+      real maxopd(nwave_alb)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
@@ -59,25 +82,6 @@
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
 
-      nwave_alb = NTOTAL
-
-!      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
-!      REAL EPSILON, SOLNET, EMISIR, TPI, SQ3, SBK, AM, AVG, ALOS, SCDAY, RGAS
-!      REAL FDEGDAY, WOT, GOT, tslu, total_downwelling, alb_tot,tiru, alb_tomi, alb_toai
-!      REAL HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5)
-!      REAL NPROB(5), SOL(5), RAYPERBAR(5), WEIGHT(5), GOL(5,2*NL+2), WOL(5,2*NL+2),TAUCONST(5)
-!      REAL WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2)
-!      REAL PTEMP(5,2*NL+2), uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2)
-!      REAL uopd(5,2*NL+2), U1S(5), U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1(5,2*NL+2)
-!      REAL EM1(5,2*NL+2), EM2(5,2*NL+2), EL1(5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-!      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-!      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2)
-!      REAL FNET(5,2*NL+2), EE3(5,2*NL+2),EL3(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4)
-!      REAL DF(5,4*NL+4), DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2)
-!      REAL DINTENT(5,3,2*NL+2), UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2)
-!      REAL firu(2), fird(2), fsLu(3), fsLd(3), fsLn(3), alb_toa(3), fupbs(NL+1), fdownbs(NL+1)
-!      REAL fnetbs(NL+1), fdownbs2(NL+1), fupbi(NL+1), fdownbi(NL+1), fnetbi(NL+1)
-
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
           ISL = 1
@@ -95,10 +99,8 @@
       ! MALSKY CHECK THIS
       TT(1) = t_pass(1) ! MALSKY ADDED
       DO 12 J = 2, NVERT
-          TT(J) = T(J-1) * ((p_pass(J)*10.0)/P(J-1)) **
-     &              (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
+          TT(J) = T(J-1) * ((p_pass(J)*10.0)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
 12    CONTINUE
-
 
 
 !     SINCE WE DON'T HAVE A GROUND (YET,...ERIN)
@@ -107,7 +109,7 @@
 !     does not work since the slope of such a layer in log p cannot be
 !     computed.!     We instead introduce a pressure at 0.5 * P(1)
 !     (sigma level).
-!     Since this is not logarithmically spaced, the extrapolation was
+!     Since this is not log spaced, the extrapolation was
 !     treated differently at the top.
       TT(1)=((T(1)-TT(2))/log(P(1)/p_pass(2)))*log(p_pass(1)/P(1))+T(1)
       TT(NLAYER)=T(NVERT) * ((p_pass(NLAYER)*10)/P(NVERT)) ** (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
@@ -117,16 +119,13 @@
 !     layer center and edge temperatures
 
       K  =  1
-      DO 46 J  = 1, NDBL-2,2
+      DO 46 J  = 1, NDBL-1,2
           L  =  J
           TTsub(L) = tt(K)
           L  =  L+1
           TTsub(L) = t_pass(K)
           K  =  K+1
  46   CONTINUE
-
-      TTsub(NDBL) = t_pass(NLAYER)
-      TTsub(NDBL-1) = t_pass(NLAYER-1)
 
 !     Solar zenith angle
       u0 = incident_starlight_fraction
@@ -150,40 +149,33 @@
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
-
 !     CALCULATE THE OPTICAL PROPERTIES
       IF(AEROSOLCOMP .EQ. 'All') THEN
           !CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass,
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+!     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+!     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK)
 
           ! This one only works with 50 layers
           IF (NL .eq. 50) THEN
-              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
           ELSE
-              write(*,*) 'Youre calling the old cloud version with NL not equal to 50'
+              write(*,*) 'Youre doing the old cloud version with NL not equal to 50'
               stop
           END IF
       ELSE
@@ -191,20 +183,29 @@
           STOP
       ENDIF
 
-      SLOPE(:,:) = 0.0
-      CALL OPPR1(TAUL, SLOPE,TTsub,t_pass)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+
+
+
+
+      SLOPE(:,:) = 0.99
+      CALL OPPR1(TAUL, SLOPE, TTsub, t_pass,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
+
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
@@ -213,55 +214,68 @@
           stop
       ENDIF
 
+
 !
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
-!     CALL THE TWO STREAM CODE AND FIND THE SOLUTION
+!     GET TWO STREAM CODE AND FIND THE SOLUTION
       IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
-          CALL TWOSTR(TAUL, solar_calculation_indexer)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
-          CALL ADD(TAUL, solar_calculation_indexer, SLOPE)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+          CALL TWOSTR(TAUL, solar_calculation_indexer,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
+
+          CALL ADD(TAUL, solar_calculation_indexer, SLOPE,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
       ENDIF
 
-!     IF INFRARED CALCULATIONS ARE REQUIRED THEN CALL NEWFLUX1 FOR
-!     A MORE ACCURATE SOLUTION
+
+!     IF INFRARED CALCULATIONS ARE REQUIRED THEN NEWFLUX1 FOR MORE ACCURATE SOLUTION
 
       IF(IR .NE. 0) THEN
-          CALL NEWFLUX1(TAUL,SLOPE)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+          CALL NEWFLUX1(TAUL,SLOPE,LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+     &                  EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
       ENDIF
 
 !     CLOUD FRACTION
@@ -357,6 +371,9 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
+
+      write(*,*) HEAT(:)
+
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
@@ -537,7 +554,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
-
 
       return
       END

@@ -2,8 +2,8 @@
 
 rm -f igcm3_nopg
 
-#OPT='-O3 -xHost'
-OPT='-Ofast -xHost'
+OPT='-O3 -xHost'
+#OPT='-Ofast -xHost'
 #PROF='-g -p'
 REPORT='-warn noalign'
 #PARALLEL='-fopenmp'

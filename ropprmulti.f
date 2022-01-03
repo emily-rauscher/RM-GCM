@@ -1,21 +1,21 @@
-      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
-
-
-
-
-
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
+!
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
 !     *                         such as single scattering albedo,  *
@@ -29,7 +29,40 @@
 !
       include 'rcommons.h'
 
-      REAL TAUFACT
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1
+      REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
+      REAL TPI, SQ3, SBK,AM, AVG, ALOS
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
+      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
+      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
+      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
+      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
+      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
+      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
+      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
+      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
+      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
+      REAL qrad(NL+1),alb_tomi,alb_toai
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      REAL TAUFACT, DENOM
       REAL DPG(NLAYER), p_pass(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
       REAL CLOUDLOC(NLAYER,NCLOUDS)
@@ -63,23 +96,6 @@
       INTEGER K,J,BASELEV,TOPLEV,L
       INTEGER size_loc, temp_loc, pressure_loc,solar_calculation_indexer
       real particle_size
-
-!      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
-!      REAL EPSILON, SOLNET, EMISIR, TPI, SQ3, SBK, AM, AVG, ALOS, SCDAY, RGAS
-!      REAL U0, FDEGDAY, WOT, GOT, tslu, total_downwelling, alb_tot,tiru, alb_tomi, alb_toai
-!      REAL HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5)
-!      REAL NPROB(5), SOL(5), RAYPERBAR(5), WEIGHT(5), GOL(5,2*NL+2), WOL(5,2*NL+2),TAUCONST(5)
-!      REAL WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2)
-!      REAL PTEMP(5,2*NL+2), uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2)
-!      REAL uopd(5,2*NL+2), U1S(5), U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1(5,2*NL+2)
-!      REAL EM1(5,2*NL+2), EM2(5,2*NL+2), EL1(5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-!      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-!      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2)
-!      REAL FNET(5,2*NL+2), EE3(5,2*NL+2),EL3(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4)
-!      REAL DF(5,4*NL+4), DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2)
-!      REAL DINTENT(5,3,2*NL+2), UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2)
-!      REAL firu(2), fird(2), fsLu(3), fsLd(3), fsLn(3), alb_toa(3), fupbs(NL+1), fdownbs(NL+1)
-!      REAL fnetbs(NL+1), fdownbs2(NL+1), fupbi(NL+1), fdownbi(NL+1), fnetbi(NL+1)
 
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &                           DENSITY, FMOLW, MOLEF,
@@ -194,8 +210,8 @@
           DO L = solar_calculation_indexer,NSOLP
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
-              if(TAUL(L,J) .lt. EPSILON ) then
-                  TAUL(L,J) = EPSILON
+              if(TAUL(L,J) .lt. 1d-6 ) then
+                  TAUL(L,J) = 1d-6
               endif
 
               utauL(L,j)  = TAUL(L,J)
@@ -204,15 +220,15 @@
                   wot = woL(L,j)
               endif
 
-              WOT       = min(1.-EPSILON,WOT)
+              WOT       = min(1.-1d-6,WOT)
               uw0(L,j)  = WOT
               DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
 
-              if( DENOM .LE. EPSILON ) then
-                  DENOM = EPSILON
+              if( DENOM .LE. 1d-6 ) then
+                  DENOM = 1d-6
               endif
 
-              if( DENOM .GT. EPSILON ) then
+              if( DENOM .GT. 1d-6 ) then
                   GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
               else
                   GOT = 0.
@@ -228,7 +244,7 @@
 
 
 
-              IF (deltascale) THEN
+              IF (.TRUE.) THEN
                   FO          = GOT*GOT
                   DEN         = 1.-WOT*FO
                   TAUL(L,J)   = TAUL(L,J) * DEN
@@ -262,8 +278,8 @@
                   tauL(L,j) = tauaer(L,j)
               endif
 
-              if( TAUL(L,J) .lt. EPSILON ) then
-                  TAUL(L,J) = EPSILON
+              if( TAUL(L,J) .lt. 1d-6 ) then
+                  TAUL(L,J) = 1d-6
               endif
 
               utauL(L,j)  = TAUL(L,J)
@@ -272,15 +288,15 @@
                   wot = woL(L,j)
               endif
 
-              WOT         = min(1.-EPSILON,WOT)
+              WOT         = min(1.-1d-6,WOT)
               uw0(L,j)    = WOT
               DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
 
-              if( DENOM .LE. EPSILON ) then
-                  DENOM = EPSILON
+              if( DENOM .LE. 1d-6 ) then
+                  DENOM = 1d-6
               endif
 
-              if( DENOM .GT. EPSILON ) then
+              if( DENOM .GT. 1d-6 ) then
                   GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
               else
                   GOT = 0.
@@ -294,7 +310,7 @@
               uOPD(L,J)   = 0.0
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
-              IF (deltascale) THEN
+              IF (.TRUE.) THEN
                   FO          = GOT*GOT
                   DEN         = 1.-WOT*FO
                   TAUL(L,J)   = TAUL(L,J) * DEN

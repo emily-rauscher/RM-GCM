@@ -3,19 +3,23 @@
      &                           solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
-     &             pbar, dpgsub, pbarsub)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+     &             pbar, dpgsub, pbarsub,
+     &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
+     &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
 
 !
 !     *********************************************************
@@ -31,13 +35,32 @@
 !
       include 'rcommons.h'
 
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
+      REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
+      REAL TPI, SQ3, SBK,AM, AVG, ALOS
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
+      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
+      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
+      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
+      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
+      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
+      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
+      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
+      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
+      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
+      REAL qrad(NL+1),alb_tomi,alb_toai
+
+
 ! **********************************************************************
 !
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
       integer :: testing, L, J, K, solar_calculation_indexer
-      REAL G,WVO, incident_starlight_fraction,AM
+      REAL G,WVO, incident_starlight_fraction
       real, dimension(NIR,NLAYER) :: tau_IRe
       real, dimension(NSOL,NLAYER) :: tau_Ve
       real, dimension(NIR+NSOL) :: MALSKY_ABSCOEFF
@@ -74,24 +97,6 @@
       real fsl_net_aerad(NL+1)
 
 
-!      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
-!      REAL EPSILON, SOLNET, EMISIR, TPI, SQ3, SBK, AVG, ALOS, SCDAY, RGAS
-!      REAL U0, FDEGDAY, WOT, GOT, tslu, total_downwelling, alb_tot,tiru, alb_tomi, alb_toai
-!      REAL HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5)
-!      REAL NPROB(5), SOL(5), RAYPERBAR(5), WEIGHT(5), GOL(5,2*NL+2), WOL(5,2*NL+2),TAUCONST(5)
-!      REAL WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2)
-!      REAL PTEMP(5,2*NL+2), uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2)
-!      REAL uopd(5,2*NL+2), U1S(5), U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1(5,2*NL+2)
-!      REAL EM1(5,2*NL+2), EM2(5,2*NL+2), EL1(5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-!      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-!      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2)
-!      REAL FNET(5,2*NL+2), EE3(5,2*NL+2),EL3(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4)
-!      REAL DF(5,4*NL+4), DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2)
-!      REAL DINTENT(5,3,2*NL+2), UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2)
-!      REAL firu(2), fird(2), fsLu(3), fsLd(3), fsLn(3), alb_toa(3), fupbs(NL+1), fdownbs(NL+1)
-!      REAL fnetbs(NL+1), fdownbs2(NL+1), fupbi(NL+1), fdownbi(NL+1), fnetbi(NL+1)
-
-
 ! ******************************************
 !            DEFINE CONSTANTS
 ! *****************************************
@@ -105,11 +110,8 @@
 !     GAUSS ANGLES AND GAUSS WEIGHTS FOR GAUSSIAN INTEGRATION
 !     MOMENTS (USE FIRST MOMENT VALUES) N=3
 !
-      DATA GANGLE  / 0.2123405382, 0.5905331356,0.9114120405/
-      DATA GRATIO  / 0.4679139346, 0.3607615730, 0.1713244924/
-      DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137 /
 
-      DATA AVG    /6.02252E+23/
+
       DATA PI     /3.14159265359/
 !     ALOS   - LOCSHMIDT'S NUMBER (#/CM**3)
 !     AM     - MOLECULAR WEIGHT OF AIR (G/MOL)
@@ -120,11 +122,6 @@
 !     SCDAY  - NUMBER OF SECONDS IN ONE DAY (S)
 
 
-      DATA ALOS   / 2.68719E19   /
-      DATA RGAS   / 8.31430E+07  /
-      DATA SBK    / 5.6697E-8    /
-      DATA SCDAY  / 86400.0      /
-      DATA EPSILON / ALMOST_ZERO  /
 
       AM= RGAS/R_AIR
       G = GA*100.
@@ -168,6 +165,8 @@
       IF(LWSCAT) THEN
         IRS  = 1
       ENDIF
+
+
 
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA = NTOTAL
@@ -261,27 +260,32 @@
       TAURAY(:,:) = 0.0
       TAUAER(:,:) = 0.0
       TAUGAS(:,:) = 0.0
+      TAUL(:,:)   = 0.0
 
-      WOL(:,:)     = 0.
-      GOL(:,:)     = 0.
+      WOL(:,:)    = 0.0
+      GOL(:,:)    = 0.0
 
 
 
       malsky_switch = 0
       IF (malsky_switch .gt. 0) THEN
-        CALL opacity_wrapper(t_pass, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction)
-!     &   NPROB, SOL, RAYPERBAR, WEIGHT, GOL, WOL, TAUCONST,
-!     &   WAVE, TT, Y3, PTEMPG, PTEMPT, G0, OPD,
-!     &   PTEMP, uG0, uTAUL, W0, uW0,
-!     &   uopd, U1S, U1I, TOON_AK, B1, B2, EE1,
-!     &   EM1, EM2, EL1, EL2, GAMI, AF,
-!     &   BF, EF, SFCS, B3, CK1, CK2,
-!     &   CP, CPB, CM, CMB, DIRECT,
-!     &   FNET, EE3,EL3, TMI, AS,
-!     &   DF, DS, XK, DIREC, DIRECTU,
-!     &   DINTENT, UINTENT, TMID, TMIU,
-!     &   firu, fird, fsLu, fsLd, fsLn, alb_toa, fupbs, fdownbs,
-!     &   fnetbs, fdownbs2, fupbi, fdownbi, fnetbi)
+        CALL opacity_wrapper(t_pass, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
+     &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
+     &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai)
 
         DO L = solar_calculation_indexer,NSOLP
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
@@ -337,12 +341,6 @@
       FNET(:,:)   = 0.0
       TMI(:,:)    = 0.0
       DIRECT(:,:) = 0.0
-
-
-
-      DO  L = NSOLP+1,NTOTAL
-          TAUCONST(L)=MALSKY_ABSCOEFF(L)/GA/100.
-      ENDDO
 
 !@@@@@@@@@@@@@@RAYLEIGH SCATTERING CONDITIONAL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 !     WAVE MUST BE IN MICRONS
