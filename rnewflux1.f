@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 !
 !     **************************************************************
 !     *  Purpose             :  Calculate upward and downward      *

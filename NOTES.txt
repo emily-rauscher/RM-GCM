@@ -245,7 +245,6 @@ Tracing through how calculations are done in lat/long/lev space
 						 swalb:			short wave albedo
 						 kount:			time counter
 						 itspd:			time counter	(ndays=KOUNT/ITSPD) where itspd=NINT(TSPD)
-					CALL: RADSUB(iffirst,pr,p_full,t_full,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD)
 							iffirst:		1	(what is this?)
 							pr:			pressure at sigma levels and bottom boundary
 							p_full:			same as prflux==layer edge pressures

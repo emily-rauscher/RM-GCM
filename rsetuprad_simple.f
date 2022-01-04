@@ -1,4 +1,4 @@
-      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t_pass, pr, p_pass,
+      SUBROUTINE SETUPRAD_SIMPLE(Beta_V, Beta_IR, t, pr, p_pass,
      &                           incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
      &                           solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
@@ -19,7 +19,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 !
 !     *********************************************************
@@ -78,7 +78,7 @@
 
       REAL PM
 
-      real t_pass(NLAYER), p_pass(NLAYER), pr(NLAYER)
+      real t(NLAYER), p_pass(NLAYER), pr(NLAYER)
       integer i1, i2, indorder(5)
       logical all_ok
       integer :: malsky_switch
@@ -269,7 +269,7 @@
 
       malsky_switch = 0
       IF (malsky_switch .gt. 0) THEN
-        CALL opacity_wrapper(t_pass, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
+        CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
      &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
      &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -285,7 +285,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
         DO L = solar_calculation_indexer,NSOLP
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))

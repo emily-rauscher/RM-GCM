@@ -1,25 +1,18 @@
-!
 !  Declare and define symbolic constants
-!   (Implicit typing in effect unless explicitly specified)
-!
-!
-!  Include implicit declarations
-!
+
       include 'rprecision.h'
-!
-!
+
 !  Include symbolic constants shared between aerosol and radiation models
-!
+
       include 'raerad.h'
-!
-!
+
 ! DEFINE THE DIMENSIONS USED BY THE RADIATION MODEL
-!
+
 ! NVERT  = MAXIMUM NUMBER OF LAYERS;
 ! NLAYER = MAXIMUM NUMBER OF LAYER BOUNDARIES
 ! NDBL   = TWICE THE MAXIMUM NUMBER OF LAYER BOUNDARIES
 ! NRAD   = MAXIMUM NUMBER OF AEROSOL RADIUS BINS;
-!
+
       PARAMETER ( NVERT = NL )
       PARAMETER ( NRAD = NBIN )
       PARAMETER ( NLAYER = NVERT+1)
@@ -27,33 +20,25 @@
       PARAMETER ( NRADVER = NRAD*NVERT )
       PARAMETER ( NRADLAY = NRAD*NLAYER )
       PARAMETER ( NQPL = 4*NLAYER)
-!
+
 ! NTOTAL = TOTAL NUMBER OF PROBABILITY INTERVALS;
 ! NSOLP  = NUMBER OF SOLAR PROBABILITY INTERVALS;
 ! NIRP   = NUMBER OF INFRARED PROBABILITY INTERVALS;
-!
-      PARAMETER ( NSOLP = 3)
-      PARAMETER ( NIRP  = 2)
-      PARAMETER ( NTOTAL = NSOLP + NIRP )
-!
+
+      PARAMETER (NSOLP = 3)
+      PARAMETER (NIRP  = 2)
+      PARAMETER (NTOTAL = NSOLP + NIRP)
+
 ! NGAUSS = TOTAL NUMBER OF GAUSS QUADRATURE POINTS;
-!
-      PARAMETER ( NGAUSS = 3)
-!
-!
+
+      PARAMETER (NGAUSS = 3)
       PARAMETER (NLOW =2000)
       PARAMETER (NHIGH=2001)
-      PARAMETER ( NCOUNT = NHIGH - NLOW )
-!
+      PARAMETER (NCOUNT = NHIGH - NLOW )
+
 ! CONSTANT PARAMETERS THAT MIGHT BE SPECIFIED BY AN EXTERNAL MODEL
 
-
-!
-! TIME-DEPENDENT VARIABLES THAT MIGHT BE SPECIFIED BY AN EXTERNAL MODEL
-
-
-      common /irradiation_vars/
-     & zsin,O2(NLAYER), O3(NLAYER), AH2O(NTOTAL), dz(NLAYER), TAUCONST(NWAVE), G, PI
+      common /irradiation_constants/ G, PI
 
 ! ensure all rad local variables are stored statically
       save

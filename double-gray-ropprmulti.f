@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -1318,7 +1318,6 @@
  425            CONTINUE
  450         CONTINUE
  501  CONTINUE
-
 
       RETURN
       END

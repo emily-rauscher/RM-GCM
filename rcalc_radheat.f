@@ -22,7 +22,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 !      use physical_constants
 
@@ -49,11 +49,11 @@
       real, parameter :: BK = 1.38054e-16
       real, parameter :: L      = 2.5e10
        
-      REAL PR(NZ),T(NZ),Cpd,p_pass(NZ)
+      REAL PR(NL+1),T(NL+1),Cpd,p_pass(NL+1)
       real dpg(NLAYER), pbar(NLAYER)
       real dpgsub(NDBL), pbarsub(NDBL)
-      real, dimension(NZ) :: radheat
-      real, dimension(NZ) :: z, htsw,htlw
+      real, dimension(NL+1) :: radheat
+      real, dimension(NL+1) :: z, htsw,htlw
       real, dimension(2,2,2) :: rfluxes
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -85,7 +85,7 @@
       RdCp = Rd/Cpd
 
 
-      call radsub(iffirst,pr,p_pass,t,qh2o_full,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+      call radsub(iffirst,pr,p_pass,t,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
@@ -105,7 +105,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 
 

@@ -1,4 +1,4 @@
-      subroutine opacity_wrapper(t_pass, p_pass, tau_IRe,
+      subroutine opacity_wrapper(t, p_pass, tau_IRe,
      &                           tau_Ve, Beta_V, Beta_IR, gravity_SI, incident_starlight_fraction,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -15,7 +15,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
           include 'rcommons.h'
 
@@ -49,7 +49,7 @@
 
           real, dimension(NIRP,NLAYER+1) :: tau_IRe
           real, dimension(NSOLP,NLAYER+1) :: tau_Ve
-          real, dimension(NLAYER) :: dpe, Pl, Tl, t_pass
+          real, dimension(NLAYER) :: dpe, Pl, Tl, t
 
           ! Malsky check whether this is NLAYER+1
           real, dimension(NLAYER) :: pe
@@ -75,7 +75,7 @@
               END DO
           else
               DO J = 1, NLAYER
-                  Tl(J) = t_pass(J)
+                  Tl(J) = t(J)
               END DO
           end if
 

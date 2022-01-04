@@ -1,5 +1,4 @@
-      subroutine radsub(iffirst,pr,p_pass,t_pass,qh2o_pass,
-     &                  radheat,htlw,htsw,rfluxes,alat,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+      subroutine radsub(iffirst,pr,p_pass,t, radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer,dpg,
      &                  ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &                  fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
@@ -20,13 +19,12 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
 !     deltaz--the layer thickness in meters
 !     p_pass--the layer boundary pressures in pascal (NL+1)
-!     t_pass--mid-layer temperatures in K and one bottom boundary temp
 !     both p_ and t_ pass begin at the top and go down.
 
       include 'rcommons.h'
@@ -54,11 +52,11 @@
 
       PARAMETER(PI2=2.0*3.14159265359)
       integer iffirst
-      real t_pass(NZ)
+
+      REAL PR(NL+1),T(NL+1), p_pass(NL+1)
+
       real dpg(nl+1), pbar(nl+1)
       real dpgsub(2*nl+2), pbarsub(2*nl+2)
-      real p_pass(NZ)
-      real qh2o_pass(NZ)
       real radheat(NZ)
       real heats_aerad_tot(NZ), heati_aerad_tot(NZ), radheat_tot(NZ)
       real wave_pass(1)
@@ -82,7 +80,7 @@
       integer itime, ntime, solar_calculation_indexer
 
       ! Malsky add
-      REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT, incident_starlight_fraction
+      REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT1, incident_starlight_fraction
 
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -124,19 +122,19 @@ C ER modif for non-zero obliquity
          SSLAT=ASIN(SIN(OBLIQ*PI/180.)
      +        *SIN(PI2*KOUNT/ITSPD/PORB))*180./PI
          IF (SSLAT.GT.0) THEN
-            IF (ALAT.GT.90.-SSLAT) THEN
+            IF (alat1.GT.90.-SSLAT) THEN
                DLENGTH=PI
-            ELSEIF (ALAT.LT.-90.+SSLAT) THEN
+            ELSEIF (alat1.LT.-90.+SSLAT) THEN
                DLENGTH=0.
             ELSE
-               DLENGTH=ACOS(-1.*TAN(ALAT/360.*PI2)*TAN(SSLAT/360.*PI2))
+               DLENGTH=ACOS(-1.*TAN(alat1/360.*PI2)*TAN(SSLAT/360.*PI2))
             ENDIF
-         ELSEIF (ALAT.LT.-90.-SSLAT) THEN
+         ELSEIF (alat1.LT.-90.-SSLAT) THEN
             DLENGTH=PI
-         ELSEIF (ALAT.GT.90+SSLAT) THEN
+         ELSEIF (alat1.GT.90+SSLAT) THEN
             DLENGTH=0.
          ELSE
-            DLENGTH=ACOS(-1.*TAN(ALAT/360.*PI2)*TAN(SSLAT/360.*PI2))
+            DLENGTH=ACOS(-1.*TAN(alat1/360.*PI2)*TAN(SSLAT/360.*PI2))
          ENDIF
       ENDIF
 
@@ -158,14 +156,14 @@ C     globally averaged solar constant, vertical rays
             DFAC=MIN(1.0,(DAY - DDAY)/DDAY)
             IF(.NOT.LDIUR) THEN
                AMU0=(1.0-DFAC)*AMU0
-     &              +DFAC*MAX(0.0,SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)
-     &                           +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)
+     &              +DFAC*MAX(0.0,SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)
+     &                           +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)
      &                           *COS((ALON-SSLON)/360.*PI2))
                PSOL=(1.0-DFAC)*PSOL + DFAC*SOLC
             ELSE
                PSOL=(1.0-DFAC)*PSOL+DFAC*SOLC/PI*
-     &              (SIN(ALAT/360.*PI2)*SIN(SSLAT/360.*PI2)*DLENGTH
-     &              +COS(ALAT/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH))
+     &              (SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)*DLENGTH
+     &              +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH))
             ENDIF
          ENDIF
       ENDIF
@@ -189,9 +187,9 @@ C     globally averaged solar constant, vertical rays
       if( if_diurnal.eq.1 ) ntime = 24
 
       do itime = 1, ntime
-          t_pass(NLAYER) = t_pass(NLAYER-1)
+          t(NLAYER) = t(NLAYER-1)
 
-          call setuprad_simple(Beta_V, Beta_IR, t_pass, pr, p_pass, incident_starlight_fraction,
+          call setuprad_simple(Beta_V, Beta_IR, t, pr, p_pass, incident_starlight_fraction,
      &  TAURAY,TAUL,TAUGAS,TAUAER,
      &  solar_calculation_indexer, DPG,
      &  ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
@@ -212,11 +210,11 @@ C     globally averaged solar constant, vertical rays
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                 solar_calculation_indexer, DPG, pr, t_pass, p_pass,
+     &                 solar_calculation_indexer, DPG, pr, t, p_pass,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &             pbar, dpgsub, pbarsub,
@@ -235,7 +233,7 @@ C     globally averaged solar constant, vertical rays
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 
           cheats = 0.

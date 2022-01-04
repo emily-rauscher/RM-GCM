@@ -1,5 +1,5 @@
       SUBROUTINE RADTRAN(Beta_V,Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                   solar_calculation_indexer, DPG, pr, t_pass, p_pass,
+     &                   solar_calculation_indexer, DPG, pr, t, p_pass,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &             pbar, dpgsub, pbarsub,
@@ -18,7 +18,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 !
 !     **************************************************************
@@ -54,7 +54,7 @@
       REAL qrad(NL+1),alb_tomi,alb_toai
 
       integer, parameter :: nwave_alb = NTOTAL
-      real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p(NZ)
+      real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p_cgs(NZ)
       real maxopd(nwave_alb)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -63,7 +63,7 @@
       integer jflip, solar_calculation_indexer
 
       real, dimension(NTOTAL,NDBL) :: SLOPE
-      real pr(NLAYER), t_pass(NLAYER), p_pass(NLAYER)
+      real pr(NLAYER), p_pass(NLAYER)
       real TTsub(NDBL)
 
       real dpg(nl+1), pbar(nl+1)
@@ -82,6 +82,8 @@
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
 
+      integer L, J, K
+
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
           ISL = 1
@@ -89,43 +91,29 @@
           ISL = 0
       endif
 
-!     Get atmospheric profiles from interface common block
+!     MALSKY, get tt and ttsub into the routines that are private and local?
+!     I think they might be already
       do k = 1,nvert
-        t(k) = t_pass(k)
-        p(k) = pr(k)*10.  ! to convert from Pa to Dyne cm^2
+        p_cgs(k) = pr(k)*10.  ! to convert from Pa to Dyne cm^2
       enddo
 
-!     INTERPOLATE TEMPERATURE FROM LAYER CENTER (T) TO LAYER EDGE (TT)
-      ! MALSKY CHECK THIS
-      TT(1) = t_pass(1) ! MALSKY ADDED
-      DO 12 J = 2, NVERT
-          TT(J) = T(J-1) * ((p_pass(J)*10.0)/P(J-1)) ** (log(T(J)/T(J-1))/log(P(J)/P(J-1)))
-12    CONTINUE
+      TT(1) = t(1) ! MALSKY ADDED
+      DO J = 2, NVERT
+          TT(J) = T(J-1) * ((p_pass(J)*10.0)/p_cgs(J-1)) ** (log(T(J)/T(J-1))/log(p_cgs(J)/p_cgs(J-1)))
+      END DO
 
-
-!     SINCE WE DON'T HAVE A GROUND (YET,...ERIN)
-!     EXTRAPOLATE FOR THE BOUNDARY TEMPERATURES
-!     We need a top temperature boundary.  Zero degrees at zero pressure
-!     does not work since the slope of such a layer in log p cannot be
-!     computed.!     We instead introduce a pressure at 0.5 * P(1)
-!     (sigma level).
-!     Since this is not log spaced, the extrapolation was
-!     treated differently at the top.
-      TT(1)=((T(1)-TT(2))/log(P(1)/p_pass(2)))*log(p_pass(1)/P(1))+T(1)
-      TT(NLAYER)=T(NVERT) * ((p_pass(NLAYER)*10)/P(NVERT)) ** (log(T(NVERT)/T(NVERT-1))/log(P(NVERT)/P(NVERT-1)))
-
-!     WATER VAPOR (G / CM**2)
-!     create a T array for the double resolution IR by combinging the
-!     layer center and edge temperatures
+      TT(1)=((T(1)-TT(2))/log(p_cgs(1)/p_pass(2)))*log(p_pass(1)/p_cgs(1))+T(1)
+      TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/p_cgs(NVERT)) **
+     &             (log(T(NVERT)/T(NVERT-1))/log(p_cgs(NVERT)/p_cgs(NVERT-1)))
 
       K  =  1
-      DO 46 J  = 1, NDBL-1,2
+      DO J  = 1, (2*NL+2)-1,2
           L  =  J
           TTsub(L) = tt(K)
           L  =  L+1
-          TTsub(L) = t_pass(K)
+          TTsub(L) = t(K)
           K  =  K+1
- 46   CONTINUE
+      END DO
 
 !     Solar zenith angle
       u0 = incident_starlight_fraction
@@ -173,7 +161,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
           ELSE
               write(*,*) 'Youre doing the old cloud version with NL not equal to 50'
               stop
@@ -187,8 +175,8 @@
 
 
 
-      SLOPE(:,:) = 0.99
-      CALL OPPR1(TAUL, SLOPE, TTsub, t_pass,
+      SLOPE(:,:) = 0.0
+      CALL OPPR1(TAUL, SLOPE, TTsub, t,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -204,7 +192,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
@@ -215,7 +203,7 @@
       ENDIF
 
 
-!
+
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     GET TWO STREAM CODE AND FIND THE SOLUTION
       IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
@@ -235,7 +223,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
           CALL ADD(TAUL, solar_calculation_indexer, SLOPE,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
@@ -253,7 +241,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
       ENDIF
 
 
@@ -275,7 +263,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
       ENDIF
 
 !     CLOUD FRACTION
@@ -371,8 +359,6 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
-
-      write(*,*) HEAT(:)
 
 
 !     Load layer averages of droplet heating rates into interface common block

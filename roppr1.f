@@ -1,4 +1,4 @@
-      SUBROUTINE OPPR1(TAUL, SLOPE, TTsub, t_pass,
+      SUBROUTINE OPPR1(TAUL, SLOPE, TTsub, t,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *
@@ -48,16 +48,15 @@
 
 
       real  ITP, ITG, IT1, SBKoverPI,g11
-      DIMENSION  T(NLAYER), T_pass(NLAYER)
+      DIMENSION  T(NLAYER)
       real, dimension(5,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE
       real, dimension(NDBL) :: TTsub
 
-      integer kindex, J, L
+      integer kindex, J, L, num_layers
 !     **************************************
 !     * CALCULATE PTEMP AND SLOPE          *
 !     **************************************
-
 
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
@@ -74,7 +73,6 @@
               END IF
  200      CONTINUE
  300  CONTINUE
-
 
       RETURN
       END

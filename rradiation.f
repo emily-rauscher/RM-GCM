@@ -176,7 +176,7 @@ C
       real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       ! Malsky is adding these
-      integer solar_calculation_indexer
+      integer solar_calculation_indexer, num_layers
 
       integer ifsetup
       real ibinm
@@ -246,9 +246,6 @@ c     The following for parallel testing --MTR
       REAL qrad(NL+1),alb_tomi,alb_toai
 
 
-      common /irradiation_vars/
-     & zsin,O2(NL+1), O3(NL+1), AH2O(5), dz(NL+1), TAUCONST(5)
-
 
     ! TOOK OUT MOLEF
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
@@ -271,7 +268,7 @@ c     The following for parallel testing --MTR
       DATA RGAS   / 8.31430E+07  /
       DATA SCDAY  / 86400.0      /
 
-
+      num_layers = NL
 
       RHSCL=288.0*GASCON/GA
 
@@ -296,7 +293,9 @@ c     ntstep is the number of timesteps to skip.
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
      &    EF, SFCS,
-     &    imp,PR,T,imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
+     &    imp,PR,T,
+     &    TT,
+     &    imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
      &    EMISIR,
@@ -312,12 +311,9 @@ c     ntstep is the number of timesteps to skip.
      &    GOL,
      &    WOL,
      &    iblackbody_above,
-     &    AH2O,
      &    WAVE,
-     &    TAUGAS, TAURAY, TAUAER, TAUAEROSOL, TAUL, TAUA, uTAUL, TAUCONST,
-     &    O2,
-     &    O3,
-     &    TT, Y3,
+     &    TAUGAS, TAURAY, TAUAER, TAUAEROSOL, TAUL, TAUA, uTAUL,
+     &    Y3,
      &    U0,  ISL, IR, IRS, FDEGDAY,
      &    WOT, GOT,
      &    PTEMPG, PTEMPT,
@@ -401,7 +397,7 @@ c     ntstep is the number of timesteps to skip.
      &    T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
      &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSTAR, TSTARO, TTCR,
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
-     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW)
+     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers)
           DO i=1,mg
 
             im=i+iofm
@@ -511,7 +507,7 @@ c     ntstep is the number of timesteps to skip.
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 
               pr=prb2t
 
