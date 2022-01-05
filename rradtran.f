@@ -18,7 +18,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai, num_layers, ttsub)
 
 !
 !     **************************************************************
@@ -52,6 +52,7 @@
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
+      REAL ttsub(2*NL+2)
 
       integer, parameter :: nwave_alb = NTOTAL
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p_cgs(NZ)
@@ -64,7 +65,6 @@
 
       real, dimension(NTOTAL,NDBL) :: SLOPE
       real pr(NLAYER), p_pass(NLAYER)
-      real TTsub(NDBL)
 
       real dpg(nl+1), pbar(nl+1)
       real dpgsub(2*nl+2), pbarsub(2*nl+2)
@@ -91,8 +91,6 @@
           ISL = 0
       endif
 
-!     MALSKY, get tt and ttsub into the routines that are private and local?
-!     I think they might be already
       do k = 1,nvert
         p_cgs(k) = pr(k)*10.  ! to convert from Pa to Dyne cm^2
       enddo
@@ -105,6 +103,7 @@
       TT(1)=((T(1)-TT(2))/log(p_cgs(1)/p_pass(2)))*log(p_pass(1)/p_cgs(1))+T(1)
       TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/p_cgs(NVERT)) **
      &             (log(T(NVERT)/T(NVERT-1))/log(p_cgs(NVERT)/p_cgs(NVERT-1)))
+
 
       K  =  1
       DO J  = 1, (2*NL+2)-1,2

@@ -244,6 +244,7 @@ c     The following for parallel testing --MTR
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
+      REAL ttsub(2*NL+2)
 
 
 
@@ -294,7 +295,7 @@ c     ntstep is the number of timesteps to skip.
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
      &    EF, SFCS,
      &    imp,PR,T,
-     &    TT,
+     &    TT, ttsub,
      &    imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,

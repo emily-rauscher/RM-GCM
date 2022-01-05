@@ -51,7 +51,7 @@
       DIMENSION  T(NLAYER)
       real, dimension(5,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE
-      real, dimension(NDBL) :: TTsub
+      REAL ttsub(2*NL+2)
 
       integer kindex, J, L, num_layers
 !     **************************************
