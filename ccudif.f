@@ -136,8 +136,7 @@ C
       FTSL(T,Q,P)=TSLA+TSLB/(TSLC*LOG(T)-LOG(Q*P)+TSLD)                   
 C                                                                         
 C     Minimum moisture for mixing line calculations.                      
-      QGMIN=1.E-6                                                         
-C Stable limit to mixing line slope d(theta)/dp=-10^-3 K/Pa               
+      QGMIN=1.E-6
       TLIM=-1.0E-3*P0/CT                                                  
 C                                                                         
       ESCON=1./PLG(J)                                                     

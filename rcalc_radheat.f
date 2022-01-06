@@ -22,7 +22,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, ttsub)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
 
 !      use physical_constants
 
@@ -44,8 +44,7 @@
       REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai
-      REAL ttsub(2*NL+2)
+      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
 
       real, parameter :: BK = 1.38054e-16
       real, parameter :: L      = 2.5e10
@@ -106,7 +105,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, ttsub)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
 
 
 

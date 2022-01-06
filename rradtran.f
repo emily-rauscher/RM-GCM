@@ -18,7 +18,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, ttsub)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
 
 !
 !     **************************************************************
@@ -52,7 +52,6 @@
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
-      REAL ttsub(2*NL+2)
 
       integer, parameter :: nwave_alb = NTOTAL
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p_cgs(NZ)
@@ -104,15 +103,6 @@
       TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/p_cgs(NVERT)) **
      &             (log(T(NVERT)/T(NVERT-1))/log(p_cgs(NVERT)/p_cgs(NVERT-1)))
 
-
-      K  =  1
-      DO J  = 1, (2*NL+2)-1,2
-          L  =  J
-          TTsub(L) = tt(K)
-          L  =  L+1
-          TTsub(L) = t(K)
-          K  =  K+1
-      END DO
 
 !     Solar zenith angle
       u0 = incident_starlight_fraction
@@ -175,7 +165,7 @@
 
 
       SLOPE(:,:) = 0.0
-      CALL OPPR1(TAUL, SLOPE, TTsub, t,
+      CALL OPPR1(TAUL, SLOPE, t,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -200,8 +190,6 @@
           write(*,*) "Something funny is going on, why no IR scattering?"
           stop
       ENDIF
-
-
 
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     GET TWO STREAM CODE AND FIND THE SOLUTION
@@ -358,6 +346,8 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
+
+      write(*,*) HEAT(:)
 
 
 !     Load layer averages of droplet heating rates into interface common block

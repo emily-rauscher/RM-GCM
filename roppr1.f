@@ -1,4 +1,4 @@
-      SUBROUTINE OPPR1(TAUL, SLOPE, TTsub, t,
+      SUBROUTINE OPPR1(TAUL, SLOPE, t,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -27,6 +27,8 @@
 !
       include 'rcommons.h'
 
+      integer kindex, J, L, num_layers, K, index_num
+
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
@@ -34,7 +36,7 @@
       REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
       REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
       REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
+      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
       REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
       REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
       REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
@@ -45,32 +47,56 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-
-
       real  ITP, ITG, IT1, SBKoverPI,g11
-      DIMENSION  T(NLAYER)
+      real, DIMENSION(NLAYER) :: T
       real, dimension(5,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE
-      REAL ttsub(2*NL+2)
+      real, dimension(2*NL+2) :: ttsub
 
-      integer kindex, J, L, num_layers
+
 !     **************************************
 !     * CALCULATE PTEMP AND SLOPE          *
 !     **************************************
+
+      !K  =  1
+      !DO J  = 1, (2*NL+2)-1,2
+      !    L  =  J
+      !    TTsub(L) = tt(K)
+      !    L  =  L+1
+      !    TTsub(L) = t(K)
+      !    K  =  K+1
+      !END DO
+
 
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
 
       DO 300 J            =   1,NDBL
-          kindex          = max(1,j-1)
-          IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
+
+          !IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
+
+          if (MOD(J, 2) .eq. 0) THEN
+              index_num = J / 2
+              IT1 = T(index_num)*T(index_num)*T(index_num)*T(index_num)*SBKoverPI
+          ELSE
+              index_num = (J / 2) + 1
+              IT1 = TT(index_num)*TT(index_num)*TT(index_num)*TT(index_num)*SBKoverPI
+          END IF
 
           DO 200 L        = NSOLP+1,NTOTAL
+
+
+
+              kindex          = max(1,j-1)
               PTEMP(L,J)=IT1
-              SLOPE(L,J)   = (PTEMP(L,J)-PTEMP(L,KINDEX))/TAUL(L,J)
+              SLOPE(L,J)   = (PTEMP(L,J)-PTEMP(L,KINDEX)) / TAUL(L,J)
+
+
+
               if( TAUL(L,J) .le. 1.0E-6 ) THEN
                   SLOPE(L,J) = 0.
               END IF
+
  200      CONTINUE
  300  CONTINUE
 

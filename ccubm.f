@@ -153,8 +153,7 @@ C No adjustment for mid-level swap points.
 C         WRITE(2,2005) J,JH,NCRB,NCT                                     
 C 2005    FORMAT(' CUBM MID LEVEL SWAP IGNORED: I,J,NCRB,NCRT =',4I5)     
          RETURN                                                           
-      ENDIF                                                               
-C Stable limit to mixing line slope d(theta)/dp=-10^-3 K/Pa               
+      ENDIF
       TLIM=-1.0E-3*P0/CT                                                  
 C shallow convection                                                      
       ICFLAG(J,4,1)=NCRB                                                  
