@@ -252,5 +252,7 @@
         enddo
       enddo
 
+      write(*,*) TMI(3,10)
+
       RETURN
       END

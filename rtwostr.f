@@ -44,28 +44,19 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-
-
-
-
-
-
-
-
-
-
-
-
       real, dimension(5,2*NL+2) :: TAUL
       integer solar_calculation_indexer
 
+      U1I(:) = 0
+
        DO 10 L    =  solar_calculation_indexer,LLA
           if( L .LE. NSOLP )then
-            U1I(L) = SQ3  !2.d0 !SQ3
+            U1I(L) = SQ3
           else
-            U1I(L) = 2.d0
+            U1I(L) = 2.0
           endif
   10      U1S(L)  =  TPI/U1I(L)
+
 
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
@@ -138,7 +129,7 @@
 !     HERE ARE THE TOP AND BOTTOM BOUNDARY CONDITIONS AS WELL AS THE
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME
 !     NO DIFFUSE RADIATION IS INCIDENT AT UPPER BOUNDARY.
-!
+
       DO 20 L        = solar_calculation_indexer,NSOLP
          AF(L,1)     = 0.0
          BF(L,1)     = EL1(L,1)
@@ -155,5 +146,6 @@
          BF(L,JDBLEDBLE) = EM1(L,NDBL)-RSFX(L)*EM2(L,NDBL)
          EF(L,JDBLEDBLE) = 0.0
   21  CONTINUE
+
       RETURN
       END

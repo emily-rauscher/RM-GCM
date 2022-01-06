@@ -283,8 +283,6 @@
           ENDDO
       END DO
 
-
-
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
@@ -347,7 +345,6 @@
 
 500   CONTINUE
 
-      write(*,*) HEAT(:)
 
 
 !     Load layer averages of droplet heating rates into interface common block
