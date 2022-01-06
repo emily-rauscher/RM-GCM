@@ -616,8 +616,8 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      write(*,*) 'Stopping in radiation'
-      stop
+      !write(*,*) 'Stopping in radiation'
+      !stop
 
       RETURN
       END

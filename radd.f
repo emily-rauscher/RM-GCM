@@ -30,7 +30,7 @@
       include 'rcommons.h'
 
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, kindex
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, kindex, J, K, L
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
       REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
@@ -47,6 +47,9 @@
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
+
+
+      real C2_VAR, C1_VAR
 
 
 !     THIS SUBROUTINE FORMS THE MATRIX FOR THE MULTIPLE LAYERS AND
@@ -73,34 +76,39 @@
                EL3(L,J)    =  EXP(-X3)*SOL(L)
 
                DIRECT(L,J) = U0*EL3(L,J)
-               C1          =  B1(L,J) - DU0
-               if( ABS(C1).lt.EPSILON ) THEN
-               c1 = SIGN(EPSILON,C1)
+               C1_VAR          =  B1(L,J) - DU0
+
+               if( ABS(C1_VAR).lt. 1e-6 ) THEN
+               C1_VAR = SIGN(1e-6,C1_VAR)
                endif
-               C2          =  TOON_AK(L,J)*TOON_AK(L,J) - DU0*DU0
-               if( ABS(C2) .le. EPSILON ) then
-               c2 = EPSILON
+
+               C2_VAR          =  TOON_AK(L,J)*TOON_AK(L,J) - DU0*DU0
+
+               if( ABS(C2_VAR) .le. 1e-6 ) then
+               C2_VAR = 1e-6
                endif
-               CP1         =  W0(L,J)*(B3(L,J)*C1+B4*B2(L,J))/C2
+
+               CP1         =  W0(L,J)*(B3(L,J)*C1_VAR+B4*B2(L,J))/C2_VAR
                CPB(L,J)    =  CP1 * EL3(L,J)
+
                if( j .ne. 1 ) then
                  x4 = eL3(L,j1)
                else
                  x4 = soL(L)
                endif
+
                CP(L,J)     =  CP1 * X4
-               CM1         =  ( CP1*B2(L,J) + W0(L,J)*B4 )/C1
+               CM1         =  ( CP1*B2(L,J) + W0(L,J)*B4 )/C1_VAR
                CMB(L,J)    =  CM1 * EL3(L,J)
                CM(L,J)     =  CM1 * X4
 
   10  CONTINUE
-!
-!       CALCULATE SFCS, THE SOURCE AT THE BOTTOM.
-!
         DO 20 L            =  1,NSOLP
           SFCS(L)         =  DIRECT(L,NLAYER) * RSFX(L)
   20  CONTINUE
       END IF
+
+
 !     ******************************
 !     * CALCULATIONS FOR INFRARED. *
 !     ******************************
@@ -117,11 +125,11 @@
               EL3(L,J)    = 0.0
               DIRECT(L,J) = 0.0
               EE3(L,J)    = 0.0
-
   30  CONTINUE
 
+
       DO 40 L             = NSOLP+1,NTOTAL
-  40     SFCS(L)          = EMIS(L)*PTEMPG(L)*PI
+  40     SFCS(L)          = EMIS(L)*PTEMPG(L)*3.141592653589
       END IF
 !
       J                =  0
@@ -170,7 +178,6 @@
   45     AS(L,JDBLEDBLE) = AF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
 
 
-
 !
 !     (Where the magic happens...)
 !
@@ -181,27 +188,23 @@
 
       DO 46 J               = 2, JDBLE
          DO 46 L            = solar_calculation_indexer,NSOLP
-            X               = 1./(BF(L,JDBLE+1-J) -
-     &                         EF(L,JDBLE+1-J)*AS(L,JDBLE+2-J))
+            X               = 1./(BF(L,JDBLE+1-J) - EF(L,JDBLE+1-J)*AS(L,JDBLE+2-J))
             AS(L,JDBLE+1-J) = AF(L,JDBLE+1-J)*X
-            DS(L,JDBLE+1-J) = (DF(L,JDBLE+1-J) - EF(L,JDBLE+1-J)
-     &                         *DS(L,JDBLE+2-J))*X
+            DS(L,JDBLE+1-J) = (DF(L,JDBLE+1-J) - EF(L,JDBLE+1-J) *DS(L,JDBLE+2-J))*X
   46  CONTINUE
 
 
 !   NOW IR
       DO 47 J               = 2, JDBLEDBLE
          DO 47 L            = NSOLP+1,LLA
-            X               = 1./(BF(L,JDBLEDBLE+1-J) -
-     &                         EF(L,JDBLEDBLE+1-J)*AS(L,JDBLEDBLE+2-J))
+            X               = 1./(BF(L,JDBLEDBLE+1-J) - EF(L,JDBLEDBLE+1-J)*AS(L,JDBLEDBLE+2-J))
             AS(L,JDBLEDBLE+1-J) = AF(L,JDBLEDBLE+1-J)*X
-        DS(L,JDBLEDBLE+1-J) = (DF(L,JDBLEDBLE+1-J) - EF(L,JDBLEDBLE+1-J)
-     &                         *DS(L,JDBLEDBLE+2-J))*X
+            DS(L,JDBLEDBLE+1-J) = (DF(L,JDBLEDBLE+1-J) - EF(L,JDBLEDBLE+1-J)*DS(L,JDBLEDBLE+2-J))*X
   47  CONTINUE
 
       DO 48 L       = solar_calculation_indexer,NTOTAL
   48     XK(L,1)    = DS(L,1)
-!
+
       DO 50 J       = 2, JDBLE
          DO 50 L    = solar_calculation_indexer,NTOTAL
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
@@ -213,11 +216,11 @@
   51  CONTINUE
 
 
-!
+
 !  ***************************************************************
 !     CALCULATE LAYER COEFFICIENTS, NET FLUX AND MEAN INTENSITY
 !  ***************************************************************
-!
+
       do J = 1,NLAYER
         do L = solar_calculation_indexer,NSOLP
           CK1(L,J)   = XK(L,2*J-1)
@@ -251,8 +254,6 @@
      &                   CPB(L,J) + CMB(L,J) )
         enddo
       enddo
-
-      write(*,*) TMI(3,10)
 
       RETURN
       END

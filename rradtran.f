@@ -54,7 +54,7 @@
       REAL qrad(NL+1),alb_tomi,alb_toai
 
       integer, parameter :: nwave_alb = NTOTAL
-      real wavea(nwave_alb),albedoa(nwave_alb),t(NZ),p_cgs(NZ)
+      real wavea(nwave_alb),albedoa(nwave_alb),t(NZ)
       real maxopd(nwave_alb)
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -90,19 +90,16 @@
           ISL = 0
       endif
 
-      do k = 1,nvert
-        p_cgs(k) = pr(k)*10.  ! to convert from Pa to Dyne cm^2
-      enddo
 
       TT(1) = t(1) ! MALSKY ADDED
       DO J = 2, NVERT
-          TT(J) = T(J-1) * ((p_pass(J)*10.0)/p_cgs(J-1)) ** (log(T(J)/T(J-1))/log(p_cgs(J)/p_cgs(J-1)))
+          TT(J) = T(J-1) * ((p_pass(J)*10.0)/(pr(J-1)*10.0)) ** (log(T(J)/T(J-1))/log((pr(J)*10.0)/(pr(J-1)*10.0)))
       END DO
 
-      TT(1)=((T(1)-TT(2))/log(p_cgs(1)/p_pass(2)))*log(p_pass(1)/p_cgs(1))+T(1)
-      TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/p_cgs(NVERT)) **
-     &             (log(T(NVERT)/T(NVERT-1))/log(p_cgs(NVERT)/p_cgs(NVERT-1)))
 
+      TT(1)=((T(1)-TT(2))/log((pr(1)*10.0)/p_pass(2)))*log(p_pass(1))/(pr(1)*10.0)+T(1)
+      TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/(pr(NVERT)*10.0)) **
+     &             (log(T(NVERT)/T(NVERT-1))/log((pr(NVERT)*10.0)/(pr(NVERT-1)*10.0)))
 
 !     Solar zenith angle
       u0 = incident_starlight_fraction
@@ -165,6 +162,9 @@
 
 
       SLOPE(:,:) = 0.0
+      DS(:,:)    = 0.0
+      DF(:,:)    = 0.0
+
       CALL OPPR1(TAUL, SLOPE, t,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -344,8 +344,6 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
-
-
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and

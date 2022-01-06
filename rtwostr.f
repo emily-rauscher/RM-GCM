@@ -48,6 +48,7 @@
       integer solar_calculation_indexer
 
       U1I(:) = 0
+      EF(:,:) = 0.0
 
        DO 10 L    =  solar_calculation_indexer,LLA
           if( L .LE. NSOLP )then
@@ -130,6 +131,8 @@
 !     BEGINNING OF THE TRIDIAGONAL SOLUTION DEFINITIONS. I ASSUME
 !     NO DIFFUSE RADIATION IS INCIDENT AT UPPER BOUNDARY.
 
+
+
       DO 20 L        = solar_calculation_indexer,NSOLP
          AF(L,1)     = 0.0
          BF(L,1)     = EL1(L,1)
@@ -146,6 +149,7 @@
          BF(L,JDBLEDBLE) = EM1(L,NDBL)-RSFX(L)*EM2(L,NDBL)
          EF(L,JDBLEDBLE) = 0.0
   21  CONTINUE
+
 
       RETURN
       END
