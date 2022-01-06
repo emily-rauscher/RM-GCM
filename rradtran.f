@@ -18,7 +18,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
 
 !
 !     **************************************************************
@@ -80,6 +80,9 @@
       real fir_dn_aerad(NL+1)
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
+
+      REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
       integer L, J, K
 
@@ -250,7 +253,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai, num_layers, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
       ENDIF
 
 !     CLOUD FRACTION
@@ -344,6 +347,7 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
+
 
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and

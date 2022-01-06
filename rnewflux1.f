@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai, num_layers, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
 !
 !     **************************************************************
 !     *  Purpose             :  Calculate upward and downward      *
@@ -27,7 +27,7 @@
 !
       include 'rcommons.h'
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, M, I, L, kindex
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, M, I, L, kindex, J
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
       REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
@@ -45,27 +45,15 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-
-
-
-
-
-
-
-
       real, dimension(5,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE
 !
 !     LOCAL DIMENSIONS
-      DIMENSION Y1(NTOTAL,NGAUSS,NDBL),
-     &           Y2(NTOTAL,NGAUSS,NDBL),
-     &           Y4(NTOTAL,NGAUSS,NDBL),
-     &           Y8(NTOTAL,NGAUSS,NDBL),
-     &           A1(NTOTAL,NDBL),A2(NTOTAL,NDBL),
-     &           A3(NTOTAL,NDBL),A4(NTOTAL,NDBL),
-     &           A7(NTOTAL,NDBL),Y5(NTOTAL,NDBL)
-!
+      REAL, DIMENSION(NTOTAL,NGAUSS,NDBL) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NTOTAL,NDBL)        :: A1, A2, A3, A4, A5, A7, Y5
 
+      A3(:,:) = 0.0
+      A7(:,:) = 0.0
       DO 200 J           =  1,NDBL
           kindex         = max( 1, j-1 )
           DO 100  L      =  NSOLP+1,NTOTAL
@@ -75,19 +63,20 @@
              A7(L,J)     =  A3(L,J)
              Y5(L,J)     =  A4(L,J)*TAUL(L,J)
  100      CONTINUE
-!
+
+
 !         HERE WE DO SCATTERING
           IF(IRS .NE. 0) THEN
               DO 50 L    =  NSOLP+1,NTOTAL
-                X4       =  SLOPE(L,J)*(TPI*B3(L,J)-U1S(L))
                 A1(L,J)  =  U1I(L) - TOON_AK(L,J)
                 A2(L,J)  =  GAMI(L,J)*(TOON_AK(L,J)+U1I(L))
-                A3(L,J)  =  A3(L,J)+X4
-                A7(L,J)  =  A7(L,J)-X4
+                A3(L,J)  =  A3(L,J)+(SLOPE(L,J)*(TPI*B3(L,J)-U1S(L)))
+                A7(L,J)  =  A7(L,J)-(SLOPE(L,J)*(TPI*B3(L,J)-U1S(L)))
  50           CONTINUE
           ENDIF
   200 CONTINUE
-!
+
+
 !     CALCULATIONS FOR ALL GAUSS POINTS. HERE WE DO NO SCATTERING COEFFI
 !
       DO 400       J         =  1,NDBL
@@ -109,11 +98,13 @@
                  CKP= CK1(L,J)+CK2(L,J)
                  CKM= CK1(L,J) -CK2(L,J)
                  Y1(L,I,J) =  CKP*YB+CKM*YA
-                 Y2(L,I,J) =  CKP*YA+ CKM*YB
+                 Y2(L,I,J) =  CKP*YA+CKM*YB
  325          CONTINUE
             ENDIF
  350     CONTINUE
  400  CONTINUE
+
+
 !
       DO 450 J             =  1,NDBL
          DO 425  L         =  NSOLP+1,NTOTAL
@@ -123,28 +114,26 @@
             DIRECTU(L,J)   =  0.0
  425     CONTINUE
  450  CONTINUE
-!
+
+
 !     DIREC IS DOWNWARD FLUX. DIRECTU IS UPWARD FLUX.
 !     CALCULATE DINTENT THE DOWNWARD INTENSITY AND DIREC THE DOWNWARD FL
-!
+
        DO 500 I             = 1,NGAUSS
           DO 475 L          = NSOLP+1,NTOTAL
              if( iblackbody_above .eq. 1 )then
-               DINTENT(L,I,1) = PTEMPT(L)*Y3(L,I,1)*TPI
-     &                           +Y1(L,I,1)+
-     &                           (1.-Y3(L,I,1))*Y4(L,I,1)
+               DINTENT(L,I,1) = PTEMPT(L)*Y3(L,I,1)*TPI +Y1(L,I,1)+(1.-Y3(L,I,1))*Y4(L,I,1)
              else
-               DINTENT(L,I,1) = (1.-Y3(L,I,1))*Y4(L,I,1)
-     &                           +Y1(L,I,1)
+               DINTENT(L,I,1) = (1.-Y3(L,I,1))*Y4(L,I,1)+Y1(L,I,1)
              endif
+
              TMID(L,1)      = TMID(L,1)+DINTENT(L,I,1)*GRATIO(I)
-             DIREC(L,1)     = DIREC(L,1)+DINTENT(L,I,1)*
-     &                         GWEIGHT(I)
+             DIREC(L,1)     = DIREC(L,1)+DINTENT(L,I,1)*GWEIGHT(I)
  475      CONTINUE
  500   CONTINUE
-!
+
+
 !      DINTENT IS DOWNWARD INTENSITY * TPI. DIREC IS THE DOWNWARD FLUX.
-!
        DO 530        J           = 2,NDBL
            DO 520    I           = 1,NGAUSS
               DO 510 L           = NSOLP+1,NTOTAL
@@ -183,7 +172,6 @@
  630         CONTINUE
  640      CONTINUE
  650  CONTINUE
-
 
       RETURN
       END

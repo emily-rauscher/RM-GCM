@@ -19,7 +19,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -47,6 +47,8 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
 
+      REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
 
       PARAMETER(PI2=2.0*3.14159265359)
@@ -232,7 +234,7 @@ C     globally averaged solar constant, vertical rays
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
 
 
           cheats = 0.

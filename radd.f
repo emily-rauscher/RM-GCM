@@ -46,7 +46,7 @@
       REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai
+      REAL qrad(NL+1),alb_tomi,alb_toai, x4_add
 
 
       real C2_VAR, C1_VAR
@@ -92,15 +92,15 @@
                CPB(L,J)    =  CP1 * EL3(L,J)
 
                if( j .ne. 1 ) then
-                 x4 = eL3(L,j1)
+                 x4_add = eL3(L,j1)
                else
-                 x4 = soL(L)
+                 x4_add = soL(L)
                endif
 
-               CP(L,J)     =  CP1 * X4
+               CP(L,J)     =  CP1 * x4_add
                CM1         =  ( CP1*B2(L,J) + W0(L,J)*B4 )/C1_VAR
                CMB(L,J)    =  CM1 * EL3(L,J)
-               CM(L,J)     =  CM1 * X4
+               CM(L,J)     =  CM1 * x4_add
 
   10  CONTINUE
         DO 20 L            =  1,NSOLP

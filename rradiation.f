@@ -245,6 +245,8 @@ c     The following for parallel testing --MTR
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
 
+      REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
 
     ! TOOK OUT MOLEF
@@ -261,9 +263,9 @@ c     The following for parallel testing --MTR
       DATA AVG    /6.02252E+23/
       DATA ALOS   / 2.68719E19   /
 
-      DATA GANGLE  /  0.2123405382, 0.5905331356,0.9114120405/
-      DATA GRATIO/0.4679139346, 0.3607615730, 0.1713244924/
-      DATA GWEIGHT /  0.0698269799, 0.2292411064,0.2009319137/
+      DATA GANGLE  /0.2123405382, 0.5905331356,0.9114120405/
+      DATA GRATIO  /0.4679139346, 0.3607615730, 0.1713244924/
+      DATA GWEIGHT /0.0698269799, 0.2292411064,0.2009319137/
 
       DATA RGAS   / 8.31430E+07  /
       DATA SCDAY  / 86400.0      /
@@ -294,7 +296,7 @@ c     ntstep is the number of timesteps to skip.
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
      &    EF, SFCS,
      &    imp,PR,T,
-     &    TT,
+     &    TT, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
      &    imm,alat1,cf,ic,SWALB,alon,htlw, fluxes, GA,
      &    htsw,HTNETO,a,b,
      &    PRB2T, AEROPROF, ALBSW, AEROSOLS, AEROSOLMODEL,  IH,
@@ -304,8 +306,6 @@ c     ntstep is the number of timesteps to skip.
      &    LLA, LLS, JDBLE,JDBLEDBLE,JN,JN2, EPSILON,
      &    TPI, SQ3, SBK,
      &    AM, AVG, ALOS, SCDAY, RGAS,
-     &    GANGLE, GWEIGHT,
-     &    GRATIO,
      &    EMIS, RSFX,NPROB,
      &    SOL,RAYPERBAR, RAYPERBARCONS, WEIGHT,
      &    GOL,
@@ -397,7 +397,7 @@ c     ntstep is the number of timesteps to skip.
      &    T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
      &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSTAR, TSTARO, TTCR,
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
-     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers)
+     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers, GANGLE, GWEIGHT, GRATIO)
           DO i=1,mg
 
             im=i+iofm
@@ -507,7 +507,7 @@ c     ntstep is the number of timesteps to skip.
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
 
               pr=prb2t
 
@@ -616,8 +616,8 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      !write(*,*) 'Stopping in radiation'
-      !stop
+      write(*,*) 'Stopping in radiation'
+      stop
 
       RETURN
       END
