@@ -197,6 +197,17 @@
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     GET TWO STREAM CODE AND FIND THE SOLUTION
       IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
+          ! MAYBE I CAN GET RID OF ALL OF THESE? MALSKY
+          B1 = 0.
+          B2 = 0.
+          EL1 = 0.
+          EL2 = 0.
+          EM1 = 0.
+          EM2 = 0.
+          ck1 = 0.
+          ck2 = 0.
+          cpb = 0.
+
           CALL TWOSTR(TAUL, solar_calculation_indexer,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -265,6 +276,7 @@
 !     THOSE THAT CORRESPOND TO THE STANDARD (VISIBLE) PRESSURE
 !     LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
 !     WITHOUT DOUBLING
+
 
       DO L = NSOLP+1, NTOTAL
           K     =  1
@@ -348,7 +360,6 @@
 
 500   CONTINUE
 
-
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
 !     load them into the interface common block.  None of these presently
@@ -388,11 +399,16 @@
 !
       alb_tomi = 0.
       alb_toai = 0.
+
+
 !
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE
-!
-      SOLNET  = 0.0
+
+
+
+
+      SOLNET   = 0.0
       IF (solar_calculation_indexer .gE. 0) THEN
           DO 510 L       =  1,NSOLP
               SOLNET  = SOLNET - FNET(L,NLAYER)
@@ -410,9 +426,7 @@
                   if (L .eq. nsolp) then
                       fdownbs(J) = (fupbs(j) - fnetbs(j))
                   endif
-
 510      CONTINUE
-
 
           do  i = 1, nsoL
               fsLd(i) = psol_aerad*incident_starlight_fraction
@@ -431,7 +445,6 @@
               fsl_dn_aerad(j) = fdownbs(j)
           enddo
       ENDIF
-
 
 !     <tiru> is total upwelling infrared flux at top-of-atmosphere;
 !     <fupbi>, <fdownbi>, and <fnetbi> are total upwelling, downwelling,
@@ -528,6 +541,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
+
 
       return
       END

@@ -47,7 +47,7 @@
       real, dimension(5,2*NL+2) :: TAUL
       integer solar_calculation_indexer
 
-      U1I(:) = 0
+      U1I(:) = 0.
       EF(:,:) = 0.0
 
        DO 10 L    =  solar_calculation_indexer,LLA
@@ -62,6 +62,8 @@
 !      HERE WE DEFINE LAYER PROPERTIES FOLLOWING GENERAL SCHEME
 !      OF MEADOR AND WEAVOR. THEN WE SET UP LAYER PROPERTIES
 !      NEEDED FOR MATRIX.
+
+
 !
        DO 14 J          =  1,NLAYER
           DO 14 L       =  solar_calculation_indexer,NSOLP
@@ -77,7 +79,7 @@
              EM2(L,J)   =  GAMI(L,J) - EE1(L,J)       !e4
   14  CONTINUE
 
-       DO 15 J          =  1,NDBL
+      DO 15 J          =  1,NDBL
           DO 15 L       =  NSOLP+1,NTOTAL
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))

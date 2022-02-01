@@ -244,6 +244,8 @@ c     The following for parallel testing --MTR
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
+      real heats_aerad_tot(NL+1), heati_aerad_tot(NL+1), radheat_tot(NL+1), cheati(NL+1), cheats(NL+1), radheat(NL+1)
+      real, dimension(2,2,2) :: rfluxes
 
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
@@ -294,6 +296,7 @@ c     ntstep is the number of timesteps to skip.
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
+     &    heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes,
      &    EF, SFCS,
      &    imp,PR,T,
      &    TT, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
@@ -303,9 +306,9 @@ c     ntstep is the number of timesteps to skip.
      &    EMISIR,
      &    HEATI, HEATS, HEAT,
      &    SOLNET,
-     &    LLA, LLS, JDBLE,JDBLEDBLE,JN,JN2, EPSILON,
-     &    TPI, SQ3, SBK,
-     &    AM, AVG, ALOS, SCDAY, RGAS,
+     &    LLA, LLS,
+     &    TPI,
+     &    AM,
      &    EMIS, RSFX,NPROB,
      &    SOL,RAYPERBAR, RAYPERBARCONS, WEIGHT,
      &    GOL,
@@ -314,7 +317,7 @@ c     ntstep is the number of timesteps to skip.
      &    WAVE,
      &    TAUGAS, TAURAY, TAUAER, TAUAEROSOL, TAUL, TAUA, uTAUL,
      &    Y3,
-     &    U0,  ISL, IR, IRS, FDEGDAY,
+     &    U0,  ISL, IR, IRS,
      &    WOT, GOT,
      &    PTEMPG, PTEMPT,
      &    G0, OPD,
@@ -397,7 +400,8 @@ c     ntstep is the number of timesteps to skip.
      &    T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
      &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSTAR, TSTARO, TTCR,
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
-     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers, GANGLE, GWEIGHT, GRATIO)
+     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers,
+     &    GANGLE, GWEIGHT, GRATIO, FDEGDAY, SCDAY, RGAS, ALOS, AVG, SQ3, SBK, EPSILON, JDBLE,JDBLEDBLE,JN,JN2)
           DO i=1,mg
 
             im=i+iofm
@@ -487,7 +491,14 @@ c     ntstep is the number of timesteps to skip.
                 ENDDO
               ENDIF
 
-              call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,DOY,cf,ic,fluxes,swalb,kount,itspd,
+              rfluxes_aerad = 0.
+              rfluxes       = 0.
+              fsl_dn_aerad  = 0.
+              fir_up_aerad  = 0.
+
+
+              call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
+     &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
      &           ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &           fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
@@ -507,7 +518,8 @@ c     ntstep is the number of timesteps to skip.
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
+     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes)
 
               pr=prb2t
 

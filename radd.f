@@ -63,6 +63,7 @@
 !     ******************************
 !     *   CALCULATIONS FOR SOLAR   *
 !     ******************************
+
       IF(ISL .NE. 0)  THEN
         DU0                =  1./U0
         DO 10 J            =  1,NLAYER

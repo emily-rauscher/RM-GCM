@@ -19,7 +19,8 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
+     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, cheati, cheats)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -61,7 +62,7 @@
       real radheat(NZ)
       real heats_aerad_tot(NZ), heati_aerad_tot(NZ), radheat_tot(NZ)
       real wave_pass(1)
-      real cheats(NZ), cheati(NZ), cheat(NZ)
+      real cheats(NZ), cheati(NZ)
       real htlw(NZ), htsw(NZ)
       real PSOL,PSOL_aerad
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
@@ -236,15 +237,16 @@ C     globally averaged solar constant, vertical rays
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
 
-
           cheats = 0.
           cheati = 0.
-          cheat = 0.
+          radheat_tot = 0.
+
           do iz = 1,NZ
               jz = NZ + 1 - iz
               radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
               heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
               heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
+
               radheat_tot(iz) = radheat_tot(iz)+heats_aerad(jz) * SCDAY-cheats(iz)+ heati_aerad(jz)*SCDAY - cheati(iz)
           enddo
       enddo
@@ -260,6 +262,7 @@ C     globally averaged solar constant, vertical rays
       htlw    = heati_aerad_tot
       htsw    = heats_aerad_tot
       rfluxes = rfluxes_aerad
+
 
       return
       end
