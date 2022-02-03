@@ -1,5 +1,5 @@
-      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG, p_pass,
-     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
+      SUBROUTINE OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
      &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
@@ -45,22 +45,7 @@
       REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      REAL qrad(NL+1),alb_tomi,alb_toais
 
       REAL TAUFACT, DENOM
       REAL DPG(NLAYER), p_pass(NLAYER)
@@ -97,6 +82,7 @@
       INTEGER size_loc, temp_loc, pressure_loc,solar_calculation_indexer
       real particle_size
 
+
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &                           DENSITY, FMOLW, MOLEF,
      &                           CORFACT,
@@ -104,6 +90,7 @@
      &                           input_temperature_array,
      &                           particle_size_vs_layer_array_in_meters,
      &                           input_pressure_array_cgs
+
 
       DO J = 1,NLAYER-1
           ! Get the index of the closest pressure
@@ -128,42 +115,43 @@
           END DO
       END DO
 
-      DO I = 1,NCLOUDS
-          DO J = 1,NLAYER-1
-              pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J))),1)
-              temp_loc     = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+      DO J = 1,NLAYER-1
+          pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J))),1)
+          temp_loc     = MINLOC(ABS(input_temperature_array - (TT(J))),1)
 
-              particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
-              size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
+          particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
+          size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
+          DO I = 1,NCLOUDS
               CONDFACT(J,I) = min(max((Tconds(pressure_loc,I)-TT(J)) / 10.0, 0.0), 1.0)
-
               TAUFACT = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
      &                  CONDFACT(J,I)*MTLX*CORFACT(pressure_loc)
 
               DO L = 1,NTOTAL
                   TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
-
-              CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-          END DO
-
-          ! uncomment this section for compact cloud
-          BASELEV = MAXVAL(CLOUDLOC(1:NVERT,I),1)
-          TOPLEV  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
-
-          DO J = 1,TOPLEV
-              DO L = 1,NTOTAL
-                  TAUAER_OPPR(L,J,I) = 0.0
-              END DO
-          END DO
-
-          ! MALSKY CODE
-          DO L = 1,NTOTAL
-              TAUAER_OPPR(L,TOPLEV+2,I) = TAUAER_OPPR(L,TOPLEV+2,I) * 0.135335
-              TAUAER_OPPR(L,TOPLEV+1,I) = TAUAER_OPPR(L,TOPLEV+1,I) * 0.367879
           END DO
       END DO
+
+
+
+      !CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
+
+      ! uncomment this section for compact cloud
+      !BASELEV = MAXVAL(CLOUDLOC(1:NVERT,I),1)
+      !TOPLEV  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
+
+      !DO J = 1,TOPLEV
+      !DO L = 1,NTOTAL
+      !TAUAER_OPPR(L,J,I) = 0.0
+      !END DO
+      !END DO
+
+      ! MALSKY CODE
+      !DO L = 1,NTOTAL
+      !TAUAER_OPPR(L,TOPLEV+2,I) = TAUAER_OPPR(L,TOPLEV+2,I) * 0.135335
+      !TAUAER_OPPR(L,TOPLEV+1,I) = TAUAER_OPPR(L,TOPLEV+1,I) * 0.367879
+      !END DO
 
 
 !     SW AT STANDARD VERTICAL RESOLUTION

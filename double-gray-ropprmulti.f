@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -46,9 +46,6 @@
       REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toais
-
-
-
 
       REAL DPG(NLAYER), DENOM
 
@@ -101,6 +98,8 @@
       INTEGER K,JJ,J,NCLOUD,BASELEV,TOPLEV,L
 
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
+
+
 
       DATA NCLOUD/13/
 
@@ -1122,6 +1121,8 @@
 
 
 
+
+
       Do 200  I         = 1,NCLOUD
        DO 180  J          =   1,NLAYER -1
         CONDFACT(J,I)     =min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
@@ -1146,6 +1147,10 @@
          TAUAERLW(TOPLEV+1,I)= TAUAERLW(TOPLEV+1,I)*0.135335
 186   CONTINUE
 200   CONTINUE
+
+
+
+
 
 ! SW AT STANDARD VERTICAL RESOLUTION
       DO 220    J     =  1,NLAYER
@@ -1318,6 +1323,8 @@
  425            CONTINUE
  450         CONTINUE
  501  CONTINUE
+
+
 
       RETURN
       END

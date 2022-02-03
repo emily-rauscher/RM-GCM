@@ -15,7 +15,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai, num_layers, Tl)
 
           include 'rcommons.h'
 
@@ -37,10 +37,6 @@
           REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
           REAL qrad(NL+1),alb_tomi,alb_toai
 
-
-
-
-
           integer :: NLAYER, J, k
           real :: mu_0, Tirr, Tint, gravity_SI, incident_starlight_fraction
 
@@ -49,7 +45,8 @@
 
           real, dimension(NIRP,NLAYER+1) :: tau_IRe
           real, dimension(NSOLP,NLAYER+1) :: tau_Ve
-          real, dimension(NLAYER) :: dpe, Pl, Tl, t
+          real, dimension(NLAYER) :: dpe, Pl, t, p_pass
+          real, dimension(NL+1) :: Tl
 
           ! Malsky check whether this is NLAYER+1
           real, dimension(NLAYER) :: pe
@@ -60,8 +57,9 @@
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
 
           do J = 1, NLAYER
-             pe(J) = p_pass(J) / 10! convert to pascals
+             pe(J) = p_pass(J)
           end do
+
 
           DO J = 1, NLAYER-1
               dpe(J) = pe(J+1) - pe(J)
@@ -83,11 +81,14 @@
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-
-
-
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
      &                            Beta_IR,gravity_SI, with_TiO_and_VO, pe)
+
+
+          write(*,*) Tl(10), Pl(10)
+
+
+
 
 
       end subroutine opacity_wrapper
@@ -260,8 +261,6 @@
         gam_1 = Beta_IR(1) + R - Beta_IR(1)*R
         gam_2 = gam_1 / R
 
-
-
         tau_Ve(:,1) = 0.0
         tau_IRe(:,1) = 0.0
 
@@ -404,7 +403,7 @@
 
         real k_lowP, k_hiP
         real Tl10, Pl10
-        real T, P
+        real temperature_val, pressure_val
 
         !! Coefficents parameters for the Valencia et al. (2013) table fit
         real :: c1_v = -37.50
@@ -421,16 +420,16 @@
         real :: onedivpi = 1.0 / 3.141592653
 
 
-        T = Tin
-        P = Pin * 10.0 ! Convert to dyne
+        temperature_val = Tin
+        pressure_val = Pin * 10.0 ! Convert to dyne
 
-        Tl10 = log10(T)
-        Pl10 = log10(P)
+        Tl10 = log10(temperature_val)
+        Pl10 = log10(pressure_val)
 
         k_lowP = c1_v * (Tl10-c2_v*Pl10-c3_v)**2 + (c4_v*met + c5_v)
 
         ! Temperature split for coefficents = 800 K
-        if (T <= 800.0) then
+        if (temperature_val <= 800.0) then
           k_hiP = (c6_vl+c7_vl*Tl10+c8_vl*Tl10**2)
      &     + Pl10*(c9_vl+c10_vl*Tl10)
      &     + met*c11_vl*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))

@@ -250,6 +250,9 @@ c     The following for parallel testing --MTR
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
+      ! For the new picket fence stuff
+      real, dimension(NL+1) :: Tl
+
 
     ! TOOK OUT MOLEF
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
@@ -296,6 +299,7 @@ c     ntstep is the number of timesteps to skip.
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
+     &    Tl,
      &    heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes,
      &    EF, SFCS,
      &    imp,PR,T,
@@ -519,7 +523,7 @@ c     ntstep is the number of timesteps to skip.
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes)
+     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, Tl)
 
               pr=prb2t
 
