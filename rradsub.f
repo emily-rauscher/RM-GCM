@@ -20,7 +20,10 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, cheati, cheats, Tl)
+     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, cheati, cheats,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -51,8 +54,10 @@
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
-
-      real, dimension(NL+1) :: Tl
+      REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      real, dimension(NL+1) :: dpe, Pl, Tl, pe
+      real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
+      real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
 
       PARAMETER(PI2=2.0*3.14159265359)
@@ -215,7 +220,10 @@ C     globally averaged solar constant, vertical rays
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Tl)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
 
 
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,

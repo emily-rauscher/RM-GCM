@@ -251,7 +251,11 @@ c     The following for parallel testing --MTR
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
       ! For the new picket fence stuff
-      real, dimension(NL+1) :: Tl
+      REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      real, dimension(NL+1) :: dpe, Pl, Tl, pe
+      real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
+      real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
+
 
 
     ! TOOK OUT MOLEF
@@ -299,7 +303,9 @@ c     ntstep is the number of timesteps to skip.
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
-     &    Tl,
+     &    dpe, Pl, Tl, pe,
+     &    k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &    Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
      &    heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes,
      &    EF, SFCS,
      &    imp,PR,T,
@@ -523,7 +529,10 @@ c     ntstep is the number of timesteps to skip.
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, Tl)
+     &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
 
               pr=prb2t
 
@@ -632,8 +641,8 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      write(*,*) 'Stopping in radiation'
-      stop
+      !write(*,*) 'Stopping in radiation'
+      !stop
 
       RETURN
       END

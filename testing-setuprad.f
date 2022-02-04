@@ -1,5 +1,5 @@
-      subroutine opacity_wrapper(t, p_pass, tau_IRe,
-     &                           tau_Ve, Beta_V, Beta_IR, gravity_SI, incident_starlight_fraction,
+      subroutine opacity_wrapper(t, p_pass, tau_IRe, tau_Ve,
+     &                           Beta_V, Beta_IR, gravity_SI, incident_starlight_fraction,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -15,7 +15,10 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, Tl)
+     &  qrad,alb_tomi,alb_toai, num_layers,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val)
 
           include 'rcommons.h'
 
@@ -38,20 +41,21 @@
           REAL qrad(NL+1),alb_tomi,alb_toai
 
           integer :: NLAYER, J, k
-          real :: mu_0, Tirr, Tint, gravity_SI, incident_starlight_fraction
+          real :: Tirr, Tint, gravity_SI, incident_starlight_fraction
 
           real, dimension(NIRP) :: Beta_IR
           real, dimension(NSOLP) :: Beta_V
 
-          real, dimension(NIRP,NLAYER+1) :: tau_IRe
-          real, dimension(NSOLP,NLAYER+1) :: tau_Ve
-          real, dimension(NLAYER) :: dpe, Pl, t, p_pass
-          real, dimension(NL+1) :: Tl
+          real, dimension(NIRP,NL+2) :: tau_IRe
+          real, dimension(NSOLP,NL+2) :: tau_Ve
 
-          ! Malsky check whether this is NLAYER+1
-          real, dimension(NLAYER) :: pe
 
-          mu_0 = incident_starlight_fraction
+          ! Malsky check the number of LAYERS!!!
+          real, dimension(NL+1) :: dpe, Pl, Tl, pe, p_pass, t
+          real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
+          real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
+
+
 
           Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
@@ -66,7 +70,6 @@
               pl(J) = dpe(J) / log(pe(J+1)/pe(J))
           END DO
 
-
           if (tt(1) .ge. 100.0) then
               DO J = 1, NLAYER
                   Tl(J) = tt(J)
@@ -77,23 +80,26 @@
               END DO
           end if
 
+          !DO J = 1, NLAYER
+          !    Tl(J) = t(J)
+          !END DO
+
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-          CALL calculate_opacities(NLAYER, NSOLP, NIRP, mu_0,Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
-     &                            Beta_IR,gravity_SI, with_TiO_and_VO, pe)
 
-
-          write(*,*) Tl(10), Pl(10)
-
+          CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,Tirr, Tint,
+     &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
+     &                             Beta_IR,gravity_SI, with_TiO_and_VO, pe)
 
 
 
 
       end subroutine opacity_wrapper
 
-      subroutine calculate_opacities(NLAYER, NSOLP, NIRP, mu_0, Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
+      subroutine calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,
+     &                               Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
      &                               Beta_IR,gravity_SI, with_TiO_and_VO, pe)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
@@ -114,7 +120,7 @@
         real, dimension(NSOLP) :: Beta_V, gam_V
         real, dimension(NIRP) :: Beta_IR
         integer :: k, NLAYER, J, NSOLP, NIRP, i
-        real :: Teff, Tint, Tirr, mu_0
+        real :: Teff, Tint, Tirr, incident_starlight_fraction
 
         real :: R,gravity_SI
         real :: aP, bP, cP
@@ -138,10 +144,13 @@
         !! Parmentier opacity profile parameters - first get Bond albedo
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 / sqrt(3.0)) *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
+
+
+
         call Bond_Parmentier(Teff, grav, Bond_Albedo)
 
         !! Recalculate Teff and then find parameters
-        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * mu_0 *
+        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         ! Log 10 T_eff variables
@@ -279,12 +288,11 @@
           tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
-
       end subroutine calculate_opacities
 
 
 
-      subroutine k_Ross_Freedman(Tin, Pin, met, k_IR)
+      subroutine k_Ross_Freedman(Tin, Pin, Freedman_met, k_IR)
         implicit none
 
         !! Coefficent parameters for Freedman et al. (2014) table fit
@@ -303,42 +311,42 @@
         real, parameter :: c13_l = 0.8321, c13_h = 0.8321
 
         ! Input:
-        ! T - Local gas temperature [K]
-        ! P - Local gas pressure [pa]
-        ! met - Local metallicity [M/H] (log10 from solar, solar [M/H] = 0.0)
+        ! Freedman_T - Local gas temperature [K]
+        ! Freedman_P - Local gas pressure [pa]
+        ! Freedman_met - Local metallicity [M/H] (log10 from solar, solar [M/H] = 0.0)
 
         ! Output:
         ! k_IR - IR band Rosseland mean opacity [m2 kg-1]
 
-        real, intent(in) :: Tin, Pin, met
+        real, intent(in) :: Tin, Pin, Freedman_met
         real, intent(out) :: k_IR
 
         real :: k_lowP, k_hiP
-        real :: T, P, Tl10, Pl10
+        real :: Freedman_T, Freedman_P, Tl10, Pl10
 
         k_IR = 0.0
 
-        T = Tin
-        P = Pin * 10.0 ! CoNLAYER to dyne cm-2
+        Freedman_T = Tin
+        Freedman_P = Pin * 10.0 ! CoNLAYER to dyne cm-2
 
-        Tl10 = log10(T)
-        Pl10 = log10(P)
+        Tl10 = log10(Freedman_T)
+        Pl10 = log10(Freedman_P)
 
 
         ! Low pressure expression
         k_lowP = c1*atan(Tl10 - c2) -
      &    (c3/(Pl10 + c4))*exp((Tl10 - c5)**2) +
-     &    c6*met + c7
+     &    c6*Freedman_met + c7
 
       ! Temperature split for coefficents = 800 K
-        if (T <= 800.0) then
+        if (Freedman_T <= 800.0) then
           k_hiP = c8_l + c9_l*Tl10 +
      &    c10_l*Tl10**2 + Pl10*(c11_l + c12_l*Tl10) +
-     &    c13_l * met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
+     &    c13_l * Freedman_met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
         else
           k_hiP = c8_h + c9_h*Tl10 +
      &    c10_h*Tl10**2 + Pl10*(c11_h + c12_h*Tl10) +
-     &    c13_h * met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
+     &    c13_h * Freedman_met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
         end if
         ! Total Rosseland mean opacity - coverted to m2 kg-1
         k_IR = (10.0**k_lowP + 10.0**k_hiP) / 10.0
@@ -346,7 +354,6 @@
         ! Avoid divergence in fit for large values
         k_IR = min(k_IR,1.0e30)
       end subroutine k_Ross_Freedman
-
 
       subroutine Bond_Parmentier(Teff0, grav,  Bond_Albedo)
         implicit none
@@ -387,18 +394,18 @@
 
       !! Calculates the IR band Rosseland mean opacity (local T) according to the
       !! Valencia et al. (2013) fit and coefficents
-      subroutine k_Ross_Valencia(Tin, Pin, met, k_IR)
+      subroutine k_Ross_Valencia(Tin, Pin, Freedman_met, k_IR)
         implicit none
 
         ! Input:
         ! T - Local gas temperature [K]
         ! P - Local gas pressure [pa]
-        ! met - Local metallicity [M/H] (log10 from solar, solar [M/H] = 0.0)
+        ! Freedman_met - Local metallicity [M/H] (log10 from solar, solar [M/H] = 0.0)
 
         ! Output:
         ! k_IR - IR band Rosseland mean opacity [m2 kg-1]
 
-        real Tin, Pin, met
+        real Tin, Pin, Freedman_met
         real k_IR
 
         real k_lowP, k_hiP
@@ -426,17 +433,17 @@
         Tl10 = log10(temperature_val)
         Pl10 = log10(pressure_val)
 
-        k_lowP = c1_v * (Tl10-c2_v*Pl10-c3_v)**2 + (c4_v*met + c5_v)
+        k_lowP = c1_v * (Tl10-c2_v*Pl10-c3_v)**2 + (c4_v*Freedman_met + c5_v)
 
         ! Temperature split for coefficents = 800 K
         if (temperature_val <= 800.0) then
           k_hiP = (c6_vl+c7_vl*Tl10+c8_vl*Tl10**2)
      &     + Pl10*(c9_vl+c10_vl*Tl10)
-     &     + met*c11_vl*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
+     &     + Freedman_met*c11_vl*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
         else
           k_hiP = (c6_vh+c7_vh*Tl10+c8_vh*Tl10**2)
      &     + Pl10*(c9_vh+c10_vh*Tl10)
-     &     + met*c11_vh*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
+     &     + Freedman_met*c11_vh*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
 
         end if
 

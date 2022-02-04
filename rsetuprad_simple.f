@@ -19,7 +19,10 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Tl)
+     &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
 
 !
 !     *********************************************************
@@ -54,7 +57,10 @@
       REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
 
 
-      real, dimension(NL+1) :: Tl
+      REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      real, dimension(NL+1) :: dpe, Pl, Tl, pe
+      real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
+      real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
 
 ! **********************************************************************
@@ -64,8 +70,6 @@
 ! **********************************************************************
       integer :: testing, L, J, K, solar_calculation_indexer
       REAL G,WVO, incident_starlight_fraction
-      real, dimension(NIR,NLAYER) :: tau_IRe
-      real, dimension(NSOL,NLAYER) :: tau_Ve
       real, dimension(NIR+NSOL) :: MALSKY_ABSCOEFF
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
@@ -186,7 +190,7 @@
       EMISIR       = SURFEMIS
 
 
-      testing = 1
+      testing = 0
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
@@ -269,7 +273,7 @@
       GOL(:,:)    = 0.0
 
 
-      malsky_switch = 1
+      malsky_switch = 0
       IF (malsky_switch .gt. 0) THEN
 
         CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
@@ -288,7 +292,10 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, Tl)
+     &  qrad,alb_tomi,alb_toai, num_layers,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val)
 
         DO L = solar_calculation_indexer,NSOLP
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
