@@ -558,14 +558,7 @@ c Ozone
                      o3(l)=AMFRAC*o3mod2(ld,i,ihem,JH)+
      +                    (1.0-AMFRAC)*o3mod1(ld,i,ihem,JH)
                   ENDDO         ! End of loop over column.
-        !write(*,*) 'cmorc.f line 501 printing of sigma'
-        !write(*,*) sigma
-        !write(*,*) 'PR(1)=', PR(1)
-        !write(*,*) 'P0=',P0
-        !write(*,*) 'PLG(im)=',PLG(im)
-        !write(*,*) 'im =',im
-        !write(*,*) 'PLG=', PLG
-        !STOP
+
 c ----------------------------------------------------- And alat1
 
                   alat1=alat(JH)*REAL(-(ihem*2.)+3)

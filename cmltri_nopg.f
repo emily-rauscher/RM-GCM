@@ -3,7 +3,6 @@
       call IGCM3_SUB()
       END
 
-
       SUBROUTINE IGCM3_SUB
 C!$ use omp_lib
 C**********************************************************************   
@@ -259,7 +258,7 @@ C
 
       READ(7,COMMENT)
       WRITE(2,COMMENT)
-      WRITE(*,*) THECOMMENT  
+      WRITE(*,*) THECOMMENT
 
 
       tripped=0.0
@@ -915,7 +914,7 @@ C
 C Close the graphics device.
 c      CALL PGASK
 C      CALL PGCLOS
-!      ENDIF
+!      END
                                                
       STOP                                                                
       END SUBROUTINE

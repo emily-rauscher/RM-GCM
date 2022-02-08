@@ -203,8 +203,7 @@ C
       real ps                       ! sfc pressure (used in
                                     ! interpolation from climatology
                                     ! to model).
-      integer im                    ! Pointer for array plg (for
-                                    ! getting sfc pressure).
+      integer im                    ! Pointer for array plg (for getting sfc pressure).
 
 C     Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW
@@ -506,7 +505,6 @@ c     ntstep is the number of timesteps to skip.
               fsl_dn_aerad  = 0.
               fir_up_aerad  = 0.
 
-
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
      &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
@@ -546,6 +544,8 @@ c     ntstep is the number of timesteps to skip.
               rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
               rrflux(im,jh,6)=fluxes(2,2,1)
 
+
+
 c             bottom heating rate is zero in morecret
               DO l=nl,1,-1
                 LD=NL+1-L
@@ -581,6 +581,7 @@ c             bottom heating rate is zero in morecret
                   ENDDO
                 ENDIF
               ENDDO
+
 
               ilast=i
 

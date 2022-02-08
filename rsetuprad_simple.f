@@ -348,6 +348,7 @@
           END DO
       END IF
 
+
       FNET(:,:)   = 0.0
       TMI(:,:)    = 0.0
       DIRECT(:,:) = 0.0
@@ -409,6 +410,8 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
+
+
 
       RETURN
       END

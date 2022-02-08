@@ -216,12 +216,14 @@
 
 
           COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW, MOLEF,
+     &                              DENSITY, FMOLW,
      &                              CORFACT,
      &                              input_particle_size_array_in_meters,
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs
+
+          COMMON /MOLE_VALS/ MOLEF
 
           ! opening the file for reading
           open (1, file='../CLOUD_DATA/KCl_rosselandMean_gg.txt')
@@ -833,8 +835,9 @@
           MOLEF   = (/0,0,0,0,0,0,0,0,0,0,0,0,0/)
 
 
-          CORFACT = (/00.01, 0.017, 0.028, 0.046, 0.077, 0.129, 0.215, 0.359, 0.599, 1.0,
-     &              1.000,1.000,1.000,1.000,1.000,1.000,
+
+          CORFACT = (/0.005,0.018,0.050,0.135,.367,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,

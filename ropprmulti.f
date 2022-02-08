@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai)
+     &  qrad,alb_tomi,alb_toai, p_pass)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -52,7 +52,6 @@
       REAL CONDFACT(NLAYER,NCLOUDS)
       REAL CLOUDLOC(NLAYER,NCLOUDS)
 
-      REAL QE_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
@@ -79,79 +78,44 @@
       REAL MOLEF(NCLOUDS)
 
       INTEGER K,J,BASELEV,TOPLEV,L
-      INTEGER size_loc, temp_loc, pressure_loc,solar_calculation_indexer
+      INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index
       real particle_size
 
 
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
-     &                           DENSITY, FMOLW, MOLEF,
+     &                           DENSITY, FMOLW,
      &                           CORFACT,
      &                           input_particle_size_array_in_meters,
      &                           input_temperature_array,
      &                           particle_size_vs_layer_array_in_meters,
      &                           input_pressure_array_cgs
 
+      COMMON /MOLE_VALS/ MOLEF
+
 
       DO J = 1,NLAYER-1
-          ! Get the index of the closest pressure
-          pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J))),1)
-
-          ! Using the pressure, find the particle size
-          particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
-
-          ! Find the location of the particle size
-          ! Is this necessary, can I just use the pressure?
-          size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
-
-          ! Get the array index of the closest temperature
+          layer_index = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
           temp_loc = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+          particle_size = particle_size_vs_layer_array_in_meters(layer_index)
+          size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
           DO I = 1,NCLOUDS
               DO L = 1,NTOTAL
-                  QE_TEMP(L, J, I) = QE_OPPR(L, temp_loc,size_loc,I)
                   PI0_TEMP(L,J, I) = PI0_OPPR(L,temp_loc,size_loc,I)
                   G0_TEMP(L,J, I)  = G0_OPPR(L, temp_loc,size_loc,I)
               END DO
-          END DO
-      END DO
 
-      DO J = 1,NLAYER-1
-          pressure_loc = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J))),1)
-          temp_loc     = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+              CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J)) / 10.0, 0.0), 1.0)
 
-          particle_size = particle_size_vs_layer_array_in_meters(pressure_loc)
-          size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
-          DO I = 1,NCLOUDS
-              CONDFACT(J,I) = min(max((Tconds(pressure_loc,I)-TT(J)) / 10.0, 0.0), 1.0)
               TAUFACT = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                  CONDFACT(J,I)*MTLX*CORFACT(pressure_loc)
+     &                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)
 
               DO L = 1,NTOTAL
                   TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
           END DO
       END DO
-
-
-
-      !CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-
-      ! uncomment this section for compact cloud
-      !BASELEV = MAXVAL(CLOUDLOC(1:NVERT,I),1)
-      !TOPLEV  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
-
-      !DO J = 1,TOPLEV
-      !DO L = 1,NTOTAL
-      !TAUAER_OPPR(L,J,I) = 0.0
-      !END DO
-      !END DO
-
-      ! MALSKY CODE
-      !DO L = 1,NTOTAL
-      !TAUAER_OPPR(L,TOPLEV+2,I) = TAUAER_OPPR(L,TOPLEV+2,I) * 0.135335
-      !TAUAER_OPPR(L,TOPLEV+1,I) = TAUAER_OPPR(L,TOPLEV+1,I) * 0.367879
-      !END DO
 
 
 !     SW AT STANDARD VERTICAL RESOLUTION
@@ -162,6 +126,7 @@
               GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L, J,1:NCLOUDS))
           END DO
       END DO
+
 
 !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
       k = 1
@@ -325,6 +290,7 @@
               END DO
           END DO
       END DO
+
 
 
       RETURN

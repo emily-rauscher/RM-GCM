@@ -175,7 +175,8 @@ C
       IF(KOUTH.GE.1.AND.KOUTH.LE.KOUNTH) LSUM=.TRUE.                      
       IF(KOUTH.EQ.KOUNTH) LWRITE=.TRUE.                                   
       RKP=1.0/KOUNTH                                                      
-      DELT2C=DELT2                                                        
+      DELT2C=DELT2
+
 C                                                                         
       IF(LSUM) THEN                                                       
          IF(KOUTH.EQ.1) THEN                                               
@@ -221,7 +222,8 @@ c        READ(NAVRD)ASSBL,ASHBL,ASLBL,ARRCR,ARRLR
 c     $        ,arflux,asfld,acld                                         
 c     
          ENDIF                                                             
-      ENDIF                                                               
+      ENDIF
+
 C                                                                         
       DO 20 L=1,NL                                                        
          DO 20 J=1,IGC                                                      
@@ -290,6 +292,7 @@ C
       else                                                                
          if (LBL) call BLSURF                                             
       endif
+
       IF(LVD) CALL VDIFF
       IF(LCR) CALL CONVEC
       IF(LLR) CALL LSCRN
@@ -396,7 +399,9 @@ C        Convert to volume mixing ratio from mass mixing ratio.
                QNLG(J,L)=PLG(J)*QNLG(J,L)                                 
   210       CONTINUE                                                      
   211    CONTINUE                                                         
-      ENDIF                                                               
+      ENDIF
+
+
 C                                                                         
       RETURN                                                              
       END                                                                 

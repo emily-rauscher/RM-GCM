@@ -189,7 +189,7 @@ C           Merid gradient of ln (ps) : type 4.
             PJG(IM,1)=PJG(IM,1) + ALPN(IP,1,JL,2)*SP(IP,1)                
             IF (NHEM.EQ.2) THEN                                           
 C              Log (surface pressure)    : type 2.                        
-               PLG(IM,2)=PLG(IM,2) + ALPN(IP,2,JL,1)*SP(IP,2)             
+               PLG(IM,2)=PLG(IM,2) + ALPN(IP,2,JL,1)*SP(IP,2)
 C              Merid gradient of ln (ps) : type 4.                        
                PJG(IM,2)=PJG(IM,2) + ALPN(IP,2,JL,2)*SP(IP,2)             
             ENDIF                                                         

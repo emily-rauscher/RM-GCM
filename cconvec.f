@@ -10,11 +10,7 @@ C
 C     Determines model resolution                                         
 C                                                                         
       include 'params.i'
-C      PARAMETER(NN=21,MM=21,NHEM=2,NL=5,MOCT=1,MG=64,JG=16,NWJ2=121       
-C     P         ,NCRAY=64,JGL=JG,NTRAC=1,NLEVRF=1)                         
-                                                                          
-C                                                                         
-C                                                                         
+
 C     Sets basic constants, especially those needed for array dimensions  
 C                                                                         
       PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
@@ -128,162 +124,164 @@ c
       LTOP=NL-NLCR      !  NLCR gives highest level for which             
                         !  convection is attempted.
 
+
+
       DO 800 IHEM=1,NHEM
-        IOFM=(IHEM-1)*MGPP                                                
-        DO 700 I=1,MG                                                     
-          J=I+IOFM                                                        
-C         IPH=J                                                           
-          DO 10 L=1,NL                                                    
-            TTDC(L)=0.0                                                   
-            QTDC(L)=0.0                                                   
-            TTMC(L)=0.0                                                   
-            QTMC(L)=0.0                                                   
-            ESCON(L)=1./(PLG(J)*SIGMA(L))                                 
-            QGO(L)=QG(J,L)                                                
-   10     CONTINUE                                                        
+        IOFM=(IHEM-1)*MGPP
+        DO 700 I=1,MG
+          J=I+IOFM
+C         IPH=J
+          DO 10 L=1,NL
+            TTDC(L)=0.0
+            QTDC(L)=0.0
+            TTMC(L)=0.0
+            QTMC(L)=0.0
+            ESCON(L)=1./(PLG(J)*SIGMA(L))
+            QGO(L)=QG(J,L)
+   10     CONTINUE
 c Water vapour fix
-
-
-          IFL=0                                                           
-          DO L=1,NL-1                                                     
-            IF (QG(J,L).LT.1.0E-6) THEN                                   
-              IFL=1                                                       
-              QEXS=1.0E-6-QG(J,L)                                         
-              IF (L.EQ.1) THEN                                            
-                QEXS=QEXS*SIGMAH(1)                                       
-              ELSE                                                        
-                QEXS=QEXS*(SIGMAH(L)-SIGMAH(L-1))                         
-              ENDIF                                                       
-              IF (L.NE.NL-1) THEN                                         
-                QEX=QEXS/(SIGMAH(L+1)-SIGMAH(L))                          
-              ELSE                                                        
-                QEX=QEXS/(1.0-SIGMAH(L))                                  
-              ENDIF                                                       
-c assumes no large scale rain here in layer                               
-              QTLR(J,L)=(1.0E-6-QGO(L))/DELT2C                            
-              QTLR(J,L+1)=QTLR(J,L+1)-QEX/DELT2C                          
-              QG(J,L)=1.0E-6                                              
-              QG(J,L+1)=QG(J,L+1)-QEX                                     
-            ENDIF                                                         
+          IFL=0
+          DO L=1,NL-1
+            IF (QG(J,L).LT.1.0E-6) THEN
+              IFL=1
+              QEXS=1.0E-6-QG(J,L)
+              IF (L.EQ.1) THEN
+                QEXS=QEXS*SIGMAH(1)
+              ELSE
+                QEXS=QEXS*(SIGMAH(L)-SIGMAH(L-1))
+              ENDIF
+              IF (L.NE.NL-1) THEN
+                QEX=QEXS/(SIGMAH(L+1)-SIGMAH(L))
+              ELSE
+                QEX=QEXS/(1.0-SIGMAH(L))
+              ENDIF
+c assumes no large scale rain here in layer
+              QTLR(J,L)=(1.0E-6-QGO(L))/DELT2C
+              QTLR(J,L+1)=QTLR(J,L+1)-QEX/DELT2C
+              QG(J,L)=1.0E-6
+              QG(J,L+1)=QG(J,L+1)-QEX
+            ENDIF
           ENDDO
-
-C         DRY ADJUSTMENT
+C
+C     DRY ADJUSTMENT
+C
           L=NL
-
-C         BEGIN NEW PARCEL CURVE
-
-   20     NCRB=L                                                          
-          LCDRY=.FALSE.                                                   
-          TCLP=TG(J,L)                                                    
+C     BEGIN NEW PARCEL CURVE
+   20     NCRB=L
+          LCDRY=.FALSE.
+          TCLP=TG(J,L)
           QCL=QG(J,L)
-
-C         DRY ADIABAT TO NEXT LEVEL
-
+C     DRY ADIABAT TO NEXT LEVEL
    30     L=L-1
-
           IF(L.LT.LTOP) GOTO 40
-          TCL=TCLP*SK(L)                                                  
+          TCL=TCLP*SK(L)
           IF(TCL.LE.TG(J,L)) GOTO 40  !If stable layer
-
 C ER Modif: commenting out saturation check
 C     BUOYANT - IF SATURATED - MOIST CONVECTION - IGNORE
+c          QSL=ESCON(L)*PQSAT(TCL)
+c          IF ( QCL.GE.QSL ) THEN   ! Is parcel supersaturated?
 c!KM Bypass supersaturation issue and Tmin criterion avoided
-
-C If parcel is in stratosphere, do dry rather than moist convection       
-C as the dry and moist adiabats are approximately parallel and            
+c            IF ( ( (SIGMA(NCRB)*PLG(J)).GE.PRESSMIN )
+c     :        .AND.( TG(J,NCRB).GE.TMIN ) ) GOTO 40
+C If parcel is in stratosphere, do dry rather than moist convection
+C as the dry and moist adiabats are approximately parallel and
 C dry convection is a lot cheaper.
-
+c          ENDIF
 C     DRY CONVECTION - CONTINUE PARCEL CURVE UP
-
-   35     LCDRY=.TRUE.                                                    
-          TCLP=TCL                                                        
-          GOTO 30                                                         
+   35     LCDRY=.TRUE.
+          TCLP=TCL
+          GOTO 30
    40     CONTINUE
-
 C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW
-          IF(LCDRY) THEN                                                  
-            NCRT=L+1            
+          IF(LCDRY) THEN
+            NCRT=L+1
 !      write(*,*) 'Calling Dry Convection between levels:',NCRB,NCRT
-
             CALL DRYADJ(NCRB,NCRT,J,IHEM)
-
-          ENDIF                                                           
-          IF(L.GT.LTOP) GOTO 20                                           
-
+          ENDIF
+          IF(L.GT.LTOP) GOTO 20
 
 ! KM Bypass Moist convection
 !          GOTO 900
-C                                                                         
-C     MOIST CONVECTION                                                    
-C                                                                         
-          L=NL                                                            
-C         BEGIN NEW PARCEL CURVE                                          
-  100     NCRB=L                                                          
-          LCWET=.FALSE.                                                   
-          IF ( (SIGMA(NCRB)*PLG(J)).LT.PRESSMIN ) THEN                    
-            L=LTOP                                                        
-            GOTO 150                                                      
-          ELSEIF ( TG(J,NCRB).LT.TMIN ) THEN                              
-            L=L-1                                                         
-            GOTO 100                                                      
-          ENDIF                                                           
-          TC(L)=TG(J,L)                                                   
-          QC(L)=QG(J,L)                                                   
-C     UP ONE LEVEL - DRY ADIABAT AS FIRST GUESS                           
-  110     LP=L                                                            
-          L=L-1                                                           
-          IF(L.LT.LTOP) GOTO 150                                          
-          TC(L)=TC(LP)*SK(L)                                              
-          QC(L)=QC(LP)                                                    
-          QSL=ESCON(L)*PQSAT(TC(L))                                       
-C     IF SATURATED MAY BE MOIST CONVECTION                                
-          IF(QC(L).GE.QSL) GOTO 120                                       
-C     TEST FOR DRY INSTABILITY (SHOULD BE STABLE)                         
-          GOTO 150  !No moist convection                                  
-C     POSSIBLE MOIST CONVECTION - ITERATE FOR THETAE (T,Q)                
-  120     NIT=0                                                           
-  130     NIT=NIT+1                                                       
-          DQN=QC(L)-QSL                                                   
-          DQ=DQN/(1.0+CCC*QSL/(TC(L)*TC(L)))                              
-          QC(L)=QC(L)-DQ                                                  
-          TC(L)=TC(L)+CTQ*DQ                                              
-          IF(ABS(DQN).LT.EPSIQ) GOTO 140                                  
-          IF(NIT.GT.10) GOTO 140                                          
-          QSL=ESCON(L)*PQSAT(TC(L))                                       
-          GOTO 130                                                        
-C     BUOYANCY TEST - IF STABLE GO TO 150                                 
-  140     IF(TC(L).LT.TG(J,L)) GOTO 150                                   
-C     MOIST CONVECTION - CONTINUE PARCEL CURVE UP                         
-          LCWET=.TRUE.                                                    
-          GOTO 110                                                        
-  150     CONTINUE                                                        
-C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW         
-          IF(LCWET) THEN                                                  
-            NCRT=LP    
+C
+C     MOIST CONVECTION
+C
+          L=NL
+C         BEGIN NEW PARCEL CURVE
+  100     NCRB=L
+          LCWET=.FALSE.
+          IF ( (SIGMA(NCRB)*PLG(J)).LT.PRESSMIN ) THEN
+            L=LTOP
+            GOTO 150
+          ELSEIF ( TG(J,NCRB).LT.TMIN ) THEN
+            L=L-1
+            GOTO 100
+          ENDIF
+          TC(L)=TG(J,L)
+          QC(L)=QG(J,L)
+C     UP ONE LEVEL - DRY ADIABAT AS FIRST GUESS
+  110     LP=L
+          L=L-1
+          IF(L.LT.LTOP) GOTO 150
+          TC(L)=TC(LP)*SK(L)
+          QC(L)=QC(LP)
+          write(*,*) 'malsky_start'
+          write(*,*) ESCON
+          write(*,*)
+          write(*,*) PLG
+          write(*,*)
+          write(*,*) SIGMA
+          write(*,*)
+          write(*,*) TC
+          write(*,*)
+          QSL=ESCON(L)*PQSAT(TC(L))
+          write(*,*) 'malsky_end'
+C     IF SATURATED MAY BE MOIST CONVECTION
+          IF(QC(L).GE.QSL) GOTO 120
+C     TEST FOR DRY INSTABILITY (SHOULD BE STABLE)
+          GOTO 150  !No moist convection
+C     POSSIBLE MOIST CONVECTION - ITERATE FOR THETAE (T,Q)
+  120     NIT=0
+  130     NIT=NIT+1
+          DQN=QC(L)-QSL
+          DQ=DQN/(1.0+CCC*QSL/(TC(L)*TC(L)))
+          QC(L)=QC(L)-DQ
+          TC(L)=TC(L)+CTQ*DQ
+          IF(ABS(DQN).LT.EPSIQ) GOTO 140
+          IF(NIT.GT.10) GOTO 140
+          QSL=ESCON(L)*PQSAT(TC(L))
+          GOTO 130
+C     BUOYANCY TEST - IF STABLE GO TO 150
+  140     IF(TC(L).LT.TG(J,L)) GOTO 150
+C     MOIST CONVECTION - CONTINUE PARCEL CURVE UP
+          LCWET=.TRUE.
+          GOTO 110
+  150     CONTINUE
+C     STABLE LAYER OR MODEL TOP - ADJUST ANY UNSTABLE LAYER BELOW
+          IF(LCWET) THEN
+            NCRT=LP
 
             write(*,*) 'MOIST CONVECTION!!!'
-            IF(NCRT.LT.NCUTOP) THEN                                       
-              IF(.NOT.LCBADJ) CALL CBCON(NCRB,NCRT,J,IHEM)                
-              IF(LCBADJ)      CALL CBADJ(NCRB,NCRT,J,IHEM)                
-            ELSE                                                          
-              NCT=NCRT                                                    
-              IF(.NOT.LCUBM)  CALL CUDIF(NCRB,NCT,J,IHEM)                 
-              IF(LCUBM)       CALL CUBM (NCRB,NCT,J,IHEM)                 
-            ENDIF                                                         
-          ENDIF                                                           
-          IF(L.GT.LTOP) GOTO 100                                          
-C                                                                         
-C     COLLECT TENDENCIES AND INCREMENT T,Q FOR MOIST CONVECTION           
-C                                                                         
-          DO 200 L=1,NL                                                   
-            TTCR(J,L)=TTDC(L)+TTMC(L)                                     
-            QTCR(J,L)=QTDC(L)+QTMC(L)+QTLR(J,L)                           
-            QTLR(J,L)=0.0  
-  200     CONTINUE                                                        
-  700   CONTINUE                                                          
-  800 CONTINUE                                                            
-C                                                                         
+            IF(NCRT.LT.NCUTOP) THEN
+              IF(.NOT.LCBADJ) CALL CBCON(NCRB,NCRT,J,IHEM)
+              IF(LCBADJ)      CALL CBADJ(NCRB,NCRT,J,IHEM)
+            ELSE
+              NCT=NCRT
+              IF(.NOT.LCUBM)  CALL CUDIF(NCRB,NCT,J,IHEM)
+              IF(LCUBM)       CALL CUBM (NCRB,NCT,J,IHEM)
+            ENDIF
+          ENDIF
+          IF(L.GT.LTOP) GOTO 100
+C
+C     COLLECT TENDENCIES AND INCREMENT T,Q FOR MOIST CONVECTION
+C
+          DO 200 L=1,NL
+            TTCR(J,L)=TTDC(L)+TTMC(L)
+            QTCR(J,L)=QTDC(L)+QTMC(L)+QTLR(J,L)
+            QTLR(J,L)=0.0
+  200     CONTINUE
+  700   CONTINUE
+  800 CONTINUE
+C
  900  CONTINUE
-
       RETURN
       END                                                                 

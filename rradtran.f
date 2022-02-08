@@ -94,7 +94,7 @@
       endif
 
 
-      TT(1) = t(1) ! MALSKY ADDED
+      !TT(1) = t(1) ! MALSKY ADDED
       DO J = 2, NVERT
           TT(J) = T(J-1) * ((p_pass(J)*10.0)/(pr(J-1)*10.0)) ** (log(T(J)/T(J-1))/log((pr(J)*10.0)/(pr(J-1)*10.0)))
       END DO
@@ -126,6 +126,8 @@
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
+
+
 !     CALCULATE THE OPTICAL PROPERTIES
       IF (AEROSOLCOMP.EQ. 'picket-fence') THEN
           CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
@@ -144,7 +146,7 @@
      &                   UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &                   tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &                   qrad,alb_tomi,alb_toai)
+     &                   qrad,alb_tomi,alb_toai, p_pass)
 
       ELSE IF (AEROSOLCOMP.EQ. 'double-gray') THEN
           IF (NL .eq. 50) THEN ! This one only works with 50 layers
