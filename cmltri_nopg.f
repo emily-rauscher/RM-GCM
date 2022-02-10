@@ -502,8 +502,7 @@ c         REWIND 9
            ENDDO                                                          
            RODATA(IGO+5+IGP*(3+NTRAC))=RNTAPE                             
            WRITE (9) (RODATA(J),J=1,5+IGO+IGP*(3+NTRAC))                  
-C           write (*,*) IODSIZE,5+IGO+IGP*(3+NTRAC)                       
-         ELSE                                                             
+         ELSE
            WRITE(9) RKOUNT,RNTAPE,DAY,DOY,Z,D,T,TRA,SP,RNTAPE             
          ENDIF                                                            
          WRITE(2,2010)9,RKOUNT,RNTAPE,DAY,DOY                             
@@ -773,17 +772,24 @@ CC      call netout2
            DO 280 I=1,IDDZ                                                
   280      ADDZ(I)=ADDZ(I)*RKP                                            
            RKOUNT=KOUNT                                                   
-           RIH=JGP                                                        
+           RIH=JGP
+
+
            IF (LMINIH) THEN                                               
              RODATA(1)=RKOUNT                                             
              RODATA(2)=RNTAPE                                             
              RODATA(3)=DAY                                                
              RODATA(4)=DOY                                                
              RODATA(5)=RIH
+
+
+
              DO j=1,iddz
                RODATA(J+5)=ADDZ(J)
                RODATA(J+IDDZ+5)=DDZ(J)                                    
-             ENDDO                                                        
+             ENDDO
+
+
              RODATA(6+IDDZ*2)=RNTAPE                                      
              WRITE (9) (RODATA(J),J=1,IDDZ*2+6)                           
              RIH=RIH+1                                                    
@@ -794,14 +800,17 @@ CC      call netout2
                RODATA(J+5)=R8TT(J)
              ENDDO
 
-
              RODATA(IGP+6)=RNTAPE                                         
              WRITE (9) (RODATA(J),J=1,IGP+6)                              
            ELSE                                                           
              WRITE(9)RKOUNT,RNTAPE,DAY,DOY,RIH,ADDZ,DDZ,RNTAPE            
              RIH=RIH+1                                                    
              WRITE(9)RKOUNT,RNTAPE,DAY,DOY,RIH,TT,RNTAPE                  
-           ENDIF                                                          
+           ENDIF
+
+
+           write(*,*) 3, ADDZ(1), IDDZ ! Malsky2
+
          ENDIF                                                            
 C      NTEMP=NAVRD                                                        
 C      NAVRD=NAVWT                                                        

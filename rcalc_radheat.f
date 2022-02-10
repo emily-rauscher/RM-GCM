@@ -135,6 +135,9 @@
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
      &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
 
+        write(*,*) rfluxes(2,2,2)
+
+
 
 
       iffirst = 0

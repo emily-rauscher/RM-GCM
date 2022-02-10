@@ -306,8 +306,10 @@ c     ntstep is the number of timesteps to skip.
         IF (mod(kount,ntstep).eq.0) then
           ilast=0
 
+          !! schedule(guided), default(none),
+
           ! Do all the parallel stuff here
-          !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
+          !$OMP PARALLEL DO private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
      &    dpe, Pl, Tl, pe,
      &    PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,
@@ -562,39 +564,12 @@ c             bottom heating rate is zero in morecret
                 HTNETO=HTNET(IHem,JH,I,LD)
                 htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
                 TTRD(IM,LD)=(HTNETO+HTNET(IHEM,JH,I,LD))/(CHRF*2.0)
-
-                IF ((i-ilast.gt.1).and.(nskip.gt.0)) then
-                  DO j=ilast+1,i-1
-                    a=REAL(j-ilast)/REAL(i-ilast)
-                    b=1.-a
-
-                    write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
-                    write(*,*),'Please set nskip=0 in fort.7'
-                    STOP
-
-
-                    HTNETO=HTNET(IHEM,JH,J,LD)
-                    htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,i,ld)+b*htnet(ihem,jh,ilast,ld)
-                    im=j+iofm
-                    TTRD(IM,LD)=(HTNETO+HTNET(IHEM,JH,J,LD))/(CHRF*2.)
-
-                    IF (l.eq.nl) then
-                      pnet(im,jh)=a*pnet(i+iofm,jh)+b*pnet(ilast+iofm,jh)
-                      snet(im,jh)=a*snet(i+iofm,jh)+b*snet(ilast+iofm,jh)
-
-                      DO k=1,6
-                        rrflux(im,jh,k)=a*rrflux(i+iofm,jh,k)+b*rrflux(ilast+iofm,jh,k)
-                      ENDDO
-                    ENDIF
-
-                  ENDDO
-                ENDIF
               ENDDO
 
 
               ilast=i
-
 !             end of conditional execution of morcrette code
+
             ENDIF
           enddo
           !$OMP END PARALLEL DO
@@ -651,8 +626,9 @@ c             bottom heating rate is zero in morecret
         ENDDO
       ENDIF
 
-      !write(*,*) 'Stopping in radiation'
-      !stop
+
+      write(*,*) 'Stopping in radiation'
+      stop
 
       RETURN
       END
