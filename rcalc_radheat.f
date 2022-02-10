@@ -26,7 +26,8 @@
      &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
 
 !      use physical_constants
 
@@ -59,6 +60,12 @@
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
+
+      REAL PI0_TEMP(5, NL+1, 13)
+      REAL G0_TEMP(5, NL+1, 13)
+      REAL tauaer_temp(5, NL+1, 13)
+      INTEGER j1
+      REAL denom
 
 
 
@@ -125,7 +132,8 @@
      &  heats_aerad_tot, heati_aerad_tot, radheat_tot, cheati, cheats,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
 
 
 

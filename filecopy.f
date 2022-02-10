@@ -6,6 +6,7 @@ C**********************************************************
       REAL TLON,TLAT,TU,TV,TT,TSP,TF,DAY,SSLON
       INTEGER JG2,MG,NL,LL
 
+
       REWIND 26 
       REWIND 50
       REWIND 64
@@ -31,14 +32,6 @@ C**********************************************************
                   WRITE(ISF,102) TLON,TLAT,TF
                ENDIF
 
-               !IF (I .eq. 4) THEN
-               !    IF (J .eq. 4) THEN
-               !        write(*,*) TT, ','
-               !    END IF
-               !END IF
-
-
-
  22         CONTINUE
  21      CONTINUE
  20   CONTINUE
@@ -60,9 +53,6 @@ C**********************************************************
       CLOSE(ITS)
       CLOSE(IFT)
       CLOSE(ISF)
-
-      !write(*,*) "stopping in filecopy.f"
-      !STOP
 
       RETURN
       END                                                                 

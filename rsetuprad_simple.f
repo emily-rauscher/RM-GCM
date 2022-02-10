@@ -190,7 +190,7 @@
       EMISIR       = SURFEMIS
 
 
-      testing = 0
+      testing = 1
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
@@ -273,7 +273,7 @@
       GOL(:,:)    = 0.0
 
 
-      malsky_switch = 0
+      malsky_switch = 1
       IF (malsky_switch .gt. 0) THEN
 
         CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
@@ -301,10 +301,13 @@
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
         END DO
 
+
+
         DO L = NSOLP+1, NTOTAL
           tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
      &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
         END DO
+
 
         DO L = solar_calculation_indexer,NSOLP
             DO J = 1,NLAYER
@@ -321,6 +324,7 @@
                 k = k + 1
             END DO
         END DO
+
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0

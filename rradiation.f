@@ -256,6 +256,13 @@ c     The following for parallel testing --MTR
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
 
+      REAL PI0_TEMP(5, NL+1, 13)
+      REAL G0_TEMP(5, NL+1, 13)
+      REAL tauaer_temp(5, NL+1, 13)
+      INTEGER j1
+      real denom
+
+
 
     ! TOOK OUT MOLEF
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
@@ -303,6 +310,7 @@ c     ntstep is the number of timesteps to skip.
           !$OMP PARALLEL DO schedule(guided), default(none), private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
      &    dpe, Pl, Tl, pe,
+     &    PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,
      &    k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &    Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
      &    heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes,
@@ -530,7 +538,8 @@ c     ntstep is the number of timesteps to skip.
      &  heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
 
               pr=prb2t
 

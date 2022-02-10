@@ -14,7 +14,8 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, p_pass)
+     &  qrad,alb_tomi,alb_toai, p_pass,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -47,14 +48,14 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toais
 
-      REAL TAUFACT, DENOM
+      REAL DENOM
       REAL DPG(NLAYER), p_pass(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
-      REAL CLOUDLOC(NLAYER,NCLOUDS)
 
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
-      REAL TAUAER_OPPR(NTOTAL, NLAYER, NCLOUDS)
+      REAL tauaer_temp(NTOTAL, NLAYER, NCLOUDS)
+
 
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
@@ -70,6 +71,8 @@
       REAL PI0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
       REAL G0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
 
+
+
       REAL TCONDS(51,NCLOUDS)
       REAL CORFACT(51)
 
@@ -77,7 +80,7 @@
       REAL FMOLW(NCLOUDS)
       REAL MOLEF(NCLOUDS)
 
-      INTEGER K,J,BASELEV,TOPLEV,L
+      INTEGER K,J,L, iradgas
       INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index
       real particle_size
 
@@ -92,6 +95,7 @@
 
       COMMON /MOLE_VALS/ MOLEF
 
+      Y3(:,:,:) = 0.0
 
       DO J = 1,NLAYER-1
           layer_index = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
@@ -102,17 +106,14 @@
           DO I = 1,NCLOUDS
               DO L = 1,NTOTAL
                   PI0_TEMP(L,J, I) = PI0_OPPR(L,temp_loc,size_loc,I)
-                  G0_TEMP(L,J, I)  = G0_OPPR(L, temp_loc,size_loc,I)
+                  G0_TEMP(L,J, I)  = G0_OPPR(L,temp_loc,size_loc,I)
               END DO
 
               CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J)) / 10.0, 0.0), 1.0)
 
-
-              TAUFACT = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)
-
               DO L = 1,NTOTAL
-                  TAUAER_OPPR(L,J,I) = TAUFACT*QE_OPPR(L,temp_loc,size_loc,I)
+                  tauaer_temp(L,J,I) = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
+     &                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
           END DO
       END DO
@@ -121,9 +122,9 @@
 !     SW AT STANDARD VERTICAL RESOLUTION
       DO L = solar_calculation_indexer,NSOLP
           DO J = 1,NLAYER
-              TAUAER(L,J) = SUM(TAUAER_OPPR(L,J,1:NCLOUDS))
-              WOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
-              GOL(L,J)    = SUM(TAUAER_OPPR(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L, J,1:NCLOUDS))
+              TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS))
+              WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
+              GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L, J,1:NCLOUDS))
           END DO
       END DO
 
@@ -133,9 +134,9 @@
       DO J = 1,NDBL,2
           JJ = J
           DO L = NSOLP+1,NTOTAL
-              TAUAER(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS))
-              WOL(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
-              GOL(L,JJ) = SUM(TAUAER_OPPR(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
+              TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS))
+              WOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
+              GOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
           END DO
           JJ = J+1
           DO L = NSOLP+1,NTOTAL
@@ -155,6 +156,7 @@
           END DO
       END DO
 
+
       iradgas = 1
       DO J = 1,NLAYER
           j1 = max(1, j-1)
@@ -169,6 +171,7 @@
 
               utauL(L,j)  = TAUL(L,J)
               WOT = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+
               if (iradgas.eq.0) then
                   wot = woL(L,j)
               endif
@@ -192,16 +195,11 @@
               endif
 
               ug0(L,j)    = GOT
-              uOPD(L,J)   = 0.0
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
-
-
               IF (.TRUE.) THEN
-                  FO          = GOT*GOT
-                  DEN         = 1.-WOT*FO
-                  TAUL(L,J)   = TAUL(L,J) * DEN
-                  W0(L,J)     = (1.-FO)*WOT/DEN
+                  TAUL(L,J)   = TAUL(L,J) * (1.-WOT*(GOT*GOT))
+                  W0(L,J)     = (1.-(GOT*GOT))*WOT/(1.-WOT*(GOT*GOT))
                   G0(L,J)     = GOT/(1.+GOT)
                   OPD(L,J)    = 0.0
                   OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
@@ -226,6 +224,7 @@
           j1 = max( 1, j-1 )
           DO L = NSOLP+1,NTOTAL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+
 
               if (iradgas.eq.0) then
                   tauL(L,j) = tauaer(L,j)
@@ -264,10 +263,8 @@
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
               IF (.TRUE.) THEN
-                  FO          = GOT*GOT
-                  DEN         = 1.-WOT*FO
-                  TAUL(L,J)   = TAUL(L,J) * DEN
-                  W0(L,J)     = (1.-FO)*WOT/DEN
+                  TAUL(L,J)   = TAUL(L,J) * (1.-WOT*(GOT*GOT))
+                  W0(L,J)     = (1.-(GOT*GOT))*WOT/(1.-WOT*(GOT*GOT))
                   G0(L,J)     = GOT/(1.+GOT)
                   OPD(L,J)    = 0.0
                   OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
@@ -278,10 +275,12 @@
                   OPD(L,J)= uOPD(L,J)
              END IF
 
+
              if(taul(L,j) .lt. 0.) then
                  write(*,*) 'ERROR! The IR layer optical depth is less than 0:', taul(L,j)
                  stop
              endif
+
           END DO
 
           DO I = 1,NGAUSS
@@ -290,8 +289,6 @@
               END DO
           END DO
       END DO
-
-
 
       RETURN
       END

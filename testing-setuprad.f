@@ -288,6 +288,7 @@
           tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
+
       end subroutine calculate_opacities
 
 

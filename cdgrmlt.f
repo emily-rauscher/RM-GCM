@@ -177,7 +177,7 @@ C
       RKP=1.0/KOUNTH                                                      
       DELT2C=DELT2
 
-C                                                                         
+
       IF(LSUM) THEN                                                       
          IF(KOUTH.EQ.1) THEN                                               
             do k=1,6                                                         
@@ -261,7 +261,7 @@ C PMF bug fix 11-5-98
          SLBL(J)=0.0                                                       
          RRCR(J)=0.0                                                       
          RRLR(J)=0.0                                                       
- 30   CONTINUE                                                            
+ 30   CONTINUE
       DO 60 IHEM=1,NHEM                                                   
          DO 40 L=1,NL                                                      
             CTCR(L,IHEM)=0.0                                                
@@ -286,17 +286,20 @@ C  Convert from volume mixing ratio to mass mixing ratio.
      +        CALL SFCT(PLG,JH,IFIRST,TROPHT)                              
          IF (JH.EQ.JG) IFIRST=0                                             
       ENDIF                                                               
-C                                                                         
-      if (LOLDBL) then                                                    
+
+      if (LOLDBL) then
          if (LBL) call BLAYER                                             
       else                                                                
          if (LBL) call BLSURF                                             
       endif
 
+
       IF(LVD) CALL VDIFF
       IF(LCR) CALL CONVEC
       IF(LLR) CALL LSCRN
+
       IF(LRD) CALL RADIATION(TROPHT,IH)
+
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM
 C                                                                         
       do j=1,igc                                                          

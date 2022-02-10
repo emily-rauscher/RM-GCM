@@ -23,7 +23,8 @@
      &  heats_aerad_tot, heati_aerad_tot, radheat_tot, cheati, cheats,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -59,6 +60,11 @@
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
+      REAL PI0_TEMP(5, NL+1, 13)
+      REAL G0_TEMP(5, NL+1, 13)
+      REAL tauaer_temp(5, NL+1, 13)
+      INTEGER j1
+      REAL DENOM
 
       PARAMETER(PI2=2.0*3.14159265359)
       integer iffirst
@@ -247,7 +253,8 @@ C     globally averaged solar constant, vertical rays
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
-     &  Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
+     &  Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
 
           cheats = 0.
           cheati = 0.

@@ -4,7 +4,7 @@
       END
 
       SUBROUTINE IGCM3_SUB
-C!$ use omp_lib
+
 C**********************************************************************   
 C                    IGCM3_1                                              
 C                                                                         
@@ -215,7 +215,7 @@ C-----------------------------------------------------------------------
      : ,(DDZ(1),UTVDZ(1)),(ADDZ(1),AUTVDZ(1))                             
       INTEGER IODSIZE                                                     
       PARAMETER (IODSIZE=MAX(NGRPAD+IGD,IGP*(3+NTRAC)+IGO)+7)             
-      REAL*4 RODATA(IODSIZE)                                              
+      REAL RODATA(IODSIZE)
       REAL R8DATA((3+NTRAC)*IGP)                                          
       REAL R8SP(IGO)                                                      
       EQUIVALENCE (R8DATA(1),Z(1))                                        
@@ -226,6 +226,9 @@ C-----------------------------------------------------------------------
        COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)                                
        REAL TAVE(IGP) 
        real POSLATS(JG)
+
+      INTEGER IH, RIH, J
+      INTEGER iddz
 
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
@@ -254,12 +257,11 @@ C
  2010 FORMAT(/' HISTORY RECORD WRITTEN TO CHANNEL ',I3,/                  
      +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)                      
  2020 FORMAT(/' RESTORATION RECORD WRITTEN TO CHANNEL ',I3,/              
-     +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)                      
+     +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)
 
       READ(7,COMMENT)
       WRITE(2,COMMENT)
       WRITE(*,*) THECOMMENT
-
 
       tripped=0.0
       CALL INISET
@@ -377,27 +379,6 @@ C     ER modif for output management
           ASYMLW     =  0.0
           ENDIF
 
-C         The loop for the radiative transfer code is as follows:
-!        DO_LATLOOP (below in cmltr_nopg.f)
-!            DO_HEMLOOP (in rradiation.f aka formally cmorc)
-!              {START PARALLEL}
-!                 DO_LONLOOP (inrradiation.f)
-!                      DO_VERTLOOP (actually matrix inversion)
-!                          RADIATIVE TRANSFER
-!                      ENDDO_VERTLOOP
-!                 ENDDO_LONLOOP
-!               {END PARALLEL}
-!            ENDDO_HEMLOOP
-!        ENDDO_LATLOOP
-!        So for speed, innermost is leftmost (and should ideally be
-!        smallest)  
-!        THEREFORE, INDEX ORDER SHOULD BE: TAUAER(NL,MG,IHEM,JH)
-
-
-
-!@@@@@ HERE IS WHERE THE TIME STEP ITERATION LOOP BEGINS @@@@@@@@@@@@@@
-!@@@@@                                                   @@@@@@@@@@@@@@
-!
 
  1    CONTINUE                                                            
 C                                                                         
@@ -435,19 +416,7 @@ C
 C                                                                         
       IF (JGL.EQ.1) REWIND 25                                             
       KKOUT=KOUNT*(KOUNTP-KOUTP)                                          
-      JL=1                                                                
-C                                                                         
-C set surface pressure to 976mb                                           
-C      IF (DAY.LT.0.1) THEN                                                
-C        print *,' setting surface pressure to 976mb'                      
-C        SP(1)=CMPLX((sqr2*(0.976-1.0)),0.0)                               
-C      ENDIF                                                               
-
-!!      print*,kount                                                        
-C     Main loop over latitudes                                            
-C                                                                         
-C!$omp parallel default(shared) private(IH,JH,JL,WORK) 
-C!$omp do
+      JL=1
 
       DO 5 IH=1,JG                                                        
          JH=IH                                                            
@@ -458,14 +427,10 @@ C        inverse Legendre and Fourier transforms
 C                                                                         
          CALL LTI                                                         
 
-CC!$omp parallel default(shared) private(I,WORK) 
-CC!$omp do
          DO 10 I=1,NTWG                                                   
             CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG  
      +                 ,NCRAY,1)                                          
  10      CONTINUE                                                         
-CC!$omp end do 
-CC!$omp end parallel
 
          CALL FFT991(DAG(1+ NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG     
      +              ,NRSTWG,1)                                            
@@ -492,25 +457,19 @@ C        Go from grid point space to spectral space using
 C        direct Legendre and Fourier transforms                           
 C                                                                         
 
-CC!$omp parallel default(shared) private(I,WORK) 
-CC!$omp do
          DO 20 I=1,NTGW                                                   
             CALL FFT991(DAF(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG  
      +                 ,NCRAY,-1)                                         
  20      CONTINUE                                                         
-CC!$omp end do 
-CC!$omp end parallel
+
 
          CALL FFT991(DAF(1+ NTGW*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG     
      +              ,NRSTGW,-1)                                           
          CALL LTD                                                         
          JL=JL+JINC   
-!!         JL=1+JINC*IH
-!!         write(*,*) IH, JH, JL, JINC
+
  5    CONTINUE                                                            
-C!$omp end do 
-C!$omp end parallel
-C                                                                         
+
       IF (LBALAN) THEN                                                    
 C        Balance spectral fields                                          
 C                                                                         
@@ -619,7 +578,8 @@ C          ENDDO
       ENDIF                                                               
 C                                                                         
 C     Output diagnostics                                                  
-C                                                                         
+C
+
       IF (KOUTP.EQ.KOUNTP) THEN                                           
          CALL XSECT(INLAT)
          CALL XSECT2
@@ -719,41 +679,19 @@ C      REWIND NAVWT
 !@@@@@@  HERE IS WHERE THE ITERATION OVER LATITUDE FOR  @@@@@@@@@@@@@@@@
 !@@@@@@  THE RADIATIVE TRANSFER BEGINS. SHOULD BE PARALELLIZED @@@@@@@@@
 
+
          JL=1                                                             
          DO 260 IH=1,JG                                                   
             JH=IH                                                         
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP                       
  
-C     FOR RADIATIVE TRANSFER
-C       IF the aerosol keyword is set true, then here's where we extract
-C       a row from the aerosol array, representing vertical profiles of
-C       aersols for each longitude for the given latitude being currently indexed.
-C       aer4thislat=aerosolarry(alllays,allons,IH)
 
-C         The loop for the radiative transfer code is as follows:
-!        DO_LATLOOP (here in cmltr_nopg.f)
-!            DO_HEMLOOP (in rradiation.f aka formally cmorc)
-!              {START PARALLEL}
-!                 DO_LONLOOP (inrradiation.f)
-!                      DO_VERTLOOP (actually matrix inversion)
-!                          RADIATIVE TRANSFER
-!                      ENDDO_VERTLOOP
-!                 ENDDO_LONLOOP
-!               {END PARALLEL}
-!            ENDDO_HEMLOOP
-!        ENDDO_LATLOOP
-!
-C                                                                         
             CALL LTI                                                      
 
-CC!$omp parallel default(shared) private(I,WORK) 
-CC!$omp do
+
             DO 210 I=1,NTWG                                               
-               CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,        
-     +                 1,MGPP,MG,NCRAY,1)                                 
- 210        CONTINUE                                                      
-CC!$omp end do 
-CC!$omp end parallel
+               CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG,NCRAY,1)
+ 210        CONTINUE
 
             CALL FFT991(DAG(1+ NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,           
      +                  1,MGPP,MG,NRSTWG,1)                               
@@ -761,6 +699,7 @@ C
 C        Calculate diabatic terms                                         
 C
             ! This is the important radiative transfer stuff
+
             CALL DGRMLT(IH)
 C                                                                         
 C        Write accumulated diagnostics to history file.                   
@@ -803,15 +742,12 @@ C  from RODATA.
 C                                                                         
 C        Go from grid point space to spectral space using                 
 C        direct Legendre and Fourier transforms                           
-C                                                                         
-CC!$omp parallel default(shared) private(I,WORK) 
-CC!$omp do
+C
             DO 220 I=1,NTGD                                               
                CALL FFT991(DAD(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,        
      +                     1,MGPP,MG,NCRAY,-1)                            
  220        CONTINUE                                                      
-CC!$omp end do 
-CC!$omp end parallel
+
             CALL FFT991(DAD(1+ NTGD*NCRAY*MGPP),WORK,TRIG,IFAX,           
      +                  1,MGPP,MG,NRSTGD,-1)                              
 C                                                                         
@@ -821,8 +757,8 @@ C
 C                                                                         
 C Write zonally averaged diagnostics and spectral heating                 
 C to history file.                                                        
-C                                                                         
-      if (kflag.eq.1) then                                                
+C
+      if (kflag.eq.1) then
          if (nlat.gt.0) rewind 24                                         
 CC         call plotfields2(1)                                            
 CC      call netout2                                                      
@@ -843,9 +779,9 @@ CC      call netout2
              RODATA(2)=RNTAPE                                             
              RODATA(3)=DAY                                                
              RODATA(4)=DOY                                                
-             RODATA(5)=RIH                                                
-             DO j=1,iddz                                                  
-               RODATA(J+5)=ADDZ(J)                                        
+             RODATA(5)=RIH
+             DO j=1,iddz
+               RODATA(J+5)=ADDZ(J)
                RODATA(J+IDDZ+5)=DDZ(J)                                    
              ENDDO                                                        
              RODATA(6+IDDZ*2)=RNTAPE                                      
@@ -907,14 +843,6 @@ CC      call end_netcdf
          WRITE(13)RKOUNT,RNTAPE,DAY,DOY,TTRES,RNTAPE                      
          WRITE(2,2020)13,RKOUNT,RNTAPE,DAY,DOY                            
       ENDIF                                                               
-CC      call end_graphics                                                 
-C                          
 
-!      IF(LPLOTMAP) THEN
-C Close the graphics device.
-c      CALL PGASK
-C      CALL PGCLOS
-!      END
-                                               
       STOP                                                                
       END SUBROUTINE
