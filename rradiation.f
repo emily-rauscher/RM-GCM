@@ -176,7 +176,7 @@ C
       real, dimension(5,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       ! Malsky is adding these
-      integer solar_calculation_indexer, num_layers
+      integer solar_calculation_indexer, num_layers, malsky_test
 
       integer ifsetup
       real ibinm
@@ -304,11 +304,14 @@ c     ntstep is the number of timesteps to skip.
 
       IOFM=0
 
+
+      !write(*,*) 'Malsky1', kount, mod(kount,ntstep)
+
       DO 800 ihem=1,nhem
         IF (mod(kount,ntstep).eq.0) then
           ilast=0
 
-          !! schedule(guided), default(none),
+          ! schedule(guided), default(none),
 
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO private(test_wctime,
@@ -423,6 +426,7 @@ c     ntstep is the number of timesteps to skip.
      &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
      &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers,
      &    GANGLE, GWEIGHT, GRATIO, FDEGDAY, SCDAY, RGAS, ALOS, AVG, SQ3, SBK, EPSILON, JDBLE,JDBLEDBLE,JN,JN2)
+
           DO i=1,mg
 
             im=i+iofm
@@ -431,6 +435,8 @@ c     ntstep is the number of timesteps to skip.
             IF ((i.eq.1).or.(i-ilast.ge.nskip)) then
               idocalc=1
             ELSE
+
+            IF (.FALSE.) write(*,*) 'malsky what the'
 
             IF (LNNSK) THEN
               imp=im+1
@@ -566,7 +572,6 @@ c     ntstep is the number of timesteps to skip.
 
 
 
-
 c             bottom heating rate is zero in morecret
               DO l=nl,1,-1
                 LD=NL+1-L
@@ -583,6 +588,7 @@ c             bottom heating rate is zero in morecret
             ENDIF
           enddo
           !$OMP END PARALLEL DO
+
 
           IF (nskip.ne.0) then
              write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
@@ -637,8 +643,6 @@ c             bottom heating rate is zero in morecret
       ENDIF
 
 
-      write(*,*) 'Stopping in radiation'
-      stop
 
       RETURN
       END

@@ -135,8 +135,8 @@
           JJ = J
           DO L = NSOLP+1,NTOTAL
               TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS))
-              WOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,K)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
-              GOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,K)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
+              WOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
+              GOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
           END DO
           JJ = J+1
           DO L = NSOLP+1,NTOTAL

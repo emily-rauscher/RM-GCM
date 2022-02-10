@@ -808,9 +808,6 @@ CC      call netout2
              WRITE(9)RKOUNT,RNTAPE,DAY,DOY,RIH,TT,RNTAPE                  
            ENDIF
 
-
-           write(*,*) 3, ADDZ(1), IDDZ ! Malsky2
-
          ENDIF                                                            
 C      NTEMP=NAVRD                                                        
 C      NAVRD=NAVWT                                                        
