@@ -105,6 +105,8 @@
  400  CONTINUE
 
 
+
+
 !
       DO 450 J             =  1,NDBL
          DO 425  L         =  NSOLP+1,NTOTAL
@@ -146,6 +148,7 @@
  510          CONTINUE
  520       CONTINUE
  530   CONTINUE
+
 !
 !     UINTENT IS THE UPWARD INTENSITY * TPI. DIRECTU IS THE UPWARD FLUX.
 !     ASSUME THAT THE REFLECTIVITY IS LAMBERT.
@@ -161,17 +164,23 @@
      &                               UINTENT(L,I,NDBL)*GWEIGHT(I)
  560      CONTINUE
  570   CONTINUE
+
+
 !
       DO 650        M              = 2,NDBL
           J                        = NDBL-M+1
           DO 640    I              = 1,NGAUSS
              DO 630 L              = NSOLP+1,NTOTAL
-                 UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))*Y3(L,I,J+1)+Y2(L,I,J+1)+(1.-Y3(L,I,J+1))*Y8(L,I,J+1)
+                  UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))*Y3(L,I,J+1)+Y2(L,I,J+1)+(1.-Y3(L,I,J+1))*Y8(L,I,J+1)
                   TMIU(L,J)        = TMIU(L,J)+UINTENT(L,I,J)*GRATIO(I)
                   DIRECTU(L,J)     = DIRECTU(L,J) + GWEIGHT(I)*UINTENT(L,I,J)
  630         CONTINUE
  640      CONTINUE
  650  CONTINUE
+
+
+
+
 
       RETURN
       END

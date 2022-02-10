@@ -1,4 +1,4 @@
-      subroutine radsub(iffirst,pr,p_pass,t, radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+      subroutine radsub(iffirst,pr,p_pass,t, radheat,htlw,htsw,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &                  incident_starlight_fraction,TAURAY, TAUL, TAUGAS,TAUAER, solar_calculation_indexer,dpg,
      &                  ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &                  fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
@@ -24,7 +24,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom, fluxes)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -59,6 +59,8 @@
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
+      real, dimension(2)  :: Beta_IR
+      real, dimension(3)  :: Beta_V
 
       REAL PI0_TEMP(5, NL+1, 13)
       REAL G0_TEMP(5, NL+1, 13)
@@ -98,10 +100,7 @@
       ! Malsky add
       REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT1, incident_starlight_fraction
 
-      real, dimension(NIR)  :: Beta_IR
-      real, dimension(NSOL) :: Beta_V
-
-      real rfluxes(2,2,2)
+      real fluxes(2,2,2)
       REAL SSLON,SSLAT  ! ER:
       REAL DLENGTH  ! ER: half-length of solar day
       real PI2
@@ -280,7 +279,8 @@ C     globally averaged solar constant, vertical rays
 
       htlw    = heati_aerad_tot
       htsw    = heats_aerad_tot
-      rfluxes = rfluxes_aerad
+      fluxes  = rfluxes_aerad
+
 
       return
       end

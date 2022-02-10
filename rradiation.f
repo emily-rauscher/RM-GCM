@@ -244,13 +244,15 @@ c     The following for parallel testing --MTR
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
       real heats_aerad_tot(NL+1), heati_aerad_tot(NL+1), radheat_tot(NL+1), cheati(NL+1), cheats(NL+1), radheat(NL+1)
-      real, dimension(2,2,2) :: rfluxes
 
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
       ! For the new picket fence stuff
       REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      real, dimension(2)  :: Beta_IR
+      real, dimension(3)  :: Beta_V
+
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
@@ -314,8 +316,8 @@ c     ntstep is the number of timesteps to skip.
      &    dpe, Pl, Tl, pe,
      &    PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,
      &    k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &    Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &    heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats, rfluxes,
+     &    Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, Beta_IR, Beta_V,
+     &    heats_aerad_tot, heati_aerad_tot, radheat_tot, radheat, cheati, cheats,
      &    EF, SFCS,
      &    imp,PR,T,
      &    TT, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
@@ -511,9 +513,16 @@ c     ntstep is the number of timesteps to skip.
               ENDIF
 
               rfluxes_aerad = 0.
-              rfluxes       = 0.
+              fluxes        = 0.
               fsl_dn_aerad  = 0.
               fir_up_aerad  = 0.
+
+               Y3  = 0.
+               Y1  = 0.
+               Y5  = 0.
+               Y3  = 0.
+               Y4  = 0.
+
 
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
      &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
@@ -541,7 +550,7 @@ c     ntstep is the number of timesteps to skip.
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V)
 
               pr=prb2t
 
@@ -554,6 +563,7 @@ c     ntstep is the number of timesteps to skip.
               rrflux(im,jh,4)=fluxes(2,2,2)
               rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
               rrflux(im,jh,6)=fluxes(2,2,1)
+
 
 
 

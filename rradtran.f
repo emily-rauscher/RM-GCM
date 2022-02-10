@@ -61,7 +61,7 @@
       real, dimension(NSOL) :: Beta_V
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
       real incident_starlight_fraction
-      integer jflip, solar_calculation_indexer
+      integer solar_calculation_indexer
 
       real, dimension(NTOTAL,NDBL) :: SLOPE
       real pr(NLAYER), p_pass(NLAYER)
@@ -303,6 +303,8 @@
 !     WITHOUT DOUBLING
 
 
+
+
       DO L = NSOLP+1, NTOTAL
           K     =  1
           DO        J     =  1,NLAYER
@@ -322,6 +324,9 @@
             K     =  K+2
           ENDDO
       END DO
+
+
+
 
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
@@ -493,32 +498,35 @@
 
 
       IF (IR .NE. 0) THEN
-          DO 520 L        =  NSOLP+1,NTOTAL
+          DO L        =  NSOLP+1,NTOTAL
              firu(L-nsol ) = firu( L-nsol ) + directu(L,1)
 
-             do 520 j = 1, nlayer
+             do j = 1, nlayer
                  fupbi(j)   = fupbi(j)   + (directu(L,j))
                  fdownbi(j) = fdownbi(j) + (direc(L,j))
                  fnetbi(j)  = fnetbi(j)  + (directu(L,j) - direc(L,j))
- 520      CONTINUE
+             END DO
+          END DO
 
 
-          do 529 i = 1, nir
+
+          do i = 1, nir
               tiru = tiru + firu(i)
- 529      continue
+          END DO
 
 !         Load fluxes into interface common block
 
           do j = 1, nlayer
-              jflip=nlayer+1-j
-              fir_up_aerad(j)  = fupbi(jflip)
-              fir_dn_aerad(j)  = fdownbi(jflip)
-              fir_net_aerad(j) = fnetbi(jflip)
-              fsl_up_aerad(j)  = fupbs(jflip)
-              fsl_dn_aerad(j)  = fdownbs(jflip)
-              fsl_net_aerad(j) = fnetbs(jflip)
+              fir_up_aerad(j)  = fupbi(nlayer+1-j)
+              fir_dn_aerad(j)  = fdownbi(nlayer+1-j)
+              fir_net_aerad(j) = fnetbi(nlayer+1-j)
+              fsl_up_aerad(j)  = fupbs(nlayer+1-j)
+              fsl_dn_aerad(j)  = fdownbs(nlayer+1-j)
+              fsl_net_aerad(j) = fnetbs(nlayer+1-j)
           enddo
       ENDIF
+
+
 
 
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
@@ -567,8 +575,6 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
 
-      !write(*,*) 'Stopping at the end of raddtran'
-      !stop
 
       return
       END

@@ -97,7 +97,7 @@
 
       Y3(:,:,:) = 0.0
 
-      DO J = 1,NLAYER-1
+      DO J = 1,NLAYER
           layer_index = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
           temp_loc = MINLOC(ABS(input_temperature_array - (TT(J))),1)
           particle_size = particle_size_vs_layer_array_in_meters(layer_index)
@@ -135,8 +135,8 @@
           JJ = J
           DO L = NSOLP+1,NTOTAL
               TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS))
-              WOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
-              GOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
+              WOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,K)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS))
+              GOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,K)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))
           END DO
           JJ = J+1
           DO L = NSOLP+1,NTOTAL
@@ -147,15 +147,15 @@
           k = k+1
       END DO
 
-      ! Smooth out the cloud properties after doubling
-      DO L = NSOLP+1,NTOTAL
-          DO J = 2, NDBL-1, 2
-              TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
-              WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
-              GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
-          END DO
-      END DO
 
+      ! Smooth out the cloud properties after doubling
+      !DO L = NSOLP+1,NTOTAL
+      !    DO J = 2, NDBL, 2
+      !        TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
+      !        WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
+      !        GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
+      !    END DO
+      !END DO
 
       iradgas = 1
       DO J = 1,NLAYER
@@ -289,6 +289,8 @@
               END DO
           END DO
       END DO
+
+
 
       RETURN
       END

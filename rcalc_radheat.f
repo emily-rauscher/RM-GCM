@@ -2,8 +2,8 @@
 !*                         SUBROUTINE CALC_RADHEAT                     *  
 !*********************************************************************** 
       SUBROUTINE CALC_RADHEAT(pr,t,p_pass,alat1,alon,htlw,htsw,
-     $             DOY,cf,ic,rfluxes,swalb,kount,itspd, incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,
-     &             solar_calculation_indexer, dpg,
+     $             DOY,cf,ic,fluxes,swalb,kount,itspd,
+     &             incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER, solar_calculation_indexer, dpg,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &             pbar, dpgsub, pbarsub,
@@ -27,7 +27,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V)
 
 !      use physical_constants
 
@@ -61,6 +61,9 @@
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
+      real, dimension(2)  :: Beta_IR
+      real, dimension(3)  :: Beta_V
+
       REAL PI0_TEMP(5, NL+1, 13)
       REAL G0_TEMP(5, NL+1, 13)
       REAL tauaer_temp(5, NL+1, 13)
@@ -77,9 +80,7 @@
       real dpg(NLAYER), pbar(NLAYER)
       real dpgsub(NDBL), pbarsub(NDBL)
       real, dimension(NL+1) :: z, htsw,htlw
-      real, dimension(2,2,2) :: rfluxes
-      real, dimension(NIR)  :: Beta_IR
-      real, dimension(NSOL) :: Beta_V
+      real, dimension(2,2,2) :: fluxes
       real, dimension(NIR+NSOL,NDBL) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       real alat1, alon, incident_starlight_fraction
@@ -98,7 +99,6 @@
       real fsl_net_aerad(NL+1)
 
       tgrnd=t(NZ)
-      rfluxes=fluxes
       iffirst = 1
       R_AIR = GASCON*10000.
       Cpd = GASCON/AKAP !1.004e+7
@@ -108,7 +108,7 @@
       RdCp = Rd/Cpd
 
 
-      call radsub(iffirst,pr,p_pass,t,radheat,htlw,htsw,rfluxes,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
+      call radsub(iffirst,pr,p_pass,t,radheat,htlw,htsw,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
@@ -133,11 +133,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom)
-
-        write(*,*) rfluxes(2,2,2)
-
-
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, fluxes)
 
 
       iffirst = 0

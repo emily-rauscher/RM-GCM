@@ -149,7 +149,10 @@ C
 C long wave radiation namelist                                            
       NAMELIST/INRADLW/LLBLM,GAS,VMRCO2,VMRCH4,VMRN2O,                    
      :             VMRHALO                                                
-      LLBLM=.TRUE.                                                        
+      LLBLM=.TRUE.
+
+
+      write(*,*) 'Isaac doesnt think this radiation scheme should be used'
 
 C ER modif for non-synchronous orbit
       IF (PORB.NE.0) THEN 
