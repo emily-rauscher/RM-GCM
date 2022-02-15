@@ -390,42 +390,7 @@ c     ntstep is the number of timesteps to skip.
      &    fir_up_aerad, fir_dn_aerad,
      &    fir_net_aerad,fsl_net_aerad,
      &    p_pass, dpg, pbar, dpgsub, pbarsub),
-     &    firstprivate(ilast),
-     &    lastprivate(ilast),
-     &    shared(iofm,nskip,AMFRAC,h2omod2,ihem,h2omod1,o3mod2,o3mod1,TROPHT,
-     &    QG,SSLAT,SSLON,CHRF, ABSLW, ABSSW, ACLD, AIOCT, AK,
-     &    AKAP, AKQC, AKQV, AKTC, AKTV, AKVV, ALAT, ALBSW1, ALP, ALPHA,
-     &    ALPJ, AQ, ARFLUX, ARRCR, ARRLR, ASFLD, ASHBL, ASLBL, ASSBL,
-     &    ASYMSW2, AW, BEGDAY, BEGDOY, BLA, BLCD, BLRH, BLVAD, BLVB, BM1,
-     &    BOTRELAXTIME, C, CBADJP, CBADJT, CCC, CCR, CD, CFRAC, CG, CHIG,
-     &    CLATNT, CLD, CLR, CPD, CQ, CS, CSSQ, CT, CTCR, CTLR, CTQ, CTQI,
-     &    CTRA, CUBMT, CURHM, CUT1, CUT2, CV, DALP, DALPJ, DAY, DELT,
-     &    DELT2, DELT2C, DOY, DRAG, DSIGMA, DTBUOY, EAM1, EAM2, ECCEN,
-     &    EPSIQ, ESCONA, ESCONB, EZ, FB, FBASEFLUX, FORCE1DDAYS, FRAD, FWS,
-     &    GASCON, GSG, GWT, HSNOW, HTNET, ICFLAG, INLAT, INSPC,
-     &    ITSLL, ITSLO, ITSPD, JH, JINC, JL, JSKIPLAT, JSKIPLON, JZF, KITS,
-     &    KOLOUR, KOUNT, KOUNTE, KOUNTH, KOUNTP, KOUNTR, KOUTE, KOUTH,
-     &    KOUTP, KOUTR, KRUN, KSTART, KTOTAL, L1DZENITH, L22L, LBALAN, LBL,
-     &    LCBADJ, LCLIM, LCOND, LCR, LCSFCT, LCUBM, LDIUR, LFLUX,
-     &    LFLUXDIAG, LGPO, LLOGPLEV, LLR, LMINIH, LNNSK, LNOICE, LNOISE,
-     &    LOC, LOGICALLBL, LOGICALLLOGPLEV, LOLDBL, LOROG, LPERPET,
-     &    LPLOTMAP, LRD, LRESTIJ, LRSTRT, LSHIST, LSHORT, LSL, LSPO,
-     &    LSTRETCH, LTVEC, LVD, MF, MFP, NAVRD, NAVWT, NCOEFF, NCUTOP,
-     &    NEWTB, NEWTE, NF, NFP, NLAT, NLCR, NLPLOTMAP_IN, NLWMODEL,
-     &    NSKIP_IN, NSWMODEL, NTRACO, NTSTEP_IN, OBLIQ, OOM_IN,
-     &    OPACIR_POWERLAW, OPACIR_REFPRES, P0, PFAC, PLG, PNET, PNU, PNU2,
-     &    PNU21, PORB, PRMIN, QC, QSTAR, QTDC, QTMC, QTVD, RADEA, RCON, RD,
-     &    RDLP, RDSIG, RFCOEFF_IN, RFLUX, RGG, RLP, RMG, RNTAPE, RNTAPO,
-     &    RRCR, RRFLUX, RRLR, RSQ, RSQR2, RV, SAICE, SALB, SASNOW, SBAL,
-     &    SCATSW2, SD1, SD2, SDSN, SDSND, SDW, SECSQ, SFG, SFLD, SHBL,
-     &    SHCI, SHCO, SHCS, SHCSN, SHCSP, SHSMAX, SHSSTAR, SI, SIGMA,
-     &    SIGMAH, SISQ, SK, SKAP, SKSE, SKSN, SLBL, SLHF, SMSTAR, SNET,
-     &    SOLC_IN, SPG, SQ, SQH, SQR2, SQSTAR, SSBL, SSMC, SVEGE, T0,
-     &    T01S2, TAU, TC, TDEEP, TDEEPO, TG, TKP, TNLG, TOAALB, TOUT1,
-     &    TOUT2, TRAG, TRANLG, TSLA, TSLB, TSLC, TSTAR, TSTARO, TTCR,
-     &    TTDC, TTLR, TTLW, TTMC, TTRD, TTSW, TTVD, TXBL, TYBL, UG, UNLG,
-     &    UTRAG, UTVD, VG, VNLG, VPG, VTRAG, VTVD, WW, num_layers,
-     &    GANGLE, GWEIGHT, GRATIO, FDEGDAY, SCDAY, RGAS, ALOS, AVG, SQ3, SBK, EPSILON, JDBLE,JDBLEDBLE,JN,JN2)
+     &    firstprivate(ilast)
 
           DO i=1,mg
 
@@ -529,7 +494,6 @@ c     ntstep is the number of timesteps to skip.
                Y3  = 0.
                Y4  = 0.
 
-
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
      &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
@@ -589,7 +553,6 @@ c             bottom heating rate is zero in morecret
           enddo
           !$OMP END PARALLEL DO
 
-
           IF (nskip.ne.0) then
              write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
              write(*,*),'Please set nskip=0 in fort.7'
@@ -641,8 +604,6 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDDO
       ENDIF
-
-
 
       RETURN
       END
