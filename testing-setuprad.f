@@ -80,10 +80,6 @@
               END DO
           end if
 
-          !DO J = 1, NLAYER
-          !    Tl(J) = t(J)
-          !END DO
-
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
@@ -275,8 +271,8 @@
 
 
         do k = 1, NLAYER
-          call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
-          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          !call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
           k_Vl(1,k) = k_IRl(1,k) * gam_V(1)
           k_Vl(2,k) = k_IRl(1,k) * gam_V(2)
