@@ -56,6 +56,11 @@
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL tauaer_temp(NTOTAL, NLAYER, NCLOUDS)
 
+      REAL CLOUDLOC(NL+1,NCLOUDS)
+      INTEGER BASELEV
+      INTEGER TOPLEV(NCLOUDS)
+
+
 
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
@@ -111,11 +116,34 @@
 
               CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J)) / 10.0, 0.0), 1.0)
 
+              ! STOP some weird behaviour, I don't know if this should be taken out. Probably
+              IF (J .gt. 5) THEN
+                  IF ((CONDFACT(J-1,I) .eq. 0) .AND. (CONDFACT(J-2,I) .eq. 0) .AND. (CONDFACT(J-3,I) .eq. 0)) THEN
+                      CONDFACT(J,I) = 0.0
+                  END IF
+              END IF
+
+
+              CLOUDLOC(J,I)     =NINT(CONDFACT(J,I))*J
+              BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
+              TOPLEV(I)  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
+
               DO L = 1,NTOTAL
                   tauaer_temp(L,J,I) = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
      &                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
           END DO
+      END DO
+
+
+      ! Uncomment for compact clouds I think
+      DO I = 1,NCLOUDS
+          DO J = 1, TOPLEV(I)
+              tauaer_temp(:,J,I) = 0.0
+          END DO
+
+          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
+          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
       END DO
 
 
@@ -149,13 +177,13 @@
 
 
       ! Smooth out the cloud properties after doubling
-      !DO L = NSOLP+1,NTOTAL
-      !    DO J = 2, NDBL, 2
-      !        TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
-      !        WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
-      !        GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
-      !    END DO
-      !END DO
+      DO L = NSOLP+1,NTOTAL
+          DO J = 2, NDBL, 2
+              TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
+              WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
+              GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
+          END DO
+      END DO
 
       iradgas = 1
       DO J = 1,NLAYER
