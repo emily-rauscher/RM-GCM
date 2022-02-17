@@ -1135,6 +1135,7 @@
      &                1.385e-6/) ! Al2O3
 
 
+      MOLEF   = (/0,0,0,0,0,0,0,0,0,0,0,0,0/)
 
       Do 200  I         = 1,NCLOUD
        DO 180  J          =   1,NLAYER -1
@@ -1203,139 +1204,128 @@
       END DO
 
       iradgas = 1
+      DO J = 1,NLAYER
+          j1 = max(1, j-1)
+
+!         First the solar at standard resolution
+          DO L = solar_calculation_indexer,NSOLP
+              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+
+              if(TAUL(L,J) .lt. 1d-6 ) then
+                  TAUL(L,J) = 1d-6
+              endif
+
+              utauL(L,j)  = TAUL(L,J)
+              WOT = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
 
 
-      DO 500 J           = 1,NLAYER
-      j1             = max( 1, j-1 )
-          DO 400 L       = LLS,NSOLP
+              WOT       = min(1.-1d-6,WOT)
+              uw0(L,j)  = WOT
+              DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
 
-             TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+              if( DENOM .LE. 1d-6 ) then
+                  DENOM = 1d-6
+              endif
 
-             if (iradgas.eq.0) then
-             tauL(L,j) = tauaer(L,j)
-             endif
+              if( DENOM .GT. 1d-6 ) then
+                  GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
+              else
+                  GOT = 0.
+              endif
+
+              if (iradgas.eq.0) then
+                  GOT = goL(L,j)
+              endif
+
+              ug0(L,j)    = GOT
+              uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
 
-             if( TAUL(L,J) .lt. 1d-6 ) then
-             TAUL(L,J) = 1d-6
-             endif
+              TAUL(L,J)   = TAUL(L,J) * (1.-WOT*(GOT*GOT))
+              W0(L,J)     = (1.-(GOT*GOT))*WOT/(1.-WOT*(GOT*GOT))
+              G0(L,J)     = GOT/(1.+GOT)
+              OPD(L,J)    = 0.0
+              OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
 
-             utauL(L,j)  = TAUL(L,J)
-             WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-             if (iradgas.eq.0) then
-              wot = woL(L,j)
-             endif
 
-             WOT         = min(1.-1d-6,WOT)
-             uw0(L,j)    = WOT
+!             HERE'S WHERE YOU CAN HARDWIRE VALUES
+              if( taul(L,j) .lt. 0.) then
+                  write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
+                  stop
+              endif
+          END DO
+      END DO
 
-             DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
-             if( DENOM .LE. 1d-6 ) then
-                 DENOM = 1d-6
-             endif
-             if( DENOM .GT. 1d-6 ) then
-               GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
-             else
-               GOT = 0.
-             endif
-             if (iradgas.eq.0) then
-             GOT = goL(L,j)
-             endif
-             ug0(L,j)    = GOT
-             uOPD(L,J)   = 0.0
-             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
-             IF (.TRUE.) THEN
-             FO          = GOT*GOT
-             DEN         = 1.-WOT*FO
-             TAUL(L,J)   = TAUL(L,J) * DEN
-             W0(L,J)     = (1.-FO)*WOT/DEN
-             G0(L,J)     = GOT/(1.+GOT)
-             OPD(L,J)    = 0.0
-             OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
-             ELSE
+!     NOW AGAIN FOR THE IR
+      DO J = 1,NDBL
+          j1 = max( 1, j-1 )
+          DO L = NSOLP+1,NTOTAL
+              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+
+
+              if (iradgas.eq.0) then
+                  tauL(L,j) = tauaer(L,j)
+              endif
+
+              if( TAUL(L,J) .lt. 1d-6 ) then
+                  TAUL(L,J) = 1d-6
+              endif
+
+              utauL(L,j)  = TAUL(L,J)
+              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+              if (iradgas.eq.0) then
+                  wot = woL(L,j)
+              endif
+
+              WOT         = min(1.-1d-6,WOT)
+              uw0(L,j)    = WOT
+              DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
+
+              if( DENOM .LE. 1d-6 ) then
+                  DENOM = 1d-6
+              endif
+
+              if( DENOM .GT. 1d-6 ) then
+                  GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
+              else
+                  GOT = 0.
+              endif
+
+              if (iradgas.eq.0) then
+                  GOT = goL(L,j)
+              endif
+
+              ug0(L,j)    = GOT
+              uOPD(L,J)   = 0.0
+              uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
+
+              IF (.TRUE.) THEN
+                  TAUL(L,J)   = TAUL(L,J) * (1.-WOT*(GOT*GOT))
+                  W0(L,J)     = (1.-(GOT*GOT))*WOT/(1.-WOT*(GOT*GOT))
+                  G0(L,J)     = GOT/(1.+GOT)
+                  OPD(L,J)    = 0.0
+                  OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
+              ELSE
                   W0(L,J)= uw0(L,J)
                   G0(L,J)= ug0(L,J)
-                TAUL(L,J)= utaul(L,J)
-                 OPD(L,J)= uOPD(L,J)
-             ENDIF
-             if( taul(L,j).lt.0. ) then
-       write(*,*) 'taul lt 0'
-       stop
-       endif
+                  TAUL(L,J)= utaul(L,J)
+                  OPD(L,J)= uOPD(L,J)
+             END IF
 
- 400        CONTINUE
 
- 500  CONTINUE
-
-!      NOW AGAIN FOR THE IR
-      DO 501 J           = 1,NDBL
-          j1             = max( 1, j-1 )
-          DO 401 L       = NSOLP+1,NTOTAL
-
-             TAUL(L,J)  =  TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
-
-             if (iradgas.eq.0) then
-             tauL(L,j) = tauaer(L,j)
+             if(taul(L,j) .lt. 0.) then
+                 write(*,*) 'ERROR! The IR layer optical depth is less than 0:', taul(L,j)
+                 stop
              endif
 
-             if( TAUL(L,J) .lt. 1d-6 ) then
-             TAUL(L,J) = 1d-6
-             endif
+          END DO
 
-             utauL(L,j)  = TAUL(L,J)
-             WOT = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
-             if (iradgas.eq.0) then
-              wot = woL(L,j)
-             endif
-
-             WOT         = min(1.-1d-6,WOT)
-             uw0(L,j)    = WOT
-             DENOM       = (TAURAY(L,J)+ TAUAER(L,J)*WOL(L,J))
-             if( DENOM .LE. 1d-6 ) then
-             DENOM = 1d-6
-             endif
-             if( DENOM .GT. 1d-6 ) then
-               GOT = ( GOL(L,J)* WOL(L,J)*TAUAER(L,J) ) / DENOM
-             else
-               GOT = 0.
-             endif
-             if (iradgas.eq.0) then
-             GOT = goL(L,j)
-             endif
-             ug0(L,j)    = GOT
-             uOPD(L,J)   = 0.0
-             uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
-             !IF (deltascale) THEN
-             IF (.TRUE.) THEN
-                 FO          = GOT*GOT
-                 DEN         = 1.-WOT*FO
-                 TAUL(L,J)   = TAUL(L,J) * DEN
-                 W0(L,J)     = (1.-FO)*WOT/DEN
-                 G0(L,J)     = GOT/(1.+GOT)
-                 OPD(L,J)    = 0.0
-                 OPD(L,J)    = OPD(L,J1)+TAUL(L,J)
-             ELSE
-                 W0(L,J)= uw0(L,J)
-                 G0(L,J)= ug0(L,J)
-                 TAUL(L,J)= utaul(L,J)
-                 OPD(L,J)= uOPD(L,J)
-             ENDIF
-
-             if( taul(L,j).lt.0. ) then
-       write(*,*) 'taul lt 0'
-       stop
-       endif
-
- 401        CONTINUE
-
-             DO 450 I        =   1,NGAUSS
-                DO 425 L     =   NSOLP+1,NTOTAL
-                   Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
- 425            CONTINUE
- 450         CONTINUE
- 501  CONTINUE
-
+          DO I = 1,NGAUSS
+              DO L = NSOLP+1,NTOTAL
+                  Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
+              END DO
+          END DO
+      END DO
 
       RETURN
       END
-

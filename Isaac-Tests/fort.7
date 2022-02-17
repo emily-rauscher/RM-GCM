@@ -2,17 +2,17 @@
  THECOMMENT= '51 pegasi b, all clouds'
  /
  &INPPL
- GA = 4.924854
+ GA = 5
  GASCON  =   3523.,
- RADEA   =   1.055292e8,
+ RADEA   =   1.35835e+08,
  AKAP    =  0.2860000000000,
- WW      =  1.4886806e-05,
+ WW      =  1.7192e-05,
  P0      =   1.0E+7     ,
  RV      =   461.510000000000     ,
  CLATNT  =   2500000.00000000
  /
  &INPRN
- KRUN    =  24000,
+ KRUN    =  48000.,
  BEGDAY  =  00.000000000000000E+000,
  TSPD    =   4800.,
  KITS    =           3,
@@ -21,7 +21,7 @@
  LFLUX   = T,
  BEGDOY  =  0.000000000000000E+000,
  NDEL    =           8,
- T0      = 50*1640.,
+ T0      = 45*1640.,
  LRSTRT  = F,
  LSTRETCH    = F,
  LSHORT  = F,
@@ -47,8 +47,8 @@
  KOUNTE  =           0,
  NCOEFF  =           0,
  NLAT    =          4,
- LGPO    = 50*F,
- LSPO    = 50*F,
+ LGPO    = 45*F,
+ LSPO    = 45*F,
  RNTAPO  =  0.000000000000000E+000,
  NTRACO  =           0,
  LSHIST  = T,
@@ -66,7 +66,7 @@ FBASEFLUX   = 3500.,
 FORCE1DDAYS = 0.0e0,
 OPACIR_POWERLAW = 0.0,
 OPACIR_REFPRES  = 1.0e5,
-SOLC_IN     = 1.34393e6,
+SOLC_IN     = 706918.,
 TOAALB      = 0.0,
 PORB        = 1.0,
 OBLIQ       = 0.0,
@@ -107,7 +107,7 @@ STTEMP2=3357
  AKQV    =   1.0E-20,
  AKTC    =   10.0000000000000     ,
  AKQC    =   10.0000000000000     ,
- NLCR    =           49,
+ NLCR    =           44,
  NCUTOP  =           5,
  FW      =  1.000000000000000E-006,
  FRADC   =   1.25000000000000     ,
@@ -125,8 +125,8 @@ STTEMP2=3357
  ITSLO   =           6
  /
  &INPRSIJ
- TFRC    = 50*0.,
- RESTIM  = 50*1e30,
+ TFRC    = 45*0.,
+ RESTIM  = 45*1e30,
  RESTTT =       1209.03 ,
       1209.36 ,
       1209.79 ,
@@ -172,12 +172,7 @@ STTEMP2=3357
       2205.23 ,
       2332.42 ,
       2473.55 ,
-      2628.98 ,
-      2799.17 ,
-      2984.62 ,
-      3185.94 ,
-      3403.82 ,
- REDTEP = 50*0.,
+ REDTEP = 45*0.,
  DTNS    =  0.0000000E+00,
  DTEP    =   300.00000    ,
  ALR     =  2.0E-06,
@@ -206,13 +201,13 @@ STTEMP2=3357
  ALBSW           = 0.0,
  NEWTB           = 0,
  NEWTE           = 0,
- with_TiO_and_VO = 2
+ with_TiO_and_VO = 1
  /
  &INCLOUDY
  AEROSOLMODEL    ='Global',
- AEROSOLCOMP     ='double-gray',
+ AEROSOLCOMP     ='picket-fence',
  MTLX            = 0.1,
- AERLAYERS       = 49.
+ AERLAYERS       = 44.
  AERTOTTAU       = 100.,
  CLOUDBASE       = 10.,
  CLOUDTOP        = 0.0001,
@@ -228,6 +223,6 @@ STTEMP2=3357
 /
  &INQ
  LRH     = T,
- RH      =   50*1e-5    ,
+ RH      =   45*1e-5    ,
  LNSURF  = F
  /

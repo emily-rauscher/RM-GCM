@@ -101,7 +101,6 @@
       endif
 
 
-      !TT(1) = t(1) ! MALSKY ADDED
       DO J = 2, NVERT
           TT(J) = T(J-1) * ((p_pass(J)*10.0)/(pr(J-1)*10.0)) ** (log(T(J)/T(J-1))/log((pr(J)*10.0)/(pr(J-1)*10.0)))
       END DO

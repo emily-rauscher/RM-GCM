@@ -782,8 +782,6 @@ CC      call netout2
              RODATA(4)=DOY                                                
              RODATA(5)=RIH
 
-
-
              DO j=1,iddz
                RODATA(J+5)=ADDZ(J)
                RODATA(J+IDDZ+5)=DDZ(J)                                    

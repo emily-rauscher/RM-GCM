@@ -27,7 +27,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V,k_IRl, k_Vl)
 
 !      use physical_constants
 
@@ -55,6 +55,9 @@
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
+
+      real, dimension(2, NL+1) :: k_IRl
+      real, dimension(3, NL+1) :: k_Vl
 
       REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
@@ -133,7 +136,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, fluxes)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, fluxes, k_IRl, k_Vl)
 
 
       iffirst = 0

@@ -18,12 +18,12 @@
      &  qrad,alb_tomi,alb_toai, num_layers,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl)
 
           include 'rcommons.h'
 
           INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
-          REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
+          REAL EMISIR, EPSILON, HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), SOLNET
           REAL TPI, SQ3, SBK,AM, AVG, ALOS
           REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
           REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
@@ -39,6 +39,9 @@
           REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
           REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
           REAL qrad(NL+1),alb_tomi,alb_toai
+
+          real, dimension(2, NL+1) :: k_IRl
+          real, dimension(3, NL+1) :: k_Vl
 
           integer :: NLAYER, J, k
           real :: Tirr, Tint, gravity_SI, incident_starlight_fraction
@@ -60,12 +63,12 @@
           Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
 
-          do J = 1, NLAYER
+          do J = 1, NL+1
              pe(J) = p_pass(J)
           end do
 
 
-          DO J = 1, NLAYER-1
+          DO J = 1, NL
               dpe(J) = pe(J+1) - pe(J)
               pl(J) = dpe(J) / log(pe(J+1)/pe(J))
           END DO
@@ -80,6 +83,10 @@
               END DO
           end if
 
+          !DO J = 1, NLAYER
+          !    Tl(J) = t(J)
+          !END DO
+
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
@@ -87,7 +94,7 @@
 
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
-     &                             Beta_IR,gravity_SI, with_TiO_and_VO, pe)
+     &                             Beta_IR,gravity_SI, with_TiO_and_VO, pe, k_IRl, k_Vl)
 
 
 
@@ -96,7 +103,7 @@
 
       subroutine calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,
      &                               Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
-     &                               Beta_IR,gravity_SI, with_TiO_and_VO, pe)
+     &                               Beta_IR,gravity_SI, with_TiO_and_VO, pe, k_IRl, k_Vl)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -269,10 +276,9 @@
         tau_Ve(:,1) = 0.0
         tau_IRe(:,1) = 0.0
 
-
         do k = 1, NLAYER
-          !call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
-          call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
           k_Vl(1,k) = k_IRl(1,k) * gam_V(1)
           k_Vl(2,k) = k_IRl(1,k) * gam_V(2)

@@ -248,6 +248,9 @@ c     The following for parallel testing --MTR
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
+      real, dimension(2, NL+1) :: k_IRl
+      real, dimension(3, NL+1) :: k_Vl
+
       ! For the new picket fence stuff
       REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
       real, dimension(2)  :: Beta_IR
@@ -316,7 +319,7 @@ c     ntstep is the number of timesteps to skip.
           ! Do all the parallel stuff here
           !$OMP PARALLEL DO private(test_wctime,
      &    im,idocalc, incident_starlight_fraction, RAYSCAT, solar_calculation_indexer, qrad, alb_toai,
-     &    dpe, Pl, Tl, pe,
+     &    dpe, Pl, Tl, pe, k_IRl, k_Vl,
      &    PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,
      &    k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &    Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, Beta_IR, Beta_V,
@@ -390,7 +393,8 @@ c     ntstep is the number of timesteps to skip.
      &    fir_up_aerad, fir_dn_aerad,
      &    fir_net_aerad,fsl_net_aerad,
      &    p_pass, dpg, pbar, dpgsub, pbarsub),
-     &    firstprivate(ilast)
+     &    firstprivate(ilast),
+     &    lastprivate(ilast)
 
           DO i=1,mg
 
@@ -494,6 +498,10 @@ c     ntstep is the number of timesteps to skip.
                Y3  = 0.
                Y4  = 0.
 
+               k_IRl = 0
+               k_Vl  = 0
+
+
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
      &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
@@ -520,7 +528,7 @@ c     ntstep is the number of timesteps to skip.
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V, k_IRl, k_Vl)
 
               pr=prb2t
 
@@ -604,6 +612,8 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDDO
       ENDIF
+
+
 
       RETURN
       END
