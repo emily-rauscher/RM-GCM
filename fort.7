@@ -2,7 +2,7 @@
  THECOMMENT= '51 pegasi b, all clouds'
  /
  &INPPL
- GA = 5
+ GA = 25
  GASCON  =   3523.,
  RADEA   =   1.35835e+08,
  AKAP    =  0.2860000000000,
@@ -17,11 +17,11 @@
  TSPD    =   4800.,
  KITS    =           3,
  PNU     =  2.000000000000000E-002,
- TDISS   =  0.0025,
+ TDISS   =  0.003,
  LFLUX   = T,
  BEGDOY  =  0.000000000000000E+000,
  NDEL    =           8,
- T0      = 45*1640.,
+ T0      = 50*1640.,
  LRSTRT  = F,
  LSTRETCH    = F,
  LSHORT  = F,
@@ -47,8 +47,8 @@
  KOUNTE  =           0,
  NCOEFF  =           0,
  NLAT    =          4,
- LGPO    = 45*F,
- LSPO    = 45*F,
+ LGPO    = 50*F,
+ LSPO    = 50*F,
  RNTAPO  =  0.000000000000000E+000,
  NTRACO  =           0,
  LSHIST  = T,
@@ -59,7 +59,7 @@ OOM_IN      = 6.0,
 LPLOTMAP    = F,
 NLPLOTMAP_IN    = 10,
 RFCOEFF_IN  = 0.0e-0,
-NTSTEP_IN   = 1,
+NTSTEP_IN   = 8,
 NSKIP_IN    = 0,
 BOTRELAXTIME    = 1.0,
 FBASEFLUX   = 3500.,
@@ -107,7 +107,7 @@ STTEMP2=3357
  AKQV    =   1.0E-20,
  AKTC    =   10.0000000000000     ,
  AKQC    =   10.0000000000000     ,
- NLCR    =           44,
+ NLCR    =           49,
  NCUTOP  =           5,
  FW      =  1.000000000000000E-006,
  FRADC   =   1.25000000000000     ,
@@ -125,8 +125,8 @@ STTEMP2=3357
  ITSLO   =           6
  /
  &INPRSIJ
- TFRC    = 45*0.,
- RESTIM  = 45*1e30,
+ TFRC    = 50*0.,
+ RESTIM  = 50*1e30,
  RESTTT =       1209.03 ,
       1209.36 ,
       1209.79 ,
@@ -172,7 +172,12 @@ STTEMP2=3357
       2205.23 ,
       2332.42 ,
       2473.55 ,
- REDTEP = 45*0.,
+      2628.98 ,
+      2799.17 ,
+      2984.62 ,
+      3185.94 ,
+      3403.82 ,
+ REDTEP = 50*0.,
  DTNS    =  0.0000000E+00,
  DTEP    =   300.00000    ,
  ALR     =  2.0E-06,
@@ -207,7 +212,7 @@ STTEMP2=3357
  AEROSOLMODEL    ='Global',
  AEROSOLCOMP     ='picket-fence',
  MTLX            = 0.1,
- AERLAYERS       = 40.
+ AERLAYERS       = 49.
  AERTOTTAU       = 100.,
  CLOUDBASE       = 10.,
  CLOUDTOP        = 0.0001,
@@ -223,6 +228,6 @@ STTEMP2=3357
 /
  &INQ
  LRH     = T,
- RH      =   45*1e-5    ,
+ RH      =   50*1e-5    ,
  LNSURF  = F
  /

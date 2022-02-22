@@ -103,10 +103,10 @@
       Y3(:,:,:) = 0.0
 
       DO J = 1,NLAYER
-          layer_index = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
-          temp_loc = MINLOC(ABS(input_temperature_array - (TT(J))),1)
-          particle_size = particle_size_vs_layer_array_in_meters(layer_index)
-          size_loc = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
+          layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
+          temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+          particle_size = (particle_size_vs_layer_array_in_meters(layer_index) * 100.) ! Convert to CGS
+          size_loc      = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
           DO I = 1,NCLOUDS
               DO L = 1,NTOTAL
@@ -128,8 +128,14 @@
               BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
               TOPLEV(I)  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
 
+              ! DPG is CGS
+              ! MOLEF is CGS
+              ! Why is there a 10
+              ! Particle size is in centimeters
+              ! Dentiy is now is g/cm**3
+
               DO L = 1,NTOTAL
-                  tauaer_temp(L,J,I) = DPG(J)*10.*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
+                  tauaer_temp(L,J,I) = DPG(J)*molef(I)/particle_size/density(I)*fmolw(I)*
      &                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
           END DO
