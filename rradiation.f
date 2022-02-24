@@ -614,6 +614,5 @@ c             bottom heating rate is zero in morecret
       ENDIF
 
 
-
       RETURN
       END
