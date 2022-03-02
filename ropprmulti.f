@@ -88,6 +88,17 @@
       real particle_size
 
 
+      COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
+     &                           DENSITY, FMOLW,
+     &                           CORFACT,
+     &                           input_particle_size_array_in_meters,
+     &                           input_temperature_array,
+     &                           particle_size_vs_layer_array_in_meters,
+     &                           input_pressure_array_cgs
+
+      !COMMON /MOLE_VALS/ MOLEF
+
+
       Y3(:,:,:) = 0.0
 
       ! MALSKY SHOUDL THIS BE NLAYER OR NLAYER -1
@@ -307,6 +318,7 @@
               END DO
           END DO
       END DO
+
 
       RETURN
       END
