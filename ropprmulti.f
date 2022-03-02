@@ -60,8 +60,6 @@
       INTEGER BASELEV
       INTEGER TOPLEV(NCLOUDS)
 
-
-
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
 
       ! These are hardcoded to 50 but they are just lookup tables
@@ -90,20 +88,9 @@
       real particle_size
 
 
-      COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
-     &                           DENSITY, FMOLW,
-     &                           CORFACT,
-     &                           input_particle_size_array_in_meters,
-     &                           input_temperature_array,
-     &                           particle_size_vs_layer_array_in_meters,
-     &                           input_pressure_array_cgs
-
-      COMMON /MOLE_VALS/ MOLEF
-
       Y3(:,:,:) = 0.0
 
-
-
+      ! MALSKY SHOUDL THIS BE NLAYER OR NLAYER -1
       DO J = 1,NLAYER
           layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
           temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
@@ -112,11 +99,11 @@
 
           DO I = 1,NCLOUDS
               DO L = 1,NTOTAL
-                  PI0_TEMP(L,J, I) = PI0_OPPR(L,temp_loc,size_loc,I)
-                  G0_TEMP(L,J, I)  = G0_OPPR(L,temp_loc,size_loc,I)
+                  PI0_TEMP(L,J,I) = PI0_OPPR(L,temp_loc,size_loc,I)
+                  G0_TEMP(L,J,I)  = G0_OPPR(L,temp_loc,size_loc,I)
               END DO
 
-              CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J)) / 10.0, 0.0), 1.0)
+              CONDFACT(J,I)     =min(max((Tconds(layer_index,I)-TT(J))/10.,0.0),1.0)
 
               ! STOP some weird behaviour, I don't know if this should be taken out. Probably
               IF (J .gt. 5) THEN
@@ -140,16 +127,14 @@
       END DO
 
 
-
       ! Uncomment for compact clouds I think
-      DO I = 1,NCLOUDS
-          DO J = 1, TOPLEV(I)
-              tauaer_temp(:,J,I) = 0.0
-          END DO
-
-          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
-          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
-      END DO
+      !DO I = 1,NCLOUDS
+      !    DO J = 1, TOPLEV(I)
+      !        tauaer_temp(:,J,I) = 0.0
+      !    END DO
+      !    tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
+      !    tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
+      !END DO
 
 
 !     SW AT STANDARD VERTICAL RESOLUTION

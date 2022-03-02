@@ -276,11 +276,6 @@
       GOL(:,:)    = 0.0
 
 
-
-
-
-
-
       malsky_switch = 1
       IF (malsky_switch .gt. 0) THEN
         CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,

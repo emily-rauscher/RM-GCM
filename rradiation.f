@@ -307,11 +307,9 @@ c     ntstep is the number of timesteps to skip.
 
       IOFM=0
 
-
-      !write(*,*) 'Malsky1', kount, mod(kount,ntstep)
-
       DO 800 ihem=1,nhem
-        IF (mod(kount,ntstep).eq.0) then
+        !IF ((kount .gt. 0.9 * KRUN) .or. (mod(kount,ntstep).eq.0)) THEN
+        IF (mod(kount,ntstep).eq.0) THEN
           ilast=0
 
           ! schedule(guided), default(none),
