@@ -58,8 +58,6 @@
           real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
           real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
-
-
           Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
 
@@ -70,7 +68,7 @@
 
           DO J = 1, NL
               dpe(J) = pe(J+1) - pe(J)
-              pl(J) = dpe(J) / log(pe(J+1)/pe(J))
+              pl(J)  = dpe(J) / log(pe(J+1)/pe(J))
           END DO
 
           if (tt(1) .ge. 100.0) then
@@ -148,8 +146,6 @@
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 / sqrt(3.0)) *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
-
-
         call Bond_Parmentier(Teff, grav, Bond_Albedo)
 
         !! Recalculate Teff and then find parameters
@@ -159,6 +155,7 @@
         ! Log 10 T_eff variables
         l10T = log10(Teff)
         l10T2 = l10T * l10T
+
 
         if (with_TiO_and_VO .eq. 1) then
           ! First table in Parmentier et al. (2015) w. TiO/VO
@@ -277,8 +274,8 @@
         tau_IRe(:,1) = 0.0
 
         do k = 1, NLAYER
-          call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
-          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          !call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
           k_Vl(1,k) = k_IRl(1,k) * gam_V(1)
           k_Vl(2,k) = k_IRl(1,k) * gam_V(2)
@@ -289,6 +286,7 @@
 
           tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
+
         end do
 
       end subroutine calculate_opacities

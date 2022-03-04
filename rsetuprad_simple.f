@@ -91,7 +91,7 @@
       real t(NLAYER), p_pass(NLAYER), pr(NLAYER)
       integer i1, i2, indorder(5)
       logical all_ok
-      integer :: malsky_switch
+
 
       integer ifsetup
       real ibinm
@@ -197,7 +197,6 @@
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
-
           DO J  = 2,NLAYER
              PBAR(J)  = (p_pass(J)-p_pass(J-1))*1e-5
              DPG(J)   = ((p_pass(J) * 10.0)-(p_pass(J-1)*10.0)) / G
@@ -275,9 +274,7 @@
       WOL(:,:)    = 0.0
       GOL(:,:)    = 0.0
 
-
-      malsky_switch = 0
-      IF (malsky_switch .gt. 0) THEN
+      IF (picket_fence_optical_depths) THEN
         CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
      &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
      &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
@@ -303,20 +300,16 @@
           tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
         END DO
 
-
-
         DO L = NSOLP+1, NTOTAL
           tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
      &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
         END DO
-
 
         DO L = solar_calculation_indexer,NSOLP
             DO J = 1,NLAYER
                 TAUGAS(L,J) = tau_Ve(L,J)
             END DO
         END DO
-
 
         DO L = NSOLP+1, NTOTAL
             k  =  1
@@ -326,7 +319,6 @@
                 k = k + 1
             END DO
         END DO
-
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0
