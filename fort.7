@@ -2,7 +2,7 @@
  THECOMMENT= 'HD209, 50 Layers'
  /
  &INPPL
- GA = 8.98,
+ GA     = 8.98,
  GASCON  =   3523.,
  RADEA   =   0.9853199e+08,
  AKAP    =  0.2860000000000,
@@ -12,19 +12,18 @@
  CLATNT  =   2500000.00000000
  /
  &INPRN
- !KRUN   =  4800000.,
- KRUN    =  24000.,
+ KRUN    =  4800000.,
  BEGDAY  =  00.000000000000000E+000,
- TSPD    =  4800.,
- KITS    =  3,
+ TSPD    =   4800.,
+ KITS    =           3,
  PNU     =  2.000000000000000E-002,
- TDISS   =  0.0015,
- LFLUX   =  T,
+ TDISS   =  0.0025,
+ LFLUX   = T,
  BEGDOY  =  0.000000000000000E+000,
- NDEL    =  8,
- T0      =  50*1640.,
+ NDEL    =           8,
+ T0      = 50*1640.,
  LRSTRT  = F,
- LSTRETCH = F,
+ LSTRETCH    = F,
  LSHORT  = F,
  LTVEC   = F,
  LBALAN  = F,
@@ -63,13 +62,13 @@ RFCOEFF_IN  = 0.0e-0,
 NTSTEP_IN   = 4,
 NSKIP_IN    = 0,
 BOTRELAXTIME    = 1.0,
-FBASEFLUX   = 6027.755,
+FBASEFLUX   = 2000.755,
 FORCE1DDAYS = 0.0e0,
 OPACIR_POWERLAW = 0.0,
 OPACIR_REFPRES  = 1.0e5,
 SOLC_IN     = 1.084116e6,
 TOAALB      = 0.0,
-PORB        = 1.0,
+PORB        = 3.58,
 OBLIQ       = 0.0,
 ECCEN       = 0.0
 /
@@ -213,8 +212,8 @@ STTEMP2=3357
  AEROSOLMODEL    ='Global',
  AEROSOLCOMP     ='picket-fence'
  MTLX            = .1,
- MOLEF  = 1.23e-7,4.06e-8,9.35e-7,3.11e-7,4.4e-7, 3.26e-5,1.745e-5,9.56e-9,1.61e-6,2.94e-5,0.0,7.83e-8,1.385e-6,
- !MOLEF          = 0,0,0,0,0,0,0,0,0,0,0,0,0,
+ !MOLEF           = 1.23e-7,4.06e-8,9.35e-7,3.11e-7,4.4e-7, 3.26e-5,1.745e-5,9.56e-9,1.61e-6,2.94e-5,0.0,7.83e-8,1.385e-6,
+ MOLEF          = 0,0,0,0,0,0,0,0,0,0,0,0,0,
  AERLAYERS       = 50.
  AERTOTTAU       = 100.,
  CLOUDBASE       = 10.,
