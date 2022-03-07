@@ -1130,6 +1130,7 @@
       qeir(1:50,12)=CaTiO3qevir
       qeir(1:50,13)=Al2O3qevir
 
+
       Do 200  I         = 1,NCLOUD
        DO 180  J          =   1,NLAYER -1
         CONDFACT(J,I)     =min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)

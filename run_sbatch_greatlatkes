@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ####  Job name
-#SBATCH --job-name=Hot Jupiter GCM Simulation, 1 node, 1 thread, 5G, 72 Hourse
+#SBATCH --job-name=test
 
 ####  Request resources here
 ####  These are typically, number of processors, amount of memory,

@@ -93,7 +93,6 @@
 
       integer L, J, K
 
-
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
           ISL = 1
@@ -179,6 +178,7 @@
               write(*,*) 'Youre doing the old cloud version with NL not equal to 50'
               stop
           END IF
+
       ELSE
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
