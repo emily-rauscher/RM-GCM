@@ -139,13 +139,13 @@
 
 
       ! Uncomment for compact clouds I think
-      !DO I = 1,NCLOUDS
-      !    DO J = 1, TOPLEV(I)
-      !        tauaer_temp(:,J,I) = 0.0
-      !    END DO
-      !    tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
-      !    tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
-      !END DO
+      DO I = 1,NCLOUDS
+          DO J = 1, TOPLEV(I)
+              tauaer_temp(:,J,I) = 0.0
+          END DO
+          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
+          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
+      END DO
 
 
 !     SW AT STANDARD VERTICAL RESOLUTION
@@ -156,7 +156,6 @@
               GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L, J,1:NCLOUDS))
           END DO
       END DO
-
 
 !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
       k = 1

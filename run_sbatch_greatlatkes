@@ -12,7 +12,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=5g
-#SBATCH --time=72:00:00
+#SBATCH --time=300:00:00
 
 #SBATCH --account=erausche0
 #SBATCH --partition=standard

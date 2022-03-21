@@ -414,7 +414,5 @@
 !
       ibeyond_spectrum = 0
 
-
-
       RETURN
       END
