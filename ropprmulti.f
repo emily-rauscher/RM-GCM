@@ -96,8 +96,6 @@
      &                           particle_size_vs_layer_array_in_meters,
      &                           input_pressure_array_cgs
 
-      !COMMON /MOLE_VALS/ MOLEF
-
 
       Y3(:,:,:) = 0.0
 
@@ -126,7 +124,7 @@
 
               CLOUDLOC(J,I)     =NINT(CONDFACT(J,I))*J
               BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
-              TOPLEV(I)  = max(BASELEV-AERLAYERS,0)  !changed from 1 to 0
+              TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
               ! DPG is CGS before that 10x
 
@@ -137,14 +135,13 @@
           END DO
       END DO
 
-
       ! Uncomment for compact clouds I think
       DO I = 1,NCLOUDS
           DO J = 1, TOPLEV(I)
               tauaer_temp(:,J,I) = 0.0
           END DO
-          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
-          tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
+          !tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
+          !tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
       END DO
 
 
@@ -174,7 +171,6 @@
           END DO
           k = k+1
       END DO
-
 
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
