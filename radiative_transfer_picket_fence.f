@@ -52,13 +52,9 @@
           real, dimension(NIRP,NL+2) :: tau_IRe
           real, dimension(NSOLP,NL+2) :: tau_Ve
 
-
-          ! Malsky check the number of LAYERS!!!
           real, dimension(NL+1) :: dpe, Pl, Tl, pe, p_pass, t
           real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
           real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
-
-
 
           Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25

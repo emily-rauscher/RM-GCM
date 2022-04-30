@@ -403,7 +403,7 @@ c     ntstep is the number of timesteps to skip.
               idocalc=1
             ELSE
 
-            IF (.FALSE.) write(*,*) 'malsky what the'
+            IF (.FALSE.) write(*,*) ! This shouldn't be here, but necessary for the parallel work
 
             IF (LNNSK) THEN
               imp=im+1

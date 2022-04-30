@@ -1,12 +1,13 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
           include 'rcommons.h'
-          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP)
+          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON)
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 
-      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP)
+      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON)
           implicit none
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
+          real :: GAS_CONSTANT_R, GASCON
 
           ! Define all the arrays
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
@@ -196,9 +197,6 @@
           REAL TconCaTiO3(NLAYER)
           REAL TCONAl2O3(NLAYER)
 
-
-
-          ! MALSKY THESE NEED TO BE FIXED BUT IT'S NOT THAT EASY
           REAL CORFACT(51)
           REAL TCONDS(51, 13)
 
@@ -208,7 +206,7 @@
 
           REAL DENSITY(13)
           REAL FMOLW(13)
-          ! MOLEF(13)
+          REAL CLOUD_MOLAR_MASSES(13)
 
           real, dimension(50) :: input_temperature_array
           real, dimension(50) :: input_pressure_array_cgs
@@ -777,20 +775,28 @@
 
           DENSITY = (/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3/)
 
-          ! Mean molecular weight in cgs divided by mean molecular weight of the atmosphere
-          FMOLW   = (/31.59,
-     &     41.30,
-     &     33.07,
-     &     36.87,
-     &     64.40,
-     &     25.46,
-     &     59.61,
-     &     28.37,
-     &     24.87,
-     &     23.66,
-     &     72.99,
-     &     50.83,
-     &     43.20/)
+          ! The molar masses of the different cloud species in grams/mol
+          CLOUD_MOLAR_MASSES = (/74.55E-3,    ! KCl
+     &                           97.47E-3,   ! ZnS
+     &                           78.05E-3,  ! Na2S
+     &                           87.00E-3, ! MnS
+     &                           52.00E-3,    ! Cr
+     &                           60.08E-3,    ! SiO2
+     &                           160.95E-3,   ! Mg2Si04
+     &                           66.94E-3,  ! VO
+     &                           58.69E-3,  ! Ni
+     &                           55.85E-3,    ! Fe
+     &                           172.23E-3,   ! Ca2Si04
+     &                           135.94E-3,   ! CaTiO3
+     &                           102.00E-3/)   ! Al2O3
+
+
+          GAS_CONSTANT_R = 8.314462618 ! This is in SI
+
+          ! Gives the FMOLW in SI.
+          DO J = 1, 13
+              FMOLW(J) = CLOUD_MOLAR_MASSES(J) / (GAS_CONSTANT_R/GASCON)
+          END DO
 
           ! This is missing that annoying species I can't find
           ! https://arxiv.org/pdf/astro-ph/9807055.pdf

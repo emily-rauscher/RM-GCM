@@ -73,7 +73,7 @@
 ! **********************************************************************
       integer :: testing, L, J, K, solar_calculation_indexer
       REAL G,WVO, incident_starlight_fraction
-      real, dimension(NIR+NSOL) :: MALSKY_ABSCOEFF
+      real, dimension(NIR+NSOL) :: MULTI_BAND_ABSCOEFF
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       dimension rup_1(NGROUP)
@@ -137,11 +137,11 @@
       AM= RGAS/R_AIR
 
       DO L = 1,NSOLP
-          MALSKY_ABSCOEFF(L)=ABSSW
+          MULTI_BAND_ABSCOEFF(L)=ABSSW
       END DO
 
       DO L = NSOLP+1,NTOTAL
-          MALSKY_ABSCOEFF(L)=ABSLW
+          MULTI_BAND_ABSCOEFF(L)=ABSLW
       END DO
 
       SQ3     =   SQRT(3.)
@@ -337,16 +337,15 @@
               Beta_IR(1) = 1.0
           end if
 
-
           DO L = 1,NSOLP
               DO J     =   1,NLAYER
-                  TAUGAS(L,J) = MALSKY_ABSCOEFF(L) * DPG(J)
+                  TAUGAS(L,J) = MULTI_BAND_ABSCOEFF(L) * DPG(J)
               END DO
           END DO
 
           DO L  = NSOLP+1,NTOTAL
              DO J     =   1,NDBL
-                 TAUGAS(L,J)=MALSKY_ABSCOEFF(L)*DPGsub(J)
+                 TAUGAS(L,J)=MULTI_BAND_ABSCOEFF(L)*DPGsub(J)
              END DO
           END DO
       END IF

@@ -358,7 +358,5 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
        write(60,*)'ABSSW',ABSSW
        write(60,*)'ABSLW',ABSLW
        write(60,*)'ALBSW',ALBSW
-
-       ! MALSKY SHOULD THESE LINES BE HERE????
        write(60,*)'with_TiO_and_VO ', with_TiO_and_VO
       END                                                                 
