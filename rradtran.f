@@ -132,8 +132,6 @@
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
-
-
 !     CALCULATE THE OPTICAL PROPERTIES
       IF (AEROSOLCOMP.EQ. 'picket-fence') THEN
           CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,

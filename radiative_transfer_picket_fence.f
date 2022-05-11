@@ -83,6 +83,7 @@
           !    Tl(J) = t(J)
           !END DO
 
+
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
@@ -90,7 +91,7 @@
 
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
-     &                             Beta_IR,gravity_SI, with_TiO_and_VO, pe, k_IRl, k_Vl)
+     &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl)
 
 
 
@@ -99,7 +100,7 @@
 
       subroutine calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,
      &                               Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
-     &                               Beta_IR,gravity_SI, with_TiO_and_VO, pe, k_IRl, k_Vl)
+     &                               Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY, pe, k_IRl, k_Vl)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -135,7 +136,7 @@
         real, dimension(NIRP,NLAYER+1) :: tau_IRe
         real, dimension(NSOLP,NLAYER+1) :: tau_Ve
         real :: grav
-        real :: with_TiO_and_VO
+        real :: with_TiO_and_VO, METALLICITY
         real :: Bond_Albedo
 
         grav = gravity_SI
@@ -273,7 +274,7 @@
         tau_IRe(:,1) = 0.0
 
         do k = 1, NLAYER
-          call k_Ross_Freedman(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          call k_Ross_Freedman(Tl(k), pl(k), METALLICITY, k_IRl(1,k))
           !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
 
           k_Vl(1,k) = k_IRl(1,k) * gam_V(1)
