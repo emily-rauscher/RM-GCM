@@ -88,6 +88,8 @@
       real particle_size
 
 
+      INTEGER WAV_LOC_1, WAV_LOC_2, WAV_LOC_3
+
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &                           DENSITY, FMOLW,
      &                           CORFACT,
@@ -99,6 +101,14 @@
 
       Y3(:,:,:) = 0.0
 
+      ! These three correspond to the wavelengths in the wavelength dependent scattering parameters
+      ! 1 is 0.51 microns
+      ! 2 is 0.64 microns
+      ! 3 is 0.80 microns
+      WAV_LOC_1 = 8
+      WAV_LOC_2 = 11
+      WAV_LOC_3 = 14
+
       ! MALSKY SHOUDL THIS BE NLAYER OR NLAYER -1
       DO J = 1,NLAYER
           layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
@@ -107,12 +117,21 @@
           size_loc      = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
           DO I = 1,NCLOUDS
-              DO L = 1,NTOTAL
+              PI0_TEMP(1,J,I) = PI0_OPPR(1,WAV_LOC_1,size_loc,I)
+              G0_TEMP(1,J,I)  = G0_OPPR(1,WAV_LOC_1,size_loc,I)
+
+              PI0_TEMP(2,J,I) = PI0_OPPR(2,WAV_LOC_2,size_loc,I)
+              G0_TEMP(2,J,I)  = G0_OPPR(2,WAV_LOC_2,size_loc,I)
+
+              PI0_TEMP(3,J,I) = PI0_OPPR(3,WAV_LOC_3,size_loc,I)
+              G0_TEMP(3,J,I)  = G0_OPPR(3,WAV_LOC_3,size_loc,I)
+
+              DO L = NSOLP+1,NTOTAL
                   PI0_TEMP(L,J,I) = PI0_OPPR(L,temp_loc,size_loc,I)
                   G0_TEMP(L,J,I)  = G0_OPPR(L,temp_loc,size_loc,I)
               END DO
 
-              CONDFACT(J,I)     =min(max((Tconds(layer_index,I)-TT(J))/10.,0.0),1.0)
+              CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J))/10.,0.0),1.0)
 
               ! STOP some weird behaviour, I don't know if this should be taken out. Probably
               IF (J .gt. 5) THEN
@@ -128,9 +147,16 @@
 
               ! DPG is CGS before that 10x
 
-              DO L = 1,NTOTAL
+              tauaer_temp(1,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
+     &                              CORFACT(layer_index)*QE_OPPR(1,WAV_LOC_1,size_loc,I)
+              tauaer_temp(2,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
+     &                              CORFACT(layer_index)*QE_OPPR(2,WAV_LOC_2,size_loc,I)
+              tauaer_temp(3,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
+     &                              CORFACT(layer_index)*QE_OPPR(3,WAV_LOC_3,size_loc,I)
+
+              DO L = NSOLP+1,NTOTAL
                   tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                                 CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,temp_loc,size_loc,I)
+     &                                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,temp_loc,size_loc,I)
               END DO
           END DO
       END DO
@@ -140,8 +166,6 @@
           DO J = 1, TOPLEV(I)
               tauaer_temp(:,J,I) = 0.0
           END DO
-          !tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.367879
-          !tauaer_temp(:,J,TOPLEV(I)+2) = tauaer_temp(:,J,TOPLEV(I)+2) * 0.135335
       END DO
 
 
