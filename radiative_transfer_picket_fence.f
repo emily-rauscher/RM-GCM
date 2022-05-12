@@ -63,7 +63,6 @@
              pe(J) = p_pass(J)
           end do
 
-
           DO J = 1, NL
               dpe(J) = pe(J+1) - pe(J)
               pl(J) = dpe(J) / log(pe(J+1)/pe(J))
@@ -78,11 +77,6 @@
                   Tl(J) = t(J)
               END DO
           end if
-
-          !DO J = 1, NLAYER
-          !    Tl(J) = t(J)
-          !END DO
-
 
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))

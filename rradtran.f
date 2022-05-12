@@ -93,6 +93,12 @@
 
       integer L, J, K
 
+      ! ADDING THESE
+      real, dimension(NL+1) :: Tl, pl, pe, dpe
+      real, dimension(NL+1) :: lTl, lpl, lpe, Te
+      logical bezier_interpolation
+      bezier_interpolation = .FALSE.
+
 !     Reset flag for computation of solar fluxes
       if (incident_starlight_fraction .gt. 1e-5) then
           ISL = 1
@@ -109,7 +115,53 @@
       TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/(pr(NVERT)*10.0)) **
      &             (log(T(NVERT)/T(NVERT-1))/log((pr(NVERT)*10.0)/(pr(NVERT-1)*10.0)))
 
-      write(*,*) 'malsky replace this with bezier'
+
+      IF (bezier_interpolation .eq. .TRUE.) THEN
+          do J = 1, NL+1
+             pe(J) = p_pass(J)
+          end do
+
+          DO J = 1, NL
+              dpe(J) = pe(J+1) - pe(J)
+              pl(J) = dpe(J) / log(pe(J+1)/pe(J))
+          END DO
+
+          if (tt(1) .ge. 100.0) then
+              DO J = 1, NLAYER
+                  Tl(J) = tt(J)
+              END DO
+          else
+              DO J = 1, NL + 1
+                  Tl(J) = t(J)
+              END DO
+          end if
+
+          pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
+          Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
+
+          lTl(:) = log10(Tl(:))
+          lpl(:) = log10(pl(:))
+          lpe(:) = log10(pe(:))
+
+           do i = 2, NLAYER - 1
+              !call bezier_interp(lpl(i-1:i+1), lTl(i-1:i+1), 3, lpe(i), Te(i))
+              !Te(i) = 10.0 ** (Te(i))
+
+              call bezier_interp(lpl(i-1:i+1), lTl(i-1:i+1), 3, lpe(i), TT(i))
+              TT(i) = 10.0 ** (TT(i))
+           end do
+
+!           Te(1)  = 10.0 ** (log10(Tl(1)) + (log10(pe(1)/pe(2))/log10(pl(1)/pe(2))) * log10(Tl(1)/Te(2)))
+!           Te(NLAYER) = 10.0 ** (log10(Tl(NLAYER-1)) + (log10(pe(NLAYER)/pe(NLAYER-1))/log10(pl(NLAYER-1)/pe(NLAYER-1)))
+!     &                  * log10(Tl(NLAYER-1)/Te(NLAYER-1)))
+
+           TT(1)  = 10.0 ** (log10(Tl(1)) + (log10(pe(1)/pe(2))/log10(pl(1)/pe(2))) * log10(Tl(1)/TT(2)))
+           TT(NLAYER) = 10.0 ** (log10(Tl(NLAYER-1)) + (log10(pe(NLAYER)/pe(NLAYER-1))/log10(pl(NLAYER-1)/pe(NLAYER-1)))
+     &                  * log10(Tl(NLAYER-1)/TT(NLAYER-1)))
+      END IF
+
+
+
 
 !     Solar zenith angle
       u0 = incident_starlight_fraction
@@ -573,7 +625,34 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
 
-
       return
       END
 
+
+
+
+      subroutine bezier_interp(xi, yi, ni, x, y)
+        implicit none
+
+        integer, intent(in) :: ni
+        real, dimension(ni), intent(in) :: xi, yi
+        real x, y
+        real xc, dx, dx1, dy, dy1, w, yc, t, wlim, wlim1
+
+        dx = xi(2) - xi(1)
+        dx1 = xi(3) - xi(2)
+        dy = yi(2) - yi(1)
+        dy1 = yi(3) - yi(2)
+
+        if (x > xi(1) .and. x < xi(2)) then
+          w = dx1/(dx + dx1)
+          yc = yi(2) - dx / 2.0 * (w*dy/dx + (1.0 - w)*dy1/dx1)
+          t = (x - xi(1))/dx
+          y = (1.0 - t)**2 * yi(1) + 2.0 *t*(1.0 - t)*yc + t**2*yi(2)
+        else
+          w = dx/(dx + dx1)
+          yc = yi(2) + dx1 / 2.0 * (w*dy1/dx1 + (1.0 - w)*dy/dx)
+          t = (x - xi(2))/(dx1)
+          y = (1.0 - t)**2 * yi(2) + 2.0 *t*(1.0 - t)*yc + t**2*yi(3)
+        end if
+      end subroutine bezier_interp
