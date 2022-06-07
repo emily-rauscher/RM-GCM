@@ -276,7 +276,9 @@ c     The following for parallel testing --MTR
      &                              input_particle_size_array_in_meters,
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
-     &                              input_pressure_array_cgs
+     &                              input_pressure_array_cgs,
+     &                              HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm, haze_pressure_array
+
 
       DATA EPSILON / 1d-6  /
       DATA SBK    / 5.6697E-8    /

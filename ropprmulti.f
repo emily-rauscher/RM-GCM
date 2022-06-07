@@ -74,7 +74,12 @@
       REAL PI0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
       REAL G0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
 
-
+      real, dimension(60, 50) :: HAZE_Rosseland
+      real, dimension(60)     :: HAZE_500nm
+      real, dimension(60)     :: HAZE_650nm
+      real, dimension(60)     :: HAZE_800nm
+      real, dimension(60)     :: HAZE_5000nm
+      real, dimension(60)     :: haze_pressure_array
 
       REAL TCONDS(51,NCLOUDS)
       REAL CORFACT(51)
@@ -96,8 +101,8 @@
      &                           input_particle_size_array_in_meters,
      &                           input_temperature_array,
      &                           particle_size_vs_layer_array_in_meters,
-     &                           input_pressure_array_cgs
-
+     &                           input_pressure_array_cgs,
+     &                           HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm, haze_pressure_array
 
       Y3(:,:,:) = 0.0
 
@@ -146,9 +151,12 @@
               TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
               ! DPG is CGS before that 10x
-
               tauaer_temp(1,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
      &                              CORFACT(layer_index)*QE_OPPR(1,WAV_LOC_1,size_loc,I)
+
+              write(*,*) 'here', particle_size
+              stop
+
               tauaer_temp(2,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
      &                              CORFACT(layer_index)*QE_OPPR(2,WAV_LOC_2,size_loc,I)
               tauaer_temp(3,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
@@ -195,6 +203,18 @@
           END DO
           k = k+1
       END DO
+
+
+      !DO J = 1, NLAYER
+      !    layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
+      !    temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+      !END DO
+
+      STOP
+
+
+
+
 
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
