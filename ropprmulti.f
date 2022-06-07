@@ -61,6 +61,7 @@
       INTEGER TOPLEV(NCLOUDS)
 
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
+      real, dimension(NIR+NSOL,2*NL+2) :: TAU_HAZE
 
       ! These are hardcoded to 50 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
@@ -74,12 +75,12 @@
       REAL PI0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
       REAL G0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
 
-      real, dimension(60, 50) :: HAZE_Rosseland
+      real, dimension(50, 60) :: HAZE_Rosseland
       real, dimension(60)     :: HAZE_500nm
       real, dimension(60)     :: HAZE_650nm
       real, dimension(60)     :: HAZE_800nm
       real, dimension(60)     :: HAZE_5000nm
-      real, dimension(60)     :: haze_pressure_array
+      real, dimension(60)     :: haze_pressure_array_pascals
 
       REAL TCONDS(51,NCLOUDS)
       REAL CORFACT(51)
@@ -89,7 +90,7 @@
       REAL MOLEF(NCLOUDS)
 
       INTEGER K,J,L, iradgas
-      INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index
+      INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index, haze_layer_index
       real particle_size
 
 
@@ -102,7 +103,8 @@
      &                           input_temperature_array,
      &                           particle_size_vs_layer_array_in_meters,
      &                           input_pressure_array_cgs,
-     &                           HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm, haze_pressure_array
+     &                           HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm,
+     &                           haze_pressure_array_pascals
 
       Y3(:,:,:) = 0.0
 
@@ -114,7 +116,6 @@
       WAV_LOC_2 = 11
       WAV_LOC_3 = 14
 
-      ! MALSKY SHOUDL THIS BE NLAYER OR NLAYER -1
       DO J = 1,NLAYER
           layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
           temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
@@ -139,11 +140,11 @@
               CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J))/10.,0.0),1.0)
 
               ! STOP some weird behaviour, I don't know if this should be taken out. Probably
-              IF (J .gt. 5) THEN
-                  IF ((CONDFACT(J-1,I) .eq. 0) .AND. (CONDFACT(J-2,I) .eq. 0) .AND. (CONDFACT(J-3,I) .eq. 0)) THEN
-                      CONDFACT(J,I) = 0.0
-                  END IF
-              END IF
+              !IF (J .gt. 5) THEN
+              !    IF ((CONDFACT(J-1,I) .eq. 0) .AND. (CONDFACT(J-2,I) .eq. 0) .AND. (CONDFACT(J-3,I) .eq. 0)) THEN
+              !        CONDFACT(J,I) = 0.0
+              !    END IF
+              !END IF
 
 
               CLOUDLOC(J,I)     =NINT(CONDFACT(J,I))*J
@@ -153,9 +154,6 @@
               ! DPG is CGS before that 10x
               tauaer_temp(1,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
      &                              CORFACT(layer_index)*QE_OPPR(1,WAV_LOC_1,size_loc,I)
-
-              write(*,*) 'here', particle_size
-              stop
 
               tauaer_temp(2,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*
      &                              CORFACT(layer_index)*QE_OPPR(2,WAV_LOC_2,size_loc,I)
@@ -205,15 +203,31 @@
       END DO
 
 
-      !DO J = 1, NLAYER
-      !    layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
-      !    temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
-      !END DO
-
-      STOP
 
 
 
+      ! Do the starlight at 1x resolution
+      DO J = 1, NLAYER
+          haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in pascals
+
+          ! This grabs the optical depth per bar, then multiply it by the pressure in bars
+          DO L = solar_calculation_indexer,NSOLP
+              TAU_HAZE(L,J) = HAZE_500nm(haze_layer_index) * (p_pass(J) * 1e-5)
+          END DO
+
+      END DO
+
+      ! Do the thermal at 2x resolution
+      DO J = 1, NLAYER
+          haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in pascals
+          temp_loc         = MINLOC(ABS(input_temperature_array - (TT(J))),1) ! Not needed for the stellar calc
+
+          ! This grabs the optical depth per bar, then multiply it by the pressure in bars
+          DO L = NSOLP+1,NTOTAL
+              TAU_HAZE(L,2*J-1) = HAZE_Rosseland(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+              TAU_HAZE(L,2*J) = HAZE_Rosseland(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+          END DO
+      END DO
 
 
       ! Smooth out the cloud properties after doubling
@@ -222,8 +236,12 @@
               TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
               WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
               GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
+
+              ! Add the hazes
+              TAU_HAZE(L,J) = (TAU_HAZE(L,J+1) + TAU_HAZE(L,J-1)) / 2.0
           END DO
       END DO
+
 
       iradgas = 1
       DO J = 1,NLAYER
@@ -231,7 +249,7 @@
 
 !         First the solar at standard resolution
           DO L = solar_calculation_indexer,NSOLP
-              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
+              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)+TAU_HAZE(L,J)
 
               if(TAUL(L,J) .lt. 1d-6 ) then
                   TAUL(L,J) = 1d-6
@@ -291,8 +309,7 @@
       DO J = 1,NDBL
           j1 = max( 1, j-1 )
           DO L = NSOLP+1,NTOTAL
-              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
-
+              TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)+TAU_HAZE(L,J)
 
               if (iradgas.eq.0) then
                   tauL(L,j) = tauaer(L,j)

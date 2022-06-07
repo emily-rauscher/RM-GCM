@@ -12,12 +12,12 @@
           ! Define all the arrays
 
           ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
-          real, dimension(60, 50) :: HAZE_Rosseland
+          real, dimension(50, 60) :: HAZE_Rosseland
           real, dimension(60)     :: HAZE_500nm
           real, dimension(60)     :: HAZE_650nm
           real, dimension(60)     :: HAZE_800nm
           real, dimension(60)     :: HAZE_5000nm
-          real, dimension(60)     :: haze_pressure_array
+          real, dimension(60)     :: haze_pressure_array_pascals
 
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
           ! That can change but use to code from Elsie and Isaac
@@ -152,7 +152,8 @@
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs,
-     &                              HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm, haze_pressure_array
+     &                              HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm,
+     &                              haze_pressure_array_pascals
 
           ! opening the file for reading
           open (1, file='../CLOUD_DATA/HAZE_Rosseland.txt')
@@ -446,14 +447,15 @@
           close(5)
           close(6)
 
-          haze_pressure_array = (/853.98, 604.57, 428.0, 303.0, 214.51, 151.86, 107.51, 76.11,
-     &    53.882, 38.146, 27.005, 19.118, 12.924, 8.9716, 6.7834, 4.8022, 3.3998, 2.4068,
-     &    1.7039, 1.2062, 0.85398, 0.60457, 0.428, 0.303, 0.21451, 0.15186, 0.10751, 0.07611,
-     &    0.053882, 0.038146, 0.027005, 0.019118, 0.013534, 0.0095816, 0.0067834,
-     &    0.0048022, 0.0033998, 0.0024068, 0.0017039, 0.0012062, 0.00085398,
-     &    0.00060457, 0.000428, 0.000303, 0.00021451, 0.00015186, 0.0001075,
-     &    7.611e-05, 5.3885e-05, 3.8145e-05, 2.7005e-05, 1.912e-05, 1.3535e-05,
-     &    9.58e-06, 6.78e-06, 4.8e-06, 3.4e-06, 2.41e-06, 1.705e-06, 1.205e-06/)
+          haze_pressure_array_pascals = (/1.205e-01, 1.705e-01, 2.410e-01, 3.400e-01, 4.800e-01, 6.780e-01, 9.580e-01,
+     &                                    1.353e+00, 1.912e+00, 2.700e+00, 3.815e+00, 5.389e+00, 7.611e+00, 1.075e+01,
+     &                                    1.519e+01, 2.145e+01, 3.030e+01, 4.280e+01, 6.046e+01, 8.540e+01, 1.206e+02,
+     &                                    1.704e+02, 2.407e+02, 3.400e+02, 4.802e+02, 6.783e+02, 9.582e+02, 1.353e+03,
+     &                                    1.912e+03, 2.700e+03, 3.815e+03, 5.388e+03, 7.611e+03, 1.075e+04, 1.519e+04,
+     &                                    2.145e+04, 3.030e+04, 4.280e+04, 6.046e+04, 8.540e+04, 1.206e+05, 1.704e+05,
+     &                                    2.407e+05, 3.400e+05, 4.802e+05, 6.783e+05, 8.972e+05, 1.292e+06, 1.912e+06,
+     &                                    2.700e+06, 3.815e+06, 5.388e+06, 7.611e+06, 1.075e+07, 1.519e+07, 2.145e+07,
+     &                                    3.030e+07, 4.280e+07, 6.046e+07, 8.540e+07/)
 
           input_pressure_array_cgs = (/1.0, 1.46, 2.12, 3.09, 4.5, 6.55, 9.54, 13.89, 20.24,
      &    29.47, 42.92, 62.51, 91.03, 132.57, 193.07, 281.18, 409.49, 596.36, 868.51, 1264.86,
