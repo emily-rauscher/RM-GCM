@@ -129,24 +129,16 @@
       !!!!!!!!         GET THE HAZE DATA FIRST       !!!!!!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      write(*,*) 'here'
-      write(*,*) HAZE_500nm_tau_per_bar
-      stop
-
-
 
       ! Do the starlight at 1x resolution
       DO J = 1, NLAYER
           haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in pascals
 
-          ! This grabs the optical depth per bar, then multiply it by the pressure in bars
-          !TAU_HAZE(1,J) = HAZE_500nm(haze_layer_index) * (p_pass(J) * 1e-5)
-          !TAU_HAZE(2,J) = HAZE_650nm(haze_layer_index) * (p_pass(J) * 1e-5)
-          !TAU_HAZE(3,J) = HAZE_800nm(haze_layer_index) * (p_pass(J) * 1e-5)
 
-          TAU_HAZE(1,J) = 0.0
-          TAU_HAZE(2,J) = 0.0
-          TAU_HAZE(3,J) = 0.0
+          ! This grabs the optical depth per bar, then multiply it by the pressure in bars
+          TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+          TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+          TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
       END DO
 
       ! Do the thermal at 2x resolution
@@ -156,11 +148,8 @@
 
           ! This grabs the optical depth per bar, then multiply it by the pressure in bars
           DO L = NSOLP+1,NTOTAL
-!              TAU_HAZE(L,2*J-1) = HAZE_Rosseland(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
-!              TAU_HAZE(L,2*J)   = HAZE_Rosseland(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
-
-              TAU_HAZE(L,2*J-1) = 0.0
-              TAU_HAZE(L,2*J)   = 0.0
+              TAU_HAZE(L,2*J-1) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+              TAU_HAZE(L,2*J)   = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
           END DO
       END DO
 
@@ -228,21 +217,21 @@
 
           TAUAER(1,J) = SUM(tauaer_temp(1,J,1:NCLOUDS)) + TAU_HAZE(1,J)
           WOL(1,J)    = SUM(tauaer_temp(1,J,1:NCLOUDS)/(TAUAER(1,J)+1e-8) * PI0_TEMP(1,J,1:NCLOUDS))
-!     &                    + (TAU_HAZE(1,J) * HAZE_500nm_pi0(haze_layer_index) / TAUAER(1,J))
+     &                    + (TAU_HAZE(1,J) * HAZE_500nm_pi0(haze_layer_index) / TAUAER(1,J))
           GOL(1,J)    = SUM(tauaer_temp(1,J,1:NCLOUDS)/(TAUAER(1,J)+1e-8) * G0_TEMP(1,J,1:NCLOUDS))
-!     &                    + (TAU_HAZE(1,J) * HAZE_500nm_gg(haze_layer_index)  / TAUAER(1,J))
+     &                    + (TAU_HAZE(1,J) * HAZE_500nm_gg(haze_layer_index)  / TAUAER(1,J))
 
           TAUAER(2,J) = SUM(tauaer_temp(2,J,1:NCLOUDS)) + TAU_HAZE(2,J)
           WOL(2,J)    = SUM(tauaer_temp(2,J,1:NCLOUDS)/(TAUAER(2,J)+1e-8) * PI0_TEMP(2,J,1:NCLOUDS))
-!     &                   + (TAU_HAZE(2,J) * HAZE_650nm_pi0(haze_layer_index) / TAUAER(2,J))
+     &                   + (TAU_HAZE(2,J) * HAZE_650nm_pi0(haze_layer_index) / TAUAER(2,J))
           GOL(2,J)    = SUM(tauaer_temp(2,J,1:NCLOUDS)/(TAUAER(2,J)+1e-8) * G0_TEMP(2,J,1:NCLOUDS))
-!     &                   + (TAU_HAZE(2,J) * HAZE_650nm_gg(haze_layer_index)  / TAUAER(2,J))
+     &                   + (TAU_HAZE(2,J) * HAZE_650nm_gg(haze_layer_index)  / TAUAER(2,J))
 
           TAUAER(3,J) = SUM(tauaer_temp(3,J,1:NCLOUDS)) + TAU_HAZE(3,J)
           WOL(3,J)    = SUM(tauaer_temp(3,J,1:NCLOUDS)/(TAUAER(3,J)+1e-8) * PI0_TEMP(3,J,1:NCLOUDS))
-!     &                   + (TAU_HAZE(3,J) * HAZE_800nm_pi0(haze_layer_index) / TAUAER(3,J))
+     &                   + (TAU_HAZE(3,J) * HAZE_800nm_pi0(haze_layer_index) / TAUAER(3,J))
           GOL(3,J)    = SUM(tauaer_temp(3,J,1:NCLOUDS)/(TAUAER(3,J)+1e-8) * G0_TEMP(3,J,1:NCLOUDS))
-!     &                   + (TAU_HAZE(3,J) * HAZE_800nm_gg(haze_layer_index)  / TAUAER(3,J))
+     &                   + (TAU_HAZE(3,J) * HAZE_800nm_gg(haze_layer_index)  / TAUAER(3,J))
       END DO
 
 
@@ -257,11 +246,9 @@
           DO L = NSOLP+1,NTOTAL
               TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
               WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(1,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
-!     &                       + (TAU_HAZE(L,J) * HAZE_Rosseland_pi0(temp_loc, haze_layer_index) / TAUAER(L,J))
+     &                       + (TAU_HAZE(L,J) * HAZE_Rosseland_pi0(temp_loc, haze_layer_index) / TAUAER(L,J))
               GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(1,J)+1e-8) * G0_TEMP(L,J,1:NCLOUDS))
-!     &                       + (TAU_HAZE(L,J) * HAZE_Rosseland_gg(temp_loc, haze_layer_index)  / TAUAER(L,J))
-
-
+     &                       + (TAU_HAZE(L,J) * HAZE_Rosseland_gg(temp_loc, haze_layer_index)  / TAUAER(L,J))
           END DO
           JJ = J+1
           DO L = NSOLP+1,NTOTAL
