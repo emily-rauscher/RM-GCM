@@ -269,7 +269,6 @@ c     The following for parallel testing --MTR
 
 
 
-    ! TOOK OUT MOLEF
       COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW,
      &                              CORFACT,
@@ -277,7 +276,11 @@ c     The following for parallel testing --MTR
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs,
-     &                              HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm,
+     &                              HAZE_Rosseland_tau_per_bar,HAZE_Rosseland_pi0, HAZE_Rosseland_gg,
+     &                              HAZE_500nm_tau_per_bar, HAZE_500nm_pi0, HAZE_500nm_gg,
+     &                              HAZE_650nm_tau_per_bar, HAZE_650nm_pi0, HAZE_650nm_gg,
+     &                              HAZE_800nm_tau_per_bar, HAZE_800nm_pi0, HAZE_800nm_gg,
+     &                              HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg,
      &                              haze_pressure_array_pascals
 
 

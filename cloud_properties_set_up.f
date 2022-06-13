@@ -12,12 +12,12 @@
           ! Define all the arrays
 
           ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
-          real, dimension(50, 60) :: HAZE_Rosseland
-          real, dimension(60)     :: HAZE_500nm
-          real, dimension(60)     :: HAZE_650nm
-          real, dimension(60)     :: HAZE_800nm
-          real, dimension(60)     :: HAZE_5000nm
-          real, dimension(60)     :: haze_pressure_array_pascals
+          real, dimension(50, 50) :: HAZE_Rosseland_tau_per_bar, HAZE_Rosseland_pi0, HAZE_Rosseland_gg
+          real, dimension(50)     :: HAZE_500nm_tau_per_bar, HAZE_500nm_pi0, HAZE_500nm_gg
+          real, dimension(50)     :: HAZE_650nm_tau_per_bar, HAZE_650nm_pi0, HAZE_650nm_gg
+          real, dimension(50)     :: HAZE_800nm_tau_per_bar, HAZE_800nm_pi0, HAZE_800nm_gg
+          real, dimension(50)     :: HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg
+          real, dimension(50)     :: haze_pressure_array_pascals
 
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
           ! That can change but use to code from Elsie and Isaac
@@ -152,27 +152,69 @@
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs,
-     &                              HAZE_Rosseland, HAZE_500nm, HAZE_650nm, HAZE_800nm, HAZE_5000nm,
+     &                              HAZE_Rosseland_tau_per_bar,HAZE_Rosseland_pi0, HAZE_Rosseland_gg,
+     &                              HAZE_500nm_tau_per_bar, HAZE_500nm_pi0, HAZE_500nm_gg,
+     &                              HAZE_650nm_tau_per_bar, HAZE_650nm_pi0, HAZE_650nm_gg,
+     &                              HAZE_800nm_tau_per_bar, HAZE_800nm_pi0, HAZE_800nm_gg,
+     &                              HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg,
      &                              haze_pressure_array_pascals
 
           ! opening the file for reading
-          open (1, file='../CLOUD_DATA/HAZE_Rosseland.txt')
-          open (2, file='../CLOUD_DATA/HAZE_500nm.txt')
-          open (3, file='../CLOUD_DATA/HAZE_650nm.txt')
-          open (4, file='../CLOUD_DATA/HAZE_800nm.txt')
-          open (5, file='../CLOUD_DATA/HAZE_5000nm.txt')
+          open (1, file='../CLOUD_DATA/HAZE_Rosseland_tau_per_bar.txt')
+          open (2, file='../CLOUD_DATA/HAZE_500nm_tau_per_bar.txt')
+          open (3, file='../CLOUD_DATA/HAZE_650nm_tau_per_bar.txt')
+          open (4, file='../CLOUD_DATA/HAZE_800nm_tau_per_bar.txt')
+          open (5, file='../CLOUD_DATA/HAZE_5000nm_tau_per_bar.txt')
 
-          read(1,*) HAZE_Rosseland
-          read(2,*) HAZE_500nm
-          read(3,*) HAZE_650nm
-          read(4,*) HAZE_800nm
-          read(5,*) HAZE_5000nm
+          read(1,*) HAZE_Rosseland_tau_per_bar
+          read(2,*) HAZE_500nm_tau_per_bar
+          read(3,*) HAZE_650nm_tau_per_bar
+          read(4,*) HAZE_800nm_tau_per_bar
+          read(5,*) HAZE_5000nm_tau_per_bar
 
           close(1)
           close(2)
           close(3)
           close(4)
           close(5)
+
+          open (1, file='../CLOUD_DATA/HAZE_Rosseland_pi0.txt')
+          open (2, file='../CLOUD_DATA/HAZE_500nm_pi0.txt')
+          open (3, file='../CLOUD_DATA/HAZE_650nm_pi0.txt')
+          open (4, file='../CLOUD_DATA/HAZE_800nm_pi0.txt')
+          open (5, file='../CLOUD_DATA/HAZE_5000nm_pi0.txt')
+
+          read(1,*) HAZE_Rosseland_pi0
+          read(2,*) HAZE_500nm_pi0
+          read(3,*) HAZE_650nm_pi0
+          read(4,*) HAZE_800nm_pi0
+          read(5,*) HAZE_5000nm_pi0
+
+          close(1)
+          close(2)
+          close(3)
+          close(4)
+          close(5)
+
+          open (1, file='../CLOUD_DATA/HAZE_Rosseland_gg.txt')
+          open (2, file='../CLOUD_DATA/HAZE_500nm_gg.txt')
+          open (3, file='../CLOUD_DATA/HAZE_650nm_gg.txt')
+          open (4, file='../CLOUD_DATA/HAZE_800nm_gg.txt')
+          open (5, file='../CLOUD_DATA/HAZE_5000nm_gg.txt')
+
+          read(1,*) HAZE_Rosseland_gg
+          read(2,*) HAZE_500nm_gg
+          read(3,*) HAZE_650nm_gg
+          read(4,*) HAZE_800nm_gg
+          read(5,*) HAZE_5000nm_gg
+
+          close(1)
+          close(2)
+          close(3)
+          close(4)
+          close(5)
+
+
 
           open (1, file='../CLOUD_DATA/KCl_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/KCl_rosselandMean_qext.txt')
@@ -447,15 +489,16 @@
           close(5)
           close(6)
 
-          haze_pressure_array_pascals = (/1.205e-01, 1.705e-01, 2.410e-01, 3.400e-01, 4.800e-01, 6.780e-01, 9.580e-01,
-     &                                    1.353e+00, 1.912e+00, 2.700e+00, 3.815e+00, 5.389e+00, 7.611e+00, 1.075e+01,
-     &                                    1.519e+01, 2.145e+01, 3.030e+01, 4.280e+01, 6.046e+01, 8.540e+01, 1.206e+02,
-     &                                    1.704e+02, 2.407e+02, 3.400e+02, 4.802e+02, 6.783e+02, 9.582e+02, 1.353e+03,
-     &                                    1.912e+03, 2.700e+03, 3.815e+03, 5.388e+03, 7.611e+03, 1.075e+04, 1.519e+04,
-     &                                    2.145e+04, 3.030e+04, 4.280e+04, 6.046e+04, 8.540e+04, 1.206e+05, 1.704e+05,
-     &                                    2.407e+05, 3.400e+05, 4.802e+05, 6.783e+05, 8.972e+05, 1.292e+06, 1.912e+06,
-     &                                    2.700e+06, 3.815e+06, 5.388e+06, 7.611e+06, 1.075e+07, 1.519e+07, 2.145e+07,
-     &                                    3.030e+07, 4.280e+07, 6.046e+07, 8.540e+07/)
+          haze_pressure_array_pascals = (/1.205e-01, 1.705e-01, 2.410e-01, 3.400e-01, 4.800e-01, 6.780e-01,
+    &                                     9.580e-01, 1.353e+00, 1.912e+00, 2.700e+00, 3.814e+00, 5.388e+00,
+    &                                     7.611e+00, 1.075e+01, 1.519e+01, 2.145e+01, 3.030e+01, 4.280e+01,
+    &                                     6.046e+01, 8.540e+01, 1.206e+02, 1.704e+02, 2.407e+02, 3.400e+02,
+    &                                     4.802e+02, 6.783e+02, 9.582e+02, 1.353e+03, 1.912e+03, 2.700e+03,
+    &                                     3.815e+03, 5.388e+03, 7.611e+03, 1.075e+04, 1.519e+04, 2.145e+04,
+    &                                     3.030e+04, 4.280e+04, 6.046e+04, 8.540e+04, 1.206e+05, 1.704e+05,
+    &                                     2.407e+05, 3.400e+05, 4.802e+05, 6.783e+05, 8.972e+05, 1.292e+06,
+    &                                     1.912e+06, 2.700e+06, 3.815e+06, 5.388e+06, 7.611e+06, 1.075e+07,
+    &                                     1.519e+07, 2.145e+07, 3.030e+07, 4.280e+07, 6.046e+07/)
 
           input_pressure_array_cgs = (/1.0, 1.46, 2.12, 3.09, 4.5, 6.55, 9.54, 13.89, 20.24,
      &    29.47, 42.92, 62.51, 91.03, 132.57, 193.07, 281.18, 409.49, 596.36, 868.51, 1264.86,
