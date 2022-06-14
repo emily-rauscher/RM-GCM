@@ -85,7 +85,7 @@
 
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
-     &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY, pe, k_IRl, k_Vl)
+     &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl)
 
 
 

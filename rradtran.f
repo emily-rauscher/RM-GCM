@@ -231,7 +231,6 @@
           END IF
 
       ELSE
-          write(*,*) 'I really should put in 0s here'
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
       ENDIF
@@ -270,20 +269,22 @@
           stop
       ENDIF
 
+
+      B1 = 0.
+      B2 = 0.
+      EL1 = 0.
+      EL2 = 0.
+      EM1 = 0.
+      EM2 = 0.
+      ck1 = 0.
+      ck2 = 0.
+      cpb = 0.
+      cp  = 0.
+
+
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     GET TWO STREAM CODE AND FIND THE SOLUTION
       IF(incident_starlight_fraction .gE. 0 .OR. IRS .NE. 0) THEN
-          ! MAYBE I CAN GET RID OF ALL OF THESE? MALSKY
-          B1 = 0.
-          B2 = 0.
-          EL1 = 0.
-          EL2 = 0.
-          EM1 = 0.
-          EM2 = 0.
-          ck1 = 0.
-          ck2 = 0.
-          cpb = 0.
-
           CALL TWOSTR(TAUL, solar_calculation_indexer,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -321,9 +322,7 @@
      &  qrad,alb_tomi,alb_toai, num_layers)
       ENDIF
 
-
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN NEWFLUX1 FOR MORE ACCURATE SOLUTION
-
       IF(IR .NE. 0) THEN
           CALL NEWFLUX1(TAUL,SLOPE,LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &                  EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -485,8 +484,6 @@
 !
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE
-
-
 
 
       SOLNET   = 0.0
