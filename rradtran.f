@@ -231,6 +231,7 @@
           END IF
 
       ELSE
+          write(*,*) 'I really should put in 0s here'
           write(*,*) 'ERROR! Dont run without aerosols'
           STOP
       ENDIF

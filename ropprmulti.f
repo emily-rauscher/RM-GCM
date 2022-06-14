@@ -115,7 +115,6 @@
      &                              haze_pressure_array_pascals
 
 
-
       Y3(:,:,:) = 0.0
 
       ! These three correspond to the wavelengths in the wavelength dependent scattering parameters
@@ -129,29 +128,39 @@
       !!!!!!!!         GET THE HAZE DATA FIRST       !!!!!!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+      write(*,*) INCLUDE_HAZES
 
       ! Do the starlight at 1x resolution
-      DO J = 1, NLAYER
-          haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in pascals
+      IF (INCLUDE_HAZES) THEN
+          DO J = 1, NLAYER
+              haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
 
-
-          ! This grabs the optical depth per bar, then multiply it by the pressure in bars
-          TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-          TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-          TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-      END DO
-
-      ! Do the thermal at 2x resolution
-      DO J = 1, NLAYER
-          haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in pascals
-          temp_loc         = MINLOC(ABS(input_temperature_array - (TT(J))),1) ! Not needed for the stellar calc
-
-          ! This grabs the optical depth per bar, then multiply it by the pressure in bars
-          DO L = NSOLP+1,NTOTAL
-              TAU_HAZE(L,2*J-1) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
-              TAU_HAZE(L,2*J)   = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+              ! This grabs the optical depth per bar, then multiply it by the pressure in bars
+              TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+              TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+              TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
           END DO
-      END DO
+
+          ! Do the thermal at 2x resolution
+          DO J = 1, NLAYER
+              haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
+              temp_loc         = MINLOC(ABS(input_temperature_array - (TT(J))),1) ! Not needed for the stellar calc
+
+              ! This grabs the optical depth per bar, then multiply it by the pressure in bars
+              DO L = NSOLP+1,NTOTAL
+                  TAU_HAZE(L,2*J-1) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+                  TAU_HAZE(L,2*J)   = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+              END DO
+          END DO
+      ELSE
+           TAU_HAZE = 0.0
+      END IF
+
+      write(*,*) TAU_HAZE(1,:)
+      stop
+
+
+
 
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
