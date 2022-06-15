@@ -175,8 +175,6 @@
         IRS  = 1
       ENDIF
 
-
-
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
       LLA = NTOTAL
       LLS = 1

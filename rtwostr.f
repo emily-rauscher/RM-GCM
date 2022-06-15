@@ -77,21 +77,24 @@
              EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J) !e2
              EL2(L,J)   =  GAMI(L,J) + EE1(L,J)       !e3
              EM2(L,J)   =  GAMI(L,J) - EE1(L,J)       !e4
+
   14  CONTINUE
 
-      DO 15 J          =  1,NDBL
-          DO 15 L       =  NSOLP+1,NTOTAL
+
+      DO 15 J = 1,NDBL
+          DO 15 L = NSOLP+1,NTOTAL
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
-             B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
-             B2(L,J)    =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
-             TOON_AK(L,J)    = SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
-             GAMI(L,J)  =  B2(L,J)/(B1(L,J) + TOON_AK(L,J))
-             EE1(L,J)   =  EXP(-TOON_AK(L,J)*TAUL(L,J))
+             B1(L,J)      =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
+             B2(L,J)      =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
+             TOON_AK(L,J) = SQRT(ABS(B1(L,J)*B1(L,J) - B2(L,J)*B2(L,J)))
+             GAMI(L,J)    =  B2(L,J)/(B1(L,J) + TOON_AK(L,J))
+             EE1(L,J)     =  EXP(-TOON_AK(L,J)*TAUL(L,J))
 
              EL1(L,J)   =  1.0 + GAMI(L,J) *EE1(L,J)  !e1
              EM1(L,J)   =  1.0 - GAMI(L,J) * EE1(L,J) !e2
              EL2(L,J)   =  GAMI(L,J) + EE1(L,J)       !e3
              EM2(L,J)   =  GAMI(L,J) - EE1(L,J)       !e4
+
   15  CONTINUE
 
 !

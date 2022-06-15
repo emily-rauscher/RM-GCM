@@ -143,8 +143,6 @@
 !           HERE ARE THE ODD MATRIX ELEMENTS EXCEPT FOR THE TOP.
             DF(L,JD+1) =  EL2(L,J) * (CP(L,J+1)-CPB(L,J)) +
      &                    EL1(L,J) * (CMB(L,J) - CM(L,J+1))
-
-
   42  CONTINUE
 
 
@@ -153,9 +151,11 @@
       DO 43 JD         =  2,JN2,2
          J             =  J + 1
          DO 43 L       =  NSOLP+1,LLA
+
 !           HERE ARE THE EVEN MATRIX ELEMENTS
             DF(L,JD) = (CP(L,J+1) - CPB(L,J))*EM1(L,J+1) -
      &                  (CM(L,J+1) - CMB(L,J))*EM2(L,J+1)
+
 !           HERE ARE THE ODD MATRIX ELEMENTS EXCEPT FOR THE TOP.
             DF(L,JD+1) =  EL2(L,J) * (CP(L,J+1)-CPB(L,J)) +
      &                    EL1(L,J) * (CMB(L,J) - CM(L,J+1))
@@ -178,14 +178,12 @@
          DS(L,JDBLEDBLE) = DF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
   45     AS(L,JDBLEDBLE) = AF(L,JDBLEDBLE)/BF(L,JDBLEDBLE)
 
-
 !
 !     (Where the magic happens...)
 !
 !     ********************************************
 !     *     WE SOLVE THE TRIDIAGONAL EQUATIONS   *
 !     ********************************************
-
 
       DO 46 J               = 2, JDBLE
          DO 46 L            = solar_calculation_indexer,NSOLP
@@ -203,6 +201,7 @@
             DS(L,JDBLEDBLE+1-J) = (DF(L,JDBLEDBLE+1-J) - EF(L,JDBLEDBLE+1-J)*DS(L,JDBLEDBLE+2-J))*X
   47  CONTINUE
 
+
       DO 48 L       = solar_calculation_indexer,NTOTAL
   48     XK(L,1)    = DS(L,1)
 
@@ -215,7 +214,6 @@
          DO 51 L    = NSOLP+1,NTOTAL
             XK(L,J) = DS(L,J) - AS(L,J)*XK(L,J-1)
   51  CONTINUE
-
 
 
 !  ***************************************************************
@@ -245,16 +243,19 @@
           CK1(L,J)   = XK(L,2*J-1)
           CK2(L,J)   = XK(L,2*J)
 
-          FNET(L,J)  = CK1(L,J)  *( EL1(L,J) -EL2(L,J))   +
-     &                 CK2(L,J) *( EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
-     &                  CMB(L,J) - DIRECT(L,J)
-!
-          TMI(L,J)   =  EL3(L,J) + U1I(L) *( CK1(L,J)  *
-     &                  ( EL1(L,J) + EL2(L,J))   +
-     &                   CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
-     &                   CPB(L,J) + CMB(L,J) )
+          FNET(L,J)  = CK1(L,J) * (EL1(L,J) -EL2(L,J)) +
+     &                 CK2(L,J) * (EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
+     &                 CMB(L,J) - DIRECT(L,J)
+
+          TMI(L,J)   =  EL3(L,J) + U1I(L) *(CK1(L,J) *
+     &                  (EL1(L,J) + EL2(L,J)) +
+     &                  CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
+     &                  CPB(L,J) + CMB(L,J))
+
         enddo
       enddo
+
+
 
       RETURN
       END

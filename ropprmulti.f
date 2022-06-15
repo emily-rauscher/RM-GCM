@@ -309,6 +309,7 @@
               endif
 
               ug0(L,j)    = GOT
+              uOPD(L,J)   = 0.0
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
               IF (.TRUE.) THEN
@@ -403,6 +404,8 @@
               END DO
           END DO
       END DO
+
+
 
       RETURN
       END

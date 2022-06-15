@@ -166,30 +166,40 @@ C     ER Modif: output pressures in bar instead of mbar
          END DO
          WRITE(63,*)
 
+         !
+
 !  HERE WE WRITE TO FILE 62 ADDTIONAL RADIATIVE TRANSFER BY PRODUCTS
          WRITE(62,*)'LATITUDE, LONGITUDE:',ALAT1,ALON
          WRITE(62,*)'  Cosine of the incidencd angle, mu0:',U0
          write(62,*)' Top of atmosphere albedo: ',alb_toai
          write(62,*)'  Top of model albedo: ',alb_tomi
-         write(62,*)'  SW Flux absorbed at bottom boundary (Wm-2): '
-     &                 ,SOLNET
-         WRITE(62,*)'  Upwelling LW Flux at top-of-atmopshere: '
-     &                 ,tiru
+         write(62,*)'  SW Flux absorbed at bottom boundary (Wm-2): ',SOLNET
+         WRITE(62,*)'  Upwelling LW Flux at top-of-atmopshere: ',tiru
          Write(62,*)'  Up- & Downward SW flux at TOA: '
          WRITE(62,*)   tslu,total_downwelling
          WRITE(62,2031)'1)P(Bars)',
-     &        '2)TAULS (SW & LW)', 
+     &        '2)TAULS (SW & LW)',
      &        '3)CUMMULATIVE TAUS',
      &        '4)PI0s',
      &        '5)G0s',
      &        '6)DIRECT SW (d-scaled)',
      &        '7)4PI*|INTENSITIES|(W/M^2)'
- 2031    FORMAT(3X,A9,6X,A17,9X,A18,12X,A6,11x,A5,7x,A20,3x,A26)            
-         
+ 2031    FORMAT(3X,A9,6X,A17,9X,A18,12X,A6,11x,A5,7x,A20,3x,A26)
+
+
           DO IL=1,NLAYER                                                  
-          WRITE(62,2033),p_pass(IL)*1e-5,uTAUL(1,IL),
-     $    uTAUL(2,IL),uOPD(1,IL),uOPD(2,IL),uW0(1,IL),uW0(2,IL),uG0(1,IL),
-     $    uG0(2,IL),DIRECT(1,IL),TMI(1,IL),TMI(2,IL)                   
+          WRITE(62,2033),p_pass(IL)*1e-5,
+     &                   uTAUL(1,IL),
+     $                   uTAUL(NSOLP+1,IL),
+     &                   uOPD(1,IL),
+     &                   uOPD(NSOLP+1,IL),
+     &                   uW0(1,IL),
+     &                   uW0(NSOLP+1,IL),
+     &                   uG0(1,IL),
+     &                   uG0(NSOLP+1,IL),
+     &                   DIRECT(1,IL),
+     &                   TMI(1,IL),
+     &                   TMI(NSOLP+1,IL)
  2033       FORMAT(F12.6,2X,E12.5,1X,E12.5,2X,E12.5,1x,E12.5,3X,
      $             F7.4,1x,F7.4,2X,F7.4,1X,F7.4,2X,E12.5,2X,
      $             E12.5,1X,E12.5) 

@@ -102,18 +102,18 @@
       bezier_interpolation = .FALSE.
 
 !     Reset flag for computation of solar fluxes
-      if (incident_starlight_fraction .gt. 1e-5) then
-          ISL = 1
-      else
+      if (incident_starlight_fraction .lt. 1e-10) then
           ISL = 0
+      else
+          ISL = 1
       endif
-
 
       DO J = 2, NVERT
           TT(J) = T(J-1) * ((p_pass(J)*10.0)/(pr(J-1)*10.0)) ** (log(T(J)/T(J-1))/log((pr(J)*10.0)/(pr(J-1)*10.0)))
       END DO
 
-      TT(1)=((T(1)-TT(2))/log((pr(1)*10.0)/p_pass(2)))*log(p_pass(1))/(pr(1)*10.0)+T(1)
+      !TT(1)=((T(1)-TT(2)) / log( (P(1)     ) / (PRESS(2)      ) )) * log(PRESS(1)  / P(1) ) + T(1)
+      TT(1) =((T(1)-TT(2)) / log( (pr(1)*10.) / (p_pass(2)*10.0) )) * log(p_pass(1) / pr(1)) + T(1)
       TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/(pr(NVERT)*10.0)) **
      &             (log(T(NVERT)/T(NVERT-1))/log((pr(NVERT)*10.0)/(pr(NVERT-1)*10.0)))
 
@@ -194,6 +194,7 @@
 
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
+
 
 !     CALCULATE THE OPTICAL PROPERTIES
       IF (AEROSOLCOMP.EQ. 'picket-fence') THEN
@@ -347,6 +348,7 @@
      &  qrad,alb_tomi,alb_toai, num_layers, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5)
       ENDIF
 
+
 !     CLOUD FRACTION
 !     NOW, IF WE ARE INCLUDING AEROSOLS, AND WE WOULD LIKE A  CLOUD
 !     FRACTION LESS THAN UNITY, THEN RECOMPUTE THESE FLUXES FOR A
@@ -412,6 +414,7 @@
       END DO
 
 
+
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
           HEATS(J)   =  0.0
@@ -438,6 +441,17 @@
           heati_aerad(j) =  heati(j)/scday
 
 500   CONTINUE
+
+
+
+!     Here we Calculate (4 * pi * mean_intensity) for the IR.
+      IF (IR .NE. 0) THEN
+        DO J = 1, NVERT
+          DO L = NSOLP+1, NTOTAL
+            TMI(L,J) = TMIU(L,J)+TMID(L,J)
+          end do
+        end do
+      ENDIF
 
 
 !     Load layer averages of droplet heating rates into interface common block
@@ -488,7 +502,7 @@
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE
 
       SOLNET   = 0.0
-      IF (solar_calculation_indexer .NE. 0) THEN
+      IF (ISL .GT. 0) THEN
           DO 510 L       =  1,NSOLP
               SOLNET  = SOLNET - FNET(L,NLAYER)
               fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
@@ -517,13 +531,13 @@
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/total_downwelling
 
-          if (fupbs(1) .eq. 0) THEN
-              alb_tomi = 0.0
-          END IF
+          !if (fupbs(1) .eq. 0) THEN
+          !    alb_tomi = 0.0
+          !END IF
 
-          if (tsLu .eq. 0) THEN
-              alb_toai = 0.0
-          END IF
+          !if (tsLu .eq. 0) THEN
+          !    alb_toai = 0.0
+          !END IF
 !
 !         Load fluxes into interface common block
 !
@@ -628,13 +642,8 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
 
-
-
       return
       END
-
-
-
 
       subroutine bezier_interp(xi, yi, ni, x, y)
         implicit none
