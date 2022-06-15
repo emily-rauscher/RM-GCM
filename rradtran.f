@@ -54,6 +54,8 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
+      REAL ttsub(2*NL+2)
+
       integer, parameter :: nwave_alb = NTOTAL
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ)
       real maxopd(nwave_alb)
@@ -160,8 +162,16 @@
      &                  * log10(Tl(NLAYER-1)/TT(NLAYER-1)))
       END IF
 
-
-
+      !     create a T array for the double resolution IR by combinging the
+      !     layer center and edge temperatures
+      K  =  1
+      DO J  = 1, NDBL-1,2
+         L  =  J
+         TTsub(L) = TT(K)
+         L  =  L+1
+         TTsub(L) = T(K)
+         K  =  K+1
+      END DO
 
 !     Solar zenith angle
       u0 = incident_starlight_fraction
@@ -235,10 +245,6 @@
           STOP
       ENDIF
 
-
-
-
-
       SLOPE(:,:) = 0.0
       DS(:,:)    = 0.0
       DF(:,:)    = 0.0
@@ -259,7 +265,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai, num_layers, ttsub)
 
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
@@ -268,7 +274,6 @@
           write(*,*) "Something funny is going on, why no IR scattering?"
           stop
       ENDIF
-
 
       B1 = 0.
       B2 = 0.
@@ -352,12 +357,9 @@
 !     LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
 !     WITHOUT DOUBLING
 
-
-
-
       DO L = NSOLP+1, NTOTAL
-          K     =  1
-          DO        J     =  1,NLAYER
+          K =  1
+          DO J =  1,NLAYER
             FNET(L,J)      =  DIRECTU(L,k)-DIREC(L,k)
             DIRECTU(L,J)   =  DIRECTU(L,K)
             DIREC(L,J)     =  DIREC(L,K)
@@ -371,12 +373,9 @@
             uW0(L,J)       =  uW0(L,k)
             TMIU(L,J)      =  TMIU(L,k)
             TMID(L,J)      =  TMID(L,k)
-            K     =  K+2
+            K = K+2
           ENDDO
       END DO
-
-
-
 
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
@@ -440,6 +439,7 @@
 
 500   CONTINUE
 
+
 !     Load layer averages of droplet heating rates into interface common block
 !     Calculate some diagnostic quantities (formerly done in radout.f) and
 !     load them into the interface common block.  None of these presently
@@ -479,18 +479,19 @@
 !
       alb_tomi = 0.
       alb_toai = 0.
+      total_downwelling = 0.
+      fupbs(1) = 0.0
+      fdownbs(1) = 0.0
 
 
-!
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE
 
-
       SOLNET   = 0.0
-      IF (solar_calculation_indexer .gE. 0) THEN
+      IF (solar_calculation_indexer .NE. 0) THEN
           DO 510 L       =  1,NSOLP
               SOLNET  = SOLNET - FNET(L,NLAYER)
-              fp      = ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)
+              fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
               fsLu(L) = fsLu(L) + fp
 
               do 510 j = 1, NLAYER
@@ -504,10 +505,10 @@
                   if (L .eq. nsolp) then
                       fdownbs(J) = (fupbs(j) - fnetbs(j))
                   endif
-510      CONTINUE
+510       CONTINUE
 
           do  i = 1, nsoL
-              fsLd(i) = psol_aerad*incident_starlight_fraction
+              fsLd(i) = psol_aerad * incident_starlight_fraction * (Beta_V(i))
               alb_toa(i) = fsLu(i)/fsLd(i)
               tsLu = tsLu + fsLu(i)
               total_downwelling = total_downwelling + fsLd(i)
@@ -515,6 +516,14 @@
 
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/total_downwelling
+
+          if (fupbs(1) .eq. 0) THEN
+              alb_tomi = 0.0
+          END IF
+
+          if (tsLu .eq. 0) THEN
+              alb_toai = 0.0
+          END IF
 !
 !         Load fluxes into interface common block
 !
@@ -540,9 +549,9 @@
 !     <firu> is upwelling infrared flux at top-of-atmosphere
 !     (spectrally-resolved)
 
-      do 609 i = 1, nir
+      do i = 1, nir
           firu(i) = 0.
- 609  continue
+      END DO
 
 
       IF (IR .NE. 0) THEN
@@ -555,8 +564,6 @@
                  fnetbi(j)  = fnetbi(j)  + (directu(L,j) - direc(L,j))
              END DO
           END DO
-
-
 
           do i = 1, nir
               tiru = tiru + firu(i)
@@ -573,8 +580,6 @@
               fsl_net_aerad(j) = fnetbs(nlayer+1-j)
           enddo
       ENDIF
-
-
 
 
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
@@ -622,6 +627,8 @@ C     3rd index - Where 1=TOP, 2=SURFACE
           RFLUXES_aerad(2,2,1)=fir_up_aerad(NLAYER)       ! LW up top
           RFLUXES_aerad(2,2,2)=fir_up_aerad(1)   ! LW up bottom
       end if
+
+
 
       return
       END

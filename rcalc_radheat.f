@@ -55,7 +55,6 @@
       REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
-
       real, dimension(2, NL+1) :: k_IRl
       real, dimension(3, NL+1) :: k_Vl
 
@@ -72,9 +71,6 @@
       REAL tauaer_temp(5, NL+1, 13)
       INTEGER j1
       REAL denom
-
-
-
 
       real, parameter :: BK = 1.38054e-16
       real, parameter :: L      = 2.5e10
@@ -110,7 +106,6 @@
       eps= Rd/Rv
       RdCp = Rd/Cpd
 
-
       call radsub(iffirst,pr,p_pass,t,radheat,htlw,htsw,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
@@ -137,7 +132,6 @@
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
      &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, fluxes, k_IRl, k_Vl)
-
 
       iffirst = 0
 

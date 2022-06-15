@@ -191,8 +191,7 @@
 
       EMISIR       = SURFEMIS
 
-
-      testing = 1
+      testing = 0
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
 
