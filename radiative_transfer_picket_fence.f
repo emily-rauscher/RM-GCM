@@ -82,7 +82,6 @@
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
      &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl)
@@ -140,7 +139,6 @@
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
 
-
         call Bond_Parmentier(Teff, grav, Bond_Albedo)
 
         !! Recalculate Teff and then find parameters
@@ -191,7 +189,7 @@
           bP = 13.92
           cP = -19.38
 
-        else if (with_TiO_and_VO .eq. 2)then
+        else if (with_TiO_and_VO .eq. 2) then
           ! Appendix table from Parmentier et al. (2015) - without TiO and VO
           if (Teff <= 200.0) then
             aV1 = -5.51 ; bV1 = 2.48
@@ -326,11 +324,8 @@
         Tl10 = log10(Freedman_T)
         Pl10 = log10(Freedman_P)
 
-
         ! Low pressure expression
-        k_lowP = c1*atan(Tl10 - c2) -
-     &    (c3/(Pl10 + c4))*exp((Tl10 - c5)**2) +
-     &    c6*Freedman_met + c7
+        k_lowP = c1*atan(Tl10 - c2) - (c3/(Pl10 + c4))*exp((Tl10 - c5)**2) + c6*Freedman_met + c7
 
       ! Temperature split for coefficents = 800 K
         if (Freedman_T <= 800.0) then
@@ -438,7 +433,6 @@
           k_hiP = (c6_vh+c7_vh*Tl10+c8_vh*Tl10**2)
      &     + Pl10*(c9_vh+c10_vh*Tl10)
      &     + Freedman_met*c11_vh*(0.5 + onedivpi*atan((Tl10-2.5)/0.2))
-
         end if
 
         ! Total Rosseland mean opacity - converted to m2 kg-1
