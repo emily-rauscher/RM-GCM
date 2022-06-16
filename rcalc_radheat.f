@@ -106,6 +106,10 @@
       eps= Rd/Rv
       RdCp = Rd/Cpd
 
+
+      write(*,*) 'STOPPING IN RCALC RADHEAT'
+      write(*,*) 'ISAAC NEEDS TO MAKE SURE THAT THE 4 + 5 bands are summed and stuff'
+
       call radsub(iffirst,pr,p_pass,t,radheat,htlw,htsw,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
@@ -171,7 +175,7 @@ C     ER Modif: output pressures in bar instead of mbar
 !  HERE WE WRITE TO FILE 62 ADDTIONAL RADIATIVE TRANSFER BY PRODUCTS
          WRITE(62,*)'LATITUDE, LONGITUDE:',ALAT1,ALON
          WRITE(62,*)'  Cosine of the incidencd angle, mu0:',U0
-         write(62,*)' Top of atmosphere albedo: ',alb_toai
+         write(62,*)'  Top of atmosphere albedo: ',alb_toai
          write(62,*)'  Top of model albedo: ',alb_tomi
          write(62,*)'  SW Flux absorbed at bottom boundary (Wm-2): ',SOLNET
          WRITE(62,*)'  Upwelling LW Flux at top-of-atmopshere: ',tiru
@@ -197,9 +201,9 @@ C     ER Modif: output pressures in bar instead of mbar
      &                   uW0(NSOLP+1,IL),
      &                   uG0(1,IL),
      &                   uG0(NSOLP+1,IL),
-     &                   DIRECT(1,IL),
-     &                   TMI(1,IL),
-     &                   TMI(NSOLP+1,IL)
+     &                   DIRECT(1,IL)+DIRECT(2,IL)+DIRECT(3,IL),
+     &                   TMI(1,IL)+TMI(2,IL)+TMI(3,IL),
+     &                   TMI(4,IL)+TMI(5,IL)
  2033       FORMAT(F12.6,2X,E12.5,1X,E12.5,2X,E12.5,1x,E12.5,3X,
      $             F7.4,1x,F7.4,2X,F7.4,1X,F7.4,2X,E12.5,2X,
      $             E12.5,1X,E12.5) 
