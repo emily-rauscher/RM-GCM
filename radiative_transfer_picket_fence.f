@@ -68,15 +68,19 @@
               pl(J) = dpe(J) / log(pe(J+1)/pe(J))
           END DO
 
-          if (tt(1) .ge. 100.0) then
-              DO J = 1, NLAYER
-                  Tl(J) = tt(J)
-              END DO
-          else
-              DO J = 1, NLAYER
-                  Tl(J) = t(J)
-              END DO
-          end if
+          !if (tt(1) .ge. 100.0) then
+          !    DO J = 1, NLAYER
+          !        Tl(J) = tt(J)
+          !    END DO
+          !else
+          !    DO J = 1, NLAYER
+          !        Tl(J) = t(J)
+          !    END DO
+          !end if
+
+          DO J = 1, NLAYER
+            Tl(J) = t(J)
+          END DO
 
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
@@ -137,7 +141,6 @@
         !! Parmentier opacity profile parameters - first get Bond albedo
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 / sqrt(3.0)) *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
-
 
         call Bond_Parmentier(Teff, grav, Bond_Albedo)
 

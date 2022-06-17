@@ -314,7 +314,6 @@ c     ntstep is the number of timesteps to skip.
       IOFM=0
 
       DO 800 ihem=1,nhem
-        !IF ((kount .gt. 0.9 * KRUN) .or. (mod(kount,ntstep).eq.0)) THEN
         IF (mod(kount,ntstep).eq.0) THEN
           ilast=0
 
@@ -505,7 +504,6 @@ c     ntstep is the number of timesteps to skip.
                k_IRl = 0
                k_Vl  = 0
 
-
               call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
      &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
      &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
@@ -545,7 +543,6 @@ c     ntstep is the number of timesteps to skip.
               rrflux(im,jh,4)=fluxes(2,2,2)
               rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
               rrflux(im,jh,6)=fluxes(2,2,1)
-
 
 
 c             bottom heating rate is zero in morecret
@@ -616,7 +613,6 @@ c             bottom heating rate is zero in morecret
           ENDDO
         ENDDO
       ENDIF
-
 
       RETURN
       END

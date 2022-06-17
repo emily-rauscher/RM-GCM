@@ -154,7 +154,7 @@
       END IF
 
       ! Maybe I can get rid of this
-      TAU_HAZE = 0.5 * TAU_HAZE
+      TAU_HAZE = 0.1 * TAU_HAZE
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!
@@ -274,6 +274,7 @@
           END DO
       END DO
 
+
       iradgas = 1
       DO J = 1,NLAYER
           j1 = max(1, j-1)
@@ -293,7 +294,7 @@
                   wot = woL(L,j)
               endif
 
-              WOT       = min(1.-1d-6,WOT)
+              WOT       = min(1.0 - 1d-6,WOT)
               uw0(L,j)  = WOT
               DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
 
@@ -407,8 +408,6 @@
               END DO
           END DO
       END DO
-
-
 
       RETURN
       END

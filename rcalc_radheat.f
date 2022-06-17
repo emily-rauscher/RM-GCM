@@ -107,9 +107,6 @@
       RdCp = Rd/Cpd
 
 
-      write(*,*) 'STOPPING IN RCALC RADHEAT'
-      write(*,*) 'ISAAC NEEDS TO MAKE SURE THAT THE 4 + 5 bands are summed and stuff'
-
       call radsub(iffirst,pr,p_pass,t,radheat,htlw,htsw,alat1,alon,KOUNT,ITSPD,Beta_IR,Beta_V,
      &            incident_starlight_fraction, TAURAY, TAUL, TAUGAS, TAUAER,solar_calculation_indexer, DPG,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,

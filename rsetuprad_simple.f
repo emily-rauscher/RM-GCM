@@ -298,7 +298,6 @@
         END DO
 
 
-
         DO L = NSOLP+1, NTOTAL
           tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
      &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
@@ -320,7 +319,6 @@
                 k = k + 1
             END DO
         END DO
-
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0
@@ -334,7 +332,7 @@
               Beta_IR(1) = 1.0
           end if
 
-          DO L = 1,NSOLP
+          DO L = solar_calculation_indexer,NSOLP
               DO J     =   1,NLAYER
                   TAUGAS(L,J) = MULTI_BAND_ABSCOEFF(L) * DPG(J)
               END DO
@@ -346,6 +344,8 @@
              END DO
           END DO
       END IF
+
+
 
 
       FNET(:,:)   = 0.0

@@ -247,15 +247,13 @@
      &                 CK2(L,J) * (EM1(L,J)-EM2(L,J) ) + CPB(L,J) -
      &                 CMB(L,J) - DIRECT(L,J)
 
-          TMI(L,J)   =  EL3(L,J) + U1I(L) *(CK1(L,J) *
+          TMI(L,J)   =  EL3(L,J) + U1I(L) * (CK1(L,J) *
      &                  (EL1(L,J) + EL2(L,J)) +
-     &                  CK2(L,J) *( EM1(L,J)+EM2(L,J) ) +
+     &                  CK2(L,J) * (EM1(L,J) + EM2(L,J)) +
      &                  CPB(L,J) + CMB(L,J))
 
         enddo
       enddo
-
-
 
       RETURN
       END

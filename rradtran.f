@@ -485,7 +485,6 @@
       do 509 i = 1, nsoL
           fsLu(i)    = 0.0
           fsLd(i)    = 0.0
-          alb_toa(i) = 0.0
 509   continue
 !
 !     <alb_tomi> and <alb_toai> are total solar albedos at top-of-model
@@ -507,6 +506,7 @@
               SOLNET  = SOLNET - FNET(L,NLAYER)
               fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
               fsLu(L) = fsLu(L) + fp
+
 
               do 510 j = 1, NLAYER
                   fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
@@ -531,16 +531,8 @@
           alb_tomi = fupbs(1)/fdownbs(1)
           alb_toai = tsLu/total_downwelling
 
-          !if (fupbs(1) .eq. 0) THEN
-          !    alb_tomi = 0.0
-          !END IF
-
-          !if (tsLu .eq. 0) THEN
-          !    alb_toai = 0.0
-          !END IF
-!
 !         Load fluxes into interface common block
-!
+
           do j = 1, nlayer
               fsl_up_aerad(j) = fupbs(j)
               fsl_dn_aerad(j) = fdownbs(j)
