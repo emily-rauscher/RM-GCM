@@ -15,7 +15,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, p_pass,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -30,7 +30,7 @@
 !
       include 'rcommons.h'
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
       REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
@@ -153,9 +153,8 @@
            TAU_HAZE = 0.0
       END IF
 
-      ! Maybe I can get rid of this
-      TAU_HAZE = 0.25 * TAU_HAZE
-
+      ! Slowly introduce the hazes over 1 day
+      TAU_HAZE = min(1.0, FLOAT(kount) / (FLOAT(KOUNTP))) * TAU_HAZE
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!
