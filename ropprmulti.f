@@ -154,7 +154,8 @@
       END IF
 
       ! Maybe I can get rid of this
-      TAU_HAZE = 0.1 * TAU_HAZE
+      TAU_HAZE = 0.25 * TAU_HAZE
+
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!
