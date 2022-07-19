@@ -279,8 +279,8 @@
           k_IRl(2,k) = k_IRl(1,k) * gam_2
           k_IRl(1,k) = k_IRl(1,k) * gam_1
 
-          tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
-          tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
+          tau_Ve(:,k)  = ((1.1 * k_Vl(:,k)  * dpe(k)) / grav)
+          tau_IRe(:,k) = ((1.1 * k_IRl(:,k) * dpe(k)) / grav)
         end do
 
       end subroutine calculate_opacities

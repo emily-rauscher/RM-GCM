@@ -116,7 +116,7 @@
      &                              HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg,
      &                              haze_pressure_array_pascals
 
-      DOUBLE_GRAY_HACK = .TRUE.
+      DOUBLE_GRAY_HACK = .False.
 
       Y3(:,:,:) = 0.0
 
@@ -170,7 +170,7 @@
       END IF
 
       ! Slowly introduce the hazes over 1 day
-      TAU_HAZE = min(1.0, FLOAT(kount) / (FLOAT(KOUNTP))) * TAU_HAZE
+      !TAU_HAZE = min(1.0, FLOAT(kount) / (FLOAT(KOUNTP))) * TAU_HAZE
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!

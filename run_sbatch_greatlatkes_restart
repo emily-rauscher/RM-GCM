@@ -1,0 +1,28 @@
+#!/bin/bash
+
+####  Job name
+#SBATCH --job-name=GCM-1
+
+####  Request resources here
+####  These are typically, number of processors, amount of memory,
+####  an the amount of time a job requires.  May include processor
+####  type, too.
+
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=5g
+#SBATCH --time=14-00:00:00
+
+#SBATCH --account=erausche0
+
+#### #### ####  These are the least frequently changing options
+####  Your e-mail address and when you want e-mail
+
+#SBATCH --mail-user=isaacmalsky@gmail.com
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+module load intel/19.1
+export OMP_NUM_THREADS=1
+
+
+./compile_nopg_restart
