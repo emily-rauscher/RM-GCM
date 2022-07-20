@@ -49,7 +49,7 @@
       REAL qrad(NL+1),alb_tomi,alb_toais
 
       REAL DENOM
-      REAL DPG(NLAYER), p_pass(NLAYER)
+      REAL DPG(NLAYER), p_pass(NLAYER), layer_pressure_pa(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
 
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
@@ -116,6 +116,12 @@
      &                              HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg,
      &                              haze_pressure_array_pascals
 
+      DO J  = 2,NLAYER
+          layer_pressure_pa(J)  = (p_pass(J)-p_pass(J-1))
+      END DO
+
+      layer_pressure_pa(1)=10.0**(LOG10(layer_pressure_pa(2))-(LOG10(layer_pressure_pa(3))-LOG10(layer_pressure_pa(2))))
+
       DOUBLE_GRAY_HACK = .False.
 
       Y3(:,:,:) = 0.0
@@ -139,13 +145,13 @@
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
 
               IF (DOUBLE_GRAY_HACK) THEN
-                  TAU_HAZE(1,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-                  TAU_HAZE(3,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+                  TAU_HAZE(1,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(3,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
               ELSE
-                  TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
-                  TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+                  TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
               END IF
           END DO
 
@@ -157,11 +163,11 @@
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
               IF (DOUBLE_GRAY_HACK) THEN
                   DO L = NSOLP+1,NTOTAL
-                      TAU_HAZE(L,J) = HAZE_5000nm_tau_per_bar(haze_layer_index) * (p_pass(J) * 1e-5)
+                      TAU_HAZE(L,J) = HAZE_5000nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
                   END DO
               ELSE
                   DO L = NSOLP+1,NTOTAL
-                      TAU_HAZE(L,J) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * (p_pass(J) * 1e-5)
+                      TAU_HAZE(L,J) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * layer_pressure_pa(J)
                   END DO
               END IF
           END DO
