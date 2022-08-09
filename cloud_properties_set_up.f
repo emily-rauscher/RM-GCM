@@ -24,99 +24,179 @@
           real, dimension(50,50) :: KCl_rosselandMean_gg
           real, dimension(50,50) :: KCl_rosselandMean_qext
           real, dimension(50,50) :: KCl_rosselandMean_pi0
+
+          real, dimension(50,50) :: KCl_PlanckMean_gg
+          real, dimension(50,50) :: KCl_PlanckMean_qext
+          real, dimension(50,50) :: KCl_PlanckMean_pi0
+
           real, dimension(50,50) :: KCl_wav_gg
           real, dimension(50,50) :: KCl_wav_qext
           real, dimension(50,50) :: KCl_wav_pi0
 
+
           real, dimension(50,50) :: ZnS_rosselandMean_gg
           real, dimension(50,50) :: ZnS_rosselandMean_qext
           real, dimension(50,50) :: ZnS_rosselandMean_pi0
+
+          real, dimension(50,50) :: ZnS_PlanckMean_gg
+          real, dimension(50,50) :: ZnS_PlanckMean_qext
+          real, dimension(50,50) :: ZnS_PlanckMean_pi0
+
           real, dimension(50,50) :: ZnS_wav_gg
           real, dimension(50,50) :: ZnS_wav_qext
           real, dimension(50,50) :: ZnS_wav_pi0
 
+
           real, dimension(50,50) :: Na2S_rosselandMean_gg
           real, dimension(50,50) :: Na2S_rosselandMean_qext
           real, dimension(50,50) :: Na2S_rosselandMean_pi0
+
+          real, dimension(50,50) :: Na2S_PlanckMean_gg
+          real, dimension(50,50) :: Na2S_PlanckMean_qext
+          real, dimension(50,50) :: Na2S_PlanckMean_pi0
+
           real, dimension(50,50) :: Na2S_wav_gg
           real, dimension(50,50) :: Na2S_wav_qext
           real, dimension(50,50) :: Na2S_wav_pi0
 
+
           real, dimension(50,50) :: MnS_rosselandMean_gg
           real, dimension(50,50) :: MnS_rosselandMean_qext
           real, dimension(50,50) :: MnS_rosselandMean_pi0
+
+          real, dimension(50,50) :: MnS_PlanckMean_gg
+          real, dimension(50,50) :: MnS_PlanckMean_qext
+          real, dimension(50,50) :: MnS_PlanckMean_pi0
+
           real, dimension(50,50) :: MnS_wav_gg
           real, dimension(50,50) :: MnS_wav_qext
           real, dimension(50,50) :: MnS_wav_pi0
 
+
           real, dimension(50,50) :: Cr_rosselandMean_gg
           real, dimension(50,50) :: Cr_rosselandMean_qext
           real, dimension(50,50) :: Cr_rosselandMean_pi0
+
+          real, dimension(50,50) :: Cr_PlanckMean_gg
+          real, dimension(50,50) :: Cr_PlanckMean_qext
+          real, dimension(50,50) :: Cr_PlanckMean_pi0
+
           real, dimension(50,50) :: Cr_wav_gg
           real, dimension(50,50) :: Cr_wav_qext
           real, dimension(50,50) :: Cr_wav_pi0
 
+
           real, dimension(50,50) :: SiO2_rosselandMean_gg
           real, dimension(50,50) :: SiO2_rosselandMean_qext
           real, dimension(50,50) :: SiO2_rosselandMean_pi0
+
+          real, dimension(50,50) :: SiO2_PlanckMean_gg
+          real, dimension(50,50) :: SiO2_PlanckMean_qext
+          real, dimension(50,50) :: SiO2_PlanckMean_pi0
+
           real, dimension(50,50) :: SiO2_wav_gg
           real, dimension(50,50) :: SiO2_wav_qext
           real, dimension(50,50) :: SiO2_wav_pi0
 
+
           real, dimension(50,50) :: Mg2SiO4_rosselandMean_gg
           real, dimension(50,50) :: Mg2SiO4_rosselandMean_qext
           real, dimension(50,50) :: Mg2SiO4_rosselandMean_pi0
+
+          real, dimension(50,50) :: Mg2SiO4_PlanckMean_gg
+          real, dimension(50,50) :: Mg2SiO4_PlanckMean_qext
+          real, dimension(50,50) :: Mg2SiO4_PlanckMean_pi0
+
           real, dimension(50,50) :: Mg2SiO4_wav_gg
           real, dimension(50,50) :: Mg2SiO4_wav_qext
           real, dimension(50,50) :: Mg2SiO4_wav_pi0
 
+
           real, dimension(50,50) :: VO_rosselandMean_gg
           real, dimension(50,50) :: VO_rosselandMean_qext
           real, dimension(50,50) :: VO_rosselandMean_pi0
+
+          real, dimension(50,50) :: VO_PlanckMean_gg
+          real, dimension(50,50) :: VO_PlanckMean_qext
+          real, dimension(50,50) :: VO_PlanckMean_pi0
+
           real, dimension(50,50) :: VO_wav_gg
           real, dimension(50,50) :: VO_wav_qext
           real, dimension(50,50) :: VO_wav_pi0
 
+
           real, dimension(50,50) :: Ni_rosselandMean_gg
           real, dimension(50,50) :: Ni_rosselandMean_qext
           real, dimension(50,50) :: Ni_rosselandMean_pi0
+
+          real, dimension(50,50) :: Ni_PlanckMean_gg
+          real, dimension(50,50) :: Ni_PlanckMean_qext
+          real, dimension(50,50) :: Ni_PlanckMean_pi0
+
           real, dimension(50,50) :: Ni_wav_gg
           real, dimension(50,50) :: Ni_wav_qext
           real, dimension(50,50) :: Ni_wav_pi0
 
+
           real, dimension(50,50) :: Fe_rosselandMean_gg
           real, dimension(50,50) :: Fe_rosselandMean_qext
           real, dimension(50,50) :: Fe_rosselandMean_pi0
+
+          real, dimension(50,50) :: Fe_PlanckMean_gg
+          real, dimension(50,50) :: Fe_PlanckMean_qext
+          real, dimension(50,50) :: Fe_PlanckMean_pi0
+
           real, dimension(50,50) :: Fe_wav_gg
           real, dimension(50,50) :: Fe_wav_qext
           real, dimension(50,50) :: Fe_wav_pi0
 
+
+
           real, dimension(50,50) :: CaSiO4_rosselandMean_gg
           real, dimension(50,50) :: CaSiO4_rosselandMean_qext
           real, dimension(50,50) :: CaSiO4_rosselandMean_pi0
+
+          real, dimension(50,50) :: CaSiO4_PlanckMean_gg
+          real, dimension(50,50) :: CaSiO4_PlanckMean_qext
+          real, dimension(50,50) :: CaSiO4_PlanckMean_pi0
+
           real, dimension(50,50) :: CaSiO4_wav_gg
           real, dimension(50,50) :: CaSiO4_wav_qext
           real, dimension(50,50) :: CaSiO4_wav_pi0
 
+
           real, dimension(50,50) :: CaTiO3_rosselandMean_gg
           real, dimension(50,50) :: CaTiO3_rosselandMean_qext
           real, dimension(50,50) :: CaTiO3_rosselandMean_pi0
+
+          real, dimension(50,50) :: CaTiO3_PlanckMean_gg
+          real, dimension(50,50) :: CaTiO3_PlanckMean_qext
+          real, dimension(50,50) :: CaTiO3_PlanckMean_pi0
+
           real, dimension(50,50) :: CaTiO3_wav_gg
           real, dimension(50,50) :: CaTiO3_wav_qext
           real, dimension(50,50) :: CaTiO3_wav_pi0
 
+
           real, dimension(50,50) :: Al2O3_rosselandMean_gg
           real, dimension(50,50) :: Al2O3_rosselandMean_qext
           real, dimension(50,50) :: Al2O3_rosselandMean_pi0
+
+          real, dimension(50,50) :: Al2O3_PlanckMean_gg
+          real, dimension(50,50) :: Al2O3_PlanckMean_qext
+          real, dimension(50,50) :: Al2O3_PlanckMean_pi0
+
           real, dimension(50,50) :: Al2O3_wav_gg
           real, dimension(50,50) :: Al2O3_wav_qext
           real, dimension(50,50) :: Al2O3_wav_pi0
+
+          ! SET UP THE CONDENSATION CURVES
+          ! SHOULD BE MET DEPENDENT EVENTUALLY
 
           REAL TconKCl(NLAYER)
           REAL TconZnS(NLAYER)
           REAL TconNa2S(NLAYER)
           REAL TCONMnS(NLAYER)
-          !REAL TconCr2O3(NLAYER)
           REAL TCONCr(NLAYER)
           REAL TCONSiO2(NLAYER)
           REAL TCONMg2SiO4(NLAYER)
@@ -214,21 +294,28 @@
           close(4)
           close(5)
 
-
+          ! READ IN ALL THE CLOUD FILES
+          ! THIS IS A LOT OF FILES
 
           open (1, file='../CLOUD_DATA/KCl_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/KCl_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/KCl_rosselandMean_pi0.txt')
-          open (4, file='../CLOUD_DATA/KCl_wav_gg.txt')
-          open (5, file='../CLOUD_DATA/KCl_wav_qext.txt')
-          open (6, file='../CLOUD_DATA/KCl_wav_pi0.txt')
+          open (4, file='../CLOUD_DATA/KCl_PlanckMean_gg.txt')
+          open (5, file='../CLOUD_DATA/KCl_PlanckMean_qext.txt')
+          open (6, file='../CLOUD_DATA/KCl_PlanckMean_pi0.txt')
+          open (7, file='../CLOUD_DATA/KCl_wav_gg.txt')
+          open (8, file='../CLOUD_DATA/KCl_wav_qext.txt')
+          open (9, file='../CLOUD_DATA/KCl_wav_pi0.txt')
           
           read(1,*) KCl_rosselandMean_gg
           read(2,*) KCl_rosselandMean_qext
           read(3,*) KCl_rosselandMean_pi0
-          read(4,*) KCl_wav_gg
-          read(5,*) KCl_wav_qext
-          read(6,*) KCl_wav_pi0
+          read(4,*) KCl_PlanckMean__gg
+          read(5,*) KCl_PlanckMean_qext
+          read(6,*) KCl_PlanckMean_pi0
+          read(7,*) KCl_wav_gg
+          read(8,*) KCl_wav_qext
+          read(9,*) KCl_wav_pi0
           
           close(1)
           close(2)
@@ -236,13 +323,20 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
+
           open (1, file='../CLOUD_DATA/ZnS_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/ZnS_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/ZnS_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/ZnS_wav_gg.txt')
           open (5, file='../CLOUD_DATA/ZnS_wav_qext.txt')
           open (6, file='../CLOUD_DATA/ZnS_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/ZnS_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/ZnS_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/ZnS_rosselandMean_pi0.txt')
           
           read(1,*) ZnS_rosselandMean_gg
           read(2,*) ZnS_rosselandMean_qext
@@ -250,6 +344,9 @@
           read(4,*) ZnS_wav_gg
           read(5,*) ZnS_wav_qext
           read(6,*) ZnS_wav_pi0
+          read(7,*) ZnS_rosselandMean_gg
+          read(8,*) ZnS_rosselandMean_qext
+          read(9,*) ZnS_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -257,6 +354,9 @@
           close(4)
           close(5)
           close(6)
+          close(7)
+          close(8)
+          close(9)
 
           open (1, file='../CLOUD_DATA/Na2S_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/Na2S_rosselandMean_qext.txt')
@@ -264,6 +364,9 @@
           open (4, file='../CLOUD_DATA/Na2S_wav_gg.txt')
           open (5, file='../CLOUD_DATA/Na2S_wav_qext.txt')
           open (6, file='../CLOUD_DATA/Na2S_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/Na2S_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/Na2S_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/Na2S_rosselandMean_pi0.txt')
           
           read(1,*) Na2S_rosselandMean_gg
           read(2,*) Na2S_rosselandMean_qext
@@ -271,6 +374,9 @@
           read(4,*) Na2S_wav_gg
           read(5,*) Na2S_wav_qext
           read(6,*) Na2S_wav_pi0
+          read(7,*) Na2S_rosselandMean_gg
+          read(8,*) Na2S_rosselandMean_qext
+          read(9,*) Na2S_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -278,13 +384,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/MnS_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/MnS_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/MnS_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/MnS_wav_gg.txt')
           open (5, file='../CLOUD_DATA/MnS_wav_qext.txt')
           open (6, file='../CLOUD_DATA/MnS_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/MnS_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/MnS_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/MnS_rosselandMean_pi0.txt')
           
           read(1,*) MnS_rosselandMean_gg
           read(2,*) MnS_rosselandMean_qext
@@ -292,6 +404,9 @@
           read(4,*) MnS_wav_gg
           read(5,*) MnS_wav_qext
           read(6,*) MnS_wav_pi0
+          read(7,*) MnS_rosselandMean_gg
+          read(8,*) MnS_rosselandMean_qext
+          read(9,*) MnS_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -299,13 +414,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/Cr_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/Cr_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/Cr_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/Cr_wav_gg.txt')
           open (5, file='../CLOUD_DATA/Cr_wav_qext.txt')
           open (6, file='../CLOUD_DATA/Cr_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/Cr_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/Cr_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/Cr_rosselandMean_pi0.txt')
           
           read(1,*) Cr_rosselandMean_gg
           read(2,*) Cr_rosselandMean_qext
@@ -313,6 +434,9 @@
           read(4,*) Cr_wav_gg
           read(5,*) Cr_wav_qext
           read(6,*) Cr_wav_pi0
+          read(7,*) Cr_rosselandMean_gg
+          read(8,*) Cr_rosselandMean_qext
+          read(9,*) Cr_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -320,13 +444,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/SiO2_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/SiO2_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/SiO2_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/SiO2_wav_gg.txt')
           open (5, file='../CLOUD_DATA/SiO2_wav_qext.txt')
           open (6, file='../CLOUD_DATA/SiO2_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/SiO2_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/SiO2_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/SiO2_rosselandMean_pi0.txt')
           
           read(1,*) SiO2_rosselandMean_gg
           read(2,*) SiO2_rosselandMean_qext
@@ -334,6 +464,9 @@
           read(4,*) SiO2_wav_gg
           read(5,*) SiO2_wav_qext
           read(6,*) SiO2_wav_pi0
+          read(7,*) SiO2_rosselandMean_gg
+          read(8,*) SiO2_rosselandMean_qext
+          read(9,*) SiO2_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -341,13 +474,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/Mg2SiO4_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/Mg2SiO4_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/Mg2SiO4_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/Mg2SiO4_wav_gg.txt')
           open (5, file='../CLOUD_DATA/Mg2SiO4_wav_qext.txt')
           open (6, file='../CLOUD_DATA/Mg2SiO4_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/Mg2SiO4_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/Mg2SiO4_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/Mg2SiO4_rosselandMean_pi0.txt')
           
           read(1,*) Mg2SiO4_rosselandMean_gg
           read(2,*) Mg2SiO4_rosselandMean_qext
@@ -355,6 +494,9 @@
           read(4,*) Mg2SiO4_wav_gg
           read(5,*) Mg2SiO4_wav_qext
           read(6,*) Mg2SiO4_wav_pi0
+          read(7,*) Mg2SiO4_rosselandMean_gg
+          read(8,*) Mg2SiO4_rosselandMean_qext
+          read(9,*) Mg2SiO4_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -362,13 +504,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/VO_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/VO_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/VO_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/VO_wav_gg.txt')
           open (5, file='../CLOUD_DATA/VO_wav_qext.txt')
           open (6, file='../CLOUD_DATA/VO_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/VO_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/VO_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/VO_rosselandMean_pi0.txt')
           
           read(1,*) VO_rosselandMean_gg
           read(2,*) VO_rosselandMean_qext
@@ -376,6 +524,9 @@
           read(4,*) VO_wav_gg
           read(5,*) VO_wav_qext
           read(6,*) VO_wav_pi0
+          read(7,*) VO_rosselandMean_gg
+          read(8,*) VO_rosselandMean_qext
+          read(9,*) VO_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -383,13 +534,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/Ni_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/Ni_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/Ni_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/Ni_wav_gg.txt')
           open (5, file='../CLOUD_DATA/Ni_wav_qext.txt')
           open (6, file='../CLOUD_DATA/Ni_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/Ni_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/Ni_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/Ni_rosselandMean_pi0.txt')
           
           read(1,*) Ni_rosselandMean_gg
           read(2,*) Ni_rosselandMean_qext
@@ -397,6 +554,9 @@
           read(4,*) Ni_wav_gg
           read(5,*) Ni_wav_qext
           read(6,*) Ni_wav_pi0
+          read(7,*) Ni_rosselandMean_gg
+          read(8,*) Ni_rosselandMean_qext
+          read(9,*) Ni_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -404,13 +564,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/Fe_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/Fe_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/Fe_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/Fe_wav_gg.txt')
           open (5, file='../CLOUD_DATA/Fe_wav_qext.txt')
           open (6, file='../CLOUD_DATA/Fe_wav_pi0.txt')
+          open (7, file='../CLOUD_DATA/Fe_rosselandMean_gg.txt')
+          open (8, file='../CLOUD_DATA/Fe_rosselandMean_qext.txt')
+          open (9, file='../CLOUD_DATA/Fe_rosselandMean_pi0.txt')
           
           read(1,*) Fe_rosselandMean_gg
           read(2,*) Fe_rosselandMean_qext
@@ -418,6 +584,9 @@
           read(4,*) Fe_wav_gg
           read(5,*) Fe_wav_qext
           read(6,*) Fe_wav_pi0
+          read(1,*) Fe_rosselandMean_gg
+          read(2,*) Fe_rosselandMean_qext
+          read(3,*) Fe_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -425,13 +594,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/CaSiO4_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/CaSiO4_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/CaSiO4_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/CaSiO4_wav_gg.txt')
           open (5, file='../CLOUD_DATA/CaSiO4_wav_qext.txt')
           open (6, file='../CLOUD_DATA/CaSiO4_wav_pi0.txt')
+          open (1, file='../CLOUD_DATA/CaSiO4_rosselandMean_gg.txt')
+          open (2, file='../CLOUD_DATA/CaSiO4_rosselandMean_qext.txt')
+          open (3, file='../CLOUD_DATA/CaSiO4_rosselandMean_pi0.txt')
           
           read(1,*) CaSiO4_rosselandMean_gg
           read(2,*) CaSiO4_rosselandMean_qext
@@ -439,6 +614,9 @@
           read(4,*) CaSiO4_wav_gg
           read(5,*) CaSiO4_wav_qext
           read(6,*) CaSiO4_wav_pi0
+          read(1,*) CaSiO4_rosselandMean_gg
+          read(2,*) CaSiO4_rosselandMean_qext
+          read(3,*) CaSiO4_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -446,13 +624,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/CaTiO3_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/CaTiO3_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/CaTiO3_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/CaTiO3_wav_gg.txt')
           open (5, file='../CLOUD_DATA/CaTiO3_wav_qext.txt')
           open (6, file='../CLOUD_DATA/CaTiO3_wav_pi0.txt')
+          open (1, file='../CLOUD_DATA/CaTiO3_rosselandMean_gg.txt')
+          open (2, file='../CLOUD_DATA/CaTiO3_rosselandMean_qext.txt')
+          open (3, file='../CLOUD_DATA/CaTiO3_rosselandMean_pi0.txt')
           
           read(1,*) CaTiO3_rosselandMean_gg
           read(2,*) CaTiO3_rosselandMean_qext
@@ -460,6 +644,9 @@
           read(4,*) CaTiO3_wav_gg
           read(5,*) CaTiO3_wav_qext
           read(6,*) CaTiO3_wav_pi0
+          read(1,*) CaTiO3_rosselandMean_gg
+          read(2,*) CaTiO3_rosselandMean_qext
+          read(3,*) CaTiO3_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -467,13 +654,19 @@
           close(4)
           close(5)
           close(6)
-          
+          close(7)
+          close(8)
+          close(9)
+
           open (1, file='../CLOUD_DATA/Al2O3_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/Al2O3_rosselandMean_qext.txt')
           open (3, file='../CLOUD_DATA/Al2O3_rosselandMean_pi0.txt')
           open (4, file='../CLOUD_DATA/Al2O3_wav_gg.txt')
           open (5, file='../CLOUD_DATA/Al2O3_wav_qext.txt')
           open (6, file='../CLOUD_DATA/Al2O3_wav_pi0.txt')
+          open (1, file='../CLOUD_DATA/Al2O3_rosselandMean_gg.txt')
+          open (2, file='../CLOUD_DATA/Al2O3_rosselandMean_qext.txt')
+          open (3, file='../CLOUD_DATA/Al2O3_rosselandMean_pi0.txt')
           
           read(1,*) Al2O3_rosselandMean_gg
           read(2,*) Al2O3_rosselandMean_qext
@@ -481,6 +674,9 @@
           read(4,*) Al2O3_wav_gg
           read(5,*) Al2O3_wav_qext
           read(6,*) Al2O3_wav_pi0
+          read(1,*) Al2O3_rosselandMean_gg
+          read(2,*) Al2O3_rosselandMean_qext
+          read(3,*) Al2O3_rosselandMean_pi0
           
           close(1)
           close(2)
@@ -488,6 +684,9 @@
           close(4)
           close(5)
           close(6)
+          close(7)
+          close(8)
+          close(9)
 
           haze_pressure_array_pascals = (/1.259e-01, 1.825e-01, 2.645e-01, 3.834e-01, 5.558e-01, 8.056e-01, 1.168e+00,
      &                                    1.693e+00, 2.454e+00, 3.556e+00, 5.155e+00, 7.473e+00, 1.083e+01, 1.570e+01,

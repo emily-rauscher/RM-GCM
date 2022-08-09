@@ -314,7 +314,7 @@ c     ntstep is the number of timesteps to skip.
       IOFM=0
 
       DO 800 ihem=1,nhem
-        IF (mod(kount,ntstep) .eq. 1) THEN
+        IF (mod(kount,ntstep) .eq. 0) THEN
           ilast=0
 
           ! schedule(guided), default(none),

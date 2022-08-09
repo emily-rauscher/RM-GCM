@@ -127,11 +127,11 @@
       Y3(:,:,:) = 0.0
 
       ! These three correspond to the wavelengths in the wavelength dependent scattering parameters
-      ! 1 is 0.51 microns
-      ! 2 is 0.64 microns
-      ! 3 is 0.80 microns
-      ! 4 is 4.89 microns
-      WAVELENGTH_INDEXES = (/8, 11, 14, 38, 38/)
+      ! 1 is 0.50 microns
+      ! 2 is 0.65 microns
+      ! 3 is 0.77 microns
+      ! 4 is 5.12 microns
+      WAVELENGTH_INDEXES = (/7, 10, 12, 33, 33/)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         GET THE HAZE DATA FIRST       !!!!!!!!!!
@@ -174,9 +174,6 @@
       ELSE
            TAU_HAZE = 0.0
       END IF
-
-      ! Slowly introduce the hazes over 1 day
-      !TAU_HAZE = min(1.0, FLOAT(kount) / (FLOAT(KOUNTP))) * TAU_HAZE
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!
