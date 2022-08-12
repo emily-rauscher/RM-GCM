@@ -13,7 +13,7 @@
 
           ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
           real, dimension(50, 50) :: HAZE_Rosseland_tau_per_bar, HAZE_Rosseland_pi0, HAZE_Rosseland_gg
-          real, dimension(50, 50) :: HAZE_Planck_tau_per_bar, HAZE_Planck_pi0, HAZE_Planck_gg
+          real, dimension(50, 50) :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
           real, dimension(50)     :: HAZE_500nm_tau_per_bar, HAZE_500nm_pi0, HAZE_500nm_gg
           real, dimension(50)     :: HAZE_650nm_tau_per_bar, HAZE_650nm_pi0, HAZE_650nm_gg
           real, dimension(50)     :: HAZE_800nm_tau_per_bar, HAZE_800nm_pi0, HAZE_800nm_gg

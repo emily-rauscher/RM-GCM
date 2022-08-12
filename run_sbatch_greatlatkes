@@ -13,7 +13,7 @@
 #SBATCH --mem=5g
 #SBATCH --time=14-00:00:00
 
-#SBATCH --account=erausche0
+#SBATCH --account=erausche1
 
 #### #### ####  These are the least frequently changing options
 ####  Your e-mail address and when you want e-mail

@@ -228,7 +228,10 @@ STTEMP2=3357
  AEROSOLMODEL = 'Global',
  AEROSOLCOMP  = 'double-gray'
  MTLX         = .1,
- MOLEF       = 0,0,0,0,0,0,0,0,0,0,0,0,0,
+ METALLICITY     = 0.0,
+ HAZES           = F,
+ !MOLEF       = 1.23e-7,0.0,0.0,0.0,4.4e-7,3.26e-5,1.745e-5,9.56e-9,0.0,0.0,1.99e-6,7.83e-8,1.385e-6,
+ MOLEF        = 0,0,0,0,0,0,0,0,0,0,0,0,0,
  AERLAYERS    = 65.
  AERTOTTAU    = 100.,
  CLOUDBASE    = 0.078,
@@ -245,6 +248,6 @@ STTEMP2=3357
 /
  &INQ
  LRH     = T,
- RH      = 50*1e-5    ,
+ RH      = 65*1e-5    ,
  LNSURF  = F
  /
