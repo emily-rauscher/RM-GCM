@@ -21,7 +21,8 @@
 #SBATCH --mail-user=isaacmalsky@gmail.com
 #SBATCH --mail-type=BEGIN,END,FAIL
 
-module load intel/19.1
+module load intel/2022.1.2
+
 export OMP_NUM_THREADS=1
 
 ./compile_nopg
