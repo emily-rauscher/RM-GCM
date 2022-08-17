@@ -241,12 +241,12 @@
      &                              haze_pressure_array_pascals
 
           ! opening the file for reading
-          open (1, file='../CLOUD_DATA/HAZE_Rosseland_tau_per_bar.txt')
+          open (1, file='../CLOUD_DATA/haze_rosselandMean_tau_per_bar.txt')
           open (2, file='../CLOUD_DATA/HAZE_500nm_tau_per_bar.txt')
           open (3, file='../CLOUD_DATA/HAZE_650nm_tau_per_bar.txt')
           open (4, file='../CLOUD_DATA/HAZE_800nm_tau_per_bar.txt')
           open (5, file='../CLOUD_DATA/HAZE_5000nm_tau_per_bar.txt')
-          open (6, file='../CLOUD_DATA/HAZE_PlanckMean_tau_per_bar.txt')
+          open (6, file='../CLOUD_DATA/haze_PlanckMean_tau_per_bar.txt')
 
           read(1,*) HAZE_Rosseland_tau_per_bar
           read(2,*) HAZE_500nm_tau_per_bar
@@ -262,12 +262,12 @@
           close(5)
           close(6)
 
-          open (1, file='../CLOUD_DATA/HAZE_Rosseland_pi0.txt')
+          open (1, file='../CLOUD_DATA/haze_rosselandMean_pi0.txt')
           open (2, file='../CLOUD_DATA/HAZE_500nm_pi0.txt')
           open (3, file='../CLOUD_DATA/HAZE_650nm_pi0.txt')
           open (4, file='../CLOUD_DATA/HAZE_800nm_pi0.txt')
           open (5, file='../CLOUD_DATA/HAZE_5000nm_pi0.txt')
-          open (6, file='../CLOUD_DATA/HAZE_PlanckMean_pi0.txt')
+          open (6, file='../CLOUD_DATA/haze_PlanckMean_pi0.txt')
 
           read(1,*) HAZE_Rosseland_pi0
           read(2,*) HAZE_500nm_pi0
@@ -283,12 +283,12 @@
           close(5)
           close(6)
 
-          open (1, file='../CLOUD_DATA/HAZE_Rosseland_gg.txt')
+          open (1, file='../CLOUD_DATA/haze_rosselandMean_gg.txt')
           open (2, file='../CLOUD_DATA/HAZE_500nm_gg.txt')
           open (3, file='../CLOUD_DATA/HAZE_650nm_gg.txt')
           open (4, file='../CLOUD_DATA/HAZE_800nm_gg.txt')
           open (5, file='../CLOUD_DATA/HAZE_5000nm_gg.txt')
-          open (6, file='../CLOUD_DATA/HAZE_PlanckMean_gg.txt')
+          open (6, file='../CLOUD_DATA/haze_PlanckMean_gg.txt')
 
           read(1,*) HAZE_Rosseland_gg
           read(2,*) HAZE_500nm_gg
@@ -804,19 +804,26 @@
           ! 0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
-!      CORFACT = (/0.005,0.018,0.050,0.135,.367,1.000,1.000,1.000,
-!     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-!     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-!     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-!     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-!     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-!     &              1.000,1.000,1.000/)
+      CORFACT =   (/0.005,0.018,0.050,0.135,.367,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000/)
 
-      CORFACT = (/0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.40, 0.55, 0.70, 0.85,
-     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
-     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000/)
+!      CORFACT = (/0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.40, 0.55, 0.70, 0.85,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000/)
+
+
+!      CORFACT = (/1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+!     &            1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000/)
 
 !    KCl
       TconKCl = (/617.032,621.573,626.038,630.552,635.053, 639.555,

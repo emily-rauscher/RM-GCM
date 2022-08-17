@@ -183,12 +183,13 @@
 
           DO I = 1,NCLOUDS
               ! GET THE SCATTERING PROPERTIES
-              IF (DPICKET_FENCE_CLOUDS .eq. .False.) THEN
+              IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = WAVELENGTH_INDEXES(2)
                       PI0_TEMP(L,J,I) = PI0_OPPR(L,WAV_LOC,size_loc,I)
                       G0_TEMP(L,J,I)  = G0_OPPR(L,WAV_LOC,size_loc,I)
                   END DO
+
 
                   DO L = NSOLP+1,NTOTAL
                       WAV_LOC = WAVELENGTH_INDEXES(4)
@@ -209,13 +210,6 @@
               END IF
 
               CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J))/10.,0.0),1.0)
-
-              ! STOP some weird behaviour, I don't know if this should be taken out. Probably
-              !IF (J .gt. 5) THEN
-              !    IF ((CONDFACT(J-1,I) .eq. 0) .AND. (CONDFACT(J-2,I) .eq. 0) .AND. (CONDFACT(J-3,I) .eq. 0)) THEN
-              !        CONDFACT(J,I) = 0.0
-              !    END IF
-              !END IF
 
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
               BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
@@ -331,7 +325,6 @@
     !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
           k = 1
           DO J = 1,NDBL,2
-
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(K))),1)  ! Both of these are in pascals
               temp_loc         = MINLOC(ABS(input_temperature_array - (TT(K))),1) ! Not needed for the stellar calc
 
@@ -367,7 +360,7 @@
 
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
-          DO J = 2, NDBL, 2
+          DO J = 2, NDBL-1, 2
               TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
               WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
               GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0

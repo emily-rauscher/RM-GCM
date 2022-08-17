@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers, ttsub)
+     &  qrad,alb_tomi,alb_toai, num_layers)
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *
@@ -58,37 +58,47 @@
 !     * CALCULATE PTEMP AND SLOPE          *
 !     **************************************
 
+      !K  =  1
+      !DO J  = 1, (2*NL+2)-1,2
+      !    L  =  J
+      !    TTsub(L) = tt(K)
+      !    L  =  L+1
+      !    TTsub(L) = t(K)
+      !    K  =  K+1
+      !END DO
+
 
       SBK=5.6704E-8
       SBKoverPI=SBK/PI
 
-      DO 300 J = 1,NDBL
-          kindex = max(1,j-1)
+      DO 300 J            =   1,NDBL
 
-          !if (MOD(J, 2) .eq. 0) THEN
-          !    index_num = J / 2
-          !    IT1 = T(index_num)*T(index_num)*T(index_num)*T(index_num)*SBKoverPI
-          !ELSE
-          !    index_num = (J / 2) + 1
-          !    IT1 = TT(index_num)*TT(index_num)*TT(index_num)*TT(index_num)*SBKoverPI
-          !END IF
+          !IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
 
-          IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
+          if (MOD(J, 2) .eq. 0) THEN
+              index_num = J / 2
+              IT1 = T(index_num)*T(index_num)*T(index_num)*T(index_num)*SBKoverPI
+          ELSE
+              index_num = (J / 2) + 1
+              IT1 = TT(index_num)*TT(index_num)*TT(index_num)*TT(index_num)*SBKoverPI
+          END IF
 
           DO 200 L        = NSOLP+1,NTOTAL
+
+
+
+              kindex          = max(1,j-1)
               PTEMP(L,J)=IT1
               SLOPE(L,J)   = (PTEMP(L,J)-PTEMP(L,KINDEX)) / TAUL(L,J)
+
+
+
               if( TAUL(L,J) .le. 1.0E-6 ) THEN
                   SLOPE(L,J) = 0.
               END IF
+
  200      CONTINUE
  300  CONTINUE
-
-      DO L = NSOLP+1,NTOTAL
-          IF (SLOPE(L,NDBL) .lt. 0) THEN
-              SLOPE(L,NDBL) = 0.0
-          END IF
-      END DO
 
       RETURN
       END
