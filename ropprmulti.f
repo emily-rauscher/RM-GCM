@@ -49,7 +49,7 @@
       REAL qrad(NL+1),alb_tomi,alb_toais
 
       REAL DENOM
-      REAL DPG(NLAYER), p_pass(NLAYER), layer_pressure_pa(NLAYER)
+      REAL DPG(NLAYER), p_pass(NLAYER), layer_pressure_bar(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
 
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
@@ -116,10 +116,12 @@
 
 
       DO J  = 2,NLAYER
-          layer_pressure_pa(J)  = (p_pass(J)-p_pass(J-1))
+          layer_pressure_bar(J)  = (p_pass(J)-p_pass(J-1)) * 1e-5
       END DO
 
-      layer_pressure_pa(1)=10.0**(LOG10(layer_pressure_pa(2))-(LOG10(layer_pressure_pa(3))-LOG10(layer_pressure_pa(2))))
+      layer_pressure_bar(1)=(10.0**(LOG10(layer_pressure_bar(2))-(LOG10(layer_pressure_bar(3))-
+     &                       LOG10(layer_pressure_bar(2)))))
+
 
       Y3(:,:,:) = 0.0
 
@@ -140,17 +142,17 @@
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
 
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
-
               IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
-                  TAU_HAZE(1,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
-                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
-                  TAU_HAZE(3,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(1,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
+                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
+                  TAU_HAZE(3,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
               ELSE
-                  TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
-                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
-                  TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(1,J) = HAZE_500nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
+                  TAU_HAZE(2,J) = HAZE_650nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
+                  TAU_HAZE(3,J) = HAZE_800nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
               END IF
           END DO
+
 
           ! Do the thermal at 2x resolution
           DO J = 1, NLAYER
@@ -160,16 +162,18 @@
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
               IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
                   DO L = NSOLP+1,NTOTAL
-                      TAU_HAZE(L,J) = HAZE_5000nm_tau_per_bar(haze_layer_index) * layer_pressure_pa(J)
+                      TAU_HAZE(L,J) = HAZE_5000nm_tau_per_bar(haze_layer_index) * layer_pressure_bar(J)
                   END DO
               ELSE
-                  TAU_HAZE(NSOLP+1,J) = HAZE_PlanckMean_tau_per_bar(temp_loc, haze_layer_index) * layer_pressure_pa(J)
-                  TAU_HAZE(NSOLP+2,J) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * layer_pressure_pa(J)
+                  TAU_HAZE(NSOLP+1,J) = HAZE_PlanckMean_tau_per_bar(temp_loc, haze_layer_index) * layer_pressure_bar(J)
+                  TAU_HAZE(NSOLP+2,J) = HAZE_Rosseland_tau_per_bar(temp_loc, haze_layer_index) * layer_pressure_bar(J)
+
               END IF
           END DO
       ELSE
            TAU_HAZE = 0.0
       END IF
+
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!
@@ -501,6 +505,9 @@
               END DO
           END DO
       END DO
+
+
+
 
       RETURN
       END

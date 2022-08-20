@@ -73,7 +73,7 @@
 ! **********************************************************************
       integer :: testing, L, J, K, solar_calculation_indexer
       REAL G,WVO, incident_starlight_fraction
-      real, dimension(NIR+NSOL) :: MULTI_BAND_ABSCOEFF
+      real, dimension(NIR+NSOL) :: MULTI_BAND_ABSCOEFF, ray_scat_constant_per_bar
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL) :: Beta_V
       dimension rup_1(NGROUP)
@@ -135,6 +135,8 @@
       AM= RGAS/R_AIR
       G = GA*100.
       AM= RGAS/R_AIR
+
+      ray_scat_constant_per_bar = 0
 
       DO L = 1,NSOLP
           MULTI_BAND_ABSCOEFF(L)=ABSSW
@@ -272,6 +274,10 @@
       GOL(:,:)    = 0.0
 
       IF (picket_fence_optical_depths) THEN
+        ray_scat_constant_per_bar(1) = 0.35241 ! 500 nm
+        ray_scat_constant_per_bar(2) = 0.12017 ! 650 nm
+        ray_scat_constant_per_bar(3) = 0.00517 ! 800 nm
+
         CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
      &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
      &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
@@ -321,6 +327,10 @@
         END DO
       ELSE
           if (NSOLP .gt. 1) then
+              ray_scat_constant_per_bar(1) = 0.12017 ! 650 nm
+              ray_scat_constant_per_bar(2) = 0.12017 ! 650 nm
+              ray_scat_constant_per_bar(3) = 0.12017 ! 650 nm
+
               Beta_V(1) = 1.0
               Beta_V(2) = 0.0
               Beta_V(3) = 0.0
@@ -328,6 +338,8 @@
               Beta_IR(1) = 1.0
               Beta_IR(2) = 0.0
           else
+              ray_scat_constant_per_bar(1) = 0.12017 ! 650 nm
+
               Beta_V(1)  = 1.0
               Beta_IR(1) = 1.0
           end if
@@ -375,7 +387,8 @@
         DO 330 J          =   1,NLAYER
           DO 335 L         =   1,NTOTAL
             if( L .LE. NSOLP )then
-              TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
+              !TAURAY(L,J) = RAYPERBAR(L)*PBAR(J) !PER BAR X LAYER THICKNESS IN BAR
+              TAURAY(L,J) = ray_scat_constant_per_bar(L) * PBAR(J)
             else
               TAURAY(L,J)= 0.0
             endif
@@ -409,6 +422,7 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
+
 
       RETURN
       END
