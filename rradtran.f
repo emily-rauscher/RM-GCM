@@ -196,7 +196,7 @@
 
 
 !     CALCULATE THE OPTICAL PROPERTIES
-      IF (AEROSOLCOMP.EQ. 'picket-fence') THEN
+      IF (AEROSOLCOMP.EQ. 'standard') THEN
           CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
      &                   LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &                   EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -215,33 +215,8 @@
      &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &                   qrad,alb_tomi,alb_toai, p_pass,
      &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount)
-
-      ELSE IF (AEROSOLCOMP.EQ. 'double-gray') THEN
-          IF (NL .eq. 50) THEN ! This one only works with 50 layers
-              CALL DOUBLEGRAY_OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
-     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
-     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
-     &             SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
-     &             GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
-     &             WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
-     &             uG0,uTAUL,W0,uW0,uopd,U1S,
-     &             U1I,TOON_AK,B1,B2,EE1,EM1,
-     &             EM2,EL1,EL2,GAMI,AF,
-     &             BF,EF,SFCS,B3,CK1,CK2,
-     &             CP,CPB,CM,CMB,DIRECT,EE3,
-     &             EL3,FNET,TMI,AS,DF,
-     &             DS,XK,DIREC,DIRECTU,DINTENT,
-     &             UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
-     &             tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
-     &             fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &             qrad,alb_tomi,alb_toai)
-          ELSE
-              write(*,*) 'Youre doing the old cloud version with NL not equal to 50'
-              stop
-          END IF
-
       ELSE
-          write(*,*) 'ERROR! Dont run without aerosols'
+          write(*,*) 'ERROR! Something is off about your version. Check with Isaac'
           STOP
       ENDIF
 

@@ -1,5 +1,5 @@
 !C     T2 L50  full sphere
-      PARAMETER(NN=2,MM=2,NHEM=2, NL=75,MOCT=1,MG=8,JG=2,NWJ2=2
+      PARAMETER(NN=2,MM=2,NHEM=2, NL=60,MOCT=1,MG=8,JG=2,NWJ2=2
      +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1)
 
 !C     T31 L50  full sphere

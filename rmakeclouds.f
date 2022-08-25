@@ -442,7 +442,7 @@
 
       write(*,*) 'In rmakeclouds, aerosolcomp =',aerosolcomp
 
-      IF ((AEROSOLCOMP.EQ. 'picket-fence') .or. (AEROSOLCOMP.EQ. 'double-gray')) THEN
+      IF ((AEROSOLCOMP.EQ. 'standard')) THEN
           DO J = 1, NL+1
               TCON(J) = 0.
           END DO

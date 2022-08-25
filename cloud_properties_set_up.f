@@ -9,15 +9,15 @@
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
           real :: GAS_CONSTANT_R, GASCON
 
+          character (len = 40) :: haze_type
+
+
           ! Define all the arrays
 
           ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
-          real, dimension(50, 50) :: HAZE_Rosseland_tau_per_bar, HAZE_Rosseland_pi0, HAZE_Rosseland_gg
+          real, dimension(50, 50) :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
           real, dimension(50, 50) :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
-          real, dimension(50)     :: HAZE_500nm_tau_per_bar, HAZE_500nm_pi0, HAZE_500nm_gg
-          real, dimension(50)     :: HAZE_650nm_tau_per_bar, HAZE_650nm_pi0, HAZE_650nm_gg
-          real, dimension(50)     :: HAZE_800nm_tau_per_bar, HAZE_800nm_pi0, HAZE_800nm_gg
-          real, dimension(50)     :: HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg
+          real, dimension(50, 50) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
           real, dimension(50)     :: haze_pressure_array_pascals
 
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
@@ -232,77 +232,129 @@
      &                              input_temperature_array,
      &                              particle_size_vs_layer_array_in_meters,
      &                              input_pressure_array_cgs,
-     &                              HAZE_Rosseland_tau_per_bar,HAZE_Rosseland_pi0, HAZE_Rosseland_gg,
+     &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
      &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
-     &                              HAZE_500nm_tau_per_bar, HAZE_500nm_pi0, HAZE_500nm_gg,
-     &                              HAZE_650nm_tau_per_bar, HAZE_650nm_pi0, HAZE_650nm_gg,
-     &                              HAZE_800nm_tau_per_bar, HAZE_800nm_pi0, HAZE_800nm_gg,
-     &                              HAZE_5000nm_tau_per_bar, HAZE_5000nm_pi0, HAZE_5000nm_gg,
+     &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          ! opening the file for reading
-          open (1, file='../CLOUD_DATA/haze_rosselandMean_tau_per_bar.txt')
-          open (2, file='../CLOUD_DATA/HAZE_500nm_tau_per_bar.txt')
-          open (3, file='../CLOUD_DATA/HAZE_650nm_tau_per_bar.txt')
-          open (4, file='../CLOUD_DATA/HAZE_800nm_tau_per_bar.txt')
-          open (5, file='../CLOUD_DATA/HAZE_5000nm_tau_per_bar.txt')
-          open (6, file='../CLOUD_DATA/haze_PlanckMean_tau_per_bar.txt')
+          haze_type = 'soot'
+          if (haze_type .eq. 'soot') THEN
+              !write(*,*) "Model being run with soot hazes"
+              open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
+              open (2, file='../CLOUD_DATA/haze_soot_wav_tauperbar.txt')
+              open (3, file='../CLOUD_DATA/haze_soot_Planck_tauperbar.txt')
 
-          read(1,*) HAZE_Rosseland_tau_per_bar
-          read(2,*) HAZE_500nm_tau_per_bar
-          read(3,*) HAZE_650nm_tau_per_bar
-          read(4,*) HAZE_800nm_tau_per_bar
-          read(5,*) HAZE_5000nm_tau_per_bar
-          read(6,*) HAZE_PlanckMean_tau_per_bar
+              read(1,*) HAZE_RosselandMean_tau_per_bar
+              read(2,*) HAZE_wav_tau_per_bar
+              read(3,*) HAZE_PlanckMean_tau_per_bar
 
-          close(1)
-          close(2)
-          close(3)
-          close(4)
-          close(5)
-          close(6)
+              close(1)
+              close(2)
+              close(3)
 
-          open (1, file='../CLOUD_DATA/haze_rosselandMean_pi0.txt')
-          open (2, file='../CLOUD_DATA/HAZE_500nm_pi0.txt')
-          open (3, file='../CLOUD_DATA/HAZE_650nm_pi0.txt')
-          open (4, file='../CLOUD_DATA/HAZE_800nm_pi0.txt')
-          open (5, file='../CLOUD_DATA/HAZE_5000nm_pi0.txt')
-          open (6, file='../CLOUD_DATA/haze_PlanckMean_pi0.txt')
+              open (1, file='../CLOUD_DATA/haze_soot_Ross_pi0.txt')
+              open (2, file='../CLOUD_DATA/haze_soot_wav_pi0.txt')
+              open (3, file='../CLOUD_DATA/haze_soot_Planck_pi0.txt')
 
-          read(1,*) HAZE_Rosseland_pi0
-          read(2,*) HAZE_500nm_pi0
-          read(3,*) HAZE_650nm_pi0
-          read(4,*) HAZE_800nm_pi0
-          read(5,*) HAZE_5000nm_pi0
-          read(6,*) HAZE_PlanckMean_pi0
+              read(1,*) HAZE_RosselandMean_pi0
+              read(2,*) HAZE_wav_pi0
+              read(3,*) HAZE_PlanckMean_pi0
 
-          close(1)
-          close(2)
-          close(3)
-          close(4)
-          close(5)
-          close(6)
+              close(1)
+              close(2)
+              close(3)
 
-          open (1, file='../CLOUD_DATA/haze_rosselandMean_gg.txt')
-          open (2, file='../CLOUD_DATA/HAZE_500nm_gg.txt')
-          open (3, file='../CLOUD_DATA/HAZE_650nm_gg.txt')
-          open (4, file='../CLOUD_DATA/HAZE_800nm_gg.txt')
-          open (5, file='../CLOUD_DATA/HAZE_5000nm_gg.txt')
-          open (6, file='../CLOUD_DATA/haze_PlanckMean_gg.txt')
+              open (1, file='../CLOUD_DATA/haze_soot_Ross_gg.txt')
+              open (2, file='../CLOUD_DATA/haze_soot_wav_gg.txt')
+              open (3, file='../CLOUD_DATA/haze_soot_Planck_gg.txt')
 
-          read(1,*) HAZE_Rosseland_gg
-          read(2,*) HAZE_500nm_gg
-          read(3,*) HAZE_650nm_gg
-          read(4,*) HAZE_800nm_gg
-          read(5,*) HAZE_5000nm_gg
-          read(6,*) HAZE_PlanckMean_gg
+              read(1,*) HAZE_RosselandMean_gg
+              read(2,*) HAZE_RosselandMean_gg
+              read(3,*) HAZE_PlanckMean_gg
 
-          close(1)
-          close(2)
-          close(3)
-          close(4)
-          close(5)
-          close(6)
+              close(1)
+              close(2)
+              close(3)
+          else if (haze_type .eq. 'sulfur') THEN
+              !write(*,*) "Model being run with sulfur hazes"
+              open (1, file='../CLOUD_DATA/haze_sulfur_Ross_tauperbar.txt')
+              open (2, file='../CLOUD_DATA/haze_sulfur_wav_tauperbar.txt')
+              open (3, file='../CLOUD_DATA/haze_sulfur_Planck_tauperbar.txt')
+
+              read(1,*) HAZE_RosselandMean_tau_per_bar
+              read(2,*) HAZE_wav_tau_per_bar
+              read(3,*) HAZE_PlanckMean_tau_per_bar
+
+              close(1)
+              close(2)
+              close(3)
+
+              open (1, file='../CLOUD_DATA/haze_sulfur_Ross_pi0.txt')
+              open (2, file='../CLOUD_DATA/haze_sulfur_wav_pi0.txt')
+              open (3, file='../CLOUD_DATA/haze_sulfur_Planck_pi0.txt')
+
+              read(1,*) HAZE_RosselandMean_pi0
+              read(2,*) HAZE_wav_pi0
+              read(3,*) HAZE_PlanckMean_pi0
+
+              close(1)
+              close(2)
+              close(3)
+
+              open (1, file='../CLOUD_DATA/haze_sulfur_Ross_gg.txt')
+              open (2, file='../CLOUD_DATA/haze_sulfur_wav_gg.txt')
+              open (3, file='../CLOUD_DATA/haze_sulfur_Planck_gg.txt')
+
+              read(1,*) HAZE_RosselandMean_gg
+              read(2,*) HAZE_wav_gg
+              read(3,*) HAZE_PlanckMean_gg
+
+              close(1)
+              close(2)
+              close(3)
+          else if (haze_type .eq. 'tholin') THEN
+              !write(*,*) "Model being run with sulfur hazes"
+              open (1, file='../CLOUD_DATA/haze_tholin_Ross_tauperbar.txt')
+              open (2, file='../CLOUD_DATA/haze_tholin_wav_tauperbar.txt')
+              open (3, file='../CLOUD_DATA/haze_tholin_Planck_tauperbar.txt')
+
+              read(1,*) HAZE_RosselandMean_tau_per_bar
+              read(2,*) HAZE_wav_tau_per_bar
+              read(3,*) HAZE_PlanckMean_tau_per_bar
+
+              close(1)
+              close(2)
+              close(3)
+
+              open (1, file='../CLOUD_DATA/haze_tholin_Ross_pi0.txt')
+              open (2, file='../CLOUD_DATA/haze_tholin_wav_pi0.txt')
+              open (3, file='../CLOUD_DATA/haze_tholin_Planck_pi0.txt')
+
+              read(1,*) HAZE_RosselandMean_pi0
+              read(2,*) HAZE_wav_pi0
+              read(3,*) HAZE_PlanckMean_pi0
+
+              close(1)
+              close(2)
+              close(3)
+
+              open (1, file='../CLOUD_DATA/haze_tholin_Ross_gg.txt')
+              open (2, file='../CLOUD_DATA/haze_tholin_wav_gg.txt')
+              open (3, file='../CLOUD_DATA/haze_tholin_Planck_gg.txt')
+
+              read(1,*) HAZE_RosselandMean_gg
+              read(2,*) HAZE_wav_gg
+              read(3,*) HAZE_PlanckMean_gg
+
+              close(1)
+              close(2)
+              close(3)
+          else
+              write(*,*) "The haze type is being impropertly specified"
+          end if
+
+
+
 
           ! READ IN ALL THE CLOUD FILES
           ! THIS IS A LOT OF FILES
@@ -698,13 +750,13 @@
           close(8)
           close(9)
 
-          haze_pressure_array_pascals = (/1.259e-01, 1.825e-01, 2.645e-01, 3.834e-01, 5.558e-01, 8.056e-01, 1.168e+00,
-     &                                    1.693e+00, 2.454e+00, 3.556e+00, 5.155e+00, 7.473e+00, 1.083e+01, 1.570e+01,
-     &                                    2.276e+01, 3.299e+01, 4.782e+01, 6.931e+01, 1.005e+02, 1.456e+02, 2.111e+02,
-     &                                    3.060e+02, 4.435e+02, 6.429e+02, 9.319e+02, 1.351e+03, 1.958e+03, 2.838e+03,
-     &                                    4.114e+03, 5.964e+03, 8.644e+03, 1.253e+04, 1.816e+04, 2.633e+04, 3.816e+04,
-     &                                    5.532e+04, 8.018e+04, 1.162e+05, 1.685e+05, 2.442e+05, 3.540e+05, 5.131e+05,
-     &                                    7.438e+05, 1.078e+06, 1.563e+06, 2.265e+06, 3.283e+06, 4.759e+06, 6.899e+06,
+          haze_pressure_array_pascals = (/1.000e-01, 1.456e-01, 2.121e-01, 3.089e-01, 4.498e-01, 6.551e-01, 9.541e-01,
+     &                                    1.389e+00, 2.024e+00, 2.947e+00, 4.292e+00, 6.251e+00, 9.103e+00, 1.326e+01,
+     &                                    1.931e+01, 2.812e+01, 4.095e+01, 5.964e+01, 8.685e+01, 1.265e+02, 1.842e+02,
+     &                                    2.683e+02, 3.907e+02, 5.690e+02, 8.286e+02, 1.207e+03, 1.758e+03, 2.560e+03,
+     &                                    3.728e+03, 5.429e+03, 7.906e+03, 1.151e+04, 1.677e+04, 2.442e+04, 3.556e+04,
+     &                                    5.179e+04, 7.543e+04, 1.099e+05, 1.600e+05, 2.330e+05, 3.393e+05, 4.942e+05,
+     &                                    7.197e+05, 1.048e+06, 1.526e+06, 2.223e+06, 3.237e+06, 4.715e+06, 6.866e+06,
      &                                    1.000e+07/)
 
           input_pressure_array_cgs = (/1.0, 1.46, 2.12, 3.09, 4.5, 6.55, 9.54, 13.89, 20.24,
