@@ -357,6 +357,7 @@
           DO L = solar_calculation_indexer,NSOLP
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
+
               if(TAUL(L,J) .lt. 1d-6 ) then
                   TAUL(L,J) = 1d-6
               endif
@@ -371,6 +372,7 @@
               WOT       = min(1.0 - 1d-6,WOT)
               uw0(L,j)  = WOT
               DENOM     = (TAURAY(L,J) + TAUAER(L,J) * WOL(L,J))
+
 
               if( DENOM .LE. 1d-6 ) then
                   DENOM = 1d-6
@@ -390,7 +392,8 @@
               uOPD(L,J)   = 0.0
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
-              IF (.TRUE.) THEN
+
+              IF (.False.) THEN
                   TAUL(L,J)   = TAUL(L,J) * (1.-WOT*(GOT*GOT))
                   W0(L,J)     = (1.-(GOT*GOT))*WOT/(1.-WOT*(GOT*GOT))
                   G0(L,J)     = GOT/(1.+GOT)
@@ -402,6 +405,8 @@
                   TAUL(L,J)= utaul(L,J)
                   OPD(L,J)= uOPD(L,J)
               ENDIF
+
+
 
 !             HERE'S WHERE YOU CAN HARDWIRE VALUES
               if( taul(L,j) .lt. 0.) then
@@ -419,13 +424,13 @@
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
 
-              if (iradgas.eq.0) then
-                  tauL(L,j) = tauaer(L,j)
-              endif
+              !if (iradgas.eq.0) then
+              !    tauL(L,j) = tauaer(L,j)
+              !endif
 
-              if( TAUL(L,J) .lt. 1d-6 ) then
-                  TAUL(L,J) = 1d-6
-              endif
+              !if( TAUL(L,J) .lt. 1d-6 ) then
+              !    TAUL(L,J) = 1d-6
+              !endif
 
               utauL(L,j)  = TAUL(L,J)
               WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
@@ -455,7 +460,7 @@
               uOPD(L,J)   = 0.0
               uOPD(L,J)   = uOPD(L,J1)+uTAUL(L,J)
 
-              IF (.TRUE.) THEN
+              IF (.false.) THEN
                   TAUL(L,J)   = TAUL(L,J) * (1.-WOT*(GOT*GOT))
                   W0(L,J)     = (1.-(GOT*GOT))*WOT/(1.-WOT*(GOT*GOT))
                   G0(L,J)     = GOT/(1.+GOT)
@@ -482,10 +487,6 @@
               END DO
           END DO
       END DO
-
-      write(*,*) HAZES
-      write(*,*) 'stopping here'
-      stop
 
 
       RETURN

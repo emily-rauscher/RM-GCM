@@ -284,6 +284,10 @@ C     globally averaged solar constant, vertical rays
       htsw    = heats_aerad_tot
       fluxes  = rfluxes_aerad
 
+      !write(*,*) fluxes
+      !write(*,*) 'stopping here'
+      !stop
+
       return
       end
 

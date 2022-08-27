@@ -237,7 +237,7 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          haze_type = 'soot'
+          haze_type = 'sulfur'
           if (haze_type .eq. 'soot') THEN
               !write(*,*) "Model being run with soot hazes"
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
@@ -341,6 +341,43 @@
               open (1, file='../CLOUD_DATA/haze_tholin_Ross_gg.txt')
               open (2, file='../CLOUD_DATA/haze_tholin_wav_gg.txt')
               open (3, file='../CLOUD_DATA/haze_tholin_Planck_gg.txt')
+
+              read(1,*) HAZE_RosselandMean_gg
+              read(2,*) HAZE_wav_gg
+              read(3,*) HAZE_PlanckMean_gg
+
+              close(1)
+              close(2)
+              close(3)
+          else if (haze_type .eq. 'soot-2xpi0') THEN
+              !write(*,*) "Model being run with sulfur hazes"
+              open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_tauperbar.txt')
+              open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_tauperbar.txt')
+              open (3, file='../CLOUD_DATA/haze_soot-2xpi0_Planck_tauperbar.txt')
+
+              read(1,*) HAZE_RosselandMean_tau_per_bar
+              read(2,*) HAZE_wav_tau_per_bar
+              read(3,*) HAZE_PlanckMean_tau_per_bar
+
+              close(1)
+              close(2)
+              close(3)
+
+              open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_pi0.txt')
+              open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_pi0.txt')
+              open (3, file='../CLOUD_DATA/haze_soot-2xpi0_Planck_pi0.txt')
+
+              read(1,*) HAZE_RosselandMean_pi0
+              read(2,*) HAZE_wav_pi0
+              read(3,*) HAZE_PlanckMean_pi0
+
+              close(1)
+              close(2)
+              close(3)
+
+              open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_gg.txt')
+              open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_gg.txt')
+              open (3, file='../CLOUD_DATA/haze_soot-2xpi0_Planck_gg.txt')
 
               read(1,*) HAZE_RosselandMean_gg
               read(2,*) HAZE_wav_gg

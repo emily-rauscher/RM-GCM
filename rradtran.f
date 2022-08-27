@@ -109,12 +109,15 @@
       endif
 
       DO J = 2, NVERT
-          TT(J) = T(J-1) * ((p_pass(J)*10.0)/(pr(J-1)*10.0)) ** (log(T(J)/T(J-1))/log((pr(J)*10.0)/(pr(J-1)*10.0)))
+          TT(J) = T(J-1) * (p_pass(J)/pr(J-1)) ** (log(T(J)/T(J-1))/log(pr(J)/pr(J-1)))
       END DO
 
-      TT(1)=((T(1)-TT(2))/log((pr(1)*10.0)/p_pass(2)))*log(p_pass(1))/(pr(1)*10.0)+T(1)
+
+      TT(1)=((T(1)-TT(2))/log(pr(1)/p_pass(2)))*log(p_pass(1)/pr(1))+T(1)
+
       TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/(pr(NVERT)*10.0)) **
      &             (log(T(NVERT)/T(NVERT-1))/log((pr(NVERT)*10.0)/(pr(NVERT-1)*10.0)))
+
 
 
       IF (bezier_interpolation .eq. .TRUE.) THEN
@@ -352,6 +355,7 @@
             K = K+2
           ENDDO
       END DO
+
 
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.

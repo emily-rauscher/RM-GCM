@@ -93,12 +93,15 @@
 
 
 
+
               if( TAUL(L,J) .le. 1.0E-6 ) THEN
                   SLOPE(L,J) = 0.
               END IF
 
  200      CONTINUE
  300  CONTINUE
+
+
 
       RETURN
       END
