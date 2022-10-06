@@ -79,7 +79,7 @@
       real, dimension(50, 50) :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
       real, dimension(50, 50) :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
       real, dimension(50, 50) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
-      real, dimension(50) :: haze_pressure_array_pascals
+      real, dimension(100) :: haze_pressure_array_pascals
 
       REAL TCONDS(51,NCLOUDS)
       REAL CORFACT(51)
@@ -123,7 +123,7 @@
       ! 2 is 0.65 microns
       ! 3 is 0.80 microns
       ! 4 is 5.00 microns
-      WAVELENGTH_INDEXES = (/7, 10, 12, 34, 34/)
+      WAVELENGTH_INDEXES = (/15, 17, 19, 36, 36/)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         GET THE HAZE DATA FIRST       !!!!!!!!!!
@@ -133,6 +133,8 @@
       IF (HAZES) THEN
           DO J = 1, NLAYER
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
+
+              write(*,*) haze_layer_index, haze_pressure_array_pascals(haze_layer_index), p_pass(J)
 
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
               IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
@@ -147,6 +149,9 @@
                   END DO
               END IF
           END DO
+
+          write(*,*) 'stopping here'
+          stop
 
 
           ! Do the thermal at 2x resolution
