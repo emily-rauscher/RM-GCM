@@ -15,10 +15,10 @@
           ! Define all the arrays
 
           ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
-          real, dimension(50, 50) :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
-          real, dimension(50, 50) :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
-          real, dimension(50, 50) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
-          real, dimension(100)    :: haze_pressure_array_pascals
+          real, dimension(50, 100)  :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
+          real, dimension(50, 100)  :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
+          real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
+          real, dimension(100)      :: haze_pressure_array_pascals
 
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
           ! That can change but use to code from Elsie and Isaac
@@ -237,7 +237,7 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          haze_type = 'sulfur'
+          haze_type = 'soot'
           if (haze_type .eq. 'soot') THEN
               !write(*,*) "Model being run with soot hazes"
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')

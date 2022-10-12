@@ -325,6 +325,10 @@
                 k = k + 1
             END DO
         END DO
+
+        !Beta_V(1) = 1.0
+        !Beta_V(2) = 0.0
+        !Beta_V(3) = 0.0
       ELSE
           if (NSOLP .gt. 1) then
               ray_scat_constant_per_bar(1) = 0.12017 ! 650 nm
