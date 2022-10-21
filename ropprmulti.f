@@ -247,7 +247,7 @@
 
 
       IF (PICKET_FENCE_CLOUDS .eq. .FALSE.) THEN
-    !     SW AT STANDARD VERTICAL RESOLUTION
+          !     SW AT STANDARD VERTICAL RESOLUTION
           DO J = 1,NLAYER
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1) ! Pascals
 
@@ -334,8 +334,7 @@
               k = k+1
           END DO
       END IF
-
-
+      
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
           DO J = 2, NDBL-1, 2
@@ -353,7 +352,6 @@
 !         First the solar at standard resolution
           DO L = solar_calculation_indexer,NSOLP
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
-
 
               if(TAUL(L,J) .lt. 1d-6 ) then
                   TAUL(L,J) = 1d-6
@@ -403,13 +401,12 @@
                   OPD(L,J)= uOPD(L,J)
               ENDIF
 
-
-
 !             HERE'S WHERE YOU CAN HARDWIRE VALUES
               if( taul(L,j) .lt. 0.) then
                   write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
                   stop
               endif
+              
 
           END DO
       END DO
