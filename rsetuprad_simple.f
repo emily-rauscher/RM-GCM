@@ -191,6 +191,18 @@
 
       EMISIR       = SURFEMIS
 
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!! SET UP THE LAYER TEMEPRATURES !!!!!!!!!!!!!!!!!!!!!!!!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      DO J = 2, NVERT
+          TT(J) = T(J-1) * (p_pass(J)/pr(J-1)) ** (log(T(J)/T(J-1))/log(pr(J)/pr(J-1)))
+      END DO
+
+      TT(1)=((T(1)-TT(2))/log(pr(1)/p_pass(2)))*log(p_pass(1)/pr(1))+T(1)
+
+      TT(NLAYER) = T(NVERT) * ((p_pass(NLAYER)*10)/(pr(NVERT)*10.0)) **
+     &             (log(T(NVERT)/T(NVERT-1))/log((pr(NVERT)*10.0)/(pr(NVERT-1)*10.0)))
+
       testing = 1
       if (testing .eq. 1) then
           p_pass(1) = 10.0 ** (LOG10(p_pass(2)) - (LOG10(p_pass(3)) - LOG10(p_pass(2))))
