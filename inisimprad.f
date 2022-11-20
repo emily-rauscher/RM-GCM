@@ -17,7 +17,7 @@ C
 C     Sets basic constants, especially those needed for array dimensions  
 C     
       REAL AVG,LO,MWTOT,RUNIV,TAU_KMAMGALL,KMAMGperBAR,WVO,TAU_KMAMGH2
-     +,mwh2,mwhe,mwh2o,rfhe,rfh2o,fh2,RAYPERBARCONS                                                                   
+     +,mwh2,mwhe,mwh2o,rfhe,rfh2o,fh2
       PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
      +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
      +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
@@ -120,16 +120,17 @@ C
 C                
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
-     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM, AEROSOLS,ABSSW, ABSLW,
-     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS, with_TiO_and_VO, picket_fence_optical_depths
+     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
+     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3), with_TiO_and_VO, picket_fence_optical_depths
 
-       REAL SURFEMIS,RAYSCATLAM,ABSSW,ABSLW,ALBSW
+       REAL SURFEMIS,ABSSW,ABSLW,ALBSW
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS, picket_fence_optical_depths
        
        NAMELIST/INSIMPRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,FLXLIMDIF,SURFEMIS,
      & RAYSCAT, RAYSCATLAM,AEROSOLS,ABSSW,ABSLW, ALBSW, NEWTB, NEWTE,with_TiO_and_VO, picket_fence_optical_depths
+
 
 c
 C Switch to enable proper sub-layer calculation in LW scheme given log(P) 
@@ -162,7 +163,7 @@ C The following are related to the flags in the radiative transfer suite
 !     RAYSCATWL  - wavelength at which to compute scattering optical
 !     depth in double gray regime
       RAYSCAT      =.FALSE.
-      RAYSCATLAM    = 0.      
+      RAYSCATLAM(1)    = 0.
       
 !     INCLUDE AEROSOLS 
       AEROSOLS  =.FALSE.
@@ -189,7 +190,7 @@ C The following are related to the flags in the radiative transfer suite
         FLXLIMDIF       = .TRUE.
         EMISIR          = 1.
         RAYSCAT         = .FALSE.
-        RAYSCATLAM      = 0.
+        RAYSCATLAM(1)      = 0.
         AEROSOLS        = .FALSE.
         ABSSW           = 8.14e-4
         ABSLW           = 1E-2
@@ -258,12 +259,10 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
 !         WRITE(2,246)
 !      ELSE IF(NLWMODEL.EQ.3) THEN
          WRITE(2,251) ABSLW
-         
-!      ELSE
-!      WRITE(2,248) NLWMODEL
-!      CALL ABORT
-!      ENDIF
-!      COMPUTER KM-AMG PER BAR OF PRESSURE
+
+
+
+
        AVG          = 6.0221409E23 !#
        LO           = 2.686763E25  !#/m^3
        RUNIV        = 8.3143  !J/mol/K 
@@ -272,34 +271,40 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
 !      Now compute the rayleigh scattering optical depth per km-amg for
 !      H2 gas using the expression from Dalgarno and Williams (ApJ ,
 !      1962).
-       WVO          = RAYSCATLAM*1E4 ! ANGSTROMS
-       TAU_KMAMGH2  = 2.687*(8.14E11/WVO/WVO/WVO/WVO 
-     &   +1.28E18/WVO/WVO/WVO/WVO/WVO/WVO 
+
+       ! I'm so sorry this is hardwired to be 3 channels
+       DO L=1,3
+           WVO          = RAYSCATLAM(L)*1E4 ! ANGSTROMS
+           TAU_KMAMGH2  = 2.687*(8.14E11/WVO/WVO/WVO/WVO
+     &   +1.28E18/WVO/WVO/WVO/WVO/WVO/WVO
      &   +1.61E24/WVO/WVO/WVO/WVO/WVO/WVO/WVO/WVO)
-!      However, this is just for H2 gas.  The molecular weight chosen by
-!      choice of gas constant implies a gas with heavier elements, so it
-!      is not technically self consistent.  To make it self consistent,
-!      a fraction of heavier elements can be computed from the molecular
-!      weight if we choose some values. 
-!      Assumption: Let's arbitrarily assume the remainder (not H2)
-!      is 90% HE and 10% H2O (though one could just as arbitrarily use
-!      CH4 to increase the rayleigh scattering given CH4's high index of
-!      refraction); then the resulting H2 fraction is:
-       mwh2=2.0
-       mwhe=4.0
-       mwh2o=18.0 
-       rfhe=0.8
-       rfh2o=0.2
-       fh2=(MWTOT-rfhe*mwhe-rfh2o*mwh2o)/(mwh2-rfhe*mwhe-rfh2o*mwh2o)
-!      Each molecular component contributes its mole fraction x a
-!      product that depends on its index of refraction and that of
-!      hydrogen:  indexfact= (n-1)**2 / (nh2 -1)**2
-!      for HE, indexfact = 0.0641; for H2O = 3.3690; for H2 = 1.0,
-!      CH4=10.1509,etc...
-       TAU_KMAMGALL =TAU_KMAMGH2* 
+    !      However, this is just for H2 gas.  The molecular weight chosen by
+    !      choice of gas constant implies a gas with heavier elements, so it
+    !      is not technically self consistent.  To make it self consistent,
+    !      a fraction of heavier elements can be computed from the molecular
+    !      weight if we choose some values.
+    !      Assumption: Let's arbitrarily assume the remainder (not H2)
+    !      is 90% HE and 10% H2O (though one could just as arbitrarily use
+    !      CH4 to increase the rayleigh scattering given CH4's high index of
+    !      refraction); then the resulting H2 fraction is:
+           mwh2=2.0
+           mwhe=4.0
+           mwh2o=18.0
+           rfhe=0.8
+           rfh2o=0.2
+           fh2=(MWTOT-rfhe*mwhe-rfh2o*mwh2o)/(mwh2-rfhe*mwhe-rfh2o*mwh2o)
+    !      Each molecular component contributes its mole fraction x a
+    !      product that depends on its index of refraction and that of
+    !      hydrogen:  indexfact= (n-1)**2 / (nh2 -1)**2
+    !      for HE, indexfact = 0.0641; for H2O = 3.3690; for H2 = 1.0,
+    !      CH4=10.1509,etc...
+           TAU_KMAMGALL =TAU_KMAMGH2*
      &   (fh2*1.0 + (1.-fh2)*rfhe*0.0641 + (1.-fh2)*rfh2o*3.3690)
-!      Finally, the rayleight scattering optical depth per bar is...
-       RAYPERBARCONS = TAU_KMAMGH2 * KMAMGperBAR
+    !      Finally, the rayleight scattering optical depth per bar is...
+           RAYPERBARCONS(L) = TAU_KMAMGH2 * KMAMGperBAR
+       END DO
+
+
 !      NOW WRITE SOME GENERAL RADIATIVE TRANSFER SCHEME DETAILS TO FILE 
        WRITE(60,*) 'RADIATIVE TRANSFER SUMMARY'
        WRITE(60,*) ''
@@ -324,10 +329,10 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
      &               (2./3.)/(ABSLW*1e6/GA/100.)
 
        WRITE(60,*) 'RAYLEIGH SCATTERING'
-       WRITE(60,*) 'RAYLEIGH OPTICAL DEPTH PER BAR: ',RAYPERBARCONS 
+       WRITE(60,*) 'RAYLEIGH OPTICAL DEPTH PER BAR: ',RAYPERBARCONS(1)
        WRITE(60,*) 'KM-AMAGATS OF GAS PER BAR: ',KMAMGperBAR
        WRITE(60,*) ' Pressure of SW Two-way gaseous (inc.ray) tau= 1: ',
-     &               .5/(ABSSW*1e6/GA/100. + RAYPERBARCONS) 
+     &               .5/(ABSSW*1e6/GA/100. + RAYPERBARCONS(1))
        WRITE(60,*) ' N.B. Assumes molecular composition with:'
        write(60,*) '      H2 fraction = ',fh2
        write(60,*) '      He fraction = ',rfhe

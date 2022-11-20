@@ -108,9 +108,6 @@
           ISL = 1
       endif
 
-
-
-
       IF (bezier_interpolation .eq. .TRUE.) THEN
           do J = 1, NL+1
              pe(J) = p_pass(J)
@@ -188,7 +185,6 @@
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
-
 !     CALCULATE THE OPTICAL PROPERTIES
       IF (AEROSOLCOMP.EQ. 'standard') THEN
           CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
@@ -254,7 +250,6 @@
       ck2 = 0.
       cpb = 0.
       cp  = 0.
-
 
 !     IF EITHER SOLAR OR INFRARED SCATTERING CALCULATIONS ARE REQUIRED
 !     GET TWO STREAM CODE AND FIND THE SOLUTION
@@ -346,7 +341,6 @@
             K = K+2
           ENDDO
       END DO
-      
 
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.

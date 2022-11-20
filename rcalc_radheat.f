@@ -136,6 +136,7 @@
 
       iffirst = 0
 
+
       IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.NTSTEP_IN)) THEN !-1)) THEN
          WRITE(63,*) 'LATITUDE, LONGITUDE:',ALAT1,ALON
          WRITE(63,2010)'1)P(Bars)',
@@ -194,7 +195,7 @@ C     ER Modif: output pressures in bar instead of mbar
      $                   uTAUL(NSOLP+1,IL),
      &                   uOPD(1,IL),
      &                   uOPD(NSOLP+1,IL),
-     &                   uW0(1,IL),
+     &                   uW0(3,IL),
      &                   uW0(NSOLP+1,IL),
      &                   uG0(1,IL),
      &                   uG0(NSOLP+1,IL),

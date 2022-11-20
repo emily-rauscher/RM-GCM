@@ -243,6 +243,13 @@
           DO J = 1, TOPLEV(I)
               tauaer_temp(:,J,I) = 0.0
           END DO
+
+          !if (TOPLEV(I) + 4 .le. NLAYER) THEN
+          !    tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.01 !i.e.e(-3)
+          !    tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.03 !i.e.e(-3)
+          !    tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.1 !i.e.e(-2)
+          !    tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.3 !i.e.e(-1)
+          !ENDIF
       END DO
 
 
@@ -401,13 +408,12 @@
                   OPD(L,J)= uOPD(L,J)
               ENDIF
 
+
 !             HERE'S WHERE YOU CAN HARDWIRE VALUES
               if( taul(L,j) .lt. 0.) then
                   write(*,*) 'ERROR! The VISIBLE layer optical depth is less than 0:', taul(L,j)
                   stop
               endif
-              
-
           END DO
       END DO
 
@@ -416,7 +422,6 @@
           j1 = max( 1, j-1 )
           DO L = NSOLP+1,NTOTAL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
-
 
               !if (iradgas.eq.0) then
               !    tauL(L,j) = tauaer(L,j)

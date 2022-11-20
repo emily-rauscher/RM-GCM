@@ -80,12 +80,9 @@
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-          CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,Tirr, Tint,
+          CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction, Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
      &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl)
-
-
-
 
       end subroutine opacity_wrapper
 
@@ -137,6 +134,8 @@
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         call Bond_Parmentier(Teff, grav, Bond_Albedo)
+        !Bond_Albedo = 0.0
+        !Bond_Albedo = 0.07
 
         !! Recalculate Teff and then find parameters
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
@@ -276,6 +275,7 @@
           tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
+
 
       end subroutine calculate_opacities
 
