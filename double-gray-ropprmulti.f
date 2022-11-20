@@ -88,7 +88,7 @@
       REAL TCONCaTiO3(50+1)
       REAL CaTiO3QEVIS(50),CaTiO3G0VIS(50),CaTiO3PI0VIS(50)
       REAL CaTiO3QEVIR(50),CaTiO3G0VIR(50),CaTiO3PI0VIR(50)
-      REAL TCONAL2O3(50+1),TCONDS(50+1,13)
+      REAL TCONAL2O3(50+1),tconds_dg(50+1,13)
       REAL Al2O3QEVIS(50),Al2O3G0VIS(50),Al2O3PI0VIS(50)
       REAL Al2O3QEVIR(50),Al2O3G0VIR(50),Al2O3PI0VIR(50)
       REAL MOLEF(13),DENSITY(13),RPS(50),TAUFACT,FMOLW(13)
@@ -750,20 +750,19 @@
      &    0.573,0.523,0.535,0.524,0.523,0.525,0.529,0.533,0.536/
 
 
-      Tconds(1:51,1)=TconKCl
-      Tconds(1:51,2)=TconZnS
-      Tconds(1:51,3)=TconNa2S
-      Tconds(1:51,4)=TconMnS
-      !Tconds(1:51,5)=Tconcr
-      Tconds(1:51,5)=TconCr
-      Tconds(1:51,6)=TconSiO2
-      Tconds(1:51,7)=TconMg2SiO4
-      Tconds(1:51,8)=TconVO
-      Tconds(1:51,9)=TconNi
-      Tconds(1:51,10)=TconFe
-      Tconds(1:51,11)=TconCaSiO4
-      Tconds(1:51,12)=TconCaTiO3
-      Tconds(1:51,13)=TconAl2O3
+      tconds_dg(1:51,1)=TconKCl
+      tconds_dg(1:51,2)=TconZnS
+      tconds_dg(1:51,3)=TconNa2S
+      tconds_dg(1:51,4)=TconMnS
+      tconds_dg(1:51,5)=TconCr
+      tconds_dg(1:51,6)=TconSiO2
+      tconds_dg(1:51,7)=TconMg2SiO4
+      tconds_dg(1:51,8)=TconVO
+      tconds_dg(1:51,9)=TconNi
+      tconds_dg(1:51,10)=TconFe
+      tconds_dg(1:51,11)=TconCaSiO4
+      tconds_dg(1:51,12)=TconCaTiO3
+      tconds_dg(1:51,13)=TconAl2O3
 
       g0vis(1:50,1)=KClg0vis
       g0vis(1:50,2)=ZnSg0vis
@@ -852,7 +851,7 @@
 
       Do 200  I         = 1,NCLOUD
        DO 180  J          =   1,NLAYER -1
-        CONDFACT(J,I)     =min(max((Tconds(J,I)-TT(J))/10.,0.0),1.0)
+        CONDFACT(J,I)     =min(max((tconds_dg(J,I)-TT(J))/10.,0.0),1.0)
         TAUFACT= DPG(J)*10.*molef(I)*3./4./rps(J)/density(I)*fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(J)
         TAUAERSW(J,I)     =TAUFACT*qevis(J,I)
         TAUAERLW(J,I)     =TAUFACT*qeir(J,I)

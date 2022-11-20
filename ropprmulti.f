@@ -30,7 +30,7 @@
 !
       include 'rcommons.h'
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, MET_INDEX
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
       REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
@@ -81,7 +81,7 @@
       real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
       real, dimension(100)      :: haze_pressure_array_pascals
 
-      REAL TCONDS(51,NCLOUDS)
+      REAL TCONDS(3,51,NCLOUDS)
       REAL CORFACT(51)
 
       REAL DENSITY(NCLOUDS)
@@ -107,6 +107,21 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
+      ! THE THREE Condensation curve sets are for 1X, 100X, and 300X Met
+      ! Sorry that this is bad code
+      ! Malsky
+      IF (METALLICITY .gt. -0.1 .AND. METALLICITY .lt. 0.1) THEN
+          MET_INDEX = 1
+      ELSE IF (METALLICITY .gt. 1.9 .AND. METALLICITY .lt. 2.1) THEN
+          MET_INDEX = 2
+      ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
+          MET_INDEX = 3
+      ELSE
+          write(*,*) 'Something is wrong with your metallicity'
+          write(*,*) 'Check ropprrmulti'
+          write(*,*) 'THE THREE Condensation curve sets are for 1X, 100X, and 300X Met'
+          stop
+      END IF
 
       DO J  = 2,NLAYER
           layer_pressure_bar(J)  = (p_pass(J)-p_pass(J-1)) * 1e-5
@@ -205,7 +220,7 @@
                   END DO
               END IF
 
-              CONDFACT(J,I) = min(max((Tconds(layer_index,I)-TT(J))/10.,0.0),1.0)
+              CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
 
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
               BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)

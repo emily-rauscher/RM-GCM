@@ -429,7 +429,6 @@ CDIR$    IVDEP
    42    CONTINUE                                                         
       END IF
 
-
       CALL get_cloud_scattering_properties_wrapper
 
 

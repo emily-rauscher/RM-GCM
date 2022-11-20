@@ -106,7 +106,7 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
      +              ,LFLUX,R_AIR                                                
      +              ,LBALAN,LRESTIJ                                       
      +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE,NFP                                               
+     +              ,LNOISE,NFP
       COMPLEX EZ,AIOCT                                                    
       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
      +       ,LFLUX,LNOISE                                                
