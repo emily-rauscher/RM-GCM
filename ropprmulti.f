@@ -202,16 +202,7 @@
       CLOUD_WAVELENGTH_INDEXES(4) = MINLOC(ABS((CLOUD_WAV_GRID) - (5.0)),1)
       CLOUD_WAVELENGTH_INDEXES(5) = MINLOC(ABS((CLOUD_WAV_GRID) - (5.0)),1)
 
-
       Y3(:,:,:) = 0.0
-
-      ! These three correspond to the wavelengths in the wavelength dependent scattering parameters
-      ! 1 is 0.50 microns
-      ! 2 is 0.65 microns
-      ! 3 is 0.80 microns
-      ! 4 is 5.00 microns
-      HAZE_WAVELENGTH_INDEXES  = (/152, 176, 196, 368, 368/)
-      CLOUD_WAVELENGTH_INDEXES = (/152, 176, 196, 368, 368/)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         GET THE HAZE DATA FIRST       !!!!!!!!!!
