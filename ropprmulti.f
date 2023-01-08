@@ -81,7 +81,7 @@
       real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
       real, dimension(100)      :: haze_pressure_array_pascals
 
-      REAL TCONDS(3,51,NCLOUDS)
+      REAL TCONDS(4,51,NCLOUDS)
       REAL CORFACT(51)
 
       REAL DENSITY(NCLOUDS)
@@ -165,10 +165,12 @@
       ! Malsky
       IF (METALLICITY .gt. -0.1 .AND. METALLICITY .lt. 0.1) THEN
           MET_INDEX = 1
-      ELSE IF (METALLICITY .gt. 1.9 .AND. METALLICITY .lt. 2.1) THEN
+      ELSE IF (METALLICITY .gt. 0.9 .AND. METALLICITY .lt. 1.1) THEN
           MET_INDEX = 2
-      ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
+      ELSE IF (METALLICITY .gt. 1.9 .AND. METALLICITY .lt. 2.1) THEN
           MET_INDEX = 3
+      ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
+          MET_INDEX = 4
       ELSE
           write(*,*) 'Something is wrong with your metallicity'
           write(*,*) 'Check ropprrmulti'

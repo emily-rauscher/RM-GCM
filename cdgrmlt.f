@@ -390,8 +390,9 @@ C
       DO 200 L=1,NL                                                       
        DO 200 J=1,IGC                                                     
         UNLG(J,L)=UNLG(J,L)+UTVD(J,L)                                     
-        VNLG(J,L)=VNLG(J,L)+VTVD(J,L)                                     
-        TNLG(J,L)=TNLG(J,L)+TTVD(J,L)+TTCR(J,L)+TTLR(J,L)+TTRD(J,L)       
+        VNLG(J,L)=VNLG(J,L)+VTVD(J,L)
+        TNLG(J,L)=TNLG(J,L)+TTVD(J,L)+TTCR(J,L)+TTLR(J,L)+TTRD(J,L)
+
         QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)
   200 CONTINUE  
 C                                                                        

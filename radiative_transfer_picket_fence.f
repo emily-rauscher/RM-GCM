@@ -275,14 +275,6 @@
           tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
-
-        write(*,*) 'stopping in radiative transfer picket fence'
-        write(*,*) 'kappa C 1, kappa C 2, kappa C 3'
-        write(*,*) k_Vl(1,5), k_Vl(2,5), k_Vl(2,5)
-        write(*,*) k_Vl(1,6), k_Vl(2,6), k_Vl(2,6)
-        stop
-
-
       end subroutine calculate_opacities
 
 
