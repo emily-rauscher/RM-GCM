@@ -195,11 +195,11 @@ C     ER Modif: output pressures in bar instead of mbar
      $                   uTAUL(NSOLP+1,IL),
      &                   uOPD(1,IL),
      &                   uOPD(NSOLP+1,IL),
-     &                   uW0(3,IL),
+     &                   uW0(1,IL),
      &                   uW0(NSOLP+1,IL),
      &                   uG0(1,IL),
      &                   uG0(NSOLP+1,IL),
-     &                   DIRECT(1,IL)+DIRECT(2,IL)+DIRECT(3,IL),
+     &                   DIRECTU(4,IL)+DIRECTU(5,IL),
      &                   TMI(1,IL)+TMI(2,IL)+TMI(3,IL),
      &                   TMI(4,IL)+TMI(5,IL)
  2033       FORMAT(F12.6,2X,E12.5,1X,E12.5,2X,E12.5,1x,E12.5,3X,

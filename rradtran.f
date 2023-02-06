@@ -359,10 +359,10 @@
 !     WITH BOTTOM BOUNDARY CONDITION
 
 !     MALSKY CHECK THAT THIS IS THE RIGHT BOUNDARY
-!     MAYBE IT SHOULD BE NDBL
       DO L =  NSOLP+1,NTOTAL
-          DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
+          DIRECTU(L,NDBL) = FBASEFLUX+DIREC(L,NDBL)
       END DO
+
 
       DO J = 1, NLAYER
            DO L = 1, NTOTAL
@@ -375,8 +375,6 @@
                END IF
            END DO
       END DO
-
-
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
@@ -465,12 +463,18 @@
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE
 
+
       SOLNET   = 0.0
       IF (ISL .GT. 0) THEN
           DO 510 L       =  1,NSOLP
               SOLNET  = SOLNET - FNET(L,NLAYER)
               fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
+
+              !if (L .eq. 1) THEN
+              !    write(*,*) fp, incident_starlight_fraction
+              !END IF
               fsLu(L) = fsLu(L) + fp
+
 
               do 510 j = 1, NLAYER
                   fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
@@ -491,6 +495,8 @@
               tsLu = tsLu + fsLu(i)
               total_downwelling = total_downwelling + fsLd(i)
           END DO
+
+
 
 
 

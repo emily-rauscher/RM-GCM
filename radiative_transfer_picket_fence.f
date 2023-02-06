@@ -82,13 +82,13 @@
 
           CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction, Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
-     &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl)
+     &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl, TOAALB)
 
       end subroutine opacity_wrapper
 
       subroutine calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,
      &                               Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
-     &                               Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY, pe, k_IRl, k_Vl)
+     &                               Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY, pe, k_IRl, k_Vl, TOAALB)
         ! Input:
         ! Teff - Effective temperature [K] (See Parmentier papers for various ways to calculate this)
         ! for non-irradiated atmosphere Teff = Tint
@@ -125,17 +125,15 @@
         real, dimension(NSOLP,NLAYER+1) :: tau_Ve
         real :: grav
         real :: with_TiO_and_VO, METALLICITY
-        real :: Bond_Albedo
+        real :: Bond_Albedo, TOAALB
 
         grav = gravity_SI
 
         !! Parmentier opacity profile parameters - first get Bond albedo
-        Teff = ((Tint * Tint * Tint * Tint) + (1.0 / sqrt(3.0)) *
-     &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
+        Teff = ((Tint * Tint * Tint * Tint) + (1.0 / sqrt(3.0)) * (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
-        call Bond_Parmentier(Teff, grav, Bond_Albedo)
-        !Bond_Albedo = 0.0
-        !Bond_Albedo = 0.07
+        !call Bond_Parmentier(Teff, grav, Bond_Albedo)
+        Bond_Albedo = TOAALB
 
         !! Recalculate Teff and then find parameters
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
@@ -263,7 +261,7 @@
 
         do k = 1, NLAYER
           call k_Ross_Freedman(Tl(k), pl(k), METALLICITY, k_IRl(1,k))
-          !call k_Ross_Valencia(Tl(k), pl(k), 0.0, k_IRl(1,k))
+          !call k_Ross_Valencia(Tl(k), pl(k), METALLICITY, k_IRl(1,k))
 
           k_Vl(1,k) = k_IRl(1,k) * gam_V(1)
           k_Vl(2,k) = k_IRl(1,k) * gam_V(2)
@@ -276,7 +274,6 @@
           tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
       end subroutine calculate_opacities
-
 
 
       subroutine k_Ross_Freedman(Tin, Pin, Freedman_met, k_IR)
@@ -335,6 +332,7 @@
      &    c10_h*Tl10**2 + Pl10*(c11_h + c12_h*Tl10) +
      &    c13_h * Freedman_met * (0.5 + 0.31830988*atan((Tl10 - 2.5) / 0.2))
         end if
+
         ! Total Rosseland mean opacity - coverted to m2 kg-1
         k_IR = (10.0**k_lowP + 10.0**k_hiP) / 10.0
 
@@ -412,7 +410,6 @@
         real :: c10_vl = -0.445, c10_vh = -0.0414
         real :: c11_vl = 0.8321, c11_vh = 0.8321
         real :: onedivpi = 1.0 / 3.141592653
-
 
         temperature_val = Tin
         pressure_val = Pin * 10.0 ! Convert to dyne

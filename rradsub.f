@@ -284,9 +284,11 @@ C     globally averaged solar constant, vertical rays
       htsw    = heats_aerad_tot
       fluxes  = rfluxes_aerad
 
-      !write(*,*) fluxes
-      !write(*,*) 'stopping here'
-      !stop
+      !write(*,*) ALAT1, ',', ALON, ',', TT(1), ','
+      !if (ALAT1 .lt. -19 .and. ALAT1 .gt. -20 .and. ALON .eq. 315) THEN
+      !    write(*,*) 'the model has done every point'
+      !    stop
+      !END IF
 
       return
       end

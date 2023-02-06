@@ -253,7 +253,7 @@
       !!!!!!!!         CLOUD SCATTERING PROPERTIES       !!!!!!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      DO J = 1,NLAYER
+      DO J = 1,NLAYER - 1
           layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
           temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
           particle_size = particle_size_vs_layer_array_in_meters(layer_index) ! Convert to CGS
@@ -296,6 +296,7 @@
               IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
+
                       tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
      &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,WAV_LOC,size_loc,I)
                   END DO
@@ -567,7 +568,6 @@
               END DO
           END DO
       END DO
-
 
       RETURN
       END

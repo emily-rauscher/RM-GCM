@@ -283,6 +283,7 @@
       WOL(:,:)    = 0.0
       GOL(:,:)    = 0.0
 
+
       IF (picket_fence_optical_depths) THEN
         CALL opacity_wrapper(t, p_pass, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
      &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
@@ -323,6 +324,8 @@
         END DO
 
 
+
+
         DO L = NSOLP+1, NTOTAL
             k  =  1
             DO  J = 1,NDBL,2
@@ -340,6 +343,11 @@
               Beta_V(1) = 1.0
               Beta_V(2) = 0.0
               Beta_V(3) = 0.0
+
+
+              !Beta_V(1) = 0.3333
+              !Beta_V(2) = 0.3333
+              !Beta_V(3) = 0.3333
 
               Beta_IR(1) = 1.0
               Beta_IR(2) = 0.0
@@ -385,15 +393,22 @@
 
 
       IF (RAYSCAT) THEN
-        DO 330 J          =   1,NLAYER
-          DO 335 L         =   1,NTOTAL
-            if( L .LE. NSOLP )then
-              TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
-            else
-              TAURAY(L,J)= 0.0
-            endif
-335     CONTINUE
-330   CONTINUE
+        DO J = 1,NLAYER
+          !DO L = 1,NTOTAL
+          !  if( L .LE. NSOLP )then
+          !    TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
+          !  else
+          !    TAURAY(L,J)= 0.0
+          !  endif
+          !END DO
+          !TAURAY(1,J) = 4.0 * TAUGAS(1,J)
+          !TAURAY(2,J) = 3.0 * TAUGAS(2,J)
+          !TAURAY(3,J) = 2.0 * TAUGAS(3,J)
+
+          TAURAY(1,J) = 0.
+          TAURAY(2,J) = 0.
+          TAURAY(3,J) = 0.
+        END DO
       ELSE
         DO 320 J     = 1,NLAYER
           DO 325 L    = 1,NTOTAL
@@ -422,7 +437,6 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 !
       ibeyond_spectrum = 0
-
 
       RETURN
       END
