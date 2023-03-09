@@ -81,7 +81,7 @@
       real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
       real, dimension(100)      :: haze_pressure_array_pascals
 
-      REAL TCONDS(4,51,NCLOUDS)
+      REAL TCONDS(5,51,NCLOUDS)
       REAL CORFACT(51)
 
       REAL DENSITY(NCLOUDS)
