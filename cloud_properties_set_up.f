@@ -221,6 +221,21 @@
           REAL tcon_10X_MET_CaTiO3(NLAYER)
           REAL tcon_10X_MET_Al2O3(NLAYER)
 
+          
+          REAL tcon_30X_MET_KCl(NLAYER)
+          REAL tcon_30X_MET_ZnS(NLAYER)
+          REAL tcon_30X_MET_Na2S(NLAYER)
+          REAL tcon_30X_MET_MnS(NLAYER)
+          REAL tcon_30X_MET_Cr(NLAYER)
+          REAL tcon_30X_MET_SiO2(NLAYER)
+          REAL tcon_30X_MET_Mg2SiO4(NLAYER)
+          REAL tcon_30X_MET_VO(NLAYER)
+          REAL tcon_30X_MET_Ni(NLAYER)
+          REAL tcon_30X_MET_Fe(NLAYER)
+          REAL tcon_30X_MET_CaSiO4(NLAYER)
+          REAL tcon_30X_MET_CaTiO3(NLAYER)
+          REAL tcon_30X_MET_Al2O3(NLAYER)
+          
           REAL tcon_100X_MET_KCl(NLAYER)
           REAL tcon_100X_MET_ZnS(NLAYER)
           REAL tcon_100X_MET_Na2S(NLAYER)

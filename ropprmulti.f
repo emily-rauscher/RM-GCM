@@ -167,10 +167,12 @@
           MET_INDEX = 1
       ELSE IF (METALLICITY .gt. 0.9 .AND. METALLICITY .lt. 1.1) THEN
           MET_INDEX = 2
-      ELSE IF (METALLICITY .gt. 1.9 .AND. METALLICITY .lt. 2.1) THEN
+      ELSE IF (METALLICITY .gt. 1.4 .AND. METALLICITY .lt. 1.6) THEN
           MET_INDEX = 3
-      ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
+      ELSE IF (METALLICITY .gt. 1.9 .AND. METALLICITY .lt. 2.1) THEN
           MET_INDEX = 4
+      ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
+          MET_INDEX = 5
       ELSE
           write(*,*) 'Something is wrong with your metallicity'
           write(*,*) 'Check ropprrmulti'
