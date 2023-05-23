@@ -1,15 +1,25 @@
-This README file is intended to serve as a user's guide to the iGCM code. 
-It is a compendium of notes that should be ammended and updated by users as they see fit.
+This README file is intended to serve as a user's guide to the RM-GCM code. 
+It is a compendium of notes that should be ammended and updated by contributors as they see fit.
 
 -----------------------------------------------
 0. BACKGROUND:
 -----------------------------------------------
-University of Reading's website with some old documentation of the original code: 
-http://www.met.reading.ac.uk/~mike/dyn_models/igcm/
+This code originated as the Intermediate General Circulation Model (IGCM) code from the University of Reading, which still maintains some old documentation of the orginal code: http://www.met.reading.ac.uk/~mike/dyn_models/igcm/
+It is a psuedo-spectral model that solves the primitive equations of meteorology, coupled to different options for the radiative heating. 
+The most current version of this model is now the IGCM4 / FORTE 2.0 (https://zenodo.org/record/4108373), as described here: https://gmd.copernicus.org/articles/14/275/2021/
 
-This Intermediate General Circulation Model (igcm) code was modified by Menou and Rauscher,
-as described in Menou & Rauscher (2009). It is currently a psuedo-spectral model that solves
-the primitive equations and impliments a double-gray radiation scheme.  
+The IGCM1 (and then elements of the IGCM3) code were modified to the earliest versions of what is now known as the RM-GCM code, adapted for use to hot Jupiter (and other exoplanet) contexts. A summary of the development is as follows:
+In Menou & Rauscher (2009): generalized from the IGCM1 and introduced in the exoplanet context
+In Rauscher & Menou (2010): logarithmic pressure levels
+In Rauscher & Menou (2012): double-gray radiative transfer, using the IGCM3
+In Rauscher & Menou (2013): a form of drag was introduced, to capture the influence of magnetic effects on the circulation
+In Rauscher & Kempton (2014): non-synchronous rotation
+In May & Rauscher (2016): variable heating from binary stars, diurnally averaged heating patterns, non-zero obliquity (see also Rauscher 2017)
+In Roman & Rauscher (2017): new radiative transfer scheme, from Toon code, including treatment for aerosols
+In Roman & Rauscher (2019): radiatively active clouds, which form and dissipate based on local conditions (continued development in future papers)
+In May & Rauscher (2020): re-introduction of boundary conditions for a solid surface (although made out-of-date with radiative transfer updates)
+In Malsky, Rauscher, et al. (in prep.): introduction of a picket fence version of the radiative transfer
+  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -----------------------------------------------
 1. HOW TO COMPILE & RUN THE CODE
@@ -17,7 +27,7 @@ the primitive equations and impliments a double-gray radiation scheme.
 ~~~~~~~~~~~~~
 1.1 Params.i
 ~~~~~~~~~~~~~ 
-To run in parallel, first you must compile it with the proper input file-- params.i
+To run the code, first you must compile it with the proper input file-- params.i
 
 params.i includes information on the model resolution.  It essentially provides the compiler
 with the information required to prepare arrays of the correct sizes. 
@@ -63,7 +73,7 @@ The first line prints this flags to the screen so the user knows what is happeni
 removes the old executable (compilers turn code into executables).  And so on... the only one 
 you need to worry about is the Parallel flag. If you want the code to run in parallel, this flag
 must be set.  If not, comment it out by placing a # in the first column. More instructions on 
-running the code in parallel are below.
+running the code in parallel are below. (NOTE: the parallel version is out-of-date, with the new picket fence radiative transfer)
 
 TO COMPILE the code, just use the following command:
 ./compile_nopg
@@ -168,7 +178,7 @@ This permits you to simply type 'runigcm' as a shortcut for the full command.
 
 
 =============================
-1.3.3. RUNNING IN PARALLEL
+1.3.3. RUNNING IN PARALLEL ----- currently out-of-date and likely non-functional
 =============================
 Running the code in parallel requires a few extra steps. 
 
