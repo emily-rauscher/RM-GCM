@@ -463,18 +463,14 @@
 !     CALCULATE SOLAR ABSORBED BY GROUND, SOLNET, AND UPWARD AND
 !     DOWNWARD LONGWAVE FLUXES AT SURFACE
 
-
+      
       SOLNET   = 0.0
       IF (ISL .GT. 0) THEN
           DO 510 L       =  1,NSOLP
               SOLNET  = SOLNET - FNET(L,NLAYER)
               fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
 
-              !if (L .eq. 1) THEN
-              !    write(*,*) fp, incident_starlight_fraction
-              !END IF
               fsLu(L) = fsLu(L) + fp
-
 
               do 510 j = 1, NLAYER
                   fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
@@ -489,7 +485,7 @@
                   endif
 510       CONTINUE
 
-          do  i = 1, nsoL
+          do  i = 1, nsoL              
               fsLd(i) = psol_aerad * incident_starlight_fraction * (Beta_V(i))
               alb_toa(i) = fsLu(i)/fsLd(i)
               tsLu = tsLu + fsLu(i)
@@ -510,9 +506,7 @@
               fsl_dn_aerad(j) = fdownbs(j)
           enddo
       ENDIF
-
-
-
+ 
 
 !     <tiru> is total upwelling infrared flux at top-of-atmosphere;
 !     <fupbi>, <fdownbi>, and <fnetbi> are total upwelling, downwelling,

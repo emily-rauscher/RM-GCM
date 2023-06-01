@@ -249,6 +249,8 @@
       ELSE
            TAU_HAZE = 0.0
       END IF
+      
+
 
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -321,6 +323,9 @@
               END IF
           END DO
       END DO
+
+
+
 
       ! Uncomment for compact clouds I think
       DO I = 1,NCLOUDS
@@ -425,6 +430,7 @@
               k = k+1
           END DO
       END IF
+
       
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
@@ -434,7 +440,7 @@
               GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
           END DO
       END DO
-
+      
 
       iradgas = 1
       DO J = 1,NLAYER
@@ -570,6 +576,7 @@
               END DO
           END DO
       END DO
+
 
       RETURN
       END

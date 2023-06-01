@@ -294,7 +294,7 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          haze_type = 'soot'
+          haze_type = 'tholin'
           if (haze_type .eq. 'soot') THEN
               !write(*,*) "Model being run with soot hazes"
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
@@ -313,6 +313,7 @@
               open (2, file='../CLOUD_DATA/haze_soot_wav_pi0.txt')
               open (3, file='../CLOUD_DATA/haze_soot_Planck_pi0.txt')
 
+
               read(1,*) HAZE_RosselandMean_pi0
               read(2,*) HAZE_wav_pi0
               read(3,*) HAZE_PlanckMean_pi0
@@ -326,7 +327,7 @@
               open (3, file='../CLOUD_DATA/haze_soot_Planck_gg.txt')
 
               read(1,*) HAZE_RosselandMean_gg
-              read(2,*) HAZE_RosselandMean_gg
+              read(2,*) HAZE_wav_gg
               read(3,*) HAZE_PlanckMean_gg
 
               close(1)
@@ -446,8 +447,6 @@
           else
               write(*,*) "The haze type is being impropertly specified"
           end if
-
-
 
 
           ! READ IN ALL THE CLOUD FILES
