@@ -1,15 +1,14 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
           include 'rcommons.h'
-          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY)
+          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY, HAZETYPE)
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 
-      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY)
+      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY, HAZETYPE)
           implicit none
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
-
-          character (len = 40) :: haze_type
+          character (len = 40) :: HAZETYPE
 
           ! Define all the arrays
 
@@ -192,7 +191,6 @@
 
           ! SET UP THE CONDENSATION CURVES
           ! SHOULD BE MET DEPENDENT EVENTUALLY
-
           REAL tcon_1X_MET_KCl(NLAYER)
           REAL tcon_1X_MET_ZnS(NLAYER)
           REAL tcon_1X_MET_Na2S(NLAYER)
@@ -279,9 +277,11 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          haze_type = 'soot'
-          if (haze_type .eq. 'soot') THEN
-              !write(*,*) "Model being run with soot hazes"
+          !haze_type = 'soot'
+
+          !EDIT —— I think changed?
+          if (HAZETYPE .eq. 'soot') THEN
+              !write(*,*) "Model being run with soot hazes"x
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_soot_wav_tauperbar.txt')
               open (3, file='../CLOUD_DATA/haze_soot_Planck_tauperbar.txt')
@@ -317,7 +317,7 @@
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'sulfur') THEN
+          else if (HAZETYPE .eq. 'sulfur') THEN
               !write(*,*) "Model being run with sulfur hazes"
               open (1, file='../CLOUD_DATA/haze_sulfur_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_sulfur_wav_tauperbar.txt')
@@ -354,7 +354,7 @@
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'tholin') THEN
+          else if (HAZETYPE .eq. 'tholin') THEN
               !write(*,*) "Model being run with sulfur hazes"
               open (1, file='../CLOUD_DATA/haze_tholin_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_tholin_wav_tauperbar.txt')
@@ -391,7 +391,7 @@
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'soot-2xpi0') THEN
+          else if (HAZETYPE .eq. 'soot-2xpi0') THEN
               !write(*,*) "Model being run with sulfur hazes"
               open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_tauperbar.txt')
