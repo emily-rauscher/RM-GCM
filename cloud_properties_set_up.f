@@ -8,7 +8,6 @@
           implicit none
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
-          character (len = 40) :: HAZETYPE
 
           ! Define all the arrays
 
@@ -277,6 +276,14 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
+
+      character (len = 40) :: HAZETYPE
+      NAMELIST/INCLOUDY/HAZETYPE
+
+      READ (7,INCLOUDY)
+      !print statement below
+
+      WRITE(*,*) 'HAZETYPE: ',HAZETYPE
           !haze_type = 'soot'
 
           !EDIT —— I think changed?
