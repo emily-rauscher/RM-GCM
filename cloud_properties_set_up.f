@@ -1,10 +1,10 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
           include 'rcommons.h'
-          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY, HAZETYPE)
+          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY)
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 
-      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY, HAZETYPE)
+      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY)
           implicit none
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
@@ -276,9 +276,19 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-
-      character (len = 40) :: HAZETYPE
-      NAMELIST/INCLOUDY/HAZETYPE
+      CHARACTER(30) :: AEROSOLMODEL
+      CHARACTER(30) :: AEROSOLCOMP
+      REAL MTLX,  MOLEF(13), AERTOTTAU, CLOUDBASE, CLOUDTOP
+      REAL CLDFRCT, AERHFRAC, PI0AERSW, ASYMSW,EXTFACTLW,PI0AERLW
+      REAL ASYMLW, SIG_AREA, PHI_LON
+      LOGICAL  HAZES, PICKET_FENCE_CLOUDS, DELTASCALE
+      INTEGER AERLAYERS
+      CHARACTER (len = 30) :: HAZETYPE
+      
+      NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,HAZETYPE,MTLX,
+     &                 METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
+     &                 AERTOTTAU,CLOUDBASE,CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,
+     &                 ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON
 
       READ (7,INCLOUDY)
       !print statement below
@@ -436,7 +446,7 @@
               close(2)
               close(3)
           else
-              write(*,*) "The haze type is being impropertly specified"
+              write(*,*) "The haze type is being improperly specified"
           end if
 
 
