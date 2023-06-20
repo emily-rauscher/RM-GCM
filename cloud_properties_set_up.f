@@ -298,7 +298,7 @@
 
           !EDIT —— I think changed?
           if (HAZETYPE .eq. 'soot') THEN
-              !write(*,*) "Model being run with soot hazes"x
+              write(*,*) "Model being run with soot hazes"
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_soot_wav_tauperbar.txt')
               open (3, file='../CLOUD_DATA/haze_soot_Planck_tauperbar.txt')

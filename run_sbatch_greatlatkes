@@ -10,7 +10,7 @@
 
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=5g
+#SBATCH --mem=50g
 #SBATCH --time=14-00:00:00
 
 #SBATCH --account=erausche1
