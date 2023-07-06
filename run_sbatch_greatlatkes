@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ####  Job name
-#SBATCH --job-name=GCM_testing_hazes
+#SBATCH --job-name=finalhazetest_secondtry
 
 ####  Request resources here
 ####  These are typically, number of processors, amount of memory,
@@ -26,3 +26,10 @@ module load intel/2022.1.2
 export OMP_NUM_THREADS=1
 
 ./compile_nopg
+
+module load python3.9-anaconda
+rm -f fortrantopythonfile.cpython-39-x86_64-linux-gnu.so
+python -m numpy.f2py -c fortran_readfort7.f90 -m fortrantopythonfile
+python createfort7dictionary.py
+
+python rename_planetrun.py
