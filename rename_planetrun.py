@@ -1,5 +1,6 @@
 from createfort7dictionary import fort7dict
 import os
+import glob
 
 name = []
 layers = []
@@ -37,6 +38,14 @@ rename_planetrun = ''.join(name) + '_' + str(cloudtype) + ''.join(layers) + 'LAY
 os.chdir('..')
 os.system('pwd')
 os.system('ls')
-os.system('mv -f RM-GCM '+ rename_planetrun)
-print('renamed RM-GCM folder to', rename_planetrun)
-os.chdir(rename_planetrun)
+files = glob.glob('*')
+if len(files) == 1:
+    if files[0] == rename_planetrun:
+        print('folder already named ' + rename_planetrun)
+    else:
+        os.system('mv -f * ' + rename_planetrun)
+        print('renamed ' + files[0] + ' folder to ' + rename_planetrun)
+        os.chdir(rename_planetrun)
+else:
+    raise Exception('renaming code cannot run if there is more than one file in source folder!!!')
+
