@@ -294,7 +294,7 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          haze_type = 'tholin'
+          haze_type = 'soot-2xpi0'
           if (haze_type .eq. 'soot') THEN
               !write(*,*) "Model being run with soot hazes"
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')

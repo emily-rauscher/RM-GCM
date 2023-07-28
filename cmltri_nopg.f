@@ -581,10 +581,10 @@ C           write (*,*) IODSIZE,5+IGO+IGP*(3+NTRAC)
       ELSE IF (KOUNT.EQ.KSTART) THEN
          CALL ENERGY
       ENDIF
-      IF (LRESTIJ) THEN
-C
+!      IF (LRESTIJ) THEN
+       IF (.TRUE.) THEN
 C        Write a restoration record
-C
+
          IF (KOUTH.EQ.KOUNTH.OR.KOUTR.EQ.KOUNTR) THEN
             RKOUNT=KOUNT
             WRITE(13)RKOUNT,RNTAPE,DAY,DOY,TTRES,RNTAPE
