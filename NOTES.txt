@@ -317,6 +317,7 @@ rhosurf in g/cm3   = density of surface
 deltaz in cm	   = thickness of surface
 alblw  	  	   = LW albedo
 emissir		   = surface emissivity
+HAZETYPE       = type of haze
 
 ALBSW in insimprad is the sw albedo at the BOA
 GASCON = specific gas constant of air (J/kg*K)

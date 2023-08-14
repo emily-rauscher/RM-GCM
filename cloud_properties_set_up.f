@@ -9,8 +9,6 @@
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
 
-          character (len = 40) :: haze_type
-
           ! Define all the arrays
 
           ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
@@ -192,7 +190,6 @@
 
           ! SET UP THE CONDENSATION CURVES
           ! SHOULD BE MET DEPENDENT EVENTUALLY
-
           REAL tcon_1X_MET_KCl(NLAYER)
           REAL tcon_1X_MET_ZnS(NLAYER)
           REAL tcon_1X_MET_Na2S(NLAYER)
@@ -294,9 +291,30 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals
 
-          haze_type = 'soot-2xpi0'
-          if (haze_type .eq. 'soot') THEN
-              !write(*,*) "Model being run with soot hazes"
+
+      CHARACTER(30) :: AEROSOLMODEL
+      CHARACTER(30) :: AEROSOLCOMP
+      REAL MTLX,  MOLEF(13), AERTOTTAU, CLOUDBASE, CLOUDTOP
+      REAL CLDFRCT, AERHFRAC, PI0AERSW, ASYMSW,EXTFACTLW,PI0AERLW
+      REAL ASYMLW, SIG_AREA, PHI_LON
+      LOGICAL  HAZES, PICKET_FENCE_CLOUDS, DELTASCALE
+      INTEGER AERLAYERS
+      CHARACTER (len = 30) :: HAZETYPE
+      
+      NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,HAZETYPE,MTLX,
+     &                 METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
+     &                 AERTOTTAU,CLOUDBASE,CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,
+     &                 ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON
+
+      READ (7,INCLOUDY)
+      !print statement below
+
+      WRITE(*,*) 'HAZETYPE: ',HAZETYPE
+          !haze_type = 'soot'
+
+          !EDIT —— I think changed?
+          if (HAZETYPE .eq. 'soot') THEN
+              write(*,*) "Model being run with soot hazes"
               open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_soot_wav_tauperbar.txt')
               open (3, file='../CLOUD_DATA/haze_soot_Planck_tauperbar.txt')
@@ -333,7 +351,7 @@
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'sulfur') THEN
+          else if (HAZETYPE .eq. 'sulfur') THEN
               !write(*,*) "Model being run with sulfur hazes"
               open (1, file='../CLOUD_DATA/haze_sulfur_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_sulfur_wav_tauperbar.txt')
@@ -370,7 +388,7 @@
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'tholin') THEN
+          else if (HAZETYPE .eq. 'tholin') THEN
               !write(*,*) "Model being run with sulfur hazes"
               open (1, file='../CLOUD_DATA/haze_tholin_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_tholin_wav_tauperbar.txt')
@@ -407,7 +425,7 @@
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'soot-2xpi0') THEN
+          else if (HAZETYPE .eq. 'soot-2xpi0') THEN
               !write(*,*) "Model being run with sulfur hazes"
               open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_tauperbar.txt')
               open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_tauperbar.txt')
@@ -445,7 +463,7 @@
               close(2)
               close(3)
           else
-              write(*,*) "The haze type is being impropertly specified"
+              write(*,*) "The haze type is being improperly specified"
           end if
 
 
