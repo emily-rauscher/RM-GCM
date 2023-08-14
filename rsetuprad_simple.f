@@ -323,9 +323,6 @@
             END DO
         END DO
 
-
-
-
         DO L = NSOLP+1, NTOTAL
             k  =  1
             DO  J = 1,NDBL,2
@@ -429,6 +426,23 @@
 !
 !     Set <iblackbody_above> = 1 to include a source of radiation
 !     at the top of the radiative transfer model domain
+
+
+      write(*,*) TAUGAS(1,:)
+      write(*,*)
+      write(*,*)
+      write(*,*) TAUGAS(2,:)
+      write(*,*)
+      write(*,*)
+      write(*,*) TAUGAS(3,:)
+      write(*,*)
+      write(*,*)
+      write(*,*) TAUGAS(4,:)
+      write(*,*)
+      write(*,*)
+      write(*,*) TAUGAS(5,:)
+
+      stop
 !
       iblackbody_above = 0.0
 !
