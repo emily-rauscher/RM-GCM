@@ -428,22 +428,20 @@
 !     at the top of the radiative transfer model domain
 
 
-      write(*,*) TAUGAS(1,:)
-      write(*,*)
-      write(*,*)
-      write(*,*) TAUGAS(2,:)
-      write(*,*)
-      write(*,*)
-      write(*,*) TAUGAS(3,:)
-      write(*,*)
-      write(*,*)
-      write(*,*) TAUGAS(4,:)
-      write(*,*)
-      write(*,*)
-      write(*,*) TAUGAS(5,:)
+      !write(*,*) TAUGAS(1,:)
+      !write(*,*)
+      !write(*,*)
+      !write(*,*) TAUGAS(2,:)
+      !write(*,*)
+      !write(*,*)
+      !write(*,*) TAUGAS(3,:)
+      !write(*,*)
+      !write(*,*)
+      !write(*,*) TAUGAS(4,:)
+      !write(*,*)
+      !write(*,*)
+      !write(*,*) TAUGAS(5,:)
 
-      stop
-!
       iblackbody_above = 0.0
 !
 !     Set <ibeyond_spectrum> = 1 to include blackbody radiation at

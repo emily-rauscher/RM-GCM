@@ -268,14 +268,14 @@
               IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
-                      PI0_TEMP(L,J,I) = PI0_OPPR(L,WAV_LOC,size_loc,I)
-                      G0_TEMP(L,J,I)  = G0_OPPR(L,WAV_LOC,size_loc,I)
+                      PI0_TEMP(L,J,I) = PI0_OPPR(1,WAV_LOC,size_loc,I)
+                      G0_TEMP(L,J,I)  = G0_OPPR(1,WAV_LOC,size_loc,I)
                   END DO
 
                   DO L = NSOLP+1,NTOTAL
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
-                      PI0_TEMP(L,J,I) = PI0_OPPR(L,WAV_LOC,size_loc,I)
-                      G0_TEMP(L,J,I)  = G0_OPPR(L,WAV_LOC,size_loc,I)
+                      PI0_TEMP(L,J,I) = PI0_OPPR(1,WAV_LOC,size_loc,I)
+                      G0_TEMP(L,J,I)  = G0_OPPR(1,WAV_LOC,size_loc,I)
                   END DO
               ELSE
                   DO L = solar_calculation_indexer,NSOLP
@@ -302,12 +302,12 @@
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
 
                       tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,WAV_LOC,size_loc,I)
+     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(1,WAV_LOC,size_loc,I)
                   END DO
                   DO L = NSOLP+1,NTOTAL
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
                       tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,WAV_LOC,size_loc,I)
+     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(1,WAV_LOC,size_loc,I)
                   END DO
               ELSE
                   DO L = solar_calculation_indexer,NSOLP
@@ -325,6 +325,9 @@
       END DO
 
 
+      !write(*,*) tauaer_temp(4,:,5)
+      !write(*,*)
+      !write(*,*) tauaer_temp(5,:,5)
 
 
       ! Uncomment for compact clouds I think
@@ -576,6 +579,10 @@
               END DO
           END DO
       END DO
+
+
+      !write(*,*) 'stop opprmulti:  Done with the optical properties'
+      !stop
 
 
       RETURN
