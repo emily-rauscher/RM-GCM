@@ -325,11 +325,6 @@
       END DO
 
 
-      !write(*,*) tauaer_temp(4,:,5)
-      !write(*,*)
-      !write(*,*) tauaer_temp(5,:,5)
-
-
       ! Uncomment for compact clouds I think
       DO I = 1,NCLOUDS
           DO J = 1, TOPLEV(I)
