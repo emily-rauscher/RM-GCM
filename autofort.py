@@ -85,9 +85,14 @@ dimcheck(lrstrt, num_forts)
 
 
 for name in names:
-    remove_folder(destpath + name)
-    os.mkdir(destpath + name)
     for x in range(0, num_forts):
+        if CLOUDS[x]:
+            cloudstring = 'YESCLOUDS'
+        else:
+            cloudstring = 'NOCLOUDS'
+        gcmname = name + '_' + str(oom[x]) + 'OOM_' + str(nlay[x]) + 'LAYERS_'  + str(aerlayers[x]) + 'AERLAYERS_' + str(
+            numdays[x]) + 'DAYS_' + str(sponge[x]) + 'SPONGE_' + cloudstring + '_' + hazetype[x].upper() + 'HAZE_' + str(metallicity[x]) + 'METALL'
+        os.mkdir(destpath + gcmname)
         # Loop through all planets, creating fort.7s using numbers in eplanetpars.xslx
         radjup= df["R_p (R_J)"][df['Name']==name].values[0]
         massjup= df["M_p (M_J)"][df['Name']==name].values[0]
@@ -187,7 +192,7 @@ for name in names:
             raise Exception('Magnetic drag (lbdrag) not called correctly, must be "T" or "F"\n')
 
 
-        file = open(destpath+name+ "/version" + str(x) + "fort.7", 'x')
+        file = open(destpath + gcmname + "/fort.7", 'x')
         file.write("&COMMENT\n")
         file.write(" THECOMMENT= '{}, {}, {}'\n".format(name, cloudsyn, magyn))
         file.write(" /\n")
@@ -349,7 +354,7 @@ for name in names:
         file.write(" NEWTB           = 0,\n")
         file.write(" NEWTE           = 0,\n")
         file.write(" with_TiO_and_VO = 1,\n")
-        file.write(" picket_fence_optical_depths = T\n")
+        file.write(" picket_fence_optical_depths = {},\n".format(PICKET_FENCE_CLOUDS[x]))
         file.write(" /\n")
         file.write(" &INCLOUDY\n")
         file.write(" AEROSOLMODEL = 'Global',\n")
