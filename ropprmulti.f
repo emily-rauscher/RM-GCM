@@ -218,7 +218,7 @@
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
 
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
-              IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
+              IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = HAZE_WAVELENGTH_INDEXES(2) !THIS IS THE DOUBLE GRAY VERSION
                       TAU_HAZE(L,J) = HAZE_wav_tau_per_bar(WAV_LOC, haze_layer_index) * layer_pressure_bar(J)
@@ -236,7 +236,7 @@
               temp_loc         = MINLOC(ABS(input_temperature_array - (TT(J))),1) ! Not needed for the stellar calc
 
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
-              IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
+              IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
                   DO L = NSOLP+1,NTOTAL
                       WAV_LOC = HAZE_WAVELENGTH_INDEXES(4)
                       TAU_HAZE(L,J) = HAZE_wav_tau_per_bar(WAV_LOC, haze_layer_index) * layer_pressure_bar(J)
@@ -265,7 +265,7 @@
 
           DO I = 1,NCLOUDS
               ! GET THE SCATTERING PROPERTIES
-              IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
+              IF (PICKET_FENCE_CLOUDS .eqv. .False.) THEN
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
                       PI0_TEMP(L,J,I) = PI0_OPPR(1,WAV_LOC,size_loc,I)
@@ -297,7 +297,7 @@
               TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
               ! DPG is CGS before that 10x
-              IF (PICKET_FENCE_CLOUDS .eq. .False.) THEN
+              IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
 
@@ -340,7 +340,7 @@
       END DO
 
 
-      IF (PICKET_FENCE_CLOUDS .eq. .FALSE.) THEN
+      IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
           !     SW AT STANDARD VERTICAL RESOLUTION
           DO J = 1,NLAYER
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1) ! Pascals

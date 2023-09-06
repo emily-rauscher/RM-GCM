@@ -108,7 +108,7 @@
           ISL = 1
       endif
 
-      IF (bezier_interpolation .eq. .TRUE.) THEN
+      IF (bezier_interpolation .eqv. .TRUE.) THEN
           do J = 1, NL+1
              pe(J) = p_pass(J)
           end do
@@ -555,7 +555,6 @@
               fsl_net_aerad(j) = fnetbs(nlayer+1-j)
           enddo
       ENDIF
-
 
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW
