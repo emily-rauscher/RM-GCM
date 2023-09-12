@@ -356,7 +356,8 @@ def makefort7(oom, nlay, tspd, tdiss, aerlayers, numdays, ntstepin, sponge,
     file.write(" LNSURF  = F\n")
     file.write(" /")
     file.close()
-
+    
+    print('made autofort for ', gcmname)
     return None
 
 for name in names:
@@ -378,6 +379,4 @@ for name in names:
                                                                 for q in PICKET_FENCE_CLOUDS:
                                                                     for r in lbdrag:
                                                                         for s in lrstrt:
-                                                                            makefort7(a,b,c,d,e,f,g,h,i,j[0],k,l,m,n,p,q,r,s)
-                                                                            print('made fort.7')
-
+                                                                            makefort7(a,b,c,d,e,f,g,h,i,j,k,l,m,n,p,q,r,s)
