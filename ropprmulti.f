@@ -208,11 +208,9 @@
 
       Y3(:,:,:) = 0.0
 
-
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!!!!!!         GET THE HAZE DATA FIRST       !!!!!!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
       IF (HAZES) THEN
           DO J = 1, NLAYER
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
@@ -250,7 +248,6 @@
            TAU_HAZE = 0.0
       END IF
       
-
 
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -351,6 +348,7 @@
                   WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,J) + 1e-8))
                   GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,J,1:NCLOUDS))
+     &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
               END DO
           END DO
@@ -574,11 +572,6 @@
               END DO
           END DO
       END DO
-
-
-      !write(*,*) 'stop opprmulti:  Done with the optical properties'
-      !stop
-
 
       RETURN
       END

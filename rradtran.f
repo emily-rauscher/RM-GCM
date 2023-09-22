@@ -43,7 +43,7 @@
       REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
       REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
       REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1(5,2*NL+2), EM1(5,2*NL+2)
+      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
       REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
       REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
       REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
@@ -108,7 +108,7 @@
           ISL = 1
       endif
 
-      IF (bezier_interpolation .eqv. .TRUE.) THEN
+      IF (bezier_interpolation .eq. .TRUE.) THEN
           do J = 1, NL+1
              pe(J) = p_pass(J)
           end do
@@ -555,6 +555,7 @@
               fsl_net_aerad(j) = fnetbs(nlayer+1-j)
           enddo
       ENDIF
+
 
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW
