@@ -214,7 +214,6 @@
       IF (HAZES) THEN
           DO J = 1, NLAYER
               haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
-
               ! This grabs the optical depth per bar, then multiply it by the pressure in bars
               IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
                   DO L = solar_calculation_indexer,NSOLP
@@ -247,7 +246,7 @@
       ELSE
            TAU_HAZE = 0.0
       END IF
-      
+
 
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -349,7 +348,6 @@
      &                    + (TAU_HAZE(L,J) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,J) + 1e-8))
                   GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,J,1:NCLOUDS))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
-     &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
               END DO
           END DO
 
@@ -427,7 +425,7 @@
           END DO
       END IF
 
-      
+
       ! Smooth out the cloud properties after doubling
       DO L = NSOLP+1,NTOTAL
           DO J = 2, NDBL-1, 2
@@ -436,7 +434,7 @@
               GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
           END DO
       END DO
-      
+
 
       iradgas = 1
       DO J = 1,NLAYER
