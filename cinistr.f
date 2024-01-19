@@ -227,25 +227,25 @@ C
 C                                                                         
 C        Code for restart and normal mode perturbation runs.              
 C        assume spectral data is set up non-dimensionalised               
-C        on a history (LSHORT) or restart (.NOT.LSHORT) record.           
-C                                                                         
+C        on a history (LSHORT) or restart (.NOT.LSHORT) record.
+C
          DAYNEAR=-9999.5 ! allows desired day no. = 0                     
-         IF (LSHORT) THEN                                                 
-            ID=10                                                            
+         IF (LSHORT) THEN
+            ID=10
   180       IF (NTRACO.EQ.0) THEN                                         
               READ(ID,END=1000)RKOUNT,RM1TAPE,DAY,Z,D,T,SP,RM2TAPE        
             ELSE                                                          
               READ(ID,END=1000)RKOUNT,RM1TAPE,DAY,DOY,Z,D,T               
      +             ,((TRA(I,KK),I=1,IGB),KK=1,NTRACO),SP,RM2TAPE          
             ENDIF                                                         
-            IF (ABS(RM1TAPE-RM2TAPE) .GT. 1.0E-03) THEN                   
+            IF (ABS(RM1TAPE-RM2TAPE) .GT. 1.0E-03) THEN
                WRITE(2,2010) ID                                           
                CALL ABORT                                                 
             ENDIF                                                         
-            IF (ABS(RM1TAPE-RNTAPO) .GT. 1.0E-03) THEN                    
+            IF (ABS(RM1TAPE-RNTAPO) .GT. 1.0E-03) THEN
                WRITE(2,2020) RM1TAPE,RNTAPO                               
                CALL ABORT                                                 
-            ENDIF                                                         
+            ENDIF
 C Extra read if restart record contains mass correction.                  
             IF (LMASOLD) THEN                                             
                READ(ID,END=1010) RK,RMT1,RDAY,RREC,GMSP0,GMSPMI,RMT2      
@@ -253,7 +253,9 @@ C Extra read if restart record contains mass correction.
                   WRITE(2,2110)                                           
                   CALL ABORT                                              
                ENDIF                                                      
-            ENDIF                                                         
+            ENDIF
+
+
             IF (ABS(DAY-BEGDAY) .GT. 1.0E-02) THEN                        
                IF (ABS(DAY-BEGDAY) .LT. ABS(DAYNEAR-BEGDAY)) THEN         
                   DAYNEAR = DAY                                           
@@ -265,7 +267,9 @@ C Extra read if restart record contains mass correction.
  1000       WRITE(2,2030) BEGDAY,DAYNEAR                                  
             CALL ABORT                                                    
  1010       WRITE(2,2130) DAY                                             
-            CALL ABORT                                                    
+            CALL ABORT
+
+
 C                                                                         
   200       KOUNT=NINT(RKOUNT)                                            
             WRITE(2,2040) ID,KOUNT,RM1TAPE,BEGDAY,DOY                     
@@ -296,29 +300,29 @@ C
                DO 185 J=1,IGB                                             
                   TRAMI(J,KK)=TRA(J,KK)                                   
   185       CONTINUE                                                      
-         ELSE                                                             
+         ELSE
             ID=11
-  181       IF (NTRACO.EQ.0) THEN                                         
+  181       IF (NTRACO.EQ.0) THEN
 C               READ(ID,END=1001)RKOUNT,RM1TAPE,DAY,Z,D,T,SP,RM2TAPE       
 C     +         ,ZMI,DMI,TMI,SPMI,HTNET,RM3TAPE                            
                READ(ID,END=1001)RKOUNT,RM1TAPE,DAY,DOY,Z,D,T,TRA,SP       
      +              ,RM2TAPE,ZMI,DMI,TMI,TRAMI,SPMI,HTNET,RM3TAPE                            
-            ELSE                                                          
+            ELSE
                READ(ID,END=1001)RKOUNT,RM1TAPE,DAY,DOY,Z,D,T              
      +             ,((TRA(I,KK),I=1,IGB),KK=1,NTRACO),SP,RM2TAPE          
      +             ,ZMI,DMI,TMI                                           
      +             ,((TRAMI(I,KK),I=1,IGB),KK=1,NTRACO),SPMI,             
      +             HTNET,RM3TAPE                                          
-            ENDIF                                                         
-            IF (ABS(RM1TAPE-RM2TAPE) .GT. 1.0E-03 .OR.                    
-     +          ABS(RM1TAPE-RM3TAPE) .GT. 1.0E-03) THEN                   
+            ENDIF
+            IF (ABS(RM1TAPE-RM2TAPE) .GT. 1.0E-03 .OR.
+     +          ABS(RM1TAPE-RM3TAPE) .GT. 1.0E-03) THEN
                WRITE(2,2011) ID                                           
                CALL ABORT                                                 
-            ENDIF                                                         
-            IF (ABS(RM1TAPE-RNTAPO) .GT. 1.0E-03) THEN                    
+            ENDIF
+            IF (ABS(RM1TAPE-RNTAPO) .GT. 1.0E-03) THEN
                WRITE(2,2021) RM1TAPE,RNTAPO                               
                CALL ABORT                                                 
-            ENDIF                                                         
+            ENDIF
 C Extra read if restart record contains mass correction.                  
             IF (LMASOLD) THEN                                             
                READ(ID,END=1011) RK,RMT1,RDAY,RREC,GMSP0,GMSPMI,RMT2      
@@ -339,7 +343,8 @@ C Extra read if restart record contains mass correction.
             CALL ABORT                                                    
  1011       WRITE(2,2130) DAY                                             
             CALL ABORT                                                    
-C                                                                         
+C
+
   201       KOUNT=NINT(RKOUNT)                                            
             WRITE(2,2041) ID,KOUNT,RM1TAPE,BEGDAY,DOY                     
             KTOTAL=KOUNT+KRUN                                             
@@ -353,8 +358,8 @@ C
             IF ((KTEMP.GT.0).AND.(KOUTH.EQ.0)) THEN                       
                KOUTH=KOUNTH                                               
             ENDIF                                                         
-         END IF                                                           
-C                                                                         
+         END IF
+C
          IF (LMASOLD) THEN                                                
             WRITE(2,2100) GMSP0*P0,GMSPMI*P0                              
          ENDIF                                                            
@@ -364,11 +369,11 @@ C
          IF (LRESTIJ) THEN                                                
             ID=13                                                         
   182       READ(ID,END=1002)RKOUNT,RM1TAPE,DAY,DOY,TTRES,RM2TAPE         
-            IF (ABS(RM1TAPE-RM2TAPE) .GT. 1.0E-03) THEN                   
+            IF (ABS(RM1TAPE-RM2TAPE) .GT. 1.0E-03) THEN
               WRITE(2,2012) ID                                            
               CALL ABORT                                                  
             ENDIF                                                         
-            IF (ABS(RM1TAPE-RNTAPO) .GT. 1.0E-03) THEN                    
+            IF (ABS(RM1TAPE-RNTAPO) .GT. 1.0E-03) THEN
                WRITE(2,2022) RM1TAPE,RNTAPO                               
                CALL ABORT                                                 
             ENDIF                                                         
@@ -421,7 +426,8 @@ c print out land mask
           write (2,'(128I1)')                                             
      $         (nint((gsg(i+mgpp,j)/(gsg(i+mgpp,j)+.1))),i=1,mg)          
         enddo                                                             
-      ENDIF                                                               
+      ENDIF
+
                                                                           
 C If BEGDOY=0 sets DOY from restart record - else                         
 C sets it from namelist                                                   

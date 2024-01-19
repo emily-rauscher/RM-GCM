@@ -232,7 +232,8 @@ C      write(*,*) 'second read in iniset'
 C      write(*,*) 'third read in iniset'
       READ(7,INPOP)                                                       
       IF (RNTAPO.EQ.-999.0) RNTAPO=RNTAPE                                 
-      WRITE(2,INPOP)                                                      
+      WRITE(2,INPOP)
+
 C                                                                         
 C     Set remaining physical constants.                                   
 C                                                                         
@@ -251,7 +252,9 @@ C
          WRITE(2,213)                                                     
       ELSE                                                                
          WRITE(2,214)                                                     
-      ENDIF                                                               
+      ENDIF
+
+
 C                                                                         
 C     Set resolution dependent quantities                                 
 C                                                                         

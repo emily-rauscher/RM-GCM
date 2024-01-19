@@ -52,22 +52,22 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
      +       ,LFLUX,LNOISE                                                
      +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT                           
 
-      CALL INIGAU 
+      CALL INIGAU
 
 !!KM Modif
       CALL INIVARPARAM
-      CALL INISI                                                          
-      CALL INIPHYS                                                        
-      IF (LRESTIJ) THEN                                                   
+      CALL INISI
+      CALL INIPHYS
+      IF (LRESTIJ) THEN
         CALL INIRESIJ                                                     
       ELSE                                                                
         CALL INIRES                                                       
-      ENDIF                                                               
-      CALL INISTR                                                         
+      ENDIF
+      CALL INISTR
 
 !! KM Modif
-!      CALL INISURF                                    
+!      CALL INISURF
       CALL INISIMPRAD
 
-      CALL INIQS                                                          
+      CALL INIQS
       END                                                                 

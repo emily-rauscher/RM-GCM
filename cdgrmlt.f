@@ -177,7 +177,6 @@ C
       RKP=1.0/KOUNTH                                                      
       DELT2C=DELT2
 
-
       IF(LSUM) THEN                                                       
          IF(KOUTH.EQ.1) THEN                                               
             do k=1,6                                                         

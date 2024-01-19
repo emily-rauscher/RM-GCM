@@ -280,8 +280,10 @@ C     FIRST THE COMMENT
       WRITE(*,*) THECOMMENT
 
 
+
       tripped=0.0
       CALL INISET
+
       tripped=1.0
 C     if not restart run, then use modified start to set TTRES, otherwise skip
       IF(.NOT.LRSTRT) THEN
@@ -297,6 +299,7 @@ C     &&&&&&&&&&&&&MODIFIED START &&&&&&&&&&&&&&
             TT(I)=0.0
             DTE(I)=0.0
          ENDDO
+
 
 C     Main loop over latitudes ( so says previous author, but it's NOT so for radiation  ~mtr)
 C
@@ -361,7 +364,6 @@ C
          CALL INISET
 C        &&&&&&&&&&&&&&& END MODIFIED START &&&&&&&&&&&&&&&
       ENDIF
-
       kflag=0
       CALL INITAL
 C     ER modif for output management
@@ -414,8 +416,6 @@ C         The loop for the radiative transfer code is as follows:
 !        So for speed, innermost is leftmost (and should ideally be
 !        smallest)
 !        THEREFORE, INDEX ORDER SHOULD BE: TAUAER(NL,MG,IHEM,JH)
-
-
 
 
 !@@@@@ HERE IS WHERE THE TIME STEP ITERATION LOOP BEGINS @@@@@@@@@@@@@@
@@ -695,6 +695,7 @@ C
            DOY=DOY+DELT/PI2
            IF (DOY.GE.361) DOY = DOY-360.0
          ENDIF
+
 C
 C Adiabatic part of timestep
 C
@@ -739,6 +740,7 @@ C
          IF (JGL.EQ.1) REWIND(25)
 C      REWIND NAVRD
 C      REWIND NAVWT
+
 
 
 !@@@@@@  HERE IS WHERE THE ITERATION OVER LATITUDE FOR  @@@@@@@@@@@@@@@@
