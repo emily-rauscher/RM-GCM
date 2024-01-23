@@ -24,7 +24,6 @@
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl)
 
-!
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
 !     *                        calculates pressure averaged   *
@@ -35,7 +34,6 @@
 !     * Such as adding more wavelength bins or mie calculations
 !     * then consult that program first.                      *
 !     * *******************************************************
-!
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
@@ -85,13 +83,9 @@
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
       real dpg(nl+1), pbar(nl+1)
       real dpgsub(2*nl+2), pbarsub(2*nl+2)
-
-      REAL PM
-
       real t(NLAYER), pr(NLAYER)
       integer i1, i2, indorder(5)
       logical all_ok
-
       integer ifsetup
       real ibinm
       real rfluxes_aerad(2,2,2)
@@ -286,19 +280,11 @@
                 k = k + 1
             END DO
         END DO
-
-        !Beta_V(1) = 1.0
-        !Beta_V(2) = 0.0
-        !Beta_V(3) = 0.0
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0
               Beta_V(2) = 0.0
               Beta_V(3) = 0.0
-
-              !Beta_V(1) = 0.3333
-              !Beta_V(2) = 0.3333
-              !Beta_V(3) = 0.3333
 
               Beta_IR(1) = 1.0
               Beta_IR(2) = 0.0
@@ -360,20 +346,14 @@
 
       IF (RAYSCAT) THEN
         DO J = 1,NLAYER
-
           ! Calculate the rayleigh scattering
-          !DO L = 1,NTOTAL
-          !  if( L .LE. NSOLP )then
-          !    TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
-          !  else
-          !    TAURAY(L,J)= 0.0
-          !  endif
-          !END DO
-
-          ! This is if you don't wany rayleigh scattering
-          TAURAY(1,J) = 0.
-          TAURAY(2,J) = 0.
-          TAURAY(3,J) = 0.
+          DO L = 1,NTOTAL
+            if( L .LE. NSOLP )then
+              TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
+            else
+              TAURAY(L,J)= 0.0
+            endif
+          END DO
         END DO
       ELSE
         DO 320 J     = 1,NLAYER
@@ -393,7 +373,6 @@
 !     COMPUTE PLANCK FUNCTION TABLE. WAVE IS IN UNITS OF MICRONS.
 !
 ! **********************************************************************
-
 !     Set <iblackbody_above> = 1 to include a source of radiation
 !     at the top of the radiative transfer model domain
 
@@ -404,7 +383,6 @@
 !     at wavelengths shorter than WAVE(NSOL+1) in PLANK(1)
 
       ibeyond_spectrum = 0
-
 
       RETURN
       END
