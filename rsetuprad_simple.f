@@ -319,7 +319,9 @@
      &        * MAX(1e-6, (P_PASS_SUB(J) / OPACIR_REFPRES))
             END DO
           ELSE
-            IR_ABS_COEFFICIENT(J) = ABSLW * MAX(1e-6, ((P_PASS_SUB(J) / OPACIR_REFPRES) ** OPACIR_POWERLAW))
+            DO J  = 1,(2*nl+2)
+              IR_ABS_COEFFICIENT(J) = ABSLW * MAX(1e-6, ((P_PASS_SUB(J) / OPACIR_REFPRES) ** OPACIR_POWERLAW))
+            END DO
           END IF
 
           ! Set the tau gas equal to the absorbtion coefficient times dpg
