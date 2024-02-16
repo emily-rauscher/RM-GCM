@@ -208,6 +208,10 @@
       PBAR(1)  = 10.0 ** (LOG10(PBAR(2)) - (LOG10(PBAR(3)) - LOG10(PBAR(2))))
       DPG(1)   = 10.0 ** (LOG10(DPG(2))  - (LOG10(DPG(3))  - LOG10(DPG(2))))
 
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !!!!!! New interpolation to smooth the layers a bit !!!!!!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       LOG_START = LOG(P_PASS(1))
       LOG_END = LOG(P_PASS(NLAYER))
       LOG_STEP = (LOG_END - LOG_START) / (2*NLAYER - 1)
@@ -227,6 +231,40 @@
       PBARSUB(1) = 10.0 ** (LOG10(PBARSUB(2)) - (LOG10(PBARSUB(3)) - LOG10(PBARSUB(2))))
       DPGSUB(1)  = 10.0 ** (LOG10(DPGSUB(2))  - (LOG10(DPGSUB(3))  - LOG10(DPGSUB(2))))
 
+
+
+
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !!!!!! Keeping Michael Roman's Old Regridding Just !!!!!!!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      IF (.FALSE.) THEN
+          PBAR(1)                = p_pass(1) * 1e-5
+          DPG(1)                 = (p_pass(1) * 10.0)/G
+
+          DO J  = 2,NLAYER
+              PBAR(J) = (p_pass(J)-p_pass(J-1))*1e-5
+              DPG(J)  = ((p_pass(J) * 10.0)-(p_pass(J-1)*10.0)) / G
+          END DO
+
+          K = 1
+          DO J  = 2, NDBL-1,2
+             L  =  J
+             PBARsub(L) =  ((pr(K)*10.0) - (p_pass(K) * 10.0))*1e-6
+             DPGsub (L) =  ((pr(K)*10.0) - (p_pass(K) * 10.0)) / G
+             K = K + 1
+             L = L + 1
+             PBARsub(L) =  ((p_pass(K) * 10.0) - (pr(K-1)*10.0))*1e-6
+             DPGsub (L) =  ((p_pass(K) * 10.0) - (pr(K-1)*10.0)) / G
+          END DO
+
+          PBARsub(NDBL) = PBARsub(NDBL-1) + ABS(PBARsub(NDBL-2) - PBARsub(NDBL-3))
+          DPGsub(NDBL)  = DPGsub(NDBL-1)  + ABS(DPGsub(NDBL-2)  - DPGsub(NDBL-3))
+
+          PBARsub(1) = PBAR(1)
+          DPGsub(1)  = DPG(1)
+      END IF
+
       TAURAY(:,:) = 0.0
       TAUAER(:,:) = 0.0
       TAUGAS(:,:) = 0.0
@@ -234,6 +272,13 @@
 
       WOL(:,:)    = 0.0
       GOL(:,:)    = 0.0
+
+      IF (picket_fence_optical_depths) THEN
+          IF (NIRP .EQ. 1) THEN
+              WRITE(*,*) 'Stopping! Running picket fence gas optics with the wrong number of channels'
+              STOP
+          ENDIF
+      ENDIF
 
       IF (picket_fence_optical_depths) THEN
         CALL opacity_wrapper(t, P_PASS, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
@@ -296,6 +341,8 @@
           ! Calculate the opacity power law
           ! Split it up into if statements for better efficiency
           ! If the opacity power law is zero, resume using double gray
+
+
           IF (OPACIR_POWERLAW.eq.0) THEN
             DO J  = 1,(2*nl+2)
               IR_ABS_COEFFICIENT(J) = ABSLW

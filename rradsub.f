@@ -272,6 +272,7 @@ C     globally averaged solar constant, vertical rays
           enddo
       enddo
 
+
       if( if_diurnal.eq. 1 ) then
         write(*,*)'if_diurnal ==1'
         write(*,*)'ntime',ntime

@@ -541,7 +541,6 @@ c     ntstep is the number of timesteps to skip.
               rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
               rrflux(im,jh,6)=fluxes(2,2,1)
 
-
 c             bottom heating rate is zero in morecret
               DO l=nl,1,-1
                 LD=NL+1-L

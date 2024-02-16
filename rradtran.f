@@ -556,7 +556,6 @@
           enddo
       ENDIF
 
-
 C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW
 C     2nd index - Direction 1=DN, 2=UP
