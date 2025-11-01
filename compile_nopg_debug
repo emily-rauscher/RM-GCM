@@ -3,9 +3,9 @@ make
 PRUNDIR='Planet_Run'
 rm -r $PRUNDIR
 mkdir $PRUNDIR
-cp 1DRT $PRUNDIR
+cp igcm3_nopg $PRUNDIR
 cp fort.7 $PRUNDIR/fort.7
 cd $PRUNDIR
 #(time ./igcm3_nopg) 2> runtime.txt
-./1DRT
+./igcm3_nopg
 cd ..

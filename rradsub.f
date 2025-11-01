@@ -24,7 +24,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom, fluxes, k_IRl, k_Vl, MUSTEL, ISF)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom, fluxes, k_IRl, k_Vl)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -107,7 +107,6 @@
       REAL SSLON,SSLAT  ! ER:
       REAL DLENGTH  ! ER: half-length of solar day
       real PI2
-      REAL MUSTEL, ISF
  582  FORMAT(I4,5(F12.3))
 
       ! Malsky what does this do???
@@ -167,34 +166,28 @@ C Setup SW code
 
 
 C     globally averaged solar constant, vertical rays
-   !    AMU0=1.0
-   !    PSOL=SOLC/4 * SQRT(3.0)
-   !    DAY = 1
-   !    IF(.NOT.L1DZENITH) THEN
-   !       DDAY=FORCE1DDAYS
-   !       IF(DAY.GT.DDAY) THEN
-   !          DFAC=MIN(1.0,(DAY - DDAY)/DDAY)
-   !          IF(.NOT.LDIUR) THEN
-   !             AMU0=(1.0-DFAC)*AMU0
-   !   &              +DFAC*MAX(0.0,SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)
-   !   &                           +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)
-   !   &                           *COS((ALON-SSLON)/360.*PI2))
-   !             PSOL=(1.0-DFAC)*PSOL/SQRT(3.0) + DFAC*SOLC
-   !          ELSE
-   !             PSOL=(1.0-DFAC)*PSOL/SQRT(3.0)+DFAC*SOLC/PI*
-   !   &              (SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)*DLENGTH
-   !   &              +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH))
-   !          ENDIF
-   !       ENDIF
-   !    ELSE
-   !       AMU0=1/SQRT(3.0)
-   !    ENDIF
-      ! write(*,*) 'AMU0 = ', AMU0, PSOL
-      ! Ignoring all that, we hardocde the values to be our inputs
-      AMU0 = MUSTEL
-      PSOL = SOLC * ISF / MUSTEL
-      ! write(*,*) 'MU, SOLC, ISF', MU, SOLC, ISF
-      ! write(*,*) 'AMU0 = ', AMU0, PSOL
+      AMU0=1.0
+      PSOL=SOLC/4. * SQRT(3.0)
+      IF(.NOT.L1DZENITH) THEN
+         DDAY=FORCE1DDAYS
+         IF(DAY.GT.DDAY) THEN
+            DFAC=MIN(1.0,(DAY - DDAY)/DDAY)
+            IF(.NOT.LDIUR) THEN
+               AMU0=(1.0-DFAC)*AMU0
+     &              +DFAC*MAX(0.0,SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)
+     &                           +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)
+     &                           *COS((ALON-SSLON)/360.*PI2))
+               PSOL=(1.0-DFAC)*PSOL/SQRT(3.0) + DFAC*SOLC
+            ELSE
+               PSOL=(1.0-DFAC)*PSOL/SQRT(3.0)+DFAC*SOLC/PI*
+     &              (SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)*DLENGTH
+     &              +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH))
+            ENDIF
+         ENDIF
+      ELSE
+         AMU0=1/SQRT(3.0)
+      ENDIF
+
 
       if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
           AMU0 = 0.0
@@ -240,7 +233,7 @@ C     globally averaged solar constant, vertical rays
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl, ISF)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl)
 
 
           call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
@@ -265,7 +258,7 @@ C     globally averaged solar constant, vertical rays
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD, ISF)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD)
 
           cheats = 0.
           cheati = 0.

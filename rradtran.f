@@ -19,7 +19,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, kount, ITSPD, ISF)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, kount, ITSPD)
 
 !
 !     **************************************************************
@@ -93,7 +93,7 @@
       REAL tauaer_temp(5, NL+1, 13)
       INTEGER j1
       real denom
-      real ISF
+
       integer L, J, K
 
       ! ADDING THESE
@@ -487,7 +487,7 @@
 510       CONTINUE
 
           do  i = 1, nsoL              
-              fsLd(i) = psol_aerad * incident_starlight_fraction * (Beta_V(i)) ! note: incident_starlight_fraction is mu0 here
+              fsLd(i) = psol_aerad * incident_starlight_fraction * (Beta_V(i))
               alb_toa(i) = fsLu(i)/fsLd(i)
               tsLu = tsLu + fsLu(i)
               total_downwelling = total_downwelling + fsLd(i)

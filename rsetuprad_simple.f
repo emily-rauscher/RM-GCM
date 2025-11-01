@@ -22,7 +22,7 @@
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl, ISF)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl)
 
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -105,7 +105,7 @@
       REAL :: LOG_START, LOG_END, LOG_STEP
       REAL, DIMENSION(NLAYER) :: P_PASS
       REAL, DIMENSION(2*NLAYER) :: P_PASS_SUB
-      REAL ISF
+
 ! ******************************************
 !            DEFINE CONSTANTS
 ! *****************************************
@@ -302,7 +302,7 @@
      &  qrad,alb_tomi,alb_toai, num_layers,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, ISF)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl)
 
         DO L = solar_calculation_indexer,NSOL
           DO J     =   1,NLAYER

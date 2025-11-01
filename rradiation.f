@@ -1,7 +1,7 @@
 C**********************************************************
 C             SUBROUTINE RADIATION
 C**********************************************************
-      SUBROUTINE RADIATION(TROPHT,IH, T, PR, MUSTEL, ISF)
+      SUBROUTINE RADIATION(TROPHT,IH)
 
 C     RADIATION SCHEME DERIVED FROM PREVIOUS CMORC.F AND THE
 C     TOON CODES (TOON ET AL 1989). THE SCHEME IS CURRENTLY DOUBLE GRAY
@@ -264,9 +264,6 @@ c     The following for parallel testing --MTR
       REAL tauaer_temp(5, NL+1, 13)
       INTEGER j1
       real denom
-      REAL :: MUSTEL, ISF
-      COMMON/ONEDRT/TTKPD(NL)
-      REAL :: TTKPD
 
 
 
@@ -313,7 +310,7 @@ c     ntstep is the number of timesteps to skip.
 
       IOFM=0
 
-      DO 800 ihem=1,1!nhem
+      DO 800 ihem=1,nhem
         IF (mod(kount,ntstep) .eq. 0) THEN
           ilast=0
 
@@ -399,7 +396,7 @@ c     ntstep is the number of timesteps to skip.
 !     &    firstprivate(ilast),
 !     &    lastprivate(ilast))
 
-          DO i=1,1!mg
+          DO i=1,mg
 
             im=i+iofm
             idocalc=0
@@ -424,21 +421,19 @@ c     ntstep is the number of timesteps to skip.
                 ENDIF
               ENDIF
             ENDIF
-            PLG(im) = 1
 
             IF (idocalc.eq.1) then
               DO LD=1,NL    ! Start of loop over column.
-                ! L=NL-LD+2  ! Reverse index (Morc goes bottom up).
-                ! PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure
-                ! PRB2T(L)=PR(LD)
-                ! T(LD)=TG(im,ld)*CT ! Temperature
+                L=NL-LD+2  ! Reverse index (Morc goes bottom up).
+                PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure
+                PRB2T(L)=PR(LD)
+                T(LD)=TG(im,ld)*CT ! Temperature
                 AEROPROF(LD)=0.0
               ENDDO
 
               AEROPROF(NL+1)=0.0
-              ! PRB2T(1)=PLG(im)*P0
-              ! PR(NL+1)=PLG(im)*P0 ! let's not update this in 1-D
-
+              PRB2T(1)=PLG(im)*P0
+              PR(NL+1)=PLG(im)*P0
               T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
 
               alat1=alat(JH)*REAL(-(ihem*2.)+3)
@@ -473,7 +468,7 @@ c     ntstep is the number of timesteps to skip.
 !             LAYER EDGES AT WHICH FLUXES ARE COMPUTED, p_pass.
 
               DO LD    = 1,NL-1
-                p_pass(LD+1)= (pr(LD) + pr(LD+1))/2. !POW(10,(LOG10(pr(LD))+LOG10(pr(LD+1)))/2.)
+                p_pass(LD+1)=(pr(LD)+pr(LD+1))/2.
               ENDDO
 
               p_pass(NL+1)=PR(NL+1)
@@ -532,9 +527,9 @@ c     ntstep is the number of timesteps to skip.
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V, k_IRl, k_Vl, MUSTEL, ISF)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V, k_IRl, k_Vl)
 
-              ! pr=prb2t
+              pr=prb2t
 
               PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-fluxes(2,2,1)
               SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-fluxes(2,2,2)
@@ -552,7 +547,6 @@ c             bottom heating rate is zero in morecret
                 IM=I+IOFM
                 HTNETO=HTNET(IHem,JH,I,LD)
                 htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
-                TTKPD(LD)= (HTNETO+HTNET(IHEM,JH,I,LD))
                 TTRD(IM,LD)=(HTNETO+HTNET(IHEM,JH,I,LD))/(CHRF*2.0)
               ENDDO
 

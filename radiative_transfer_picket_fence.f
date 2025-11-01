@@ -18,7 +18,7 @@
      &  qrad,alb_tomi,alb_toai, num_layers,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, ISF)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl)
 
           include 'rcommons.h'
 
@@ -44,7 +44,7 @@
           real, dimension(3, NL+1) :: k_Vl
 
           integer :: NLAYER, J, k
-          real :: Tirr, Tint, gravity_SI, ISF, incident_starlight_fraction
+          real :: Tirr, Tint, gravity_SI, incident_starlight_fraction
 
           real, dimension(NIRP) :: Beta_IR
           real, dimension(NSOLP) :: Beta_V
@@ -80,13 +80,13 @@
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
 
-          CALL calculate_opacities(NLAYER, NSOLP, NIRP, ISF, Tirr, Tint,
+          CALL calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction, Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
      &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl, TOAALB)
 
       end subroutine opacity_wrapper
 
-      subroutine calculate_opacities(NLAYER, NSOLP, NIRP, ISF,
+      subroutine calculate_opacities(NLAYER, NSOLP, NIRP, incident_starlight_fraction,
      &                               Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
      &                               Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY, pe, k_IRl, k_Vl, TOAALB)
         ! Input:
@@ -108,7 +108,7 @@
         real, dimension(NSOLP) :: Beta_V, gam_V
         real, dimension(NIRP) :: Beta_IR
         integer :: k, NLAYER, J, NSOLP, NIRP, i
-        real :: Teff, Tint, Tirr, ISF
+        real :: Teff, Tint, Tirr, incident_starlight_fraction
 
         real :: R,gravity_SI
         real :: aP, bP, cP
@@ -136,7 +136,7 @@
         Bond_Albedo = TOAALB
 
         !! Recalculate Teff and then find parameters
-        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * ISF *
+        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         ! Log 10 T_eff variables
