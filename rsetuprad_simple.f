@@ -60,7 +60,7 @@
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
       real, dimension(2, NL+1) :: k_IRl
-      real, dimension(2, 2*NL+2) :: k_irl_doubled
+      ! real, dimension(2, 2*NL+2) :: k_irl_doubled
 
       real, dimension(3, NL+1) :: k_Vl
 
@@ -304,50 +304,50 @@
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl)
 
-        DO L = solar_calculation_indexer,NSOL
-          DO J     =   1,NLAYER
-            TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J) ! 10 converts from m^2/kg to cm^2/g
-          END DO
-        END DO
-        k_irl_doubled = 0.0
-        ! smooth out the IR opacities to twice the resolution (linear interpolation)
-        DO L = NSOL+1,NTOTAL
-          k = 1
-          DO J     =   1,NDBL, 2
-            k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
-            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,k+1)) / 2.0
-            k = k + 1
-          END DO
-        END DO
-        DO L  = NSOL+1,NTOTAL
-          DO J     =   1,NDBL
-            TAUGAS(L,J) = k_irl_doubled(L-NSOL,J)*10. * DPGSUB(J) ! 10 converts from m^2/kg to cm^2/g
-          END DO
-        END DO
+        ! DO L = solar_calculation_indexer,NSOL
+        !   DO J     =   1,NLAYER
+        !     TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J) ! 10 converts from m^2/kg to cm^2/g
+        !   END DO
+        ! END DO
+        ! k_irl_doubled = 0.0
+        ! ! smooth out the IR opacities to twice the resolution (linear interpolation)
+        ! DO L = NSOL+1,NTOTAL
+        !   k = 1
+        !   DO J     =   1,NDBL, 2
+        !     k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
+        !     k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,k+1)) / 2.0
+        !     k = k + 1
+        !   END DO
+        ! END DO
+        ! DO L  = NSOL+1,NTOTAL
+        !   DO J     =   1,NDBL
+        !     TAUGAS(L,J) = k_irl_doubled(L-NSOL,J)*10. * DPGSUB(J) ! 10 converts from m^2/kg to cm^2/g
+        !   END DO
+        ! END DO
     ! Removed in v5.2
-    !     DO L = solar_calculation_indexer,NSOLP
-    !       tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
-    !     END DO
+        DO L = solar_calculation_indexer,NSOLP
+          tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
+        END DO
 
-    !     DO L = NSOLP+1, NTOTAL
-    !       tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
-    !  &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
-    !     END DO
+        DO L = NSOLP+1, NTOTAL
+          tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
+     &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
+        END DO
 
-    !     DO L = solar_calculation_indexer,NSOLP
-    !         DO J = 1,NLAYER
-    !             TAUGAS(L,J) = tau_Ve(L,J)
-    !         END DO
-    !     END DO
+        DO L = solar_calculation_indexer,NSOLP
+            DO J = 1,NLAYER
+                TAUGAS(L,J) = tau_Ve(L,J)
+            END DO
+        END DO
 
-    !     DO L = NSOLP+1, NTOTAL
-    !         k  =  1
-    !         DO  J = 1,NDBL,2
-    !             TAUGAS(L, J)   = tau_IRe(L - NSOLP, k)
-    !             TAUGAS(L, J+1) = tau_IRe(L - NSOLP, k)+ ABS(tau_IRe(L - NSOLP,k) - tau_IRe(L - NSOLP,k+1)) / 2.0
-    !             k = k + 1
-    !         END DO
-    !     END DO
+        DO L = NSOLP+1, NTOTAL
+            k  =  1
+            DO  J = 1,NDBL,2
+                TAUGAS(L, J)   = tau_IRe(L - NSOLP, k)
+                TAUGAS(L, J+1) = tau_IRe(L - NSOLP, k)+ ABS(tau_IRe(L - NSOLP,k) - tau_IRe(L - NSOLP,k+1)) / 2.0
+                k = k + 1
+            END DO
+        END DO
       ELSE
           if (NSOLP .gt. 1) then
               Beta_V(1) = 1.0

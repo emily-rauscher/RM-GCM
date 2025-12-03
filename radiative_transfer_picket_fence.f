@@ -279,8 +279,8 @@
           ! k_IRl(1,k) = 1.e-3
 
           ! Removed in v5.2, optical depths are now calculated from opacities in rsetupradsimple.f
-          ! tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
-          ! tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
+          tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
+          tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do
       end subroutine calculate_opacities
 
