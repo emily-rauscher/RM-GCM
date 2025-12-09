@@ -13,5 +13,6 @@ rm -r Planet_Run
 mkdir Planet_Run
 cp igcm3_nopg Planet_Run
 cp fort.7 Planet_Run
+./record_git_details && cp version.txt Planet_Run || echo "Version status unavailable"
 cd Planet_Run
 ./igcm3_nopg
