@@ -287,13 +287,13 @@
               tauaer_temp(:,J,I) = 0.0
           END DO
 
-          if ((TOPLEV(I) + 5 .le. NLAYER) .and. (TOPLEV(I) .ne. 0)) THEN
-              tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.167
-              tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.333
-              tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.5
-              tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.667
-              tauaer_temp(:,TOPLEV(I)+5,I) = tauaer_temp(:,TOPLEV(I)+5,I)*0.833
-          ENDIF
+        !   if ((TOPLEV(I) + 5 .le. NLAYER) .and. (TOPLEV(I) .ne. 0)) THEN
+        !       tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.167
+        !       tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.333
+        !       tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.5
+        !       tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.667
+        !       tauaer_temp(:,TOPLEV(I)+5,I) = tauaer_temp(:,TOPLEV(I)+5,I)*0.833
+        !   ENDIF
       END DO
 
 
