@@ -197,6 +197,7 @@
           REAL CORFACT(80)
           REAL TCONDS(6, 80, 13)
           REAL DUMMY_TCONDS(NCLOUDS+1, 80) ! +1 is pressure axis in the files
+          REAL TAPER(80) ! the idea is to have this array apply from the cloud base upward, not sure this is the right length for it
 
           REAL KE_OPPR(5, 100, 100, 13)
           REAL PI0_OPPR(5, 100, 100, 13)
@@ -228,7 +229,8 @@
      &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
      &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
+     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi,
+     &                              TAPER
 
           haze_type = 'soot'
           if (haze_type .eq. 'soot') THEN
@@ -1011,6 +1013,16 @@
           ! 13) Al2O3   || 1.385e-6
 
       CORFACT =   (/1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
+     &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000/)
+      TAPER =   (/1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,
      &              1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,

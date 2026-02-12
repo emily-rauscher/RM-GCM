@@ -59,7 +59,7 @@
       REAL tauaer_temp(NTOTAL, NLAYER, NCLOUDS)
 
       REAL CLOUDLOC(NL+1,NCLOUDS)
-      INTEGER BASELEV
+      INTEGER BASELEV(NCLOUDS)
       INTEGER TOPLEV(NCLOUDS)
 
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
@@ -101,6 +101,7 @@
       REAL, dimension (500) :: HAZE_WAV_GRID
       REAL, dimension (100)  :: CLOUD_WAV_GRID
       REAL exp_92_lnsig2_pi
+      REAL TAPER(80)
       COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW,
      &                              CORFACT,
@@ -111,7 +112,8 @@
      &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
      &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
+     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi,
+     &                              TAPER
 
       
 
@@ -245,8 +247,8 @@
               CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
 
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-              BASELEV = MAXVAL(CLOUDLOC(:,I),1)
-              TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
+              BASELEV(I) = MAXVAL(CLOUDLOC(:,I),1)
+              TOPLEV(I)  = max(BASELEV(I)-AERLAYERS,0)
 
               ! DPG is CGS before that 10x
               IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
@@ -294,6 +296,14 @@
               tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.667
               tauaer_temp(:,TOPLEV(I)+5,I) = tauaer_temp(:,TOPLEV(I)+5,I)*0.833
           ENDIF
+      END DO
+      ! Thomas: apply TAPER to the cloud optical depth starting at the cloud base
+      DO I = 1,NCLOUDS
+          K = 80 ! length of TAPER
+          DO J = BASELEV(I), 1, -1 ! from lowest layer, upward to the top of the atmosphere
+              tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K)
+              K = K - 1
+          END DO
       END DO
 
 
