@@ -101,7 +101,7 @@
       REAL, dimension (500) :: HAZE_WAV_GRID
       REAL, dimension (100)  :: CLOUD_WAV_GRID
       REAL exp_92_lnsig2_pi
-      REAL TAPER(80)
+      REAL TAPER(65)
       COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW,
      &                              CORFACT,
@@ -299,7 +299,7 @@
       END DO
       ! Thomas: apply TAPER to the cloud optical depth starting at the cloud base
       DO I = 1,NCLOUDS
-          K = 80 ! length of TAPER
+          K = 65 ! length of TAPER
           DO J = cloud_base_index_global_prev, 1, -1 ! from lowest layer, upward to the top of the atmosphere
               tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K) ! doesn't touch any layers beneath the chosen cloud's cloud base
               K = K - 1
