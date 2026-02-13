@@ -114,8 +114,8 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi,
      &                              TAPER
-
-      
+      COMMON /CLOUDBASE/ cloud_base_index_global, cloud_base_index_global_prev, cloud_spec_index
+      INTEGER cloud_base_index_global, cloud_base_index_global_prev, cloud_spec_index
 
       ! THE THREE Condensation curve sets are for 1X, 100X, and 300X Met
       ! Sorry that this is bad code
@@ -300,12 +300,20 @@
       ! Thomas: apply TAPER to the cloud optical depth starting at the cloud base
       DO I = 1,NCLOUDS
           K = 80 ! length of TAPER
-          DO J = BASELEV(I), 1, -1 ! from lowest layer, upward to the top of the atmosphere
-              tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K)
+          DO J = cloud_base_index_global_prev, 1, -1 ! from lowest layer, upward to the top of the atmosphere
+              tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K) ! doesn't touch any layers beneath the chosen cloud's cloud base
               K = K - 1
           END DO
       END DO
-
+      ! record the cloud base location for next time step
+      DO J = NLAYER, 1, -1
+          IF (tauaer_temp(1,J,cloud_spec_index) .gt. 0.0) THEN
+            !   write(*,*) 'there is some cloud at level', J, 'with optical depth of', tauaer_temp(1,J,cloud_spec_index)
+              cloud_base_index_global = MAX(cloud_base_index_global, J)
+              EXIT
+          END IF
+      END DO
+    !   write(*,*) 'Cloud base level is at layer', cloud_base_index_global
 
       IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
           !     SW AT STANDARD VERTICAL RESOLUTION

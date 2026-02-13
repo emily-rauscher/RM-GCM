@@ -78,7 +78,8 @@ C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.
      +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT
 C
 C
-
+      COMMON /CLOUDBASE/ cloud_base_index_global, cloud_base_index_global_prev, cloud_spec_index
+      integer cloud_base_index_global, cloud_base_index_global_prev, cloud_spec_index
 
 C     Constants and arrays needed for the fast Fourier transforms
 C
@@ -747,6 +748,13 @@ C      REWIND NAVWT
 !@@@@@@  THE RADIATIVE TRANSFER BEGINS. SHOULD BE PARALELLIZED @@@@@@@@@
 
          JL=1
+         cloud_spec_index = 7 ! selecting Mg2SiO4
+         ! write(*,*) 'cloud base index global', cloud_base_index_global
+         cloud_base_index_global_prev = cloud_base_index_global
+         if (MOD(KOUNT, NTSTEP_IN) .EQ. 0) then
+            cloud_base_index_global = 0
+         endif
+         ! write(*,*) 'cloud base index global prev', cloud_base_index_global_prev
          DO 260 IH=1,JG
             JH=IH
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
