@@ -1040,7 +1040,7 @@
 
       ! The condensation curves get read from file now instead of being hardcoded. in CLOUD_DATA, there should be both the orig (50 pressures, from Eliza Kempton's group) and new (80 pressures, interpolated) files for each metallicity.
       ! The first column is pressure (cgs), then each cloud species gets its own column in the usual order
-      open(UNIT=10, FILE='../CLOUD_DATA/condcurves_1xsolar_new.txt')
+      open(UNIT=10, FILE='../CLOUD_DATA/condcurves_1xsolar_Mg2SiO4fixed_new.txt')
       read(10,*) dummy_tconds
       close(10)
       ! write(*,*) dummy_tconds(2,:)
