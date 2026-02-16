@@ -281,6 +281,9 @@ C     FIRST THE COMMENT
       WRITE(*,*) THECOMMENT
 
 
+      cloud_base_index_global_prev = 50
+      cloud_base_index_global = 0
+      cloud_spec_index = 7 ! selecting Mg2SiO4
 
       tripped=0.0
       CALL INISET
@@ -748,9 +751,9 @@ C      REWIND NAVWT
 !@@@@@@  THE RADIATIVE TRANSFER BEGINS. SHOULD BE PARALELLIZED @@@@@@@@@
 
          JL=1
-         cloud_spec_index = 7 ! selecting Mg2SiO4
          ! write(*,*) 'cloud base index global', cloud_base_index_global
-         cloud_base_index_global_prev = cloud_base_index_global
+         ! write(*,*) 'cloud base index global prev', cloud_base_index_global_prev
+         
          if (MOD(KOUNT, NTSTEP_IN) .EQ. 0) then
             cloud_base_index_global = 0
          endif
@@ -864,6 +867,9 @@ C
             CALL LTDDIA
             JL=JL+JINC
  260     CONTINUE
+         if (MOD(KOUNT, NTSTEP_IN) .EQ. 0) then
+            cloud_base_index_global_prev = cloud_base_index_global
+         endif
 C
 C Write zonally averaged diagnostics and spectral heating
 C to history file.

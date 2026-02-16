@@ -298,11 +298,17 @@
         !   ENDIF
       END DO
       ! Thomas: apply TAPER to the cloud optical depth starting at the cloud base
-      DO I = 1,NCLOUDS
+      DO I = 1, NCLOUDS
           K = 65 ! length of TAPER
           DO J = cloud_base_index_global_prev, 1, -1 ! from lowest layer, upward to the top of the atmosphere
               tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K) ! doesn't touch any layers beneath the chosen cloud's cloud base
               K = K - 1
+    !           if (i .eq. cloud_spec_index) then
+    !             write(*,*) 'Applying TAPER to cloud', I, 'at layer', J, 'with original optical depth of',
+    !  & tauaer_temp(1,J,I), 'and new optical depth of', tauaer_temp(1,J,I)*TAPER(K)
+    !             write(*,*) 'TAPER value is', TAPER(K)
+    !             write(*,*) 'Cloud base index global prev is', cloud_base_index_global_prev
+    !           endif
           END DO
       END DO
       ! record the cloud base location for next time step
@@ -417,6 +423,7 @@
       ramp = 0.0  ! Set an appropriate value for ramp (days)
       ! Apply a ramp to the cloud properties
       IF (KOUNT/ITSPD .LT. ramp) THEN
+    !    write(*,*) 'Ramping up the cloud properties by a factor of:', (KOUNT/ITSPD)/ramp
        factor = (KOUNT/ramp)/ITSPD
        ! write(*,*) 'Ramping up the cloud properties by a factor of:', factor
        ! write(*,*) 'TAUAER before ramp:', TAUAER
