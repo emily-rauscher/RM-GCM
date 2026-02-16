@@ -754,10 +754,6 @@ C      REWIND NAVWT
          ! write(*,*) 'cloud base index global', cloud_base_index_global
          ! write(*,*) 'cloud base index global prev', cloud_base_index_global_prev
          
-         if (MOD(KOUNT, NTSTEP_IN) .EQ. 0) then
-            cloud_base_index_global = 0
-         endif
-         ! write(*,*) 'cloud base index global prev', cloud_base_index_global_prev
          DO 260 IH=1,JG
             JH=IH
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
@@ -869,6 +865,7 @@ C
  260     CONTINUE
          if (MOD(KOUNT, NTSTEP_IN) .EQ. 0) then
             cloud_base_index_global_prev = cloud_base_index_global
+            cloud_base_index_global = 0
          endif
 C
 C Write zonally averaged diagnostics and spectral heating

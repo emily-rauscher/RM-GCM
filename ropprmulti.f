@@ -298,27 +298,30 @@
         !   ENDIF
       END DO
       ! Thomas: apply TAPER to the cloud optical depth starting at the cloud base
-      DO I = 1, NCLOUDS
-          K = 65 ! length of TAPER
-          DO J = cloud_base_index_global_prev, 1, -1 ! from lowest layer, upward to the top of the atmosphere
-              tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K) ! doesn't touch any layers beneath the chosen cloud's cloud base
-              K = K - 1
-    !           if (i .eq. cloud_spec_index) then
-    !             write(*,*) 'Applying TAPER to cloud', I, 'at layer', J, 'with original optical depth of',
-    !  & tauaer_temp(1,J,I), 'and new optical depth of', tauaer_temp(1,J,I)*TAPER(K)
-    !             write(*,*) 'TAPER value is', TAPER(K)
-    !             write(*,*) 'Cloud base index global prev is', cloud_base_index_global_prev
-    !           endif
-          END DO
-      END DO
       ! record the cloud base location for next time step
       DO J = NLAYER, 1, -1
-          IF (tauaer_temp(1,J,cloud_spec_index) .gt. 0.0) THEN
-            !   write(*,*) 'there is some cloud at level', J, 'with optical depth of', tauaer_temp(1,J,cloud_spec_index)
+          IF (tauaer_temp(NSOLP+1,J,cloud_spec_index) .gt. 0.0) THEN
+            !   write(*,*) 'there is some cloud at level', J, 'with optical depth of', tauaer_temp(NSOLP+1,J,cloud_spec_index)
+            !   write(*,*) 'this corresponds to P = ', p_pass(J), 'Pa and T = ', TT(J), 'K'
               cloud_base_index_global = MAX(cloud_base_index_global, J)
               EXIT
           END IF
       END DO
+      
+      DO I = 1, NCLOUDS
+          K = 65 ! length of TAPER
+          DO J = cloud_base_index_global_prev, 1, -1 ! from lowest layer, upward to the top of the atmosphere
+    !           if (i .eq. cloud_spec_index) then
+    !             write(*,*) 'Applying TAPER to cloud', I, 'at layer', J, 'with original optical depth of',
+    !  & tauaer_temp(1,J,I), 'and new optical depth of', tauaer_temp(1,J,I)*TAPER(K)
+    !             write(*,*) 'TAPER value is', TAPER(K)
+    !             ! write(*,*) 'Cloud base index global prev is', cloud_base_index_global_prev
+    !           endif
+              tauaer_temp(:,J,I) = tauaer_temp(:,J,I)*TAPER(K) ! doesn't touch any layers beneath the chosen cloud's cloud base
+              K = K - 1
+          END DO
+      END DO
+      
     !   write(*,*) 'Cloud base level is at layer', cloud_base_index_global
 
       IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
