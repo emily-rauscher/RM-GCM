@@ -19,7 +19,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, kount)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, kount, ITSPD)
 
 !
 !     **************************************************************
@@ -56,6 +56,7 @@
 
       REAL ttsub(2*NL+2)
 
+      integer ITSPD
       integer, parameter :: nwave_alb = NTOTAL
       real wavea(nwave_alb),albedoa(nwave_alb),t(NZ)
       real maxopd(nwave_alb)
@@ -204,7 +205,7 @@
      &                   tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &                   qrad,alb_tomi,alb_toai, p_pass,
-     &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount)
+     &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD)
       ELSE
           write(*,*) 'ERROR! Something is off about your version. Check with Isaac'
           STOP

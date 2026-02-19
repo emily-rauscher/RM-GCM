@@ -258,7 +258,7 @@ C     globally averaged solar constant, vertical rays
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD)
 
           cheats = 0.
           cheati = 0.

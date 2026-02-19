@@ -15,7 +15,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, p_pass,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, ITSPD)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -48,6 +48,8 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toais
 
+      INTEGER ITSPD
+      REAL FACTOR, RAMP
       REAL DENOM
       REAL DPG(NLAYER), p_pass(NLAYER), layer_pressure_bar(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
@@ -63,17 +65,17 @@
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
       real, dimension(NIR+NSOL,NL+1) :: TAU_HAZE
 
-      ! These are hardcoded to 50 but they are just lookup tables
+      ! These are hardcoded to 100 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
-      real, dimension(50) :: input_temperature_array
-      real, dimension(50) :: input_pressure_array_cgs
+      real, dimension(100) :: input_temperature_array
+      real, dimension(80) :: input_pressure_array_cgs
 
-      real, dimension(50) :: input_particle_size_array_in_meters
-      real, dimension(50) :: particle_size_vs_layer_array_in_meters
+      real, dimension(100) :: input_particle_size_array_in_meters
+      real, dimension(80) :: particle_size_vs_layer_array_in_meters
 
-      REAL QE_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
-      REAL PI0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
-      REAL G0_OPPR(NSOL + NIR, 50, 50, NCLOUDS)
+      REAL KE_OPPR(NSOL + NIR, 100, 100, NCLOUDS)
+      REAL PI0_OPPR(NSOL + NIR, 100, 100, NCLOUDS)
+      REAL G0_OPPR(NSOL + NIR, 100, 100, NCLOUDS)
 
       ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
       real, dimension(50, 100)  :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
@@ -81,8 +83,8 @@
       real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
       real, dimension(100)      :: haze_pressure_array_pascals
 
-      REAL TCONDS(5,51,NCLOUDS)
-      REAL CORFACT(51)
+      REAL TCONDS(6,80,NCLOUDS)
+      REAL CORFACT(80)
 
       REAL DENSITY(NCLOUDS)
       REAL FMOLW(NCLOUDS)
@@ -97,9 +99,9 @@
       real particle_size
 
       REAL, dimension (500) :: HAZE_WAV_GRID
-      REAL, dimension (50)  :: CLOUD_WAV_GRID
-
-      COMMON /CLOUD_PROPERTIES/ TCONDS, QE_OPPR, PI0_OPPR, G0_OPPR,
+      REAL, dimension (100)  :: CLOUD_WAV_GRID
+      REAL exp_92_lnsig2_pi
+      COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW,
      &                              CORFACT,
      &                              input_particle_size_array_in_meters,
@@ -109,56 +111,9 @@
      &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
      &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals
+     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
 
-      ! This really should be moved to cloud_properties_set_up
-      HAZE_WAV_GRID = (/0.1, 0.101, 0.102, 0.103, 0.104, 0.105, 0.107, 0.108, 0.109, 0.11, 0.111, 0.112, 0.114,
-     &                  0.115, 0.116, 0.117, 0.119, 0.12, 0.121, 0.122, 0.124, 0.125, 0.126, 0.128, 0.129, 0.13,
-     &                  0.132, 0.133, 0.135, 0.136, 0.138, 0.139, 0.14, 0.142, 0.143, 0.145, 0.147, 0.148, 0.15,
-     &                  0.151, 0.153, 0.155, 0.156, 0.158, 0.16, 0.161, 0.163, 0.165, 0.166, 0.168, 0.17, 0.172,
-     &                  0.174, 0.176, 0.177, 0.179, 0.181, 0.183, 0.185, 0.187, 0.189, 0.191, 0.193, 0.195, 0.197,
-     &                  0.199, 0.202, 0.204, 0.206, 0.208, 0.21, 0.213, 0.215, 0.217, 0.219, 0.222, 0.224, 0.227,
-     &                  0.229, 0.231, 0.234, 0.236, 0.239, 0.241, 0.244, 0.247, 0.249, 0.252, 0.255, 0.257, 0.26,
-     &                  0.263, 0.266, 0.268, 0.271, 0.274, 0.277, 0.28, 0.283, 0.286, 0.289, 0.292, 0.295, 0.299,
-     &                  0.302, 0.305, 0.308, 0.311, 0.315, 0.318, 0.322, 0.325, 0.328, 0.332, 0.335, 0.339, 0.343,
-     &                  0.346, 0.35, 0.354, 0.358, 0.361, 0.365, 0.369, 0.373, 0.377, 0.381, 0.385, 0.389, 0.393,
-     &                  0.398, 0.402, 0.406, 0.41, 0.415, 0.419, 0.424, 0.428, 0.433, 0.437, 0.442, 0.447, 0.452,
-     &                  0.456, 0.461, 0.466, 0.471, 0.476, 0.481, 0.487, 0.492, 0.497, 0.502, 0.508, 0.513, 0.519,
-     &                  0.524, 0.53, 0.535, 0.541, 0.547, 0.553, 0.559, 0.564, 0.57, 0.577, 0.583, 0.589, 0.595,
-     &                  0.602, 0.608, 0.615, 0.621, 0.628, 0.634, 0.641, 0.648, 0.655, 0.662, 0.669, 0.676, 0.683,
-     &                  0.691, 0.698, 0.705, 0.713, 0.721, 0.728, 0.736, 0.744, 0.752, 0.76, 0.768, 0.776, 0.784,
-     &                  0.793, 0.801, 0.81, 0.819, 0.827, 0.836, 0.845, 0.854, 0.863, 0.872, 0.882, 0.891, 0.901,
-     &                  0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.991, 1.002, 1.012, 1.023, 1.034, 1.045,
-     &                  1.056, 1.067, 1.079, 1.09, 1.102, 1.114, 1.126, 1.138, 1.15, 1.162, 1.174, 1.187, 1.2,
-     &                  1.212, 1.225, 1.238, 1.252, 1.265, 1.279, 1.292, 1.306, 1.32, 1.334, 1.348, 1.363, 1.377,
-     &                  1.392, 1.407, 1.422, 1.437, 1.452, 1.468, 1.483, 1.499, 1.515, 1.531, 1.548, 1.564, 1.581,
-     &                  1.598, 1.615, 1.632, 1.65, 1.667, 1.685, 1.703, 1.721, 1.74, 1.758, 1.777, 1.796, 1.815,
-     &                  1.834, 1.854, 1.874, 1.894, 1.914, 1.934, 1.955, 1.976, 1.997, 2.018, 2.04, 2.062, 2.084,
-     &                  2.106, 2.128, 2.151, 2.174, 2.197, 2.221, 2.244, 2.268, 2.293, 2.317, 2.342, 2.367, 2.392,
-     &                  2.418, 2.443, 2.47, 2.496, 2.523, 2.549, 2.577, 2.604, 2.632, 2.66, 2.688, 2.717, 2.746,
-     &                  2.775, 2.805, 2.835, 2.865, 2.896, 2.927, 2.958, 2.99, 3.022, 3.054, 3.086, 3.119, 3.153,
-     &                  3.186, 3.22, 3.255, 3.289, 3.325, 3.36, 3.396, 3.432, 3.469, 3.506, 3.543, 3.581, 3.619,
-     &                  3.658, 3.697, 3.736, 3.776, 3.817, 3.857, 3.899, 3.94, 3.982, 4.025, 4.068, 4.111, 4.155,
-     &                  4.199, 4.244, 4.289, 4.335, 4.382, 4.428, 4.476, 4.523, 4.572, 4.62, 4.67, 4.72, 4.77,
-     &                  4.821, 4.872, 4.924, 4.977, 5.03, 5.084, 5.138, 5.193, 5.248, 5.304, 5.361, 5.418, 5.476,
-     &                  5.534, 5.594, 5.653, 5.714, 5.775, 5.836, 5.898, 5.961, 6.025, 6.089, 6.154, 6.22, 6.286,
-     &                  6.354, 6.421, 6.49, 6.559, 6.629, 6.7, 6.772, 6.844, 6.917, 6.991, 7.065, 7.141, 7.217,
-     &                  7.294, 7.372, 7.451, 7.53, 7.61, 7.692, 7.774, 7.857, 7.941, 8.025, 8.111, 8.198, 8.285,
-     &                  8.374, 8.463, 8.553, 8.645, 8.737, 8.83, 8.924, 9.02, 9.116, 9.213, 9.312, 9.411, 9.511,
-     &                  9.613, 9.716, 9.819, 9.924, 10.03, 10.137, 10.245, 10.355, 10.465, 10.577, 10.69, 10.804,
-     &                  10.919, 11.036, 11.154, 11.273, 11.393, 11.515, 11.638, 11.762, 11.887, 12.014, 12.143,
-     &                  12.272, 12.403, 12.536, 12.669, 12.805, 12.941, 13.079, 13.219, 13.36, 13.503, 13.647,
-     &                  13.793, 13.94, 14.089, 14.239, 14.391, 14.545, 14.7, 14.857, 15.015, 15.176, 15.338,
-     &                  15.501, 15.667, 15.834, 16.003, 16.174, 16.347, 16.521, 16.697, 16.876, 17.056, 17.238,
-     &                  17.422, 17.608, 17.796, 17.986, 18.178, 18.372, 18.568, 18.766, 18.966, 19.169, 19.373,
-     &                  19.58, 19.789, 20.0/)
-
-
-      CLOUD_WAV_GRID = (/0.1, 0.111, 0.124, 0.138, 0.154, 0.172, 0.191, 0.213, 0.238, 0.265, 0.295, 0.329,
-     &                   0.366, 0.408, 0.454, 0.506, 0.564, 0.629, 0.7, 0.78, 0.869, 0.969, 1.079, 1.202,
-     &                   1.34, 1.493, 1.663, 1.853, 2.065, 2.301, 2.563, 2.856, 3.182, 3.546, 3.95, 4.401,
-     &                   4.904, 5.464, 6.088, 6.783, 7.558, 8.421, 9.383, 10.454, 11.648, 12.978, 14.46,
-     &                   16.111, 17.951, 20.0/)
+      
 
       ! THE THREE Condensation curve sets are for 1X, 100X, and 300X Met
       ! Sorry that this is bad code
@@ -174,10 +129,11 @@
       ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
           MET_INDEX = 5
       ELSE
-          write(*,*) 'Something is wrong with your metallicity'
-          write(*,*) 'Check ropprrmulti'
-          write(*,*) 'THE THREE Condensation curve sets are for 1X, 100X, and 300X Met'
-          stop
+        !   write(*,*) 'Something is wrong with your metallicity'
+        !   write(*,*) 'Check ropprrmulti'
+        !   write(*,*) 'THE THREE Condensation curve sets are for 1X, 100X, and 300X Met'
+        !   stop
+        MET_INDEX = 6
       END IF
 
 
@@ -289,7 +245,7 @@
               CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
 
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-              BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
+              BASELEV = MAXVAL(CLOUDLOC(:,I),1)
               TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
               ! DPG is CGS before that 10x
@@ -297,24 +253,28 @@
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
 
-                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(1,WAV_LOC,size_loc,I)
+                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+     &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                   END DO
                   DO L = NSOLP+1,NTOTAL
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
-                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(1,WAV_LOC,size_loc,I)
+                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+     &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                   END DO
               ELSE
                   DO L = solar_calculation_indexer,NSOLP
                       WAV_LOC = CLOUD_WAVELENGTH_INDEXES(L)
-                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                              CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,WAV_LOC,size_loc,I)
+                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+     &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                   END DO
 
                   DO L = NSOLP+1,NTOTAL
-                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/density(I)*fmolw(I)*
-     &                                  CONDFACT(J,I)*MTLX*CORFACT(layer_index)*QE_OPPR(L,temp_loc,size_loc,I)
+                      tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+     &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,temp_loc,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                   END DO
               END IF
           END DO
@@ -327,12 +287,13 @@
               tauaer_temp(:,J,I) = 0.0
           END DO
 
-          !if (TOPLEV(I) + 4 .le. NLAYER) THEN
-          !    tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.01 !i.e.e(-3)
-          !    tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.03 !i.e.e(-3)
-          !    tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.1 !i.e.e(-2)
-          !    tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.3 !i.e.e(-1)
-          !ENDIF
+          if ((TOPLEV(I) + 5 .le. NLAYER) .and. (TOPLEV(I) .ne. 0)) THEN
+              tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.167
+              tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.333
+              tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.5
+              tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.667
+              tauaer_temp(:,TOPLEV(I)+5,I) = tauaer_temp(:,TOPLEV(I)+5,I)*0.833
+          ENDIF
       END DO
 
 
@@ -435,6 +396,15 @@
           END DO
       END DO
 
+      ramp = 0.0  ! Set an appropriate value for ramp (days)
+      ! Apply a ramp to the cloud properties
+      IF (KOUNT/ITSPD .LT. ramp) THEN
+       factor = (KOUNT/ramp)/ITSPD
+       ! write(*,*) 'Ramping up the cloud properties by a factor of:', factor
+       ! write(*,*) 'TAUAER before ramp:', TAUAER
+       TAUAER = TAUAER * factor
+       ! write(*,*) 'TAUAER after ramp:', TAUAER
+      ENDIF
 
       iradgas = 1
       DO J = 1,NLAYER

@@ -105,7 +105,17 @@ C
       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,MOLEF,AERLAYERS
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS
+      NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
+     &  AERTOTTAU,CLOUDBASE,CLOUDTOP,AERHFRAC,PI0AERSW,
+     &  ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON
+      CHARACTER(30) :: AEROSOLMODEL
+      CHARACTER(30) :: AEROSOLCOMP
+      REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
+      REAL MOLEF(13)
+      REAL MTLX, METALLICITY
+      INTEGER AERLAYERS
+      LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS
 
       LOGICAL LMASCOR,LMASOLD,LMASPRT                                     
 C                                                                         
@@ -431,7 +441,30 @@ CDIR$    IVDEP
             CMPA(NROW+IDL)=CMPA(NROW)                                     
    42    CONTINUE                                                         
       END IF
-
+      ! Kennedy changing where cloud stuff gets read in from fort.7
+      ! These get overwritten immediately, the following are just placeholders
+      AEROSOLMODEL = 'Global'
+      AEROSOLCOMP  = 'standard'
+      MTLX         = .1
+      METALLICITY  = 1.0
+      HAZES = .False.
+      PICKET_FENCE_CLOUDS = .False.
+      MOLEF        = (/ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 /)
+      AERLAYERS    = 20.0
+      AERTOTTAU    = 100.
+      CLOUDBASE    = 10.
+      CLOUDTOP     = 0.0001
+      AERHFRAC     = 1.
+      PI0AERSW     = 1.0
+      ASYMSW       = 0.376
+      EXTFACTLW    = 0.01
+      PI0AERLW     = 0.0452
+      ASYMLW       = 0.005896
+      DELTASCALE   = .True.
+      SIG_AREA     = 25.
+      PHI_LON      = 65.
+      GRAYCLDV     = .False.
+      READ(7,INCLOUDY)
       CALL get_cloud_scattering_properties_wrapper
 
 

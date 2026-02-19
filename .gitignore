@@ -1,7 +1,8 @@
 # Ignore the fort files
 fort.*
-.*  # Ignores files starting with a dot
+*/.*  # Ignores files starting with a dot
 igcm3_nopg
 Isaac-Tests/*
 Planet_Run/*
 CLOUD_DATA_OLD/*
+*.o
