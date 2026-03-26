@@ -1317,7 +1317,7 @@
       KE_OPPR(5,1:100,1:100,13)=Al2O3_rosselandMean_kext
 
       ! Setting up correction factor for mean vs median particle volume:
-      sigma = 2.0 ! should eventually not be hardcoded
+      sigma = 1.5 ! should eventually not be hardcoded
       exp_92_lnsig2_pi = EXP(-9.0/2.0 * LOG(sigma)*LOG(sigma)) / (4.D0*DATAN(1.D0))
       
       ! Thomas interpolating cloud condensation curves in metallicity

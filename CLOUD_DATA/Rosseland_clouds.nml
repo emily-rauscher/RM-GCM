@@ -1,0 +1,36 @@
+&Rosseland_clouds_nml
+
+  ! Method integer
+  ! 1 = Rosseland mean with single particle size
+  ! 2 = Rosseland mean with lognormal size distributions
+  ! 3 = Rosseland mean with lognormal reff size (similar to single size)
+  ! 4 = Spectral with single particle size
+  ! 5 = Spectral with lognormal size distributions
+  ! 6 = Spectral with lognormal reff size (similar to single size)
+  ! 7 = Planck mean with single particle size
+  ! 8 = Planck mean with lognormal size distributions
+  ! 9 = Planck mean with lognormal reff size (similar to single size)
+
+  meth = 8
+
+  ! Wavelength file path
+  wl_path = 'wavelengths.txt'
+
+  ! Species name
+  sp = 'SiO2_amorph'
+
+  ! Path to nk data
+  nk_path = 'nk/SiO2_amorph[s].dat'
+
+  ! Rosseland mean radius-temperature table
+  RT_path = './RTtable.txt'
+
+  ! lognormal distribution properties
+  N0 = 1.0     ! Typically = 1 for normalised tables
+  r_med = 100.0
+  sigma = 1.5
+  rmin = 1e-5
+  rmax = 1000.0
+
+  iint = 101
+/
