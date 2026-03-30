@@ -11,16 +11,16 @@
   ! 8 = Planck mean with lognormal size distributions
   ! 9 = Planck mean with lognormal reff size (similar to single size)
 
-  meth = 8
+  meth = 5
 
   ! Wavelength file path
   wl_path = 'wavelengths.txt'
 
   ! Species name
-  sp = 'SiO2_amorph'
+  sp = 'Mg2SiO4_amorph'
 
   ! Path to nk data
-  nk_path = 'nk/SiO2_amorph[s].dat'
+  nk_path = 'nk/Mg2SiO4_amorph[s].dat'
 
   ! Rosseland mean radius-temperature table
   RT_path = './RTtable.txt'
