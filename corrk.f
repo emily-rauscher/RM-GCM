@@ -301,8 +301,8 @@
             ! that are queried every layer/column inside the parallel region.
             INTEGER, INTENT(IN) :: N
             REAL, INTENT(IN) :: ARR(N), VAL
-            INTEGER :: KK
-            REAL :: BESTDIFF, DIFFVAL
+            INTEGER, AUTOMATIC :: KK
+            REAL, AUTOMATIC :: BESTDIFF, DIFFVAL
             NEAREST_INDEX = 1
             BESTDIFF = ABS(ARR(1) - VAL)
             DO KK = 2, N

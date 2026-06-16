@@ -28,7 +28,8 @@
       use corrkmodule, only : PLANCK_INTS, PLANCK_TS, NWNO, NEAREST_INDEX
       include 'rcommons.h'
       
-      integer kindex, J, L, num_layers, K, index_num
+      integer num_layers
+      INTEGER, AUTOMATIC :: kindex, J, L, K, index_num
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
@@ -49,30 +50,15 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-      real  ITP, ITG, IT1, SBKoverPI,g11
+      real, automatic :: ITP, ITG, IT1, SBKoverPI, g11
       real, DIMENSION(NLAYER) :: T
       real, dimension(NTOTAL,2*NL+2) :: TAUL
       real, dimension(NTOTAL,NDBL) :: SLOPE
-      real, dimension(2*NL+2) :: ttsub
-      real :: localT
+      real, automatic, dimension(2*NL+2) :: ttsub
+      real, automatic :: localT
+      INTEGER, AUTOMATIC :: temp_idx, gauss_idx, stel_idx
 
-
-!     **************************************
-!     * CALCULATE PTEMP AND SLOPE          *
-!     **************************************
-
-      !K  =  1
-      !DO J  = 1, (2*NL+2)-1,2
-      !    L  =  J
-      !    TTsub(L) = tt(K)
-      !    L  =  L+1
-      !    TTsub(L) = t(K)
-      !    K  =  K+1
-      !END DO
-      ! COMMON/PLANCK_INT/PLANCK_INTS, PLANCK_TS
-      ! REAL :: PLANCK_INTS(NWNO, 3925), PLANCK_TS(3925)
-      INTEGER :: temp_idx, gauss_idx, stel_idx
-      logical :: lo_temp_flag
+      logical, automatic :: lo_temp_flag
 
       ! Thomas, make these data entries instead of regular vars.
     !   data PLANCK_C_1 /1.4724444e-50/ ! pre-factor for the planck function (2h/c^2)

@@ -368,12 +368,9 @@ c     ntstep is the number of timesteps to skip.
 !$   &    firstprivate(TG) ! not sure whether this should eb firstprivate or shared, but it's not updated in the parallel section, so I doubt it matters
 !$        thread_num = OMP_GET_THREAD_NUM()
         
-!$        istart = (mg / nthreads) * (thread_num)+1
-!$        iend = (mg / nthreads) * (thread_num + 1)
-!$        if (thread_num .eq. nthreads-1) iend = mg
-!$        ilast = istart - 1
-!$        if (printt.eq.1) write(*,*) thread_num, istart, iend
-          DO i=istart,iend
+!$        ilast = 0
+!$OMP     DO SCHEDULE(GUIDED)
+          DO i=1,mg
 
             im=i+iofm
             idocalc=0
@@ -556,7 +553,7 @@ c             bottom heating rate is zero in morecret
             ENDIF
             ! write(*,*) "Time taken for column ", i, " is ", tend-tstart
           enddo
-!!$OMP     END DO          
+!$OMP     END DO
 !$OMP     END PARALLEL
           call cpu_time(tend)
           
