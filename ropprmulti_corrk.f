@@ -31,7 +31,8 @@
       use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT, NWNO
       include 'rcommons.h'
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, MET_INDEX, itspd
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, itspd
+      INTEGER, AUTOMATIC :: MET_INDEX
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
       REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
@@ -50,21 +51,23 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toais
 
-      REAL FACTOR, RAMP
+      REAL, AUTOMATIC :: FACTOR, RAMP
       REAL DENOM
-      REAL DPG(NLAYER), p_pass(NLAYER), layer_pressure_bar(NLAYER)
-      REAL CONDFACT(NLAYER,NCLOUDS)
+
+      REAL DPG(NLAYER), p_pass(NLAYER)
+      real, automatic :: layer_pressure_bar(NLAYER)
+      real, automatic :: CONDFACT(NLAYER,NCLOUDS)
 
       REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
       REAL tauaer_temp(NTOTAL, NLAYER, NCLOUDS)
 
-      REAL CLOUDLOC(NL+1,NCLOUDS)
-      INTEGER BASELEV
-      INTEGER TOPLEV(NCLOUDS)
+      real, automatic :: CLOUDLOC(NL+1,NCLOUDS)
+      integer, automatic :: BASELEV
+      integer, automatic :: TOPLEV(NCLOUDS)
 
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
-      real, dimension(NIR+NSOL,NL+1) :: TAU_HAZE
+      real, automatic, dimension(NIR+NSOL,NL+1) :: TAU_HAZE
 
       ! These are hardcoded to 50 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
@@ -91,14 +94,16 @@
       REAL FMOLW(NCLOUDS)
     !   REAL MOLEF(NCLOUDS)
 
-      INTEGER CLOUD_WAVELENGTH_INDEXES(5)
-      INTEGER HAZE_WAVELENGTH_INDEXES(5)
-      INTEGER WAV_LOC
-      INTEGER chan_idx, stel_idx
+      INTEGER, AUTOMATIC :: CLOUD_WAVELENGTH_INDEXES(5)
+      INTEGER, AUTOMATIC :: HAZE_WAVELENGTH_INDEXES(5)
+      INTEGER, AUTOMATIC :: WAV_LOC, chan_idx, stel_idx
 
-      INTEGER K,J,L, iradgas
-      INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index, haze_layer_index
-      real particle_size
+      INTEGER, AUTOMATIC :: K, J, L, iradgas
+      INTEGER, AUTOMATIC :: size_loc, temp_loc, layer_index, haze_layer_index
+      INTEGER solar_calculation_indexer
+      REAL, AUTOMATIC :: particle_size
+      REAL, AUTOMATIC :: p_weight, size_weight, tconds_interp, corfact_interp
+      REAL, AUTOMATIC :: tconds_lo, tconds_hi, kext_interp
 
       REAL, dimension (500) :: HAZE_WAV_GRID
       REAL, dimension (100)  :: CLOUD_WAV_GRID
@@ -116,6 +121,15 @@
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
 
+      ! TAUAER/WOL/GOL are only filled for a subset of (L,J) index ranges below
+      ! (e.g. solar L only up to J=NLAYER, IR L for the full doubled grid).
+      ! Zero them fully here so unfilled elements are deterministic instead of
+      ! whatever happened to be in the caller's buffer / uninitialized memory
+      ! (which differed between OMP threads and inflated SUM(TAUAER) wildly).
+      TAUAER = 0.0
+      WOL    = 0.0
+      GOL    = 0.0
+
       ! THE THREE Condensation curve sets are for 1X, 100X, and 300X Met
       ! Sorry that this is bad code
       ! Malsky
@@ -124,6 +138,7 @@
     !   write(*,*) NWNO
     !   flush(6)
     
+
       IF (aerosolcomp .eq. 'standard') THEN
         IF (METALLICITY .gt. -0.1 .AND. METALLICITY .lt. 0.1) THEN
             MET_INDEX = 1
@@ -186,7 +201,7 @@
             write(*,*) "ERROR: you are trying to run a correlated-k model with hazes"
             stop
             DO J = 1, NLAYER
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
+                haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J))  ! Both of these are in PA
                 ! This grabs the optical depth per bar, then multiply it by the pressure in bars
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
                     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
@@ -202,8 +217,8 @@
             END DO
 
             DO J = 1, NLAYER
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
-                temp_loc         = MINLOC(ABS(input_temperature_array - (TT(J))),1) ! Not needed for the stellar calc
+                haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J))  ! Both of these are in PA
+                temp_loc         = NEAREST_INDEX(input_temperature_array, 100, TT(J)) ! Not needed for the stellar calc
 
                 ! This grabs the optical depth per bar, then multiply it by the pressure in bars
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
@@ -249,7 +264,7 @@
 
             ! flush(6)
 
-            layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
+            layer_index   = NEAREST_INDEX(input_pressure_array_cgs, 50, p_pass(J) * 10.0)
             ! write(*,*) input_pressure_array_cgs, p_pass(J) * 10.0, layer_index
             ! if (layer_index < 1 .or. layer_index > size(input_pressure_array_cgs)) then
             !     write(*,*) "Error: invalid layer_index:", layer_index
@@ -262,71 +277,57 @@
             ! write(*,*) "input_temperature_array:", input_temperature_array
             ! flush(6)
 
-            ! temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
-            particle_size = particle_size_vs_layer_array_in_meters(layer_index)
-            size_loc      = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
-            ! if (size_loc < 1 .or. size_loc > size(input_particle_size_array_in_meters)) then
-            !     write(*,*) "Error: invalid size_loc:", size_loc
-            !     stop
-            ! endif
-            ! write(*,*) "size_loc:", size_loc
+            CALL LOG_INTERP_WEIGHTS(input_pressure_array_cgs, 50, p_pass(J) * 10.0,
+     &                              layer_index, p_weight)
+            particle_size = LERP(particle_size_vs_layer_array_in_meters(layer_index),
+     &                            particle_size_vs_layer_array_in_meters(layer_index+1), p_weight)
+            CALL LOG_INTERP_WEIGHTS(input_particle_size_array_in_meters, 100, particle_size,
+     &                              size_loc, size_weight)
             !corr-k version:
             DO I = 1, NCLOUDS
                 DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
                     chan_idx = MODULO(L-1, 8) + 1
                     stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-                    ! if (stel_idx < 1 .or. stel_idx > size(CLOUD_A, 3)) then
-                    !     write(*,*) "Error: stel_idx out of bounds:", stel_idx
-                    !     stop
-                    ! endif
-                    ! if (size_loc < 1 .or. size_loc > size(CLOUD_A, 2)) then
-                    !     write(*,*) "Error: size_loc out of bounds:", size_loc
-                    !     stop
-                    ! endif
-                    
-                    PI0_TEMP(L,J,I) = CLOUD_A(I,size_loc,stel_idx)
-                    G0_TEMP(L,J,I)  = CLOUD_G(I,size_loc,stel_idx)
+
+                    PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,stel_idx), CLOUD_A(I,size_loc+1,stel_idx), size_weight)
+                    G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,stel_idx), CLOUD_G(I,size_loc+1,stel_idx), size_weight)
                 END DO
                 ! since spectral, should be able to copy IR to vis at the end, but for consistency we'll do it here
                 DO L = NSOL+1,NTOTAL
                     chan_idx = MODULO(L-1, 8) + 1
                     stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-                    ! if (stel_idx < 1 .or. stel_idx > size(CLOUD_A, 3)) then
-                    !     write(*,*) "Error: stel_idx out of bounds:", stel_idx
-                    !     stop
-                    ! endif
-                    ! if (size_loc < 1 .or. size_loc > size(CLOUD_A, 2)) then
-                    !     write(*,*) "Error: size_loc out of bounds:", size_loc
-                    !     stop
-                    ! endif
-                    PI0_TEMP(L,J,I) = CLOUD_A(I,size_loc,stel_idx)
-                    G0_TEMP(L,J,I)  = CLOUD_G(I,size_loc,stel_idx)
+                    PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,stel_idx), CLOUD_A(I,size_loc+1,stel_idx), size_weight)
+                    G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,stel_idx), CLOUD_G(I,size_loc+1,stel_idx), size_weight)
                 END DO
-                CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
-                
+                tconds_lo = TCONDS(MET_INDEX,layer_index,I)
+                tconds_hi = TCONDS(MET_INDEX,layer_index+1,I)
+                tconds_interp = tconds_lo + p_weight * (tconds_hi - tconds_lo)
+                kext_interp = LERP(CLOUD_KEXT(I,size_loc,stel_idx), CLOUD_KEXT(I,size_loc+1,stel_idx), size_weight)
+                CONDFACT(J,I) = min(max((tconds_interp-TT(J))/10.,0.0),1.0)
+
 
                 CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
                 BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
                 TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
+                corfact_interp = LERP(CORFACT(layer_index), CORFACT(layer_index+1), p_weight)
 
                 DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
                     chan_idx = MODULO(L-1, 8) + 1
                     stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-                    ! write(*,*) chan_idx, stel_idx
                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
-     &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*CLOUD_KEXT(I,size_loc,stel_idx) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              fmolw(I)*CONDFACT(J,I)*MTLX*corfact_interp*
+     &                              LERP(CLOUD_KEXT(I,size_loc,stel_idx), CLOUD_KEXT(I,size_loc+1,stel_idx), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                 END DO
                 DO L = NSOL+1,NTOTAL
                     chan_idx = MODULO(L-1, 8) + 1
                     stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-                    ! write(*,*) chan_idx, stel_idx, CLOUD_KEXT(I,size_loc,stel_idx)
                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
-     &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*CLOUD_KEXT(I,size_loc,stel_idx) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              fmolw(I)*CONDFACT(J,I)*MTLX*corfact_interp*
+     &                              LERP(CLOUD_KEXT(I,size_loc,stel_idx), CLOUD_KEXT(I,size_loc+1,stel_idx), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                 END DO
-                ! stop
             END DO
         END DO
         ! write(*,*) "CONDFACT:", CONDFACT(:,6)
@@ -413,16 +414,20 @@
             !ENDIF
         END DO
 
+        ! tauaer_temp is dimensioned to NLAYER but only computed up to NLAYER-1 (=NVERT) above;
+        ! extend the last computed layer downward so the read at J=NLAYER below isn't uninitialized.
+        tauaer_temp(:,NLAYER,:) = tauaer_temp(:,NLAYER-1,:)
+
         ! Corrk version:
         DO J=1, NLAYER
-            haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1) ! Pascals
+            haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
 
             DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
                 WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2) ! hazes should be not used, so doesn't matter that it's double gray
                 TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
-                WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
+                WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,J) + 1e-8))
-                GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,J,1:NCLOUDS))
+                GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,min(J,NVERT),1:NCLOUDS))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
             END DO
         END DO
@@ -431,14 +436,14 @@
         ! IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
             !     SW AT STANDARD VERTICAL RESOLUTION
         DO J = 1,NLAYER
-            haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1) ! Pascals
+            haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
 
             DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
                 WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
                 TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
-                WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,J,1:NCLOUDS))
+                WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,J) + 1e-8))
-                GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,J,1:NCLOUDS))
+                GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,min(J,NVERT),1:NCLOUDS))
      &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
             END DO
         END DO
@@ -446,8 +451,8 @@
     !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
         k = 1
         DO J = 1,NDBL,2
-            haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(K))),1)  ! Both of these are in pa
-            temp_loc         = MINLOC(ABS(input_temperature_array - (TT(K))),1) ! Not needed for the stellar calc
+            haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(K))  ! Both of these are in pa
+            temp_loc         = NEAREST_INDEX(input_temperature_array, 100, TT(K)) ! Not needed for the stellar calc
 
             JJ = J
 
@@ -455,9 +460,9 @@
                 ! GREP CHECK THIS
                 WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
                 TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)) + TAU_HAZE(L,K)
-                WOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,K,1:NCLOUDS)) !+
+                WOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,min(K,NVERT),1:NCLOUDS)) !+
     !  &                              (TAU_HAZE(L,K) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,JJ) + 1e-8))
-                GOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))  !+
+                GOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,min(K,NVERT),1:NCLOUDS))  !+
     !  &                              (TAU_HAZE(L,K) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,JJ) + 1e-8))
             END DO
             JJ = J+1
@@ -672,5 +677,69 @@
           END DO
       END DO
       RETURN
-      END 
+
+      CONTAINS
+
+      INTEGER FUNCTION NEAREST_INDEX(ARR, N, VAL)
+          ! Explicit-loop nearest-value lookup. Replaces MINLOC(ABS(ARR-VAL),1),
+          ! which forces the compiler to materialize a temporary array; under
+          ! -recursive these temporaries can land in shared scratch storage and
+          ! be clobbered by other OpenMP threads, corrupting the result.
+          INTEGER, INTENT(IN) :: N
+          REAL, INTENT(IN) :: ARR(N), VAL
+          INTEGER :: KK
+          REAL :: BESTDIFF, DIFFVAL
+          NEAREST_INDEX = 1
+          BESTDIFF = ABS(ARR(1) - VAL)
+          DO KK = 2, N
+              DIFFVAL = ABS(ARR(KK) - VAL)
+              IF (DIFFVAL .LT. BESTDIFF) THEN
+                  BESTDIFF = DIFFVAL
+                  NEAREST_INDEX = KK
+              ENDIF
+          END DO
+      END FUNCTION NEAREST_INDEX
+
+      SUBROUTINE LOG_INTERP_WEIGHTS(ARR, N, VAL, IDX_LO, W)
+          ! Locate VAL within the monotonically increasing, strictly
+          ! positive array ARR(1:N) and return the lower bracketing index
+          ! IDX_LO (1 <= IDX_LO <= N-1) and interpolation weight W in [0,1]
+          ! such that, for any array Y defined on the same grid,
+          ! Y(VAL) ~= (1-W)*Y(IDX_LO) + W*Y(IDX_LO+1), with W computed from
+          ! the position of VAL between ARR(IDX_LO) and ARR(IDX_LO+1) in
+          ! log-space. VAL outside [ARR(1),ARR(N)] is clamped to the nearest
+          ! endpoint (W=0 or W=1, no extrapolation).
+          INTEGER, INTENT(IN)  :: N
+          REAL,    INTENT(IN)  :: ARR(N), VAL
+          INTEGER, INTENT(OUT) :: IDX_LO
+          REAL,    INTENT(OUT) :: W
+          INTEGER :: KK
+
+          IF (VAL .LE. ARR(1)) THEN
+              IDX_LO = 1
+              W = 0.0
+              RETURN
+          ELSE IF (VAL .GE. ARR(N)) THEN
+              IDX_LO = N - 1
+              W = 1.0
+              RETURN
+          ENDIF
+
+          IDX_LO = N - 1
+          DO KK = 1, N - 1
+              IF (VAL .LT. ARR(KK+1)) THEN
+                  IDX_LO = KK
+                  EXIT
+              ENDIF
+          END DO
+
+          W = (LOG(VAL) - LOG(ARR(IDX_LO))) / (LOG(ARR(IDX_LO+1)) - LOG(ARR(IDX_LO)))
+      END SUBROUTINE LOG_INTERP_WEIGHTS
+
+      REAL FUNCTION LERP(Y_LO, Y_HI, W)
+          REAL, INTENT(IN) :: Y_LO, Y_HI, W
+          LERP = Y_LO + W * (Y_HI - Y_LO)
+      END FUNCTION LERP
+
+      END
 

@@ -161,6 +161,7 @@
 
       subroutine local_opacities_corrk(Tin, Pin, k_IRl, k_Vl, OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK, k,
      &                                 NLAYER, NIR, NSOL, tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID)
+        use corrkmodule, only : NEAREST_INDEX
         implicit none
         real :: Tin, Pin
         integer :: NLAYER, NIR, NSOL, I, NWNO, NTGRID, NPGRID
@@ -178,8 +179,8 @@
         ! NTGRID = 73
         ! NPGRID = 20
 
-        T_idx = MINLOC(ABS(TS_CORRK - Tin),1)
-        P_idx = MINLOC(ABS(PS_CORRK - Pin),1)
+        T_idx = NEAREST_INDEX(TS_CORRK, NTGRID, Tin)
+        P_idx = NEAREST_INDEX(PS_CORRK, NPGRID, Pin)
 
         ! Nearest-neighbor the rayleigh scattering optical depth (faster than bilinear and accurate enough)
         do chan_idx = 1, NSOL
@@ -196,6 +197,11 @@
         if (TS_CORRK(T_idx) .gt. Tin) then
           T_idx = T_idx - 1
         end if
+
+        ! Clamp to valid range so T_idx+1/P_idx+1 stay in bounds; Tin/Pin outside
+        ! the table get the edge cell (i.e. extrapolation by clamping)
+        T_idx = max(1, min(T_idx, NTGRID-1))
+        P_idx = max(1, min(P_idx, NPGRID-1))
 
 
         do chan_idx = 1, NSOL

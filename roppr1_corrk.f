@@ -25,7 +25,7 @@
 !     *  Output              :  PTEMP, PTEMPG, SLOPE           *
 !     * ********************************************************
 !
-      use corrkmodule, only : PLANCK_INTS, PLANCK_TS, NWNO
+      use corrkmodule, only : PLANCK_INTS, PLANCK_TS, NWNO, NEAREST_INDEX
       include 'rcommons.h'
       
       integer kindex, J, L, num_layers, K, index_num
@@ -89,10 +89,12 @@
           ! Trying a look-up table for now
           if (MOD(J, 2) .eq. 0) THEN
               index_num = J / 2
-              temp_idx = MINLOC(ABS(PLANCK_TS - T(index_num)), 1)
+              temp_idx = NEAREST_INDEX(PLANCK_TS, 3925, T(index_num))
               if (T(index_num) .LT. PLANCK_TS(temp_idx)) THEN
                 temp_idx = temp_idx - 1
               END IF
+              ! clamp so temp_idx and temp_idx+1 stay within PLANCK_TS/PLANCK_INTS bounds (1:3925)
+              temp_idx = max(1, min(temp_idx, 3924))
               if (T(index_num) .GE. 75.) THEN
                   lo_temp_flag = .TRUE.
               END IF
@@ -101,10 +103,12 @@
               ! IT1 = T(index_num)*T(index_num)*T(index_num)*T(index_num)*SBKoverPI
           ELSE
               index_num = (J / 2) + 1
-              temp_idx = MINLOC(ABS(PLANCK_TS - TT(index_num)), 1)
+              temp_idx = NEAREST_INDEX(PLANCK_TS, 3925, TT(index_num))
               if (TT(index_num) .LT. PLANCK_TS(temp_idx)) THEN
                 temp_idx = temp_idx - 1
               END IF
+              ! clamp so temp_idx and temp_idx+1 stay within PLANCK_TS/PLANCK_INTS bounds (1:3925)
+              temp_idx = max(1, min(temp_idx, 3924))
               if (TT(index_num) .GE. 75.) THEN
                 lo_temp_flag = .TRUE.
               END IF

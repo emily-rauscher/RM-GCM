@@ -553,7 +553,7 @@
           TERM1      =  FDEGDAY/(DPG(J+1)*G)
 
           IF(incident_starlight_fraction.ge. 0) THEN
-              DO 480 L     =  MINWNOSTEL,NSOL
+              DO 480 L     =  MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
                   HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J)) * TERM1
  480          CONTINUE
           ENDIF

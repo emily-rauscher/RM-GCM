@@ -179,7 +179,7 @@
 
             ! Now split up internal flux by channel:
             TINT = (FBASEFLUX / 5.670367E-8) ** 0.25 ! Convert flux to temperature
-            TINT_INDEX = MINLOC(ABS(PLANCK_TS - TINT), 1)
+            TINT_INDEX = NEAREST_INDEX(PLANCK_TS, 3925, TINT)
             INT_SPEC = PLANCK_INTS(:, TINT_INDEX)
             INT_SPEC = INT_SPEC / SUM(INT_SPEC)
             write(*,*) 'TINT: ', TINT, 'TINT_INDEX: ', TINT_INDEX
@@ -292,8 +292,27 @@
             END DO
         END SUBROUTINE CLOUD_SETUP
 
-
-
+        INTEGER FUNCTION NEAREST_INDEX(ARR, N, VAL)
+            ! Explicit-loop nearest-value lookup. Replaces MINLOC(ABS(ARR-VAL),1),
+            ! which forces the compiler to materialize a temporary array; under
+            ! -recursive these temporaries can land in shared scratch storage and
+            ! be clobbered by other OpenMP threads, corrupting the result. This
+            ! matters most for large lookup tables (e.g. PLANCK_TS, size 3925)
+            ! that are queried every layer/column inside the parallel region.
+            INTEGER, INTENT(IN) :: N
+            REAL, INTENT(IN) :: ARR(N), VAL
+            INTEGER :: KK
+            REAL :: BESTDIFF, DIFFVAL
+            NEAREST_INDEX = 1
+            BESTDIFF = ABS(ARR(1) - VAL)
+            DO KK = 2, N
+                DIFFVAL = ABS(ARR(KK) - VAL)
+                IF (DIFFVAL .LT. BESTDIFF) THEN
+                    BESTDIFF = DIFFVAL
+                    NEAREST_INDEX = KK
+                ENDIF
+            END DO
+        END FUNCTION NEAREST_INDEX
 
       END MODULE corrkmodule
 

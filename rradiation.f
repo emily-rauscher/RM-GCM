@@ -217,7 +217,6 @@ c     The following for parallel testing --MTR
       ! integer TID, NTHREADS
       ! double precision test_wctime
 
-      save                          ! Want to keep things like dcompl.
       ! Thomas adding parallel stuff:
       INTEGER :: thread_num, istart, iend, nthreads
       REAL :: tstart, tend
@@ -246,7 +245,7 @@ c     The following for parallel testing --MTR
       REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NTOTAL,2*NL+2)
       real heats_aerad_tot(NL+1), heati_aerad_tot(NL+1), radheat_tot(NL+1), cheati(NL+1), cheats(NL+1), radheat(NL+1)
 
-      REAL, DIMENSION(NTOTAL,NSOL,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NTOTAL,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(NTOTAL,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
       real, dimension(NIR, NL+1) :: k_IRl, tau_ray_temp
@@ -372,6 +371,7 @@ c     ntstep is the number of timesteps to skip.
 !$        istart = (mg / nthreads) * (thread_num)+1
 !$        iend = (mg / nthreads) * (thread_num + 1)
 !$        if (thread_num .eq. nthreads-1) iend = mg
+!$        ilast = istart - 1
 !$        if (printt.eq.1) write(*,*) thread_num, istart, iend
           DO i=istart,iend
 

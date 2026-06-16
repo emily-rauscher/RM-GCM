@@ -67,7 +67,7 @@
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
       real, dimension(NIR, NL+1) :: k_IRl
-      real, dimension(NIR, 2*NL+2) :: k_irl_doubled, k_ray_doubled
+      real, automatic, dimension(NIR, 2*NL+2) :: k_irl_doubled, k_ray_doubled
       real, dimension(NSOL, NL+1) :: k_Vl
       ! New variables for calculating the IR absorbtion coefficient as a power law
       real, dimension(NLAYER) :: IR_ABS_COEFFICIENT
@@ -329,7 +329,7 @@
           k = 1
           DO J     =   1,NDBL, 2
             k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
-            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,k+1)) / 2.0
+            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,min(k+1,NL+1))) / 2.0
 
             k = k + 1
           END DO
@@ -462,10 +462,11 @@
           k = 1
           DO J     =   1,NDBL, 2
             k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
-            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,k+1)) / 2.0
+            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,min(k+1,NL+1))) / 2.0
 
             k_ray_doubled(L-NSOL,J) = tau_ray_temp(L-NSOL, k)
-            k_ray_doubled(L-NSOL,J+1) = tau_ray_temp(L-NSOL, k)+ ABS(tau_ray_temp(L-NSOL,k) - tau_ray_temp(L-NSOL,k+1)) / 2.0
+            k_ray_doubled(L-NSOL,J+1) = tau_ray_temp(L-NSOL, k)+ ABS(tau_ray_temp(L-NSOL,k)
+     &                   - tau_ray_temp(L-NSOL,min(k+1,NL+1))) / 2.0
             k = k + 1
           END DO
         END DO
@@ -477,7 +478,7 @@
           END DO
         END DO
         ! Thomas Hack to get consistency between DG and PF column densities ends here
-        
+
     !     Old code for smoothing and stuff (in case we need it later):
     !     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
     !       tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
