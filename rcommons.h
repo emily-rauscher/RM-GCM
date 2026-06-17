@@ -120,6 +120,6 @@ C
 !     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
 !     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
 !     +              ,BEGDOY,DOY 
-      PARAMETER (NRLEV=MXLEV+1)                                            
-********************************************************************      
-       save
+      PARAMETER (NRLEV=MXLEV+1)
+********************************************************************
+! save removed: see rglobrad.h comment. Bare save caused OMP race via static locals.

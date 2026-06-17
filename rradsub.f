@@ -110,8 +110,8 @@
       real PI2
  582  FORMAT(I4,5(F12.3))
 
-      ! Malsky what does this do???
-      ibinm = ibinmin
+      ! ibinmin was always 0 (BSS-init static); ibinm was removed from args, so assign 0 directly
+      ibinm = 0
       ifsetup = 0
 
       if( iffirst.eq. 1 ) THEN

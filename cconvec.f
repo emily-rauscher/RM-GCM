@@ -224,14 +224,6 @@ C     UP ONE LEVEL - DRY ADIABAT AS FIRST GUESS
           IF(L.LT.LTOP) GOTO 150
           TC(L)=TC(LP)*SK(L)
           QC(L)=QC(LP)
-          write(*,*) ESCON
-          write(*,*)
-          write(*,*) PLG
-          write(*,*)
-          write(*,*) SIGMA
-          write(*,*)
-          write(*,*) TC
-          write(*,*)
           QSL=ESCON(L)*PQSAT(TC(L))
 C     IF SATURATED MAY BE MOIST CONVECTION
           IF(QC(L).GE.QSL) GOTO 120

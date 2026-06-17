@@ -34,9 +34,9 @@
 !                 are all loaded into interface common block).
 !     **************************************************************
 !
-      use corrkmodule, only : TS_CORRK, PS_CORRK, TS_LOG_CORRK, 
+      use corrkmodule, only : TS_CORRK, PS_CORRK, TS_LOG_CORRK,
      &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
-     &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO
+     &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO, MINWNOSTEL
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, kount, itspd

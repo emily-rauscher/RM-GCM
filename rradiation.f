@@ -282,7 +282,8 @@ c     The following for parallel testing --MTR
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
 
-
+      COMMON /RAD_ALLLATS/ TG_forrad(IGC,NL,JG), PLG_forrad(IGC,JG),
+     &                     HTNET_old(NHEM,JG,MG,NL)
 
       DATA EPSILON / 1d-6  /
       DATA SBK    / 5.6697E-8    /
@@ -297,199 +298,457 @@ c     The following for parallel testing --MTR
       DATA SCDAY  / 86400.0      /
 
       num_layers = NL
-
       RHSCL=288.0*GASCON/GA
-
-      ! factor to non-dimensionalise heating rates
       CHRF=86400.*WW*CT
-c     Skipping part set up here.
-c     Radiation scheme only called every nskip longitudes
-c     nskip must divide exactly into mg for longitude.
-c     ntstep is the number of timesteps to skip.
+      ntstep=NTSTEP_IN
 
+      IOFM=0
+      DO 800 ihem=1,nhem
+        IF (mod(kount,ntstep) .eq. 0) THEN
+          DO i=1,mg
+            IM=I+IOFM
+            DO l=nl,1,-1
+              LD=NL+1-L
+              TTRD(IM,LD)=(HTNET_old(ihem,IH,i,LD)+HTNET(ihem,IH,i,LD))
+     &                    /(CHRF*2.0)
+            ENDDO
+          ENDDO
+        ELSE
+          DO i=1,mg
+            DO LD=1,NL
+              im=i+IOFM
+              TTRD(im,LD)=(htnet(ihem,IH,i,ld))/CHRF
+            ENDDO
+          ENDDO
+        ENDIF
+        IOFM=MGPP
+ 800  CONTINUE
+
+      IF (LSHORT.AND.(KOUNT.eq.1)) then
+        DO l=1,nl
+          DO i=1,igc
+            ttrd(i,l)=ttrd(i,l)*2.
+          ENDDO
+        ENDDO
+      ENDIF
+
+      RETURN
+      END
+
+
+C**********************************************************
+C             SUBROUTINE RADIATION_ALLLATS
+C**********************************************************
+      SUBROUTINE RADIATION_ALLLATS()
+C     Parallelized over all JG*MG columns simultaneously.
+C     Computes radiative heating rates and stores in HTNET.
+C     HTNET_old is saved before the parallel loop.
+C     TTRD is computed by the stripped-down RADIATION subroutine.
+
+      use omp_lib
+      INTEGER NIR,NSOL,NTOTAL
+      include 'params.i'
+
+      PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI
+     +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2
+     +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL
+     +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL
+     +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG
+     +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL
+     +,NWW=1+(MM-1)/MOCT)
+
+      PARAMETER(IGA=NWJ2*NHEM,IGB=IDB*NHEM,IGC=MGPP*NHEM,IGD=IDD*NHEM
+     +,IGG=IDG*NHEM,IGL=IDL*NHEM,IGM=IDM*NHEM,IGN=IDN*NHEM
+     +,IGO=IGA+IGA,IGP=IGB+IGB,NFTWG=(5+NTRAC)*NL+3
+     +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)
+
+      PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)
+
+      COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)
+     +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)
+     +              ,TKP(NL),C(NL2),SQH(NNP)
+     +              ,MF,MFP,JZF,NF
+     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT
+     +              ,RD,RV,CPD,CLATNT
+     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH
+     +              ,LFLUX
+     +              ,LBALAN,LRESTIJ
+     +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT
+     +              ,LNOISE,NFP
+
+      COMPLEX EZ,AIOCT
+
+      LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ
+     +       ,LFLUX,LNOISE
+     +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT
+
+      COMMON/LEGAU/ ALPJ(MJP),DALPJ(MJP)
+     +              ,ALP(NWJ2,2,JGL),DALP(NWJ2,2,JGL)
+     +              ,RLP(NWJ2,2,JGL),RDLP(NWJ2,2,JGL)
+     +              ,SI(JGG),CS(JGG),SISQ(JGG),CSSQ(JGG),SECSQ(JGG)
+     +              ,ALAT(JGG),GWT(JGG),AW(JGG),JH,JL,JINC
+
+      COMMON/GRIDP/ CHIG(IGC,NL),SFG(IGC,NL),UG(IGC,NL),VG(IGC,NL)
+     :              ,TTVD(IGC,NL),QTVD(IGC,NL),TG(IGC,NL)
+     :              ,TRAG(IGC,NL,NTRAC)
+     :              ,PLG(IGC),TYBL(IGC),TXBL(IGC)
+     :              ,SPG(IGC),VPG(IGC),TTRD(IGC,NL)
+     :              ,TNLG(IGC,NL),TRANLG(IGC,NL,NTRAC),UNLG(IGC,NL)
+     :              ,VNLG(IGC,NL),TTLR(IGC,NL),UTRAG(IGC,NL,NTRAC)
+     :              ,TTCR(IGC,NL),VTRAG(IGC,NL,NTRAC)
+     :              ,UTVD(IGC,NL),VTVD(IGC,NL)
+     :         ,ASSBL(IGC),ASHBL(IGC),ASLBL(IGC),ARRCR(IGC),ARRLR(IGC)
+     :         ,arflux(igc,6),asfld(igc,6),acld(igc,4)
+     :         ,SSBL(IGC),SHBL(IGC),SLBL(IGC),RRCR(IGC),RRLR(IGC)
+     :         ,rflux(igc,6),sfld(igc,6),cld(igc,4)
+
+       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
+     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS,
+     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
+     & PORB, OBLIQ, ECCEN
+
+       LOGICAL LPLOTMAP
+
+      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)
+     +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD
+     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21
+     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
+     +              ,BEGDOY,DOY
+
+      COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
+     :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)
+     :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)
+     :              ,tdeep(igc,jg),hsnow(igc,jg),sqstar(igc,jg)
+     :              ,SALB(IGC,JG),SBAL(IGC,JG),BLCD(IGC)
+     :              ,SVEGE(IGC,JG),CD,DRAG,BLVAD,BLA,BLRH,BLVB(IGC)
+     :              ,AKVV,AKTV,AKQV,ESCONA,ESCONB,EPSIQ,CTQ,CCC
+     :              ,ctqi,sdsn,shcs,shcsp,shcsn,skse,sksn,slhf,sd1,sd2,sdw
+     :              ,ssmc,sdsnd,sasnow,saice,shsstar,shsmax
+     :              ,LOC,LNOICE,LOLDBL,LCOND,LNNSK
+     :              ,NLCR,CURHM,AKTC,AKQC,CUBMT,CBADJT,CBADJP
+     :              ,SKAP(NL),SK(NLM),FWS(NL),CLR(NL),FB(NLM)
+     :              ,TTDC(NL),QTDC(NL),TTMC(NL),QTMC(NL),TC(NL),QC(NL)
+     :              ,CTCR(NL,NHEM),CTLR(NL,NHEM)
+     :              ,LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ
+     :              ,LSL,NAVRD,NAVWT,DELT2C,SHCO,SHCI,ITSLL,ITSLO,NCUTOP
+
+      LOGICAL LBL,LVD,LCR,LLR,LRD,LCUBM,LCBADJ,LSL,LOC,LNOICE,LOLDBL,LCOND,LNNSK
+
+      COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
+     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
+     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3),with_TiO_and_VO, opacity_method
+
+      LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
+     + ,LWSCAT, FLXLIMDIF,RAYSCAT,AEROSOLS
+      CHARACTER(len=6) :: opacity_method
+
+      CHARACTER(30) :: AEROSOLMODEL
+
+      REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
+      LOGICAL DELTASCALE,HAZES,PICKET_FENCE_CLOUDS,GRAYCLDV
+
+      COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
+     &               CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
+     &               ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
+     &               MAXTAU,MAXTAULOC,TCON,AERSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
+     &               GRAYCLDV
+
+      COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC
+     +              ,RNTAPO
+     +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR
+     +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY
+     +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG
+     +              ,LSPO(NL),LGPO(NL)
+     $              ,LSHIST,LMINIH
+
+      LOGICAL LSHIST,LMINIH
+      LOGICAL LSPO,LGPO
+
+      REAL QG(IGC,NL),QNLG(IGC,NL),QTLR(IGC,NL),QTCR(IGC,NL)
+      EQUIVALENCE (QG(1,1),TRAG(1,1,1)) , (QNLG(1,1),TRANLG(1,1,1)),(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))
+
+      COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)
+     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)
+     :     ,TTSW(IGC,NL),TTLW(IGC,NL)
+
+      COMMON/GSG/GSG(IGC,JG)
+
+      REAL htnet
+
+      COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
+
+      COMMON /RAD_ALLLATS/ TG_forrad(IGC,NL,JG), PLG_forrad(IGC,JG),
+     &                     HTNET_old(NHEM,JG,MG,NL)
+
+      REAL TAVE(IGP)
+
+      REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1)
+      real dpg(nl+1), pbar(nl+1)
+      real dpgsub(2*nl+2), pbarsub(2*nl+2)
+
+      real, dimension(NTOTAL,2*NL+2) :: TAURAY, TAUL, TAUGAS, TAUAER
+
+      integer solar_calculation_indexer, num_layers
+
+      integer ifsetup
+      real ibinm
+      real rfluxes_aerad(2,2,2)
+      real psol_aerad
+      real heati_aerad(NL+1)
+      real heats_aerad(NL+1)
+      real fsl_up_aerad(NL+1)
+      real fsl_dn_aerad(NL+1)
+      real fir_up_aerad(NL+1)
+      real fir_dn_aerad(NL+1)
+      real fir_net_aerad(NL+1)
+      real fsl_net_aerad(NL+1)
+
+      real PRB2T(NL+1),adum
+
+      integer ifirst
+      real amfrac
+      integer ichange
+      integer ifirstcol
+      real p0
+      real ps
+      integer im
+
+      real fluxes(2,2,2)
+
+      real incident_starlight_fraction
+
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
+      REAL EMISIR, EPSILON, HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), SOLNET
+      REAL TPI, SQ3, SBK, AM, AVG, ALOS
+
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
+      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
+      REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD(NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
+      REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S(NTOTAL)
+      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2( NTOTAL,2*NL+2), EE1(NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
+      REAL EM2(NTOTAL,2*NL+2), EL1( NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
+      REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
+      REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2), DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
+      REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
+      REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
+      REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+      REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
+      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NTOTAL,2*NL+2)
+      real heats_aerad_tot(NL+1), heati_aerad_tot(NL+1), radheat_tot(NL+1), cheati(NL+1), cheats(NL+1), radheat(NL+1)
+
+      REAL, DIMENSION(NTOTAL,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NTOTAL,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
+
+      real, dimension(NIR, NL+1) :: k_IRl, tau_ray_temp
+      real, dimension(NSOL, NL+1) :: k_Vl
+
+      REAL tau_IRe(NIR,NL+1), tau_Ve(NSOL,NL+1)
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL)  :: Beta_V
+
+      real, dimension(NL+1) :: dpe, Pl, Tl, pe
+      real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
+      real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
+
+      REAL PI0_TEMP(NTOTAL, NL+1, 13), G0_TEMP(NTOTAL, NL+1, 13)
+      REAL tauaer_temp(NTOTAL, NL+1, 13)
+
+C     Large workspace arrays: put in COMMON /RADWORK/ so they are in
+C     static (non-stack) storage; THREADPRIVATE gives each OMP thread
+C     its own copy without the stack-overflow hazard of PARAMETER-sized
+C     local arrays under -recursive.
+      COMMON /RADWORK/ GOL, WOL, G0, OPD, PTEMP, uG0, uTAUL, W0,
+     &  uW0, uopd, TOON_AK, B1, B2, EE1, EM1, EM2, EL1, EL2, GAMI,
+     &  AF, BF, EF, B3, CK1, CK2, CP, CPB, CM, CMB, DIRECT, EE3,
+     &  EL3, FNET, TMI, AS, DF, DS, XK, DIREC, DIRECTU, TMID, TMIU,
+     &  DINTENT, UINTENT, SLOPE, Y3, Y1, Y2, Y4, Y8, A1, A2, A3,
+     &  A4, A5, A7, Y5, TAURAY, TAUL, TAUGAS, TAUAER,
+     &  PI0_TEMP, G0_TEMP, tauaer_temp
+!$OMP THREADPRIVATE(/RADWORK/)
+
+      INTEGER j1
+      real denom
+      REAL, dimension (500) :: HAZE_WAV_GRID
+      REAL, dimension (100)  :: CLOUD_WAV_GRID
+      INTEGER printt
+      REAL :: exp_92_lnsig2_pi
+
+      COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
+     &                              DENSITY, FMOLW,
+     &                              CORFACT,
+     &                              input_particle_size_array_in_meters,
+     &                              input_temperature_array,
+     &                              particle_size_vs_layer_array_in_meters,
+     &                              input_pressure_array_cgs,
+     &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
+     &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
+     &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
+     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
+
+      DATA EPSILON / 1d-6  /
+      DATA SBK    / 5.6697E-8    /
+      DATA AVG    /6.02252E+23/
+      DATA ALOS   / 2.68719E19   /
+
+      DATA GANGLE  /0.2123405382, 0.5905331356,0.9114120405/
+      DATA GRATIO  /0.4679139346, 0.3607615730, 0.1713244924/
+      DATA GWEIGHT /0.0698269799, 0.2292411064,0.2009319137/
+
+      DATA RGAS   / 8.31430E+07  /
+      DATA SCDAY  / 86400.0      /
+
+C     Local scalars
+      INTEGER :: col, i, jh_priv, ihem, ihem_save, nskip, ntstep
+      INTEGER :: iofm, ld, l, thread_num, nthreads
+      REAL :: CHRF, alat1, alon, SWALB, tstart, tend
+      REAL :: SSLON, SSLAT
+
+      num_layers = NL
+      CHRF=86400.*WW*CT
       ntstep=NTSTEP_IN
       nskip=NSKIP_IN
 
-      IOFM=0
-      call cpu_time(tstart)
-      DO 800 ihem=1,nhem
-        IF (mod(kount,ntstep) .eq. 0) THEN          
-!!$        print *, "Number of threads: ", OMP_GET_MAX_THREADS()
-          
-!!$OMP     PARALLEL default(none) private(thread_num)
-!!$          thread_num = OMP_GET_THREAD_NUM()
-!!$          write(*,*) "Number of threads: ", thread_num
-!!$OMP     END PARALLEL
-!$        nthreads = OMP_GET_MAX_THREADS()
-          ilast=0
+C     Save HTNET_old before any updates (serial, before OMP region)
+      DO ihem_save=1,NHEM
+        DO jh_priv=1,JG
+          DO i=1,MG
+            DO ld=1,NL
+              HTNET_old(ihem_save,jh_priv,i,ld) =
+     &          HTNET(ihem_save,jh_priv,i,ld)
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
 
-          ! schedule(guided), default(none),
+      DO 900 ihem=1,nhem
+        iofm=0
+        IF (ihem.eq.2) iofm=MGPP
 
-          ! Do all the parallel stuff here
-          ! File is fixed-format, which means you need to put the "openmp sentinel" ("!$") in column 1 to have it work right
-          ! Line continuation characters still belong in column 6, and nothing but the sentinel can come before the continuation character
-          istart = 1
-          iend = mg
-          printt = 0
-          ! THOMAS NOTE: I think the rule here is that everything that gets passed between subroutines needs to be 
-          ! declared as shared or private, while anything local to one subroutine is privated by default (good).
-          ! Variables in common blocks (which, thankfully, are never edited in this part fo the code) seem to be
-          ! properly shared between threads.
-          ! In general, variables should be private unless they hold information about all lats and lons
-!$OMP     PARALLEL default(none) private(im, imp, imm, istart, iend, idocalc, ilast, ld, l, PR, PRB2T, T, aeroprof, 
-!$   &    p_pass, alon, rfluxes_aerad, fluxes, fsl_dn_aerad, fir_up_aerad, Y1, Y3, Y4, Y5, k_irl, k_vl, htlw, htsw, thread_num,
-!$   &    psol_aerad, el2, taul, cheati, pl, dpg, tin, gol, em2, k_lowp, u0, tauaer, sfcs, pbar, a5, cheats, utaul, dintent,
-!$   &    uw0, xk, lla, cpb, ee3, el3, fnet, cm, heat, heati, heati_aerad, tauray, b2, fnetbi, alb_toai, b3, emis, a4, el1, cmb,
-!$   &    fird, ee1, df, ug0, as, radheat_tot, alb_toa, freedman_met, beta_v, denom, weight, ef, fupbs, tslu, fsl_net_aerad, irs,
-!$   &    fsld, w0, b1, tiru, jdble, dpgsub, fslu, fdegday, dpe, u1s, solnet, freedman_p, jn2, sol, u1i, a2, direct, swalb, am,
-!$   &    jn, slope, ds, pin, sbk, fupbi, af, qrad, opd, isl, k_hip, gami, alat1, beta_ir, tauaer_temp, fir_dn_aerad, nprob,
-!$   &    fdownbi, tmid, total_downwelling, tau_ire, taugas, ck2, j1, ptempg, iblackbody_above, emisir, g0_temp, pi0_temp,
-!$   &    heats_aerad_tot, fnetbs, sq3, pressure_val, tl, ifsetup, heati_aerad_tot, lls, solar_calculation_indexer, direc, bf, 
-!$   &    alb_tomi, fsl_up_aerad, firu, fir_net_aerad, radheat, cf, got, fsln, temperature_val, directu, toon_ak, rsfx, 
-!$   &    incident_starlight_fraction, fdownbs, wot, ptemp, tmi, g0, ck1, y8, tt, tau_ve, k_ir, em1, a7, wol, cp, tpi, wave, 
-!$   &    ibinm, a3, heats_aerad,  jdbledble, fdownbs2, tl10, pbarsub, heats, uintent, alb_tot, a1, uopd, pe, pl10, freedman_t,
-!$   &    ptempt, tmiu, y2, ic, ir, ih, htneto,
-!$   &    gauss_idx, wave_idx, stel_idx, chan_idx, J, K, T_idx, P_idx, temp_idx, index_num, lo_temp_flag, it1, kindex,
-!$   &    iffirst, tgrnd, ibinmin, log_start, log_end, log_step, P_pass_sub, ir_abs_coefficient, wavea, ttsub, albedoa,
-!$   &    tau_ray_temp)
-
-
-!!$   &    y, x1, Q11, q12, q21, q22, result, r1, r2 ! bilinearinterp adds, should NOT be necessary, all private by default
-!!$   &    YA, YB, ckp, m, !) newflux1 adds here, nothing new from 2stream
-!!$   &    du0, b4, x2, x3, c1_var, c2_var, cp1, x4_add, cm1, x,! radd adds
-!!$   &    layer_pressure_bar, haze_wavelength_indices, cloud_wavelength_indices, haze_layer_index, wav_loc, tau_haze, temp_loc,! ropprmulti adds
-!!$   &    layer_index, particle_size, size_loc, CONDFACT, CLOUDLOC, BASELEV, TOPLEV, JJ, iradgas, ! ropprmulti adds
-!!$   &    TINT, TIRR, grav, TEFF, BOND_ALBEDO, L10T, L10T2, AV1, AV2, AV3, BV1, BV2, BV3, aB, bB, aP, bP, gam_V, ! radiative_transfer_picket_fence adds
-!!$   &    gam_p, RT, R, gam_1, gam_2) ! radiative_transfer_picket_fence adds
-!$   &    shared(nthreads, nskip, lnnsk, sigma, GSG, PLG, P0, CT, FBASEFLUX, rrflux, alat, lfluxdiag, kountp, koutp, 
-!$   &    ntstep_in, porb, sslon, kount, itspd, sslat, obliq, day, albsw,aerosols, aerosolmodel, tauaerosol, doy, epsilon,
-!$   &    avg, alos, SCDAY, RGAS, GANGLE, GWEIGHT, GRATIO, RAYPERBAR, num_layers, CHRF, 
-!$   &    PNET, SNET, HTNET, TTRD, ihem, jh, iofm, printt) ! stuff that should definitely be shared
-!$   &    firstprivate(TG) ! not sure whether this should eb firstprivate or shared, but it's not updated in the parallel section, so I doubt it matters
-!$        thread_num = OMP_GET_THREAD_NUM()
-        
-!$        ilast = 0
-!$OMP     DO SCHEDULE(GUIDED)
-          DO i=1,mg
-
-            im=i+iofm
-            idocalc=0
-
-            IF ((i.eq.1).or.(i-ilast.ge.nskip)) then
-              idocalc=1
+C       LFLUXDIAG block: must be serial, placed before OMP region
+        IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.NTSTEP_IN)) THEN
+          IF (ihem.eq.1) THEN
+            REWIND(63)
+            REWIND(62)
+            IF (PORB.NE.0) THEN
+              SSLON=(1./PORB-1.)*KOUNT*360./ITSPD
+              SSLON=MOD(SSLON,360.)
             ELSE
-
-            IF (.FALSE.) write(*,*) ! This shouldn't be here, but necessary for the parallel work
-
-            IF (LNNSK) THEN
-              imp=im+1
-
-              IF (imp.gt.(mg+iofm)) imp=1+iofm
-                imm=im-1
-
-                IF (((gsg(im,jh).gt.0.).and.(gsg(imp,jh).eq.0.)).or.
-     $             ((gsg(im,jh).eq.0.).and.(gsg(imp,jh).gt.0.)).or.
-     $             ((gsg(im,jh).gt.0.).and.(gsg(imm,jh).eq.0.)).or.
-     $             ((gsg(im,jh).eq.0.).and.(gsg(imm,jh).gt.0.))) THEN
-                  idocalc=1
-                ENDIF
-              ENDIF
+              SSLON=0.
             ENDIF
-            ! if ((printt.eq.2).and.(i.eq.2)) write(*,*) "idocalc, i, im, ilast, nskip:", idocalc, i, im, ilast, nskip ! all good here
-            IF (idocalc.eq.1) then
-              DO LD=1,NL    ! Start of loop over column.
-                L=NL-LD+2  ! Reverse index (Morc goes bottom up).
-                PR(LD)=SIGMA(LD)*PLG(im)*P0 ! Pressure
-                PRB2T(L)=PR(LD)
-                T(LD)=TG(im,ld)*CT ! Temperature
-                AEROPROF(LD)=0.0
-              ENDDO
-              if ((printt.eq.2).and.(i.eq.2)) write(*,*) "PR, PRB2T, T, IGC:", PR, PRB2T, T
-              if ((printt.eq.2).and.(i.eq.2)) write(*,*) "IGC, IM, I", igc, im, i
-              if ((I.eq.2).and.(printt.eq.1)) then
-                write(*,*) T
-              endif
+            SSLAT=ASIN(SIN(OBLIQ*PI/180.)*SIN(PI2*KOUNT/ITSPD/PORB))
+     &            *180./PI
+            WRITE(63,2021) DAY,SSLON,SSLAT
+            WRITE(62,2021) DAY,SSLON,SSLAT
+ 2021       FORMAT('DAY:',F7.2,', SUBSTELLAR LON,LAT:',2F7.2)
+            WRITE(63,*)
+            WRITE(62,*)''
+          ENDIF
+        ENDIF
 
-              AEROPROF(NL+1)=0.0
-              PRB2T(1)=PLG(im)*P0
-              PR(NL+1)=PLG(im)*P0
-              T(NL+1)=((FBASEFLUX+rrflux(IM,JH,1))/5.6704e-8)**0.25
+        IF (nskip.ne.0) then
+          write(*,*) 'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
+          write(*,*) 'Please set nskip=0 in fort.7'
+          STOP
+        ENDIF
 
-              alat1=alat(JH)*REAL(-(ihem*2.)+3)
-              ! seems like this could be done outside the parallel section?
-              IF ((LFLUXDIAG).AND.(KOUNTP-KOUTP.LT.NTSTEP_IN)) THEN
-                IF(JH.EQ.1.AND.IHEM.EQ.1.AND.I.EQ.1) THEN
-                  REWIND(63) !! Rewind file for fluxes in nikosrad
-                  REWIND(62) ! rwnd file for ancillary RT results
+!$OMP   PARALLEL default(none)
+!$   &  private(col, i, jh_priv, ld, l, PR, PRB2T, T, AEROPROF,
+!$   &  p_pass, alon, rfluxes_aerad, fluxes, fsl_dn_aerad, fir_up_aerad,
+!$   &  k_irl, k_vl, htlw, htsw, thread_num,
+!$   &  psol_aerad, cheati, pl, dpg, tin, k_lowp,
+!$   &  u0, sfcs, pbar, cheats,
+!$   &  lla, heat, heati, heati_aerad,
+!$   &  fnetbi, alb_toai, emis,
+!$   &  fird, radheat_tot, alb_toa, freedman_met,
+!$   &  beta_v, denom, weight, fupbs, tslu, fsl_net_aerad, irs,
+!$   &  fsld, tiru, jdble, dpgsub, fslu, fdegday, dpe, u1s,
+!$   &  solnet, freedman_p, jn2, sol, u1i, swalb, am,
+!$   &  jn, pin, fupbi, qrad, isl, k_hip,
+!$   &  alat1, beta_ir, fir_dn_aerad, nprob,
+!$   &  fdownbi, total_downwelling, tau_ire, j1,
+!$   &  ptempg, iblackbody_above, emisir,
+!$   &  heats_aerad_tot, fnetbs, sq3, pressure_val, tl, ifsetup,
+!$   &  heati_aerad_tot, lls, solar_calculation_indexer,
+!$   &  alb_tomi, fsl_up_aerad, firu, fir_net_aerad, radheat, cf,
+!$   &  got, fsln, temperature_val, rsfx,
+!$   &  incident_starlight_fraction, fdownbs, wot,
+!$   &  tt, tau_ve, k_ir, tpi, wave,
+!$   &  ibinm, heats_aerad, jdbledble, fdownbs2, tl10, pbarsub,
+!$   &  heats, alb_tot, pe, pl10, freedman_t,
+!$   &  ptempt, ic, ir, im,
+!$   &  gauss_idx, wave_idx, stel_idx, chan_idx, J, K, T_idx, P_idx,
+!$   &  temp_idx, index_num, lo_temp_flag, it1, kindex,
+!$   &  iffirst, tgrnd, ibinmin, log_start, log_end, log_step,
+!$   &  P_pass_sub, ir_abs_coefficient, wavea, ttsub, albedoa,
+!$   &  tau_ray_temp)
+!$   &  shared(ntstep, nskip, lnnsk, sigma, GSG, P0, CT, FBASEFLUX,
+!$   &  rrflux, alat, lfluxdiag, kountp, koutp,
+!$   &  ntstep_in, porb, kount, itspd, obliq, day, albsw, aerosols,
+!$   &  aerosolmodel, tauaerosol, doy, epsilon,
+!$   &  avg, alos, SCDAY, RGAS, GANGLE, GWEIGHT, GRATIO, RAYPERBAR,
+!$   &  sbk, num_layers, CHRF,
+!$   &  PNET, SNET, HTNET, ihem, iofm,
+!$   &  TG_forrad, PLG_forrad, T0)
 
-                  IF (PORB.NE.0) THEN
-                    SSLON=(1./PORB-1.)*KOUNT*360./ITSPD
-                    SSLON=MOD(SSLON,360.)
-                  ELSE
-                    SSLON=0.
-                  ENDIF
+!$OMP   DO SCHEDULE(GUIDED)
+        DO col=1,JG*MG
+          jh_priv = (col-1)/MG + 1
+          i       = MOD(col-1,MG) + 1
+          im = i + iofm
 
-                  SSLAT=ASIN(SIN(OBLIQ*PI/180.)*SIN(PI2*KOUNT/ITSPD/PORB))*180./PI
-                  WRITE(63,2021) DAY,SSLON,SSLAT
-                  WRITE(62,2021) DAY,SSLON,SSLAT
+          DO LD=1,NL
+            L=NL-LD+2
+            PR(LD)=SIGMA(LD)*EXP(PLG_forrad(im,jh_priv))*P0
+            PRB2T(L)=PR(LD)
+            T(LD)=(TG_forrad(im,ld,jh_priv)+T0(LD))*CT
+            AEROPROF(LD)=0.0
+          ENDDO
 
- 2021             FORMAT('DAY:',F7.2,', SUBSTELLAR LON,LAT:',2F7.2)
+          AEROPROF(NL+1)=0.0
+          PRB2T(1)=EXP(PLG_forrad(im,jh_priv))*P0
+          PR(NL+1)=EXP(PLG_forrad(im,jh_priv))*P0
+          T(NL+1)=((FBASEFLUX+rrflux(IM,jh_priv,1))/5.6704e-8)**0.25
 
-                  WRITE(63,*)
-                  WRITE(62,*)''
-                ENDIF
-              ENDIF
+          alat1=alat(jh_priv)*REAL(-(ihem*2.)+3)
 
-              SWALB=ALBSW
+          SWALB=ALBSW
 
-!             PR AND T ARE THE TEMPERATURE AND PRESSURE AT THE SIGMA LEVELS
-!             AND BOTTOM BOUNDARY, AS USED BY THE DYNAMICAL CODE.
-!             TO COMPUTE HEATING RATES AT THESE CENTERS, WE NEED TO DEFINE
-!             LAYER EDGES AT WHICH FLUXES ARE COMPUTED, p_pass.
+          DO LD=1,NL-1
+            p_pass(LD+1)=(pr(LD)+pr(LD+1))/2.
+          ENDDO
+          p_pass(NL+1)=PR(NL+1)
+          p_pass(1)=pr(1)*0.5
 
-              DO LD    = 1,NL-1
-                p_pass(LD+1)=(pr(LD)+pr(LD+1))/2.
-              ENDDO
+          alon=REAL(i-1)/REAL(mg)*360.0
 
-              p_pass(NL+1)=PR(NL+1)
-              p_pass(1)=pr(1)*0.5
+          IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN
+            DO LD=1,NL+1
+              AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,jh_priv)
+            ENDDO
+          ENDIF
 
-              alon=REAL(i-1)/REAL(mg)*360.0
-              if ((printt.eq.2).and.(i.eq.2)) write(*,*) "alat1, alon:", alat1, alon
+          rfluxes_aerad = 0.
+          fluxes        = 0.
+          fsl_dn_aerad  = 0.
+          fir_up_aerad  = 0.
+          Y3  = 0.
+          Y1  = 0.
+          Y5  = 0.
+          Y4  = 0.
+          k_IRl = 0
+          k_Vl  = 0
 
-!             PR in pascals for layer boundaries (NL+1), T in Kelvin for layer
-!             centers + one layer for the bottom boundary. The top is n=1, the
-!             bottom is n=NL+1
-
-!             Extract a single column from the array AER4LAT(NLEV,LON,HEM)
-              IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN
-                DO  LD=1,NL +1
-                  AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,ih)
-                ENDDO
-              ENDIF
-
-              rfluxes_aerad = 0.
-              fluxes        = 0.
-              fsl_dn_aerad  = 0.
-              fir_up_aerad  = 0.
-              ! No Y2=0, but two Y3=0?
-               Y3  = 0.
-               Y1  = 0.
-               Y5  = 0.
-               Y3  = 0.
-               Y4  = 0.
-
-               k_IRl = 0
-               k_Vl  = 0
-
-              call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
-     &                          DOY,cf,ic,fluxes,swalb,kount,itspd,
-     &                          incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
-     &           ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
-     &           fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
-     &           pbar, dpgsub, pbarsub,
-     &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
-     &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
+          call calc_radheat(pr,t,p_pass,alat1,alon,htlw,htsw,
+     &                      DOY,cf,ic,fluxes,swalb,kount,itspd,
+     &                      incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, dpg,
+     &       ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
+     &       fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
+     &       pbar, dpgsub, pbarsub,
+     &       LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
+     &       EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
      &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
      &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
@@ -510,104 +769,30 @@ c     ntstep is the number of timesteps to skip.
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
      &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V, k_IRl, k_Vl, tau_ray_temp)
 
-              pr=prb2t
+          pr=prb2t
 
-              PNET(IM,JH)=fluxes(1,1,1)-fluxes(1,2,1)+fluxes(2,1,1)-fluxes(2,2,1)
-              SNET(IM,JH)=fluxes(1,1,2)-fluxes(1,2,2)+fluxes(2,1,2)-fluxes(2,2,2)
+          PNET(IM,jh_priv)=fluxes(1,1,1)-fluxes(1,2,1)
+     &                    +fluxes(2,1,1)-fluxes(2,2,1)
+          SNET(IM,jh_priv)=fluxes(1,1,2)-fluxes(1,2,2)
+     &                    +fluxes(2,1,2)-fluxes(2,2,2)
 
-              rrflux(im,jh,1)=fluxes(1,1,2)
-              rrflux(im,jh,2)=fluxes(1,2,2)
-              rrflux(im,jh,3)=fluxes(2,1,2)
-              rrflux(im,jh,4)=fluxes(2,2,2)
-              rrflux(im,jh,5)=fluxes(1,1,1)-fluxes(1,2,1)
-              rrflux(im,jh,6)=fluxes(2,2,1)
+          rrflux(im,jh_priv,1)=fluxes(1,1,2)
+          rrflux(im,jh_priv,2)=fluxes(1,2,2)
+          rrflux(im,jh_priv,3)=fluxes(2,1,2)
+          rrflux(im,jh_priv,4)=fluxes(2,2,2)
+          rrflux(im,jh_priv,5)=fluxes(1,1,1)-fluxes(1,2,1)
+          rrflux(im,jh_priv,6)=fluxes(2,2,1)
 
-c             bottom heating rate is zero in morecret
-              ! write(*,*) "i:",i
-              ! htlw and htsw are ~identical besides the first entry, I think this doesn't matter
-              ! Errors are significantly larger when ihem=2 for some reason
-              DO l=nl,1,-1
-                LD=NL+1-L
-                IM=I+IOFM
-                HTNETO=HTNET(IHem,JH,I,LD)
-                htnet(ihem,jh,i,ld)=(htlw(l+1)+htsw(l+1))
-                TTRD(IM,LD)=(HTNETO+HTNET(IHEM,JH,I,LD))/(CHRF*2.0)
-              ENDDO
-              if ((i.eq.2).and.(printt.eq.1)) then
-!$              write(*,*) "i, thread_num:", i, thread_num 
-                write(*,*) "Kount, i, ihem, jh", kount, i, ihem, jh
-                write(*,*) "alat, alon:", alat1, alon
-                write(*,*) "htlw:" , htlw
-                write(*,*) "htsw:" , htsw
-                write(*,*) "TTRD:" , TTRD(IM,:)
-                write(*,*) "htnet:" , htnet(IHem,JH,I,1:num_layers+1)
-                write(*,*) "CHRF", CHRF
-                write(*,*) " "
-              end if
-
-
-              ilast=i
-!             end of conditional execution of morcrette code
-              
-
-            ENDIF
-            ! write(*,*) "Time taken for column ", i, " is ", tend-tstart
-          enddo
-!$OMP     END DO
-!$OMP     END PARALLEL
-          call cpu_time(tend)
-          
-          IF (nskip.ne.0) then
-             write(*,*),'CANNOT SKIP LONGITUDES IN PARALLEL!! ABORT'
-             write(*,*),'Please set nskip=0 in fort.7'
-             STOP
-          ELSE
-              ilast=mg
-          ENDIF
-
-          IF (ilast.ne.mg) then
-            DO j=ilast+1,mg
-              a=REAL(j-ilast)/REAL(mg+1-ilast)
-              b=1.-a
-              im=j+iofm
-              DO l=nl,1,-1
-                ld=nl+1-l
-                HTNETO=HTNET(IHEM,JH,J,LD)
-                htnet(ihem,jh,j,ld)=a*htnet(ihem,jh,1,ld)+b*htnet(ihem,jh,ilast,ld)
-                TTRD(IM,LD)=(HTNET(IHEM,JH,J,LD)+HTNETO)/(CHRF*2.)
-
-                IF (l.eq.nl) then
-                  pnet(im,jh)=a*pnet(1+iofm,jh)+b*pnet(ilast+iofm,jh)
-                  snet(im,jh)=a*snet(1+iofm,jh)+b*snet(ilast+iofm,jh)
-
-                  DO k=1,6
-                    rrflux(im,jh,k)=a*rrflux(1+iofm,jh,k)+b*rrflux(ilast+iofm,jh,k)
-                  ENDDO
-                ENDIF
-              ENDDO
-            ENDDO
-          ENDIF
-
-        ! This else goes with that very first if statement near the top lol
-        ! This took forever to fix
-        ELSE                   ! ntstep requirement
-          DO i=1,mg
-            DO LD=1,NL
-              im=i+IOFM
-              TTRD(im,LD)=(htnet(ihem,jh,i,ld))/CHRF
-            ENDDO
+          DO l=nl,1,-1
+            LD=NL+1-L
+            htnet(ihem,jh_priv,i,ld)=(htlw(l+1)+htsw(l+1))
           ENDDO
-        ENDIF
-        IOFM=MGPP ! =MG+2
- 800  CONTINUE
 
-      IF (LSHORT.AND.(KOUNT.eq.1)) then
-        DO l=1,nl
-          DO i=1,igc
-            ttrd(i,l)=ttrd(i,l)*2.
-          ENDDO
         ENDDO
-      ENDIF
+!$OMP   END DO
+!$OMP   END PARALLEL
+
+ 900  CONTINUE
 
       RETURN
       END

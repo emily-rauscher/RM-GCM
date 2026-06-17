@@ -7,6 +7,7 @@
 
       SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
           implicit none
+          save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
           LOGICAL :: GRAYCLDV

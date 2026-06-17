@@ -225,6 +225,8 @@ C-----------------------------------------------------------------------
       EQUIVALENCE(R8SP(1),SP(1))
        REAL htnet
        COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
+       COMMON /RAD_ALLLATS/ TG_forrad(IGD,JG), PLG_forrad(IGC,JG),
+     &                      HTNET_old(NHEM,JG,MG,NL)
        REAL TAVE(IGP)
        real POSLATS(JG)
 
@@ -737,19 +739,45 @@ C
   232       CONTINUE
          ENDIF
 C
+C        Pre-pass: fill TG/PLG for all latitudes for parallel radiation
+C
+         IF (LRD) THEN
+            JL=1
+            IF (JGL.EQ.1) REWIND(25)
+            DO IH=1,JG
+               JH=IH
+               IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
+               CALL LTI
+               DO I=1,NTWG
+                  CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,
+     +                        1,MGPP,MG,NCRAY,1)
+               ENDDO
+               CALL FFT991(DAG(1+NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,
+     +                     1,MGPP,MG,NRSTWG,1)
+               DO I=1,IGD
+                  TG_forrad(I,IH) = TG(I)
+               ENDDO
+               DO I=1,IGC
+                  PLG_forrad(I,IH) = PLG(I)
+               ENDDO
+               JL=JL+JINC
+            ENDDO
+            IF (mod(kount,ntstep_in).eq.0) THEN
+               CALL RADIATION_ALLLATS()
+            ENDIF
+         ENDIF
+
 C        Loop over latitude for spectral transforms
 C        and calculation of diabatic tendencies.
 C
-         IF (JGL.EQ.1) REWIND(25)
 C      REWIND NAVRD
 C      REWIND NAVWT
-
-
 
 !@@@@@@  HERE IS WHERE THE ITERATION OVER LATITUDE FOR  @@@@@@@@@@@@@@@@
 !@@@@@@  THE RADIATIVE TRANSFER BEGINS. SHOULD BE PARALELLIZED @@@@@@@@@
 
          JL=1
+         IF (JGL.EQ.1) REWIND(25)
          DO 260 IH=1,JG
             JH=IH
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP

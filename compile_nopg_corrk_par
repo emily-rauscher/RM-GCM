@@ -10,7 +10,7 @@ OPT='-O3 -xHost'
 PROF='-g -p'
 REPORT='-warn noalign'
 PARALLEL='-fopenmp'
-OTHER_OPTS='-debug extended -check uninit -fpe0 -recursive'
+OTHER_OPTS='-debug extended -check uninit -fpe0 -recursive -heap-arrays 0'
 cp params.icorrk params.i
 
 # First compile module file(s)

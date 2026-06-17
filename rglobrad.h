@@ -41,5 +41,6 @@
 
       common /irradiation_constants/ G, PI
 
-! ensure all rad local variables are stored statically
-      save
+! save removed: bare save made all locals STATIC, causing OMP race conditions.
+! With -recursive, locals are automatic (per-call stack), giving each thread its own copy.
+! COMMON block variables and DATA-initialized variables remain static regardless.
