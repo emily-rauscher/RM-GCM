@@ -200,7 +200,7 @@
             implicit none
             ! include 'nwno.inc'
             integer :: NWNO
-            CHARACTER(len=80) :: file_name
+            CHARACTER(len=*) :: file_name
             REAL :: STEL_SPEC(NWNO), STEL_SPEC_IN(2, 5000)
             REAL :: WNO_EDGES(NWNO+1)
             INTEGER :: I, J

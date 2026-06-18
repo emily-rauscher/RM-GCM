@@ -22,7 +22,8 @@
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl, tau_ray_temp)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl, tau_ray_temp,
+     &  iband)
 
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -45,30 +46,30 @@
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL),SOL(NTOTAL)
-      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
-      REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD( NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
-      REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S( NTOTAL)
-      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2(  NTOTAL,2*NL+2), EE1( NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
-      REAL EM2(NTOTAL,2*NL+2), EL1( NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
-      REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
-      REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2), DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
-      REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
-      REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
-      REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru, firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH),SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD( NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S( NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  NBATCH,2*NL+2), EE1( NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1( NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru, firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NTOTAL,2*NL+2)
+      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NBATCH,2*NL+2)
 
-      REAL tau_IRe(NIR,NL+1), tau_Ve(NSOL,NL+1), tau_ray_temp(NSOL, NL+1)
+      REAL tau_IRe(NKGAUSS,NL+1), tau_Ve(NKGAUSS,NL+1), tau_ray_temp(NKGAUSS, NL+1)
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
-      real, dimension(NIR, NL+1) :: k_IRl
-      real, automatic, dimension(NIR, 2*NL+2) :: k_irl_doubled, k_ray_doubled
-      real, dimension(NSOL, NL+1) :: k_Vl
+      real, dimension(NKGAUSS, NL+1) :: k_IRl
+      real, automatic, dimension(NKGAUSS, 2*NL+2) :: k_irl_doubled, k_ray_doubled
+      real, dimension(NKGAUSS, NL+1) :: k_Vl
       ! New variables for calculating the IR absorbtion coefficient as a power law
       real, dimension(NLAYER) :: IR_ABS_COEFFICIENT
 
@@ -77,18 +78,18 @@
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
-      integer :: L, J, K, solar_calculation_indexer, I
+      integer :: L, J, K, solar_calculation_indexer, I, iband
       REAL G,WVO, incident_starlight_fraction
-      real, dimension(NIR)  :: Beta_IR
-      real, dimension(NSOL) :: Beta_V
+      real, dimension(NKGAUSS)  :: Beta_IR
+      real, dimension(NKGAUSS) :: Beta_V
       dimension rup_1(NGROUP)
       dimension rhoi(NRAD), dbnds(NRAD+1)
       dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
       ! these three arent used?
-      dimension tauem(5,NTOTAL), ssam(5,NTOTAL), asmm(5,NTOTAL)
-      dimension temparr(6,NTOTAL)
+      dimension tauem(5,NBATCH), ssam(5,NBATCH), asmm(5,NBATCH)
+      dimension temparr(6,NBATCH)
       dimension pbndsm(6)
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+      real, dimension(NBATCH,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
       real dpg(nl+1), pbar(nl+1)
       real dpgsub(2*nl+2), pbarsub(2*nl+2)
       real t(NLAYER), pr(NLAYER)
@@ -177,15 +178,15 @@
       ENDIF
 
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
-      LLA = NTOTAL
+      LLA = NBATCH
       LLS = 1
 
       IF(ISL .EQ. 0) THEN
-          LLS =  NSOL+1
+          LLS = NKGAUSS+1
       ENDIF
 
       IF(IR .EQ. 0) THEN
-          LLA =  NSOL
+          LLA = NKGAUSS
       ENDIF
 
       EMISIR       = SURFEMIS
@@ -318,25 +319,26 @@
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl)
         
         ! Thomas Hack to get consistency between DG and PF column densities starts here
-        DO L = solar_calculation_indexer,NSOL
+        DO L = solar_calculation_indexer,NKGAUSS
           DO J     =   1,NLAYER
             TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J)
           END DO
         END DO
         k_irl_doubled = 0.0
         ! smooth out the IR optical depths to twice the resolution (linear interpolation)
-        DO L = NSOL+1,NTOTAL
+        DO L = NKGAUSS+1,NBATCH
           k = 1
           DO J     =   1,NDBL, 2
-            k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
-            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,min(k+1,NL+1))) / 2.0
+            k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
+            k_irl_doubled(L-NKGAUSS,J+1) = k_irl(L-NKGAUSS, k)
+     &           + ABS(k_irl(L-NKGAUSS,k) - k_irl(L-NKGAUSS,min(k+1,NL+1))) / 2.0
 
             k = k + 1
           END DO
         END DO
-        DO L  = NSOL+1,NTOTAL
+        DO L  = NKGAUSS+1,NBATCH
           DO J     =   1,NDBL
-            TAUGAS(L,J) = k_irl_doubled(L-NSOL,J)*10. * DPGSUB(J)
+            TAUGAS(L,J) = k_irl_doubled(L-NKGAUSS,J)*10. * DPGSUB(J)
             ! write(*,*) J
           END DO
         END DO
@@ -413,13 +415,13 @@
           END IF
 
           ! Set the tau gas equal to the absorbtion coefficient times dpg
-          DO L = solar_calculation_indexer,NSOL
+          DO L = solar_calculation_indexer,NKGAUSS
               DO J     =   1,NLAYER
                   TAUGAS(L,J) = ABSSW * DPG(J)
               END DO
           END DO
 
-          DO L  = NSOL+1,NTOTAL
+          DO L  = NKGAUSS+1,NBATCH
              DO J     =   1,NDBL
                  TAUGAS(L,J)=IR_ABS_COEFFICIENT(J)*DPGsub(J)
              END DO
@@ -444,12 +446,13 @@
      &  qrad,alb_tomi,alb_toai, num_layers,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, tau_ray_temp)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, tau_ray_temp,
+     &  iband)
         ! WRITE(*,*) solar_calculation_indexer
         ! solar calculation indexer is 1 when mu>0, NSOL+1 when mu==0, so we skip this loop
         ! when starlight is a non-issue
         ! Thomas Hack to get consistency between DG and PF column densities starts here
-        DO L = solar_calculation_indexer,NSOL
+        DO L = solar_calculation_indexer,NKGAUSS
           DO J     =   1,NLAYER
             TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J)
             TAURAY(L,J) = tau_ray_temp(L,J)*10. * DPG(J)
@@ -458,23 +461,25 @@
         k_irl_doubled = 0.0
         k_ray_doubled = 0.0
         ! smooth out the IR optical depths to twice the resolution (linear interpolation)
-        DO L = NSOL+1,NTOTAL
+        DO L = NKGAUSS+1,NBATCH
           k = 1
           DO J     =   1,NDBL, 2
-            k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
-            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,min(k+1,NL+1))) / 2.0
+            k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
+            k_irl_doubled(L-NKGAUSS,J+1) = k_irl(L-NKGAUSS, k)
+     &           + ABS(k_irl(L-NKGAUSS,k) - k_irl(L-NKGAUSS,min(k+1,NL+1))) / 2.0
 
-            k_ray_doubled(L-NSOL,J) = tau_ray_temp(L-NSOL, k)
-            k_ray_doubled(L-NSOL,J+1) = tau_ray_temp(L-NSOL, k)+ ABS(tau_ray_temp(L-NSOL,k)
-     &                   - tau_ray_temp(L-NSOL,min(k+1,NL+1))) / 2.0
+            k_ray_doubled(L-NKGAUSS,J) = tau_ray_temp(L-NKGAUSS, k)
+            k_ray_doubled(L-NKGAUSS,J+1) = tau_ray_temp(L-NKGAUSS, k)
+     &           + ABS(tau_ray_temp(L-NKGAUSS,k)
+     &                - tau_ray_temp(L-NKGAUSS,min(k+1,NL+1))) / 2.0
             k = k + 1
           END DO
         END DO
         ! multiply opacities by deltaP/g to get optical depths
-        DO L  = NSOL+1,NTOTAL
+        DO L  = NKGAUSS+1,NBATCH
           DO J     =   1,NDBL
-            TAUGAS(L,J) = k_irl_doubled(L-NSOL,J)*10. * DPGSUB(J) ! factor of 10 is SI-->CGS m^2/kg-->cm^2/g
-            TAURAY(L,J) = k_ray_doubled(L-NSOL,J)*10. * DPGSUB(J)
+            TAUGAS(L,J) = k_irl_doubled(L-NKGAUSS,J)*10. * DPGSUB(J)
+            TAURAY(L,J) = k_ray_doubled(L-NKGAUSS,J)*10. * DPGSUB(J)
           END DO
         END DO
         ! Thomas Hack to get consistency between DG and PF column densities ends here
@@ -524,8 +529,8 @@
         if ((opacity_method .EQ. 'picket') .or. (opacity_method .EQ. 'dogray')) then
           DO J = 1,NLAYER
             ! Calculate the rayleigh scattering
-            DO L = 1,NTOTAL
-              if( L .LE. NSOL )then
+            DO L = 1,NBATCH
+              if( L .LE. NKGAUSS )then
                 TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
               else
                 TAURAY(L,J)= 0.0
@@ -544,20 +549,18 @@
         
       ELSE
         DO 320 J     = 1,NLAYER
-          DO 325 L    = 1,NTOTAL
+          DO 325 L    = 1,NBATCH
             TAURAY(L,J)= 0.0
 325       CONTINUE
 320     CONTINUE
       ENDIF
       if ((opacity_method .EQ. 'picket') .or. (opacity_method .EQ. 'dogray')) then
-        DO L   =   1,NSOL
+        DO L   =   1,NKGAUSS
           SOL(L)  = PSOL_aerad
         END DO
       else if (opacity_method .EQ. 'correk') then
-        DO L   =   1,NSOL
-          chan_idx = MODULO(L-1, 8) + 1
-          stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-          SOL(L)  = PSOL_aerad * STEL_SPEC(stel_idx)
+        DO L   =   1,NKGAUSS
+          SOL(L)  = PSOL_aerad * STEL_SPEC(iband)
         END DO
       END IF
 

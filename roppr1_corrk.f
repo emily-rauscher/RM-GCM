@@ -14,7 +14,7 @@
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
-     &  qrad,alb_tomi,alb_toai, num_layers)
+     &  qrad,alb_tomi,alb_toai, num_layers, iband)
 !
 !     **********************************************************
 !     *  Purpose             :  Calculate Planck Function and  *
@@ -28,35 +28,35 @@
       use corrkmodule, only : PLANCK_INTS, PLANCK_TS, NWNO, NEAREST_INDEX
       include 'rcommons.h'
       
-      integer num_layers
+      integer num_layers, iband
       INTEGER, AUTOMATIC :: kindex, J, L, K, index_num
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
-      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
-      REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD( NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
-      REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S( NTOTAL)
-      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2(NTOTAL,2*NL+2), EE1( NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
-      REAL EM2(NTOTAL,2*NL+2), EL1( NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
-      REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
-      REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2), DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
-      REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
-      REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
-      REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD( NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S( NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(NBATCH,2*NL+2), EE1( NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1( NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
       real, automatic :: ITP, ITG, IT1, SBKoverPI, g11
       real, DIMENSION(NLAYER) :: T
-      real, dimension(NTOTAL,2*NL+2) :: TAUL
-      real, dimension(NTOTAL,NDBL) :: SLOPE
+      real, dimension(NBATCH,2*NL+2) :: TAUL
+      real, dimension(NBATCH,NDBL) :: SLOPE
       real, automatic, dimension(2*NL+2) :: ttsub
       real, automatic :: localT
-      INTEGER, AUTOMATIC :: temp_idx, gauss_idx, stel_idx
+      INTEGER, AUTOMATIC :: temp_idx
 
       logical, automatic :: lo_temp_flag
 
@@ -103,19 +103,12 @@
           END IF
           IF (lo_temp_flag) THEN
               
-            DO L        = NSOL+1,NTOTAL
-                ! We've now figured out the temp index for the layer, so now we grab the planck integral
-                ! Modulo is used here to figure out which bin we're in from the big array
-                !   write(*,*) "L: ", L, "J: ", J, "temp_idx: ", temp_idx, "MODULO: ", MODULO(L-1,8)+1
-                gauss_idx = MODULO(L-1,8)+1 ! This is the index of the gauss point
-                ! stel_idx = (L - gauss_idx)/8 + 1 - NWNO! This is the index of the wavenumber bin
-                stel_idx = (L-gauss_idx-NSOL)/8 + 1
-                ! IT1 = PLANCK_INTS(stel_idx, temp_idx) ! Nearest-neighbor interpolation in T
-                IT1 = PLANCK_INTS(stel_idx, temp_idx) + (PLANCK_INTS(stel_idx, temp_idx+1) - 
-     &                PLANCK_INTS(stel_idx, temp_idx)) * 
+            DO L        = NKGAUSS+1,NBATCH
+                ! IT1 = PLANCK_INTS(iband, temp_idx) ! Nearest-neighbor interpolation in T
+                IT1 = PLANCK_INTS(iband, temp_idx) + (PLANCK_INTS(iband, temp_idx+1) -
+     &                PLANCK_INTS(iband, temp_idx)) *
      &                (localT - PLANCK_TS(temp_idx)) / (PLANCK_TS(temp_idx+1) - PLANCK_TS(temp_idx)) ! linear T interpolation
-    !  &                (T(index_num) - PLANCK_TS(temp_idx)) / (PLANCK_TS(temp_idx+1) - PLANCK_TS(temp_idx)) ! linear T interpolation
-                
+
 
 
                 kindex     = max(1,j-1)
@@ -129,7 +122,7 @@
 
             END DO
           ELSE
-            DO L        = NSOL+1,NTOTAL
+            DO L        = NKGAUSS+1,NBATCH
                 IT1 = 0.0
                 kindex = max(1,j-1)
                 PTEMP(L,J)=IT1

@@ -30,30 +30,30 @@
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
-      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
-      REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD(NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
-      REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S(NTOTAL)
-      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2(  NTOTAL,2*NL+2), EE1(NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
-      REAL EM2(NTOTAL,2*NL+2), EL1(NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
-      REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
-      REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2), DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
-      REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
-      REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
-      REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD(NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S(NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  NBATCH,2*NL+2), EE1(NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1(NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-      real, dimension(NTOTAL,2*NL+2) :: TAUL
+      real, dimension(NBATCH,2*NL+2) :: TAUL
       integer solar_calculation_indexer
 
       U1I(:) = 0.
       EF(:,:) = 0.0
       !  WRITE(*,*), 'solar_calculation_indexer', solar_calculation_indexer, 'LLA', LLA
-       DO 10 L    =  MAX(solar_calculation_indexer,MINWNOSTEL*8),LLA
-          if( L .LE. NSOL )then
+       DO 10 L    =  solar_calculation_indexer,LLA
+          if( L .LE. NKGAUSS )then
             U1I(L) = SQ3
           else
             U1I(L) = 2.0
@@ -68,7 +68,7 @@
 
 !
        DO 14 J          =  1,NLAYER
-          DO 14 L       =  MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+          DO 14 L       =  solar_calculation_indexer,NKGAUSS
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)    =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
              B2(L,J)    =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
@@ -82,7 +82,7 @@
   14  CONTINUE
 
       DO 15 J = 1,NDBL
-          DO 15 L = NSOL+1,NTOTAL
+          DO 15 L = NKGAUSS+1,NBATCH
 !            THESE ARE FOR TWO STREAM AND HEMISPHERIC MEANS
              B1(L,J)      =  0.5*U1I(L)*(2. - W0(L,J)*(1. + G0(L,J)))
              B2(L,J)      =  0.5*U1I(L)*W0(L,J)*(1. - G0(L,J))
@@ -107,7 +107,7 @@
       J                 =  0
       DO 18 JD          =  2,JN,2
          J              =  J + 1
-         DO 18 L        =  MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+         DO 18 L        =  solar_calculation_indexer,NKGAUSS
 !          HERE ARE THE EVEN MATRIX ELEMENTS
              AF(L,JD)   =  EM1(L,J+1)*EL1(L,J)-EM2(L,J+1)*EL2(L,J)
              BF(L,JD)   =  EM1(L,J+1)* EM1(L,J)-EM2(L,J+1)*EM2(L,J)
@@ -120,7 +120,7 @@
       J                 =  0
       DO 19 JD          =  2,JN2,2
          J              =  J + 1
-         DO 19 L        =  NSOL+1,NTOTAL
+         DO 19 L        =  NKGAUSS+1,NBATCH
 !          HERE ARE THE EVEN MATRIX ELEMENTS
              AF(L,JD)   =  EM1(L,J+1)*EL1(L,J)-EM2(L,J+1)*EL2(L,J)
              BF(L,JD)   =  EM1(L,J+1)* EM1(L,J)-EM2(L,J+1)*EM2(L,J)
@@ -138,7 +138,7 @@
 
 
 
-      DO 20 L        = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+      DO 20 L        = solar_calculation_indexer,NKGAUSS
          AF(L,1)     = 0.0
          BF(L,1)     = EL1(L,1)
          EF(L,1)     = -EM1(L,1)
@@ -146,7 +146,7 @@
          BF(L,JDBLE) = EM1(L,NLAYER)-RSFX(L)*EM2(L,NLAYER)
          EF(L,JDBLE) = 0.0
   20  CONTINUE
-      DO 21 L        = NSOL+1,NTOTAL
+      DO 21 L        = NKGAUSS+1,NBATCH
          AF(L,1)     = 0.0
          BF(L,1)     = EL1(L,1)
          EF(L,1)     = -EM1(L,1)

@@ -15,7 +15,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, p_pass,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, itspd)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, itspd, iband)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -31,23 +31,23 @@
       use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT, NWNO
       include 'rcommons.h'
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, itspd
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, itspd, iband
       INTEGER, AUTOMATIC :: MET_INDEX
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
-      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
-      REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD(NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
-      REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S(NTOTAL)
-      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2(  5,2*NL+2), EE1(NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
-      REAL EM2(NTOTAL,2*NL+2), EL1(NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
-      REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
-      REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2), DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
-      REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
-      REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
-      REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD(NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S(NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  5,2*NL+2), EE1(NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1(NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toais
 
@@ -58,16 +58,16 @@
       real, automatic :: layer_pressure_bar(NLAYER)
       real, automatic :: CONDFACT(NLAYER,NCLOUDS)
 
-      REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
-      REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
-      REAL tauaer_temp(NTOTAL, NLAYER, NCLOUDS)
+      REAL PI0_TEMP(NBATCH, NVERT, NCLOUDS)
+      REAL G0_TEMP(NBATCH, NVERT, NCLOUDS)
+      REAL tauaer_temp(NBATCH, NLAYER, NCLOUDS)
 
       real, automatic :: CLOUDLOC(NL+1,NCLOUDS)
       integer, automatic :: BASELEV
       integer, automatic :: TOPLEV(NCLOUDS)
 
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
-      real, automatic, dimension(NIR+NSOL,NL+1) :: TAU_HAZE
+      real, dimension(NBATCH,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
+      real, automatic, dimension(NBATCH,NL+1) :: TAU_HAZE
 
       ! These are hardcoded to 50 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
@@ -96,7 +96,7 @@
 
       INTEGER, AUTOMATIC :: CLOUD_WAVELENGTH_INDEXES(5)
       INTEGER, AUTOMATIC :: HAZE_WAVELENGTH_INDEXES(5)
-      INTEGER, AUTOMATIC :: WAV_LOC, chan_idx, stel_idx
+      INTEGER, AUTOMATIC :: WAV_LOC
 
       INTEGER, AUTOMATIC :: K, J, L, iradgas
       INTEGER, AUTOMATIC :: size_loc, temp_loc, layer_index, haze_layer_index
@@ -204,12 +204,12 @@
                 haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J))  ! Both of these are in PA
                 ! This grabs the optical depth per bar, then multiply it by the pressure in bars
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
-                    DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+                    DO L = solar_calculation_indexer,NKGAUSS
                         WAV_LOC = HAZE_WAVELENGTH_INDEXES(2) !THIS IS THE DOUBLE GRAY VERSION
                         TAU_HAZE(L,J) = HAZE_wav_tau_per_bar(WAV_LOC, haze_layer_index) * layer_pressure_bar(J)
                     END DO
                 ELSE
-                    DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+                    DO L = solar_calculation_indexer,NKGAUSS
                         WAV_LOC = HAZE_WAVELENGTH_INDEXES(L)
                         TAU_HAZE(L,J) = HAZE_wav_tau_per_bar(WAV_LOC, haze_layer_index) * layer_pressure_bar(J)
                     END DO
@@ -222,13 +222,13 @@
 
                 ! This grabs the optical depth per bar, then multiply it by the pressure in bars
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
-                    DO L = NSOL+1,NTOTAL
+                    DO L = NKGAUSS+1,NBATCH
                         WAV_LOC = HAZE_WAVELENGTH_INDEXES(4)
                         TAU_HAZE(L,J) = HAZE_wav_tau_per_bar(WAV_LOC, haze_layer_index) * layer_pressure_bar(J)
                     END DO
                 ELSE
-                    TAU_HAZE(NSOL+1,J)=HAZE_PlanckMean_tau_per_bar(temp_loc, haze_layer_index)*layer_pressure_bar(J)
-                    TAU_HAZE(NSOL+2,J)=HAZE_RosselandMean_tau_per_bar(temp_loc, haze_layer_index)*layer_pressure_bar(J)
+                    TAU_HAZE(NKGAUSS+1,J)=HAZE_PlanckMean_tau_per_bar(temp_loc, haze_layer_index)*layer_pressure_bar(J)
+                    TAU_HAZE(NKGAUSS+2,J)=HAZE_RosselandMean_tau_per_bar(temp_loc, haze_layer_index)*layer_pressure_bar(J)
                 END IF
             END DO
         ELSE
@@ -285,24 +285,19 @@
      &                              size_loc, size_weight)
             !corr-k version:
             DO I = 1, NCLOUDS
-                DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
-                    chan_idx = MODULO(L-1, 8) + 1
-                    stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-
-                    PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,stel_idx), CLOUD_A(I,size_loc+1,stel_idx), size_weight)
-                    G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,stel_idx), CLOUD_G(I,size_loc+1,stel_idx), size_weight)
+                DO L = solar_calculation_indexer,NKGAUSS
+                    PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,iband), CLOUD_A(I,size_loc+1,iband), size_weight)
+                    G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,iband), CLOUD_G(I,size_loc+1,iband), size_weight)
                 END DO
                 ! since spectral, should be able to copy IR to vis at the end, but for consistency we'll do it here
-                DO L = NSOL+1,NTOTAL
-                    chan_idx = MODULO(L-1, 8) + 1
-                    stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
-                    PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,stel_idx), CLOUD_A(I,size_loc+1,stel_idx), size_weight)
-                    G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,stel_idx), CLOUD_G(I,size_loc+1,stel_idx), size_weight)
+                DO L = NKGAUSS+1,NBATCH
+                    PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,iband), CLOUD_A(I,size_loc+1,iband), size_weight)
+                    G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,iband), CLOUD_G(I,size_loc+1,iband), size_weight)
                 END DO
                 tconds_lo = TCONDS(MET_INDEX,layer_index,I)
                 tconds_hi = TCONDS(MET_INDEX,layer_index+1,I)
                 tconds_interp = tconds_lo + p_weight * (tconds_hi - tconds_lo)
-                kext_interp = LERP(CLOUD_KEXT(I,size_loc,stel_idx), CLOUD_KEXT(I,size_loc+1,stel_idx), size_weight)
+                kext_interp = LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight)
                 CONDFACT(J,I) = min(max((tconds_interp-TT(J))/10.,0.0),1.0)
 
 
@@ -312,20 +307,16 @@
 
                 corfact_interp = LERP(CORFACT(layer_index), CORFACT(layer_index+1), p_weight)
 
-                DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
-                    chan_idx = MODULO(L-1, 8) + 1
-                    stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
+                DO L = solar_calculation_indexer,NKGAUSS
                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*corfact_interp*
-     &                              LERP(CLOUD_KEXT(I,size_loc,stel_idx), CLOUD_KEXT(I,size_loc+1,stel_idx), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                 END DO
-                DO L = NSOL+1,NTOTAL
-                    chan_idx = MODULO(L-1, 8) + 1
-                    stel_idx = MODULO((L-chan_idx)/8,NWNO) + 1
+                DO L = NKGAUSS+1,NBATCH
                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*corfact_interp*
-     &                              LERP(CLOUD_KEXT(I,size_loc,stel_idx), CLOUD_KEXT(I,size_loc+1,stel_idx), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
+     &                              LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                 END DO
             END DO
@@ -376,7 +367,7 @@
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
     !                 END DO
-    !                 DO L = NSOL+1,NTOTAL
+    !                 DO L = NKGAUSS+1,NBATCH
     !                     WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
     !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
@@ -390,7 +381,7 @@
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
     !                 END DO
 
-    !                 DO L = NSOL+1,NTOTAL
+    !                 DO L = NKGAUSS+1,NBATCH
     !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
@@ -422,7 +413,7 @@
         DO J=1, NLAYER
             haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
 
-            DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
+            DO L = solar_calculation_indexer,NKGAUSS
                 WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2) ! hazes should be not used, so doesn't matter that it's double gray
                 TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
                 WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
@@ -438,7 +429,7 @@
         DO J = 1,NLAYER
             haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
 
-            DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
+            DO L = solar_calculation_indexer,NKGAUSS
                 WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
                 TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
                 WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
@@ -456,7 +447,7 @@
 
             JJ = J
 
-            DO L = NSOL+1,NTOTAL
+            DO L = NKGAUSS+1,NBATCH
                 ! GREP CHECK THIS
                 WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
                 TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)) + TAU_HAZE(L,K)
@@ -466,7 +457,7 @@
     !  &                              (TAU_HAZE(L,K) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,JJ) + 1e-8))
             END DO
             JJ = J+1
-            DO L = NSOL+1,NTOTAL
+            DO L = NKGAUSS+1,NBATCH
                 TAUAER(L,JJ) = TAUAER(L,JJ-1)
                 WOL(L,JJ)    = WOL(L,JJ-1)
                 GOL(L,JJ)    = GOL(L,JJ-1)
@@ -513,7 +504,7 @@
     !  &        + (TAU_HAZE(NSOL+2,K) * HAZE_RosselandMean_gg(temp_loc, haze_layer_index) / (TAUAER(NSOL+2,JJ) + 1e-8))
 
     !             JJ = J+1
-    !             DO L = NSOL+1,NTOTAL
+    !             DO L = NKGAUSS+1,NBATCH
     !                 TAUAER(L,JJ) = TAUAER(L,JJ-1)
     !                 WOL(L,JJ)    = WOL(L,JJ-1)
     !                 GOL(L,JJ)    = GOL(L,JJ-1)
@@ -524,7 +515,7 @@
 
 
         ! Smooth out the cloud properties after doubling
-        DO L = NSOL+1,NTOTAL
+        DO L = NKGAUSS+1,NBATCH
             DO J = 2, NDBL-1, 2
                 TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
                 WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
@@ -548,7 +539,7 @@
           j1 = max(1, j-1)
 
             !         First the solar at standard resolution
-          DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8+1),NSOL
+          DO L = solar_calculation_indexer,NKGAUSS
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
               if(TAUL(L,J) .lt. 1d-6 ) then
@@ -610,7 +601,7 @@
 !     NOW AGAIN FOR THE IR
       DO J = 1,NDBL
           j1 = max( 1, j-1 )
-          DO L = NSOL+1,NTOTAL
+          DO L = NKGAUSS+1,NBATCH
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
               !if (iradgas.eq.0) then
@@ -671,7 +662,7 @@
           END DO
 
           DO I = 1,NGAUSS
-              DO L = NSOL+1,NTOTAL
+              DO L = NKGAUSS+1,NBATCH
                   Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
               END DO
           END DO

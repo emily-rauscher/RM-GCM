@@ -3,7 +3,7 @@ OPT=-O3 -xHost
 #OPT='-Ofast -xHost'
 PROF=-g -p
 REPORT=-warn noalign
-#PARALLEL='-fopenmp'
+PARALLEL='-fopenmp'
 OTHER_OPTS=-debug extended
 
 FFLAGS = -g $(OPT) $(REPORT) $(PARALLEL) $(OTHER_OPTS) -r8 -132 -traceback

@@ -30,34 +30,34 @@
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, M, I, L, kindex, J
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
-      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
-      REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD( NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
-      REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S( NTOTAL)
-      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2(  NTOTAL,2*NL+2), EE1( NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
-      REAL EM2(NTOTAL,2*NL+2), EL1( NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
-      REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
-      REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2), DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
-      REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
-      REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
-      REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD( NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S( NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  NBATCH,2*NL+2), EE1( NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1( NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-      real, dimension(NTOTAL,2*NL+2) :: TAUL
-      real, dimension(NTOTAL,NDBL) :: SLOPE
+      real, dimension(NBATCH,2*NL+2) :: TAUL
+      real, dimension(NBATCH,NDBL) :: SLOPE
 !
 !     LOCAL DIMENSIONS
-      REAL, DIMENSION(NTOTAL,NGAUSS,NDBL) :: Y1, Y2, Y4, Y8
-      REAL, DIMENSION(NTOTAL,NDBL)        :: A1, A2, A3, A4, A5, A7, Y5
+      REAL, DIMENSION(NBATCH,NGAUSS,NDBL) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NBATCH,NDBL)        :: A1, A2, A3, A4, A5, A7, Y5
 
       A3(:,:) = 0.0
       A7(:,:) = 0.0
       DO 200 J           =  1,NDBL
           kindex         = max( 1, j-1 )
-          DO 100  L      =  NSOL+1,NTOTAL
+          DO 100  L      =  NKGAUSS+1,NBATCH
 !            HERE WE DO NO SCATTERING COEFFICIENTS
              A3(L,J)     =  PTEMP(L,KINDEX)*TPI
              A4(L,J)     =  TPI*SLOPE(L,J)
@@ -68,7 +68,7 @@
 
 !         HERE WE DO SCATTERING
           IF(IRS .NE. 0) THEN
-              DO 50 L    =  NSOL+1,NTOTAL
+              DO 50 L    =  NKGAUSS+1,NBATCH
                 A1(L,J)  =  U1I(L) - TOON_AK(L,J)
                 A2(L,J)  =  GAMI(L,J)*(TOON_AK(L,J)+U1I(L))
                 A3(L,J)  =  A3(L,J)+(SLOPE(L,J)*(TPI*B3(L,J)-U1S(L)))
@@ -82,7 +82,7 @@
 !
       DO 400       J         =  1,NDBL
          DO 350    I         =  1,NGAUSS
-            DO 300 L         =  NSOL+1,NTOTAL
+            DO 300 L         =  NKGAUSS+1,NBATCH
                Y1(L,I,J)  =  0.0
                Y2(L,I,J)  =  0.0
                Y4(L,I,J)  =  A7(L,J) - A4(L,J)*GANGLE(I)
@@ -91,7 +91,7 @@
 !
 !           HERE WE DO SCATTERING
             IF(IRS .NE. 0) THEN
-              DO 325 L    =  NSOL+1,NTOTAL
+              DO 325 L    =  NKGAUSS+1,NBATCH
                  YA        =  A1(L,J)*(Y3(L,I,J)-EE1(L,J))/
      &                             (TOON_AK(L,J)*GANGLE(I)-1.)
                  YB        =  A2(L,J)*(1.- EE1(L,J)*Y3(L,I,J))/
@@ -110,7 +110,7 @@
 
 !
       DO 450 J             =  1,NDBL
-         DO 425  L         =  NSOL+1,NTOTAL
+         DO 425  L         =  NKGAUSS+1,NBATCH
             TMID(L,J) = 0.0
             TMIU(L,J) = 0.0
             DIREC(L,J)     =  0.0
@@ -123,7 +123,7 @@
 !     CALCULATE DINTENT THE DOWNWARD INTENSITY AND DIREC THE DOWNWARD FL
 
        DO 500 I             = 1,NGAUSS
-          DO 475 L          = NSOL+1,NTOTAL
+          DO 475 L          = NKGAUSS+1,NBATCH
              if( iblackbody_above .eq. 1 )then
                DINTENT(L,I,1) = PTEMPT(L)*Y3(L,I,1)*TPI +Y1(L,I,1)+(1.-Y3(L,I,1))*Y4(L,I,1)
              else
@@ -139,7 +139,7 @@
 !      DINTENT IS DOWNWARD INTENSITY * TPI. DIREC IS THE DOWNWARD FLUX.
        DO 530        J           = 2,NDBL
            DO 520    I           = 1,NGAUSS
-              DO 510 L           = NSOL+1,NTOTAL
+              DO 510 L           = NKGAUSS+1,NBATCH
                  DINTENT(L,I,J)  = DINTENT(L,I,J-1)*Y3(L,I,J)
      &                              +Y1(L,I,J)+Y5(L,J)+
      &                              (1.-Y3(L,I,J))*Y4(L,I,J)
@@ -156,7 +156,7 @@
 
 
        DO 570     I               =  1,NGAUSS
-          DO 560  L               =  NSOL+1,NTOTAL 
+          DO 560  L               =  NKGAUSS+1,NBATCH
              UINTENT(L,I,NDBL)  =  PTEMPG(L)*EMIS(L)
      &                               *TPI+2.*RSFX(L)*DIREC(L,NDBL)
              TMIU(L,NDBL)       =  TMIU(L,NDBL)+
@@ -171,7 +171,7 @@
       DO 650        M              = 2,NDBL
           J                        = NDBL-M+1
           DO 640    I              = 1,NGAUSS
-             DO 630 L              = NSOL+1,NTOTAL
+             DO 630 L              = NKGAUSS+1,NBATCH
                   UINTENT(L,I,J)    = (UINTENT(L,I,J+1)-Y5(L,J+1))*Y3(L,I,J+1)+Y2(L,I,J+1)+(1.-Y3(L,I,J+1))*Y8(L,I,J+1)
                   TMIU(L,J)        = TMIU(L,J)+UINTENT(L,I,J)*GRATIO(I)
                   DIRECTU(L,J)     = DIRECTU(L,J) + GWEIGHT(I)*UINTENT(L,I,J)

@@ -66,9 +66,10 @@ C
       PARAMETER(MXBAND=9)    ! Maximum number of spectral bands (not      
                              ! including the whole spectrum, 0-3000cm-1)  
                                                                           
-      PARAMETER(MXCL=3)      ! Maximum number of cloud types              
-                                                                          
-C-----------------------------------------------------------------------  
+      PARAMETER(MXCL=3)      ! Maximum number of cloud types
+
+
+C-----------------------------------------------------------------------
 C                                                                         
 C  Switches for long wave radiation scheme                                
 C                                                                         

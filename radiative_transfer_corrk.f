@@ -18,7 +18,7 @@
      &  qrad,alb_tomi,alb_toai, num_layers,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, tau_ray_temp)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, tau_ray_temp, iband)
           use corrkmodule, only : corrk_setup, TS_CORRK, PS_CORRK, TS_LOG_CORRK, 
      &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
      &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS
@@ -39,43 +39,43 @@
           INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
           REAL EMISIR, EPSILON, HEATI(NL+1), HEATS(NL+1), HEAT(NL+1), SOLNET
           REAL TPI, SQ3, SBK,AM, AVG, ALOS
-          REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
-          REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
-          REAL GOL(NTOTAL,2*NL+2), WOL(NTOTAL,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NTOTAL,3,2*NL+2), U0, FDEGDAY
-          REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*NL+2), OPD(NTOTAL,2*NL+2), PTEMP(NTOTAL,2*NL+2)
-          REAL uG0(NTOTAL,2*NL+2), uTAUL(NTOTAL,2*NL+2), W0(NTOTAL,2*NL+2), uW0(NTOTAL,2*NL+2), uopd(NTOTAL,2*NL+2),  U1S(NTOTAL)
-          REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*NL+2), B1(NTOTAL,2*NL+2), B2(  5,2*NL+2), EE1(NTOTAL,2*NL+2), EM1(NTOTAL,2*NL+2)
-          REAL EM2(NTOTAL,2*NL+2), EL1(NTOTAL,2*NL+2), EL2(NTOTAL,2*NL+2), GAMI(NTOTAL,2*NL+2), AF(NTOTAL,4*NL+4)
-          REAL BF(NTOTAL,4*NL+4), EF(NTOTAL,4*NL+4), SFCS(NTOTAL), B3(NTOTAL,2*NL+2), CK1(NTOTAL,2*NL+2), CK2(NTOTAL,2*NL+2)
-          REAL CP(NTOTAL,2*NL+2), CPB(NTOTAL,2*NL+2), CM(NTOTAL,2*NL+2), CMB(NTOTAL,2*NL+2)
-          REAL DIRECT(NTOTAL,2*NL+2), EE3(NTOTAL,2*NL+2)
-          REAL EL3(NTOTAL,2*NL+2), FNET(NTOTAL,2*NL+2), TMI(NTOTAL,2*NL+2), AS(NTOTAL,4*NL+4), DF(NTOTAL,4*NL+4)
-          REAL DS(NTOTAL,4*NL+4), XK(NTOTAL,4*NL+4), DIREC(NTOTAL,2*NL+2), DIRECTU(NTOTAL,2*NL+2), DINTENT(NTOTAL,3,2*NL+2)
-          REAL UINTENT(NTOTAL,3,2*NL+2), TMID(NTOTAL,2*NL+2), TMIU(NTOTAL,2*NL+2), tslu,total_downwelling,alb_tot
-          REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
+          REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+          REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+          REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+          REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD(NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+          REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S(NBATCH)
+          REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  5,2*NL+2), EE1(NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+          REAL EM2(NBATCH,2*NL+2), EL1(NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+          REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+          REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2)
+          REAL DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+          REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+          REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+          REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+          REAL tiru,firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
           REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
           REAL qrad(NL+1),alb_tomi,alb_toai
 
-          real, dimension(NIR, NL+1) :: k_IRl
-          real :: tau_ray_temp(NSOL, NL+1)
-          real, dimension(NSOL, NL+1) :: k_Vl
+          real, dimension(NKGAUSS, NL+1) :: k_IRl
+          real :: tau_ray_temp(NKGAUSS, NL+1)
+          real, dimension(NKGAUSS, NL+1) :: k_Vl
 
           integer :: NLAYER, J, k
           real :: Tirr, Tint, gravity_SI, incident_starlight_fraction
 
-          real, dimension(NIR) :: Beta_IR
-          real, dimension(NSOL) :: Beta_V
+          real, dimension(NKGAUSS) :: Beta_IR
+          real, dimension(NKGAUSS) :: Beta_V
 
-          real, dimension(NIR,NL+2) :: tau_IRe
-          real, dimension(NSOL,NL+2) :: tau_Ve
+          real, dimension(NKGAUSS,NL+2) :: tau_IRe
+          real, dimension(NKGAUSS,NL+2) :: tau_Ve
 
           real, dimension(NL+1) :: dpe, Pl, Tl, pe, p_pass, t
           real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
           real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
           ! dummy vars
-          real :: total_layer_taus(NLAYER), dummy_weights(NSOL)
-          integer :: gauss_idx, stel_idx
+          real :: total_layer_taus(NLAYER), dummy_weights(NKGAUSS)
+          integer :: gauss_idx, iband
 
           ! WRITE(*,*) "OPAC_CORRK: ", OPAC_CORRK(1,1,1,1), OPAC_CORRK(1,1,2,1), OPAC_CORRK(1,1,3,1)
 
@@ -100,9 +100,9 @@
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
-          CALL calculate_opacities_corrk(NLAYER, NSOL, NIR, Tl, Pl, dpe, tau_IRe, tau_Ve, gravity_SI, k_IRl, k_Vl,
+          CALL calculate_opacities_corrk(NLAYER, NKGAUSS, NKGAUSS, Tl, Pl, dpe, tau_IRe, tau_Ve, gravity_SI, k_IRl, k_Vl,
      &                                   OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK,
-     &                                   tau_ray_temp, TAURAY_PER_DPG,NWNO,NTGRID,NPGRID)
+     &                                   tau_ray_temp, TAURAY_PER_DPG,NWNO,NTGRID,NPGRID, iband)
           
           ! DO L = 1, NSOL
           !   ! write(*,*)  'L: ', L
@@ -121,10 +121,10 @@
 
       subroutine calculate_opacities_corrk(NLAYER, NSOL, NIR, Tl, Pl, dpe, tau_IRe, tau_Ve, gravity_SI, k_IRl, k_Vl,
      &                                   OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK,
-     &                                   tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID)
+     &                                   tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID, iband)
 
         implicit none
-        integer :: k, NLAYER, J, NSOL, NIR, i, NWNO, NTGRID, NPGRID
+        integer :: k, NLAYER, J, NSOL, NIR, i, NWNO, NTGRID, NPGRID, iband
 
         real :: R, gravity_SI
 
@@ -142,7 +142,7 @@
         ! write(*,*) 'loc(tau_ray_temp)1: ', LOC(tau_ray_temp)
         do k = 1, NLAYER
           call local_opacities_corrk(Tl(k), Pl(k), k_IRl, k_Vl, OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK, k,
-     &                                 NLAYER, NIR, NSOL, tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID)
+     &                                 NLAYER, NIR, NSOL, tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID, iband)
           ! double-gray overwrite:
           ! k_IRl(:,k) = 1.e-3 ! should be m^2/kg (= cm^2/g / 10)
           ! k_Vl(:,k) = 1.e-4
@@ -160,11 +160,11 @@
       end subroutine calculate_opacities_corrk
 
       subroutine local_opacities_corrk(Tin, Pin, k_IRl, k_Vl, OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK, k,
-     &                                 NLAYER, NIR, NSOL, tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID)
+     &                                 NLAYER, NIR, NSOL, tau_ray_temp, TAURAY_PER_DPG, NWNO, NTGRID, NPGRID, iband)
         use corrkmodule, only : NEAREST_INDEX
         implicit none
         real :: Tin, Pin
-        integer :: NLAYER, NIR, NSOL, I, NWNO, NTGRID, NPGRID
+        integer :: NLAYER, NIR, NSOL, I, NWNO, NTGRID, NPGRID, iband
         real, dimension(NIR, NLAYER) :: k_IRl
         real, dimension(NSOL, NLAYER) :: k_Vl, tau_ray_temp
         ! For now, interpolating molceular opacities (cm^2/molecule) linearly in both pressure and temperature
@@ -185,8 +185,8 @@
         ! Nearest-neighbor the rayleigh scattering optical depth (faster than bilinear and accurate enough)
         do chan_idx = 1, NSOL
 
-          gauss_idx = modulo(chan_idx - 1, 8) + 1
-          wave_idx = MODULO((chan_idx - gauss_idx)/8,NWNO) + 1
+          gauss_idx = chan_idx
+          wave_idx = iband
 
           tau_ray_temp(chan_idx, k) = TAURAY_PER_DPG(T_idx, P_idx, wave_idx)
         end do
@@ -205,8 +205,8 @@
 
 
         do chan_idx = 1, NSOL
-          gauss_idx = modulo(chan_idx - 1, 8) + 1
-          wave_idx = MODULO((chan_idx - gauss_idx)/8,NWNO) + 1
+          gauss_idx = chan_idx
+          wave_idx = iband
           ! k_IRl(chan_idx, k) = OPAC_CORRK(T_idx, P_idx, wave_idx, gauss_idx)
           ! interpolate molecular line opacities
 
