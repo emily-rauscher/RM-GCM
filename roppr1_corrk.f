@@ -25,11 +25,11 @@
 !     *  Output              :  PTEMP, PTEMPG, SLOPE           *
 !     * ********************************************************
 !
-      use corrkmodule, only : PLANCK_INTS, PLANCK_TS, NWNO, NEAREST_INDEX
+      use corrkmodule, only : PLANCK_INTS, NWNO
       include 'rcommons.h'
       
       integer num_layers, iband
-      INTEGER, AUTOMATIC :: kindex, J, L, K, index_num
+      INTEGER, AUTOMATIC :: kindex, J, L, index_num
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
@@ -50,15 +50,12 @@
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
-      real, automatic :: ITP, ITG, IT1, SBKoverPI, g11
+      real, automatic :: IT1
       real, DIMENSION(NLAYER) :: T
       real, dimension(NBATCH,2*NL+2) :: TAUL
       real, dimension(NBATCH,NDBL) :: SLOPE
-      real, automatic, dimension(2*NL+2) :: ttsub
       real, automatic :: localT
       INTEGER, AUTOMATIC :: temp_idx
-
-      logical, automatic :: lo_temp_flag
 
       ! Thomas, make these data entries instead of regular vars.
     !   data PLANCK_C_1 /1.4724444e-50/ ! pre-factor for the planck function (2h/c^2)
@@ -66,74 +63,37 @@
     !   SBK=5.6704E-8
     !   SBKoverPI=SBK/PI
   
-      DO J            =   1,NDBL
-          lo_temp_flag = .FALSE.
-
-          !IT1 = TTsub(J)*TTsub(J)*TTsub(J)*TTsub(J)*SBKoverPI
-          ! I think for corr-k this needs to be replaced with an integral of the Planck Function over the spectral bins
-          ! I don't know how to rapidly integrate the planck function, there is definitely a faster method than, e.g., trapz
-          ! Trying a look-up table for now
-          if (MOD(J, 2) .eq. 0) THEN
+      ! PLANCK_TS is uniformly spaced 75..3999 K by 1 K (3925 entries).
+      ! Index is computed directly instead of via a 3925-element linear scan.
+      DO J = 1, NDBL
+          IF (MOD(J, 2) .EQ. 0) THEN
               index_num = J / 2
-              temp_idx = NEAREST_INDEX(PLANCK_TS, 3925, T(index_num))
-              if (T(index_num) .LT. PLANCK_TS(temp_idx)) THEN
-                temp_idx = temp_idx - 1
-              END IF
-              ! clamp so temp_idx and temp_idx+1 stay within PLANCK_TS/PLANCK_INTS bounds (1:3925)
-              temp_idx = max(1, min(temp_idx, 3924))
-              if (T(index_num) .GE. 75.) THEN
-                  lo_temp_flag = .TRUE.
-              END IF
               localT = T(index_num)
-             
-              ! IT1 = T(index_num)*T(index_num)*T(index_num)*T(index_num)*SBKoverPI
           ELSE
               index_num = (J / 2) + 1
-              temp_idx = NEAREST_INDEX(PLANCK_TS, 3925, TT(index_num))
-              if (TT(index_num) .LT. PLANCK_TS(temp_idx)) THEN
-                temp_idx = temp_idx - 1
-              END IF
-              ! clamp so temp_idx and temp_idx+1 stay within PLANCK_TS/PLANCK_INTS bounds (1:3925)
-              temp_idx = max(1, min(temp_idx, 3924))
-              if (TT(index_num) .GE. 75.) THEN
-                lo_temp_flag = .TRUE.
-              END IF
               localT = TT(index_num)
-            !   IT1 = TT(index_num)*TT(index_num)*TT(index_num)*TT(index_num)*SBKoverPI
           END IF
-          IF (lo_temp_flag) THEN
-              
-            DO L        = NKGAUSS+1,NBATCH
-                ! IT1 = PLANCK_INTS(iband, temp_idx) ! Nearest-neighbor interpolation in T
-                IT1 = PLANCK_INTS(iband, temp_idx) + (PLANCK_INTS(iband, temp_idx+1) -
-     &                PLANCK_INTS(iband, temp_idx)) *
-     &                (localT - PLANCK_TS(temp_idx)) / (PLANCK_TS(temp_idx+1) - PLANCK_TS(temp_idx)) ! linear T interpolation
-
-
-
-                kindex     = max(1,j-1)
-                PTEMP(L,J) = IT1
-                SLOPE(L,J) = (PTEMP(L,J)-PTEMP(L,KINDEX)) / TAUL(L,J)
-
-
-                if( TAUL(L,J) .le. 1.0E-6 ) THEN
-                    SLOPE(L,J) = 0.
-                END IF
-
-            END DO
+          kindex = MAX(1, J-1)
+          IF (localT .GE. 75.) THEN
+              temp_idx = INT(localT - 75.0) + 1
+              temp_idx = MAX(1, MIN(temp_idx, 3924))
+              IT1 = PLANCK_INTS(iband, temp_idx) +
+     &              (PLANCK_INTS(iband, temp_idx+1) -
+     &               PLANCK_INTS(iband, temp_idx)) *
+     &              (localT - (74.0 + REAL(temp_idx)))
+              DO L = NKGAUSS+1, NBATCH
+                  PTEMP(L,J) = IT1
+                  SLOPE(L,J) = (IT1 - PTEMP(L,kindex)) / TAUL(L,J)
+                  IF (TAUL(L,J) .LE. 1.0E-6) SLOPE(L,J) = 0.
+              END DO
           ELSE
-            DO L        = NKGAUSS+1,NBATCH
-                IT1 = 0.0
-                kindex = max(1,j-1)
-                PTEMP(L,J)=IT1
-                SLOPE(L,J)   = (PTEMP(L,J)-PTEMP(L,KINDEX)) / TAUL(L,J)
-
-                if( TAUL(L,J) .le. 1.0E-6 ) THEN
-                    SLOPE(L,J) = 0.
-                END IF
-            END DO
+              DO L = NKGAUSS+1, NBATCH
+                  PTEMP(L,J) = 0.0
+                  SLOPE(L,J) = -PTEMP(L,kindex) / TAUL(L,J)
+                  IF (TAUL(L,J) .LE. 1.0E-6) SLOPE(L,J) = 0.
+              END DO
           END IF
-        END DO
+      END DO
     !   write(*,*) SUM(PTEMP(1:NTOTAL,1:NDBL), dim=1)/8
 
 
