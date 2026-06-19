@@ -264,7 +264,6 @@
 
             ! flush(6)
 
-            layer_index   = NEAREST_INDEX(input_pressure_array_cgs, 50, p_pass(J) * 10.0)
             ! write(*,*) input_pressure_array_cgs, p_pass(J) * 10.0, layer_index
             ! if (layer_index < 1 .or. layer_index > size(input_pressure_array_cgs)) then
             !     write(*,*) "Error: invalid layer_index:", layer_index
@@ -300,10 +299,7 @@
                 kext_interp = LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight)
                 CONDFACT(J,I) = min(max((tconds_interp-TT(J))/10.,0.0),1.0)
 
-
                 CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-                BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
-                TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
                 corfact_interp = LERP(CORFACT(layer_index), CORFACT(layer_index+1), p_weight)
 
@@ -320,6 +316,10 @@
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                 END DO
             END DO
+        END DO
+        DO I = 1, NCLOUDS
+            BASELEV = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
+            TOPLEV(I) = max(BASELEV-AERLAYERS,0)
         END DO
         ! write(*,*) "CONDFACT:", CONDFACT(:,6)
         ! write(*,*) "CONDCURVE:", Tconds(MET_INDEX,:,6)
@@ -409,52 +409,28 @@
         ! extend the last computed layer downward so the read at J=NLAYER below isn't uninitialized.
         tauaer_temp(:,NLAYER,:) = tauaer_temp(:,NLAYER-1,:)
 
-        ! Corrk version:
-        DO J=1, NLAYER
-            haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
-
-            DO L = solar_calculation_indexer,NKGAUSS
-                WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2) ! hazes should be not used, so doesn't matter that it's double gray
-                TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
-                WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
-     &                    + (TAU_HAZE(L,J) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,J) + 1e-8))
-                GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,min(J,NVERT),1:NCLOUDS))
-     &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
-            END DO
-        END DO
-
-
-        ! IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
-            !     SW AT STANDARD VERTICAL RESOLUTION
+        !     SW AT STANDARD VERTICAL RESOLUTION
+        ! TAU_HAZE=0 (hazes disabled); haze NEAREST_INDEX removed.
         DO J = 1,NLAYER
-            haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
-
             DO L = solar_calculation_indexer,NKGAUSS
-                WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
-                TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
-                WOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
-     &                    + (TAU_HAZE(L,J) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,J) + 1e-8))
-                GOL(L,J)    = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8) * G0_TEMP(L,min(J,NVERT),1:NCLOUDS))
-     &                    + (TAU_HAZE(L,J) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,J) + 1e-8))
+                TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS))
+                WOL(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8)
+     &                       * PI0_TEMP(L,min(J,NVERT),1:NCLOUDS))
+                GOL(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)/(TAUAER(L,J)+1e-8)
+     &                       * G0_TEMP(L,min(J,NVERT),1:NCLOUDS))
             END DO
         END DO
         ! write(*,*) "TAUAER:", TAUAER
     !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
         k = 1
         DO J = 1,NDBL,2
-            haze_layer_index = NEAREST_INDEX(haze_pressure_array_pascals, 100, p_pass(K))  ! Both of these are in pa
-            temp_loc         = NEAREST_INDEX(input_temperature_array, 100, TT(K)) ! Not needed for the stellar calc
-
             JJ = J
-
             DO L = NKGAUSS+1,NBATCH
-                ! GREP CHECK THIS
-                WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
-                TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)) + TAU_HAZE(L,K)
-                WOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*PI0_TEMP(L,min(K,NVERT),1:NCLOUDS)) !+
-    !  &                              (TAU_HAZE(L,K) * HAZE_wav_pi0(WAV_LOC, haze_layer_index) / (TAUAER(L,JJ) + 1e-8))
-                GOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,min(K,NVERT),1:NCLOUDS))  !+
-    !  &                              (TAU_HAZE(L,K) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,JJ) + 1e-8))
+                TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS))
+                WOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)
+     &                        *PI0_TEMP(L,min(K,NVERT),1:NCLOUDS))
+                GOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)
+     &                        *G0_TEMP(L,min(K,NVERT),1:NCLOUDS))
             END DO
             JJ = J+1
             DO L = NKGAUSS+1,NBATCH
@@ -692,19 +668,11 @@
       END FUNCTION NEAREST_INDEX
 
       SUBROUTINE LOG_INTERP_WEIGHTS(ARR, N, VAL, IDX_LO, W)
-          ! Locate VAL within the monotonically increasing, strictly
-          ! positive array ARR(1:N) and return the lower bracketing index
-          ! IDX_LO (1 <= IDX_LO <= N-1) and interpolation weight W in [0,1]
-          ! such that, for any array Y defined on the same grid,
-          ! Y(VAL) ~= (1-W)*Y(IDX_LO) + W*Y(IDX_LO+1), with W computed from
-          ! the position of VAL between ARR(IDX_LO) and ARR(IDX_LO+1) in
-          ! log-space. VAL outside [ARR(1),ARR(N)] is clamped to the nearest
-          ! endpoint (W=0 or W=1, no extrapolation).
           INTEGER, INTENT(IN)  :: N
           REAL,    INTENT(IN)  :: ARR(N), VAL
           INTEGER, INTENT(OUT) :: IDX_LO
           REAL,    INTENT(OUT) :: W
-          INTEGER :: KK
+          INTEGER :: LO, HI, MID
 
           IF (VAL .LE. ARR(1)) THEN
               IDX_LO = 1
@@ -716,13 +684,17 @@
               RETURN
           ENDIF
 
-          IDX_LO = N - 1
-          DO KK = 1, N - 1
-              IF (VAL .LT. ARR(KK+1)) THEN
-                  IDX_LO = KK
-                  EXIT
-              ENDIF
+          LO = 1
+          HI = N
+          DO WHILE (HI - LO .GT. 1)
+              MID = (LO + HI) / 2
+              IF (VAL .GE. ARR(MID)) THEN
+                  LO = MID
+              ELSE
+                  HI = MID
+              END IF
           END DO
+          IDX_LO = LO
 
           W = (LOG(VAL) - LOG(ARR(IDX_LO))) / (LOG(ARR(IDX_LO+1)) - LOG(ARR(IDX_LO)))
       END SUBROUTINE LOG_INTERP_WEIGHTS
