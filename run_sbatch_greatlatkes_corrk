@@ -18,7 +18,7 @@
 #### #### ####  These are the least frequently changing options
 ####  Your e-mail address and when you want e-mail
 
-####SBATCH --mail-user=.com
+####SBATCH --mail-user=email@email.com
 ####SBATCH --mail-type=BEGIN,END,FAIL
 
 module load intel/2022.1.2
