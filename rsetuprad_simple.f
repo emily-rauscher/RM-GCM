@@ -115,10 +115,10 @@
     !   REAL :: TS_CORRK(NTGRID), PS_CORRK(NPGRID), TS_LOG_CORRK(NTGRID), PS_LOG_CORRK(NPGRID), WGTS_CORRK(8) 
     !   REAL :: WNO_EDGES(NWNO+1), WNO_CTRS(NWNO), STEL_SPEC(NWNO), INT_SPEC(NWNO)
     !   REAL :: TAURAY_PER_DPG(NTGRID, NPGRID, NWNO)
-      integer :: stel_idx, chan_idx
+      integer, AUTOMATIC :: stel_idx, chan_idx
 
       ! For getting a doubled grid for the IR channels
-      REAL :: LOG_START, LOG_END, LOG_STEP
+      REAL, AUTOMATIC :: LOG_START, LOG_END, LOG_STEP
       REAL, DIMENSION(NLAYER) :: P_PASS
       REAL, DIMENSION(2*NLAYER) :: P_PASS_SUB
 ! ******************************************

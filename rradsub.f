@@ -100,11 +100,12 @@
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
 
-      integer itime, ntime, solar_calculation_indexer
-      integer iband, band_solar_calc_idx
-      real tiru_acc, tslu_acc, total_downwelling_acc
-      real fir_up_acc(NL+1), fir_dn_acc(NL+1), fir_net_acc(NL+1)
-      real fsl_up_acc(NL+1), fsl_dn_acc(NL+1), fsl_net_acc(NL+1)
+      integer solar_calculation_indexer
+      integer, AUTOMATIC :: itime, ntime
+      integer, AUTOMATIC :: iband, band_solar_calc_idx
+      real, AUTOMATIC :: tiru_acc, tslu_acc, total_downwelling_acc
+      real, AUTOMATIC :: fir_up_acc(NL+1), fir_dn_acc(NL+1), fir_net_acc(NL+1)
+      real, AUTOMATIC :: fsl_up_acc(NL+1), fsl_dn_acc(NL+1), fsl_net_acc(NL+1)
 
       ! Malsky add
       REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT1, incident_starlight_fraction

@@ -672,7 +672,7 @@
           REAL,    INTENT(IN)  :: ARR(N), VAL
           INTEGER, INTENT(OUT) :: IDX_LO
           REAL,    INTENT(OUT) :: W
-          INTEGER :: LO, HI, MID
+          INTEGER, AUTOMATIC :: LO, HI, MID
 
           IF (VAL .LE. ARR(1)) THEN
               IDX_LO = 1
