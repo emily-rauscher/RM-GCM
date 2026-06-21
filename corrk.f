@@ -47,11 +47,12 @@
             ! Convert METALLICITY and C_TO_O to strings
             if (METALLICITY .eq. 0.0) then
                 dummyMETALLICITY_str = '+000'
+            else if (METALLICITY .eq. -1.0) then
+                dummyMETALLICITY_str = '-100'
+                write(*,*) "USING 0.1x SOLAR METALLICITY, SEE LINE ~53 OF corrk.f"
             else
                 dummyMETALLICITY_str = '+100'
-                write(*,*) "USING 10x SOLAR METALLICITY, SEE LINE 53 OF corrk.f"
-                ! write(*,*) "Thomas hasn't coded non-solar metallicity k-tables yet"
-                ! stop
+                write(*,*) "USING 10x SOLAR METALLICITY, SEE LINE ~53 OF corrk.f"
             end if
             if (C_TO_O .eq. 0.0) then
                 dummyC_TO_O_str = '100'

@@ -2109,8 +2109,10 @@
             LOW_MET_INDEX = 4
             HIGH_MET_INDEX = 5
         ELSE
-            WRITE(*,*) 'something went wrong with the metallicity, look at cloud_properties_set_up.f'
-            stop
+            LOW_MET_INDEX = 1
+            HIGH_MET_INDEX = 2
+            WRITE(*,*) 'EXTRAPOLATING to low Z condensation curves, not advised (cloud_properties_set_up.f)'
+            ! stop
         END IF
         MET_INDEX = 6
         DO J = 1, NLAYER - 1
