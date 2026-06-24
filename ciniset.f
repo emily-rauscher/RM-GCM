@@ -481,8 +481,10 @@ CDIR$    IVDEP
       PHI_LON      = 65.
       GRAYCLDV     = .False.
       READ(7,INCLOUDY)
-      CALL get_cloud_scattering_properties_wrapper
-      CALL get_gas_opacity_corrk_wrapper(METALLICITY, C_TO_O, FBASEFLUX, GASCON, with_TiO_and_VO)
+C     get_cloud_scattering_properties_wrapper / get_gas_opacity_corrk_wrapper
+C     moved to cinital.f (after INISIMPRAD) so they see the correct
+C     with_TiO_and_VO/opacity_method on every INISET/INITAL pass,
+C     including restart runs which only get a single pass.
       write(*,*) ' '
 
 
