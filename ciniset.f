@@ -481,6 +481,13 @@ CDIR$    IVDEP
       PHI_LON      = 65.
       GRAYCLDV     = .False.
       READ(7,INCLOUDY)
+C     INCLOUDY is physically the last namelist group INISET reads, but
+C     it sits AFTER INVARPARAM/INMAG/INBINVAL/INPHYS/INPRSIJ/INSIMPRAD
+C     in fort.7. Those are read later by INITAL, and namelist reads
+C     can't move backward in the file, so without this REWIND the
+C     very next READ(7,...) (INVARPARAM, in INITAL) hits EOF hunting
+C     forward for a group that's actually behind the current position.
+      REWIND(7)
 C     get_cloud_scattering_properties_wrapper / get_gas_opacity_corrk_wrapper
 C     moved to cinital.f (after INISIMPRAD) so they see the correct
 C     with_TiO_and_VO/opacity_method on every INISET/INITAL pass,
