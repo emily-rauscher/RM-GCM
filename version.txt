@@ -1,0 +1,24 @@
+Running with commit: 5e8e2bb9193cf09f8c036827cbe9ef0d92f5f8bd
+On branch: develop
+M  compile_nopg
+M  compile_nopg_debug
+ M igcm3_nopg
+A  record_git_details.sh
+AM version.txt
+diff --git a/igcm3_nopg b/igcm3_nopg
+index b2d31e0..2cc24dd 100755
+Binary files a/igcm3_nopg and b/igcm3_nopg differ
+diff --git a/version.txt b/version.txt
+index cf13815..ad39098 100644
+--- a/version.txt
++++ b/version.txt
+@@ -1,4 +1,7 @@
+ Running with commit: 5e8e2bb9193cf09f8c036827cbe9ef0d92f5f8bd
+ On branch: develop
+-?? record_git_details.sh
+-?? version.txt
++M  compile_nopg
++M  compile_nopg_debug
++ M igcm3_nopg
++A  record_git_details.sh
++AM version.txt

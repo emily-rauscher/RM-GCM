@@ -216,7 +216,7 @@
      &                   tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &                   qrad,alb_tomi,alb_toai, p_pass,
-     &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount,itspd)
+     &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD)
       ELSE
         ! write(*,*), "TAUGAS:", TAUGAS(71,1:NLAYER)
         CALL OPPRMULTI_CORRK(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,

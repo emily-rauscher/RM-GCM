@@ -1,0 +1,12 @@
+#!/bin/bash -x
+make
+PRUNDIR='Planet_Run'
+rm -r $PRUNDIR
+mkdir $PRUNDIR
+cp igcm3_nopg $PRUNDIR
+cp fort.7 $PRUNDIR/fort.7
+./record_git_details.sh && cp version.txt $PRUNDIR/ || echo "Version info unavailable"
+cd $PRUNDIR
+#(time ./igcm3_nopg) 2> runtime.txt
+./igcm3_nopg
+cd ..

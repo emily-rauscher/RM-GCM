@@ -287,12 +287,14 @@ C       are channel counts, not the g-point count NKGAUSS.
           k_IRl(1,k) = k_IRl(1,k) * gam_1
           ! Double-gray overwrite (for testing:)
 
+          ! double gray overwrite:
           ! k_Vl(1,k) = 1.e-4
           ! k_Vl(2,k) = 1.e-4
           ! k_Vl(3,k) = 1.e-4
           ! k_IRl(2,k) = 1.e-3
           ! k_IRl(1,k) = 1.e-3
-          ! these calculations now done in rsetupradsimple.f instead (consistent with RM-GCM v5.2 update)
+
+          ! Removed in v5.2, optical depths are now calculated from opacities in rsetupradsimple.f
           ! tau_Ve(:,k)  = ((k_Vl(:,k)  * dpe(k)) / grav)
           ! tau_IRe(:,k) = ((k_IRl(:,k) * dpe(k)) / grav)
         end do

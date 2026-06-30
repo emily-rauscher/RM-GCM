@@ -15,7 +15,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, p_pass,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, itspd)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, ITSPD)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -66,13 +66,13 @@
       real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
       real, dimension(NIR+NSOL,NL+1) :: TAU_HAZE
 
-      ! These are hardcoded to 50 but they are just lookup tables
+      ! These are hardcoded to 100 but they are just lookup tables
       ! Don't worry about expanding the GCM to more levels
       real, dimension(100) :: input_temperature_array
-      real, dimension(50) :: input_pressure_array_cgs
+      real, dimension(80) :: input_pressure_array_cgs
 
       real, dimension(100) :: input_particle_size_array_in_meters
-      real, dimension(50) :: particle_size_vs_layer_array_in_meters
+      real, dimension(80) :: particle_size_vs_layer_array_in_meters
 
       REAL KE_OPPR(5, 100, 100, NCLOUDS)
       REAL PI0_OPPR(5, 100, 100, NCLOUDS)
@@ -84,8 +84,8 @@
       real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
       real, dimension(100)      :: haze_pressure_array_pascals
 
-      REAL TCONDS(6,51,NCLOUDS)
-      REAL CORFACT(51)
+      REAL TCONDS(6,80,NCLOUDS)
+      REAL CORFACT(80)
 
       REAL DENSITY(NCLOUDS)
       REAL FMOLW(NCLOUDS)
@@ -101,8 +101,7 @@
 
       REAL, dimension (500) :: HAZE_WAV_GRID
       REAL, dimension (100)  :: CLOUD_WAV_GRID
-      REAL :: exp_92_lnsig2_pi
-
+      REAL exp_92_lnsig2_pi
       COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW,
      &                              CORFACT,
@@ -114,6 +113,8 @@
      &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
      &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
      &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
+
+      
 
       ! THE THREE Condensation curve sets are for 1X, 100X, and 300X Met
       ! Sorry that this is bad code
@@ -250,9 +251,9 @@
 
                 CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
 
-                CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-                BASELEV = MAXVAL(CLOUDLOC(1:50,I),1)
-                TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
+              CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
+              BASELEV = MAXVAL(CLOUDLOC(:,I),1)
+              TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
                 ! DPG is CGS before that 10x
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
@@ -293,13 +294,14 @@
                 tauaer_temp(:,J,I) = 0.0
             END DO
 
-            !if (TOPLEV(I) + 4 .le. NLAYER) THEN
-            !    tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.01 !i.e.e(-3)
-            !    tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.03 !i.e.e(-3)
-            !    tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.1 !i.e.e(-2)
-            !    tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.3 !i.e.e(-1)
-            !ENDIF
-        END DO
+        !   if ((TOPLEV(I) + 5 .le. NLAYER) .and. (TOPLEV(I) .ne. 0)) THEN
+        !       tauaer_temp(:,TOPLEV(I)+1,I) = tauaer_temp(:,TOPLEV(I)+1,I)*0.167
+        !       tauaer_temp(:,TOPLEV(I)+2,I) = tauaer_temp(:,TOPLEV(I)+2,I)*0.333
+        !       tauaer_temp(:,TOPLEV(I)+3,I) = tauaer_temp(:,TOPLEV(I)+3,I)*0.5
+        !       tauaer_temp(:,TOPLEV(I)+4,I) = tauaer_temp(:,TOPLEV(I)+4,I)*0.667
+        !       tauaer_temp(:,TOPLEV(I)+5,I) = tauaer_temp(:,TOPLEV(I)+5,I)*0.833
+        !   ENDIF
+      END DO
 
 
         IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
@@ -411,6 +413,26 @@
           ! write(*,*) 'TAUAER after ramp:', TAUAER
         ENDIF
       END IF
+
+
+      ! Smooth out the cloud properties after doubling
+      DO L = NSOL+1,NTOTAL
+          DO J = 2, NDBL-1, 2
+              TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
+              WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
+              GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
+          END DO
+      END DO
+
+      ramp = 0.0  ! Set an appropriate value for ramp (days)
+      ! Apply a ramp to the cloud properties
+      IF (KOUNT/ITSPD .LT. ramp) THEN
+       factor = (KOUNT/ramp)/ITSPD
+       ! write(*,*) 'Ramping up the cloud properties by a factor of:', factor
+       ! write(*,*) 'TAUAER before ramp:', TAUAER
+       TAUAER = TAUAER * factor
+       ! write(*,*) 'TAUAER after ramp:', TAUAER
+      ENDIF
 
       iradgas = 1
       DO J = 1,NLAYER

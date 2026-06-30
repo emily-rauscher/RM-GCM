@@ -28,4 +28,4 @@ mkdir $PRUNDIR
 cp igcm3_nopg $PRUNDIR
 cp fort.7PF $PRUNDIR/fort.7
 cd $PRUNDIR
-(time ./igcm3_nopg) 2> runtime.txt
+time ./igcm3_nopg

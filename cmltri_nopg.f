@@ -215,7 +215,7 @@ C-----------------------------------------------------------------------
       EQUIVALENCE (DAG(1),UG(1)),(DAF(1),SPG(1)),(DAD(1),TNLG(1))
      : ,(DDZ(1),UTVDZ(1)),(ADDZ(1),AUTVDZ(1))
       INTEGER IODSIZE
-      PARAMETER (IODSIZE=MAX(NGRPAD+IGD,IGP*(3+NTRAC)+IGO)+7)
+      PARAMETER (IODSIZE=MAX(NGRPAD+IGD,IGP*(3+NTRAC)+IGO,IDDZ*2+6)+7)
       REAL*4 RODATA(IODSIZE)
       REAL R8DATA((3+NTRAC)*IGP)
       REAL R8SP(IGO)
