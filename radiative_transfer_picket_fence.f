@@ -42,17 +42,22 @@
           REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
           REAL qrad(NL+1),alb_tomi,alb_toai
 
-          real, dimension(NIR, NL+1) :: k_IRl
-          real, dimension(NSOL, NL+1) :: k_Vl
+C         These must match the (NKGAUSS,NL+1)-shaped actuals allocated
+C         by the caller (rsetuprad_simple.f) exactly -- NIR/NSOL are the
+C         picket-fence channel counts, not the g-point count NKGAUSS,
+C         and redeclaring with the wrong stride here silently scrambled
+C         every per-layer write into the caller's array.
+          real, dimension(NKGAUSS, NL+1) :: k_IRl
+          real, dimension(NKGAUSS, NL+1) :: k_Vl
 
           integer :: NLAYER, J, k
           real :: Tirr, Tint, gravity_SI, incident_starlight_fraction
 
-          real, dimension(NIR) :: Beta_IR
-          real, dimension(NSOL) :: Beta_V
+          real, dimension(NKGAUSS) :: Beta_IR
+          real, dimension(NKGAUSS) :: Beta_V
 
-          real, dimension(NIR,NL+2) :: tau_IRe
-          real, dimension(NSOL,NL+2) :: tau_Ve
+          real, dimension(NKGAUSS,NL+1) :: tau_IRe
+          real, dimension(NKGAUSS,NL+1) :: tau_Ve
 
           real, dimension(NL+1) :: dpe, Pl, Tl, pe, p_pass, t
           real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
@@ -83,14 +88,14 @@
           dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
           pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
           Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
-          CALL calculate_opacities(NLAYER, NSOL, NIR, incident_starlight_fraction, Tirr, Tint,
+          CALL calculate_opacities(NLAYER, NSOL, NIR, NKGAUSS, incident_starlight_fraction, Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
      &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl, TOAALB)
           ! write(*,*) 'tau_IRe:', tau_IRe
           ! write(*,*) 'tau_Vee:', tau_Ve
       end subroutine opacity_wrapper
 
-      subroutine calculate_opacities(NLAYER, NSOL, NIR, incident_starlight_fraction,
+      subroutine calculate_opacities(NLAYER, NSOL, NIR, NKGAUSS, incident_starlight_fraction,
      &                               Tirr, Tint, Tl, Pl, dpe, tau_IRe,tau_Ve,Beta_V,
      &                               Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY, pe, k_IRl, k_Vl, TOAALB)
         ! Input:
@@ -109,9 +114,14 @@
 
         implicit none
         real :: gam_1, gam_2, tau_lim, gam_P
-        real, dimension(NSOL) :: Beta_V, gam_V
-        real, dimension(NIR) :: Beta_IR
-        integer :: k, NLAYER, J, NSOL, NIR, i
+        real, dimension(NSOL) :: gam_V
+C       Beta_V/Beta_IR, k_IRl/k_Vl and tau_IRe/tau_Ve are dummy args and
+C       must match the (NKGAUSS,...)-shaped actuals the caller
+C       (rsetuprad_simple.f, via opacity_wrapper) allocates -- NIR/NSOL
+C       are channel counts, not the g-point count NKGAUSS.
+        real, dimension(NKGAUSS) :: Beta_V
+        real, dimension(NKGAUSS) :: Beta_IR
+        integer :: k, NLAYER, J, NSOL, NIR, NKGAUSS, i
         real :: Teff, Tint, Tirr, incident_starlight_fraction
 
         real :: R,gravity_SI
@@ -122,11 +132,11 @@
 
         real, dimension(NLAYER) :: dpe, Pl, Tl, pe
 
-        real, dimension(NIR, NLAYER) :: k_IRl
-        real, dimension(NSOL,NLAYER) :: k_Vl
+        real, dimension(NKGAUSS, NLAYER) :: k_IRl
+        real, dimension(NKGAUSS,NLAYER) :: k_Vl
 
-        real, dimension(NIR,NLAYER+1) :: tau_IRe
-        real, dimension(NSOL,NLAYER+1) :: tau_Ve
+        real, dimension(NKGAUSS,NLAYER) :: tau_IRe
+        real, dimension(NKGAUSS,NLAYER) :: tau_Ve
         real :: grav
         real :: with_TiO_and_VO, METALLICITY
         real :: Bond_Albedo, TOAALB

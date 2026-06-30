@@ -102,7 +102,7 @@
 
       integer solar_calculation_indexer
       integer, AUTOMATIC :: itime, ntime
-      integer, AUTOMATIC :: iband, band_solar_calc_idx
+      integer, AUTOMATIC :: iband, band_solar_calc_idx, nbands
       real, AUTOMATIC :: tiru_acc, tslu_acc, total_downwelling_acc
       real, AUTOMATIC :: fir_up_acc(NL+1), fir_dn_acc(NL+1), fir_net_acc(NL+1)
       real, AUTOMATIC :: fsl_up_acc(NL+1), fsl_dn_acc(NL+1), fsl_net_acc(NL+1)
@@ -246,8 +246,19 @@ C     globally averaged solar constant, vertical rays
           fsl_dn_acc = 0.
           fsl_net_acc = 0.
 
-          DO iband = 1, NWNO
-              if (solar_calculation_indexer .gt. NKGAUSS) then
+          IF (opacity_method .EQ. 'correk') THEN
+              nbands = NWNO
+          ELSE
+              nbands = 1
+          END IF
+
+          DO iband = 1, nbands
+              if (opacity_method .NE. 'correk') then
+                  ! picket/dogray have no wavenumber-band/g-point structure to
+                  ! batch over (unlike correk's NWNO bands x NKGAUSS g-points),
+                  ! so just pass the indexer through as-is for the single pass.
+                  band_solar_calc_idx = solar_calculation_indexer
+              else if (solar_calculation_indexer .gt. NKGAUSS) then
                   band_solar_calc_idx = NKGAUSS + 1
               else if (iband .lt. MINWNOSTEL) then
                   band_solar_calc_idx = NKGAUSS + 1
