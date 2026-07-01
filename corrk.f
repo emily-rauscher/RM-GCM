@@ -46,21 +46,9 @@
 
             ! Convert METALLICITY and C_TO_O to strings
             WRITE(dummyMETALLICITY_str, '(SP,I4.3)') NINT(METALLICITY * 100)
-            ! if (METALLICITY .eq. 0.0) then
-            !     dummyMETALLICITY_str = '+000'
-            ! else if (METALLICITY .eq. -1.0) then
-            !     dummyMETALLICITY_str = '-100'
-            !     write(*,*) "USING 0.1x SOLAR METALLICITY, SEE LINE ~53 OF corrk.f"
-            ! else
-            !     dummyMETALLICITY_str = '+100'
-            !     write(*,*) "USING 10x SOLAR METALLICITY, SEE LINE ~53 OF corrk.f"
-            ! end if
-            if (C_TO_O .eq. 0.0) then
-                dummyC_TO_O_str = '100'
-            else
-                write(*,*) "Thomas hasn't written the logic for non-solar C/O k-tables yet"
-                stop
-            end if
+            WRITE(dummyC_TO_O_str, '(I3.3)') NINT(C_TO_O * 100)
+            write(*,*) 'C to O ratio: ', C_TO_O
+            write(*,*) 'C to O string: ', dummyC_TO_O_str
             ! write(*,*) 'with_TiO_and_VO: ', with_TiO_and_VO
 
             if (with_TiO_and_VO .eq. 1.) then

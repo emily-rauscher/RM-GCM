@@ -232,6 +232,7 @@ STTEMP2=3357
  SIG_AREA        = 25.,
  PHI_LON         = 75.,
  GRAYCLDV        = T,
+ C_TO_O          = 1.00,
 /
  &INQ
  LRH     = T,

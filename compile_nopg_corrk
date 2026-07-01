@@ -28,4 +28,4 @@ cp igcm3_nopg_CK $PRUNDIR
 cp fort.7corrk $PRUNDIR/fort.7
 cd $PRUNDIR
 ulimit -s unlimited
-(time ./igcm3_nopg_CK) 2> runtime.txt
+./igcm3_nopg_CK

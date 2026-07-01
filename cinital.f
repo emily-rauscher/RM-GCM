@@ -69,12 +69,13 @@ C
       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,GRAYCLDV
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,GRAYCLDV,
+     &   C_TO_O
       CHARACTER(30) :: AEROSOLMODEL
       CHARACTER(30) :: AEROSOLCOMP
       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
       REAL MOLEF(13)
-      REAL MTLX, METALLICITY
+      REAL MTLX, METALLICITY, C_TO_O
       INTEGER AERLAYERS
       LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS, GRAYCLDV
       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
@@ -84,7 +85,6 @@ C
       REAL :: OOM_IN, RFCOEFF_IN, BOTRELAXTIME, FBASEFLUX
       LOGICAL :: LPLOTMAP
       INTEGER :: NLPLOTMAP_IN, NTSTEP_IN, NSKIP_IN
-      REAL :: C_TO_O
 
       CALL INIGAU
 
@@ -109,7 +109,7 @@ C     this from ciniset.f ran before that read, so it always loaded the
 C     '_witiovo' table regardless of fort.7 (self-corrected on the
 C     second INISET/INITAL pass of a fresh start, but restarts only get
 C     one pass and never picked up the correct table).
-      C_TO_O = 0.0
+      WRITE(*,*) 'C to O ratio: ', C_TO_O
       CALL get_cloud_scattering_properties_wrapper
       CALL get_gas_opacity_corrk_wrapper(METALLICITY, C_TO_O, FBASEFLUX,
      &                                   GASCON, with_TiO_and_VO)

@@ -14,7 +14,7 @@
           ! REAL :: PLANCK_INTS(NWNO, 3925), PLANCK_TS(3925)
           
           WRITE(*,*) "In get_gas_opacity_corrk_wrapper"
-          call corrk_setup(METALLICITY,0.0, FBASEFLUX, GASCON, with_TiO_and_VO,TS_CORRK, PS_CORRK, TS_LOG_CORRK, 
+          call corrk_setup(METALLICITY,C_TO_O, FBASEFLUX, GASCON, with_TiO_and_VO,TS_CORRK, PS_CORRK, TS_LOG_CORRK,
      &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
      &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO, MINWNOSTEL, CLOUD_KEXT, CLOUD_A, CLOUD_G)
           ! write(*,*) "After call to corrk_setup"
