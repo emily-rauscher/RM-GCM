@@ -1,7 +1,7 @@
 This README file is intended to serve as a user's guide to the iGCM code. 
 It is a compendium of notes that should be ammended and updated by users as they see fit.
 
-An incomplete, but slightly more up-to-date user guide can be found [here](https://www.overleaf.com/read/fqgnvpyqgpxc#df38a1). This is a living document always under revision.
+An incomplete, but slightly more up-to-date user guide can be found [here](https://docs.google.com/document/d/1Pityk2BAsQ-IsQY4hqHDx4R00POU-AdaoxbHkVzV6XU/edit?usp=sharing). This is a living document still under revision.
 
 -----------------------------------------------
 0. BACKGROUND:
