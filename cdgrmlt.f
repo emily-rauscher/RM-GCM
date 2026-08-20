@@ -148,9 +148,26 @@ C
      :               ,TTSW(IGC,NL),TTLW(IGC,NL)                           
       REAL UTBL(IGC),VTBL(IGC),TTBL(IGC),QTBL(IGC)                        
        COMMON/GSG/GSG(IGC,JG)                                             
-      INTEGER IFIRST                                                      
-      REAL TROPHT(MG,NHEM,JG)                                             
-c                                                                         
+      INTEGER IFIRST
+      REAL TROPHT(MG,NHEM,JG)
+C
+C     Needed for PORB, OBLIQ (nightside settling source term below).
+       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
+     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS,
+     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
+     & PORB, OBLIQ, ECCEN
+       LOGICAL LPLOTMAP
+C     Settling-dye parameters, set from the INVARPARAM namelist in
+C     fort.7 (see inivarparam.f). ADYE is indexed by tracer number, so
+C     ADYE(1) is the unused water-vapour slot.
+       COMMON/DYEPAR/ADYE(NTRAC),RHODYE,PDYEFIX,PDYEUPPER,TRELAXORB
+C     Previous timestep's dye field, one slice per dye. Seeded from a
+C     negative sentinel set in INIVARPARAM. Indexed by latitude IH:
+C     DGRMLT runs once per latitude per step from the serial loop in
+C     cmltri_nopg.f, so carrying it here is safe.
+       COMMON/DYEPRV/TRAPRV(IGC,NL,JG,NTRAC-1)
+       DIMENSION QSED(NL)
+c
       common/gridsss/assbl1(igc,jg),ashbl1(igc,jg),aslbl1(igc,jg),        
      *               arrcr1(igc,jg),arrlr1(igc,jg),                       
      *               arflux1(igc,6,jg),asfld1(igc,6,jg),                  
@@ -393,9 +410,123 @@ C
         TNLG(J,L)=TNLG(J,L)+TTVD(J,L)+TTCR(J,L)+TTLR(J,L)+TTRD(J,L)
 
         QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)
-  200 CONTINUE  
-C                                                                        
-      IF (LFLUX) THEN                                                     
+  200 CONTINUE
+C
+C     Deep reservoir: relax toward 1 below PDYEFIX at all local times.
+C     Must be a tendency, not a reset of TRAG, which is rebuilt from
+C     spectral TRA every call. RLXDYE follows the DAMP=1/(PI2*RESTIM)
+C     convention of cinires.f. TRELAXORB is in orbits and PORB the
+C     period in rotation days, hence TRELAXORB*PORB; PORB=0 means no
+C     orbital motion, so fall back to TRELAXORB rotation days.
+      IF (PORB.NE.0.0) THEN
+         TRELAXDYE=TRELAXORB*PORB
+      ELSE
+         TRELAXDYE=TRELAXORB
+      ENDIF
+      RLXDYE=1.0/(PI2*TRELAXDYE)
+C
+C     Nightside gravitational settling of the dyes (tracers 2..NTRAC):
+C     dq/dt = (T/P) d/dz[ (P/T) q VFALL ]. For a mass mixing ratio the
+C     density factor is P/T INSIDE the derivative and T/P outside;
+C     reversed, a uniform q gives dq/dt>0, not the physical decay. No
+C     height coordinate here, so dz=-(GASCON*T/GA) dlnP per sigma
+C     layer. ADYE(KK)/RHODYE come from COMMON/DYEPAR/; CALC_V_FALL is
+C     SI, as are GA, SIGMA*PLG*P0 and TG*CT, so VFALL is m/s for /WW.
+C     SEDSLN/SEDSLT use the PORB/OBLIQ formula of NIKOSRAD; night is
+C     where the local zenith-angle cosine is negative.
+      IF (PORB.NE.0.0) THEN
+         SEDSLN=(1./PORB-1.)*KOUNT*360./ITSPD
+         SEDSLN=MOD(SEDSLN,360.)
+      ELSE
+         SEDSLN=0.0
+      ENDIF
+      IF (OBLIQ.EQ.0.0) THEN
+         SEDSLT=0.0
+      ELSE
+         SEDSLT=ASIN(SIN(OBLIQ*PI/180.)*SIN(PI2*KOUNT/ITSPD/PORB))
+     +          *180./PI
+      ENDIF
+C
+      IOFM=0
+      DO 320 IHEM=1,NHEM
+         IF (IHEM.EQ.1) THEN
+            ALATLC=ALAT(JH)
+         ELSE
+            ALATLC=-ALAT(JH)
+         ENDIF
+         DO 310 I=1,MG
+            J=I+IOFM
+            ALON=360.0*REAL(I-1)/REAL(MG)
+            COSZLC=SIN(ALATLC/360.*PI2)*SIN(SEDSLT/360.*PI2)
+     +            +COS(ALATLC/360.*PI2)*COS(SEDSLT/360.*PI2)
+     +            *COS((ALON-SEDSLN)/360.*PI2)
+C           Tracers 2..NTRAC are the dyes: identical but for ADYE(KK),
+C           so one run compares grain sizes. Tracer 1 is water vapour.
+            DO 308 KK=2,NTRAC
+C              Seed the lagged store on its first use (see INIVARPARAM).
+               DO 296 L=1,NL
+                  IF (TRAPRV(J,L,IH,KK-1).LT.0.0)
+     +               TRAPRV(J,L,IH,KK-1)=TRAG(J,L,KK)
+  296          CONTINUE
+               IF (COSZLC.LT.0.0) THEN
+C
+C                 Backward-Euler donor-cell sweep, bidiagonal because
+C                 grains only fall - one top-down pass:
+C                    q(L) = [ qprev(L) + GSED*q(L-1) ] / (1 + CSED)
+C                 CSED is the layer's own loss, GSED the gain from
+C                 above, q(0)=0. Centred differencing instead cancels
+C                 the layer's own term and decouples odd/even levels,
+C                 whose sawtooth drove q negative and then ran away.
+C                 Lagging to qprev buys the stability: ctstep.f
+C                 leapfrogs from TRAMI. Explicit limit R*DELT2 < 5.9e-2.
+                  UPSED=0.0
+                  DO 300 L=1,NL
+                     PSED=SIGMA(L)*PLG(J)*P0
+                     TSED=TG(J,L)*CT
+                     CALL CALC_V_FALL(PSED,ADYE(KK),GA,RHODYE,TSED,
+     +                                VFALL)
+                     DZSED=(GASCON*TSED/GA)*(DSIGMA(L)/SIGMA(L))
+                     CSED=VFALL/DZSED/WW*DELT2
+                     IF (L.EQ.1) THEN
+                        GSED=0.0
+                     ELSE
+                        GSED=(TSED*PSEDU)/(PSED*TSEDU)
+     +                       *VFUP/DZSED/WW*DELT2
+                     ENDIF
+                     QSED(L)=(TRAPRV(J,L,IH,KK-1)+GSED*UPSED)
+     +                       /(1.0+CSED)
+                     UPSED=QSED(L)
+                     PSEDU=PSED
+                     TSEDU=TSED
+                     VFUP=VFALL
+  300             CONTINUE
+C                 As a tendency: ctstep.f leapfrogs from TRAMI, which
+C                 TRAPRV shadows, so this lands the field on QSED.
+                  DO 302 L=1,NL
+                     TRANLG(J,L,KK)=TRANLG(J,L,KK)
+     +                    +(QSED(L)-TRAPRV(J,L,IH,KK-1))/DELT2
+  302             CONTINUE
+               ENDIF
+C              Deep reservoir, explicit: ~14x inside the limit above.
+               DO 305 L=1,NL
+                  PRSED=SIGMA(L)*PLG(J)*P0
+                  IF (PRSED.GT.PDYEFIX) THEN
+                     TRANLG(J,L,KK)=TRANLG(J,L,KK)
+     +                    +(1.0-TRAG(J,L,KK))*RLXDYE
+                  ENDIF
+  305          CONTINUE
+C              Hand this column to the next step. Every column, not
+C              just night ones, so it stays valid as the terminator
+C              moves.
+               DO 307 L=1,NL
+                  TRAPRV(J,L,IH,KK-1)=TRAG(J,L,KK)
+  307          CONTINUE
+  308       CONTINUE
+  310    CONTINUE
+         IOFM=MGPP
+  320 CONTINUE
+C
+      IF (LFLUX) THEN
 C        Convert to volume mixing ratio from mass mixing ratio.           
          DO 211 L=1,NL                                                    
             DO 210 J=1,IGC                                                

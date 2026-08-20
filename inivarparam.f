@@ -66,6 +66,20 @@ C
       
        LOGICAL LPLOTMAP
 
+C      Settling-dye parameters, shared with DGRMLT and ICTRAC. Their
+C      own common, so the ~15 routines declaring VARPARAM need no
+C      change. Read here rather than in ICTRAC because INIVARPARAM runs
+C      unconditionally, while ICTRAC only runs when .NOT.LRSTRT.
+C      ADYE is indexed by tracer, so ADYE(1) is the unused water slot.
+       COMMON/DYEPAR/ADYE(NTRAC),RHODYE,PDYEFIX,PDYEUPPER,TRELAXORB
+
+C      Lagged dye field for DGRMLT's implicit settling sweep. Seeded
+C      to a negative sentinel here because INIVARPARAM is the one
+C      routine that runs on both cold starts and restarts; DGRMLT
+C      swaps in the real field on first touch. Mixing ratios are
+C      non-negative, so a negative value is unambiguous.
+       COMMON/DYEPRV/TRAPRV(IGC,NL,JG,NTRAC-1)
+
        COMMON/MAG/ BFIELD,TDRAG_MIN,RAMPUP,LBDRAG
        LOGICAL LBDRAG
 
@@ -74,10 +88,11 @@ C
 
        LOGICAL LBIN
 
-       NAMELIST/INVARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
-     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
-     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
-     & PORB, OBLIQ, ECCEN
+       NAMELIST/INVARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
+     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS,
+     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
+     & PORB, OBLIQ, ECCEN,
+     & ADYE, RHODYE, PDYEFIX, PDYEUPPER, TRELAXORB
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -86,7 +101,27 @@ C
 
        LPLOTMAP=.TRUE.
 
-       READ (7,INVARPARAM)                                                     
+C      Defaults before the namelist read, so a fort.7 predating these
+C      keys still gives a defined configuration.
+       DO 5 KK=1,NTRAC
+          ADYE(KK)=1.0E-6
+    5  CONTINUE
+       RHODYE=3.0E3
+       PDYEFIX=1.0E5
+       PDYEUPPER=1.0E6
+       TRELAXORB=0.1
+
+       DO 9 KK=1,NTRAC-1
+          DO 8 JJ=1,JG
+             DO 7 LL=1,NL
+                DO 6 II=1,IGC
+                   TRAPRV(II,LL,JJ,KK)=-1.0
+    6           CONTINUE
+    7        CONTINUE
+    8     CONTINUE
+    9  CONTINUE
+
+       READ (7,INVARPARAM)
        WRITE(2,INVARPARAM)             
 
        READ (7,INMAG)

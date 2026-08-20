@@ -12,7 +12,7 @@
  CLATNT  = 2500000.00000000
  /
  &INPRN
- KRUN   = 48000.0,
+ KRUN   = 4800.0,
  BEGDAY   = 0.0,
  TSPD   = 4800.0,
  KITS     = 3,
@@ -33,7 +33,7 @@
  L22L     = F,
  LOROG    = F,
  LCSFCT   = F,
- KOLOUR   = 0,
+ KOLOUR   = 0, 0, 0, 0,
  LNOISE   = T,
  LMASCOR  = T,
  LMASOLD  = T,
@@ -70,7 +70,12 @@ SOLC_IN		    = 4.736e5,
 TOAALB		    = 0.05,
 PORB		    = 1.0,
 OBLIQ		    = 0.0,
-ECCEN		    = 0.0
+ECCEN		    = 0.0,
+ADYE		    = 0.0, 1.0e-5, 1.0E-6, 1.0E-7,
+RHODYE		    = 3.0E3,
+PDYEFIX		    = 1.0E5,
+PDYEUPPER	    = 1.0E6,
+TRELAXORB	    = 0.1
 /
 &INMAG
  LBDRAG = F,
@@ -125,7 +130,7 @@ STTEMP2=3357
  ITSLO   = 6
  /
  &INPRSIJ
- TFRC   = 50*0,
+ TFRC   = 0.005,0.005,0.005,47*0,
  RESTIM  = 50*1e30,
  RESTTT = 1094.89 ,
 1094.9 ,
@@ -213,7 +218,7 @@ STTEMP2=3357
  AEROSOLMODEL    ='Global',
  AEROSOLCOMP     ='standard',
  MTLX            = .1,
- METALLICITY     = 0.5,
+ METALLICITY     = 0.0,
  HAZES           = F,
  PICKET_FENCE_CLOUDS = T,
  MOLEF = 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
@@ -231,7 +236,7 @@ STTEMP2=3357
  DELTASCALE      = F,
  SIG_AREA        = 25.,
  PHI_LON         = 75.,
- GRAYCLDV        = T,
+ GRAYCLDV        = F,
  C_TO_O          = 1.0
 /
  &INQ

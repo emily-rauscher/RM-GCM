@@ -110,9 +110,15 @@ C
       LOGICAL LSHIST,LMINIH                                               
       LOGICAL LSPO,LGPO                                                   
 C                                                                         
-      COMMON/GRIDSS/ZG1(IGD,JG),DG1(IGD,JG),UG1(IGD,JG),VG1(IGD,JG),      
-     :              TG1(IGD,JG),SPG1(IGC,JG)                              
-C                                                                         
+      COMMON/GRIDSS/ZG1(IGD,JG),DG1(IGD,JG),UG1(IGD,JG),VG1(IGD,JG),
+     :              TG1(IGD,JG),SPG1(IGC,JG),TRAG1(IGD,JG,NTRAC-1)
+C
+C     Sigma-dot: SDOTG1 is the per-latitude store filled in the main
+C     timestep loop, SDOTG the working copy for the current latitude
+C     (same flat IGD layout as UG/VG/TG here).
+      COMMON/SDOTSS/SDOTG(IGD)
+      COMMON/SDOTS1/SDOTG1(IGD,JG)
+C
 C                                                                         
 C     Restoration fields and timescale                                    
 C                                                                         
@@ -148,6 +154,18 @@ c
 C     Array to store fields until loops are done
       REAL*8  TOUTST(NL,JG*2,MG,3)
       REAL*8  TOUTLAT,TOUTLON
+C     Tracer No.2 output buffer. Kept out of TOUTST and SAVEd (static
+C     storage) rather than adding a 4th slice to it: this routine is
+C     compiled -recursive for (unused) OpenMP thread-safety, which
+C     forces its large local arrays onto the stack, and TOUTST is
+C     already close to the default 8MB stack limit (ulimit -s) on its
+C     own - growing it further reliably segfaults at the default limit.
+      REAL*8  TOUTTR(NL,JG*2,MG,NTRAC-1)
+      SAVE    TOUTTR
+C     Vertical velocity output buffer, SAVEd for the same stack reason
+C     as TOUTTR above.
+      REAL*8  TOUTW(NL,JG*2,MG)
+      SAVE    TOUTW
 C------ Emily modif 1/3
       REAL*8  TOUTU(NL,3)
       REAL*8  TOUTT(NL,6)
@@ -213,13 +231,17 @@ C
 C         SEC=10.*CV/COS(SEC)                                              
          SEC=CV/COS(SEC)                                              
 C         READ(24) ZG,DG,UG,VG,TG,SPG                                     
-         DO I=1,IGD                                                       
-            ZG(I)=ZG1(I,J)                                                
-            DG(I)=DG1(I,J)                                                
-            UG(I)=UG1(I,J)                                                
-            VG(I)=VG1(I,J)                                                
-            TG(I)=TG1(I,J)                                                
-         END DO                                                           
+         DO I=1,IGD
+            ZG(I)=ZG1(I,J)
+            DG(I)=DG1(I,J)
+            UG(I)=UG1(I,J)
+            VG(I)=VG1(I,J)
+            TG(I)=TG1(I,J)
+            DO KK=2,NTRAC
+               TRAG(I,KK)=TRAG1(I,J,KK-1)
+            ENDDO
+            SDOTG(I)=SDOTG1(I,J)
+         END DO
          DO I=1,IGC                                                       
             SPG(I)=SPG1(I,J)                                              
          END DO                                                           
@@ -259,9 +281,21 @@ C
 
                   EK=DMASS*(TOUTSP(J,I)+1.)*0.5*(UB*UB+VB*VB)
 
+C                 Convert sigma-dot to a vertical velocity in m/s, so
+C                 it can be quivered directly against UB/VB above.
+C                 With z=-H*ln(sigma) and H=GASCON*T/GA (local scale
+C                 height), w=dz/dt=-H*(dsigma/dt)/sigma. SDOTG is per
+C                 nondimensional time, so dsigma/dt=WW*SDOTG. Positive
+C                 SDOTG is towards higher sigma (down), hence the sign.
+                  WB=-(GASCON*TB/GA)*WW*SDOTG(IOF+I)/SIGMA(L)
+
                   TOUTST(L,JJ,I,1)=UB
                   TOUTST(L,JJ,I,2)=VB
                   TOUTST(L,JJ,I,3)=TB
+                  DO KK=2,NTRAC
+                     TOUTTR(L,JJ,I,KK-1)=TRAG(IOF+I,KK)
+                  ENDDO
+                  TOUTW(L,JJ,I)=WB
 
                   TOUTE(L,1)=TOUTE(L,1)+EK
                   TOUTE(L,2)=TOUTE(L,2)+EK
@@ -291,13 +325,17 @@ CC     :                     1,mg,1,jgg,1,nl,inetcount,inetcount)
         DO 22 J=1,JG*2
            TOUTLAT=ALAT(J)
                   WRITE (26,107) TOUTLON,TOUTLAT,L,
-     &  TOUTST(L,J,I,1),TOUTST(L,J,I,2),TOUTST(L,J,I,3)
+     &  TOUTST(L,J,I,1),TOUTST(L,J,I,2),TOUTST(L,J,I,3),
+     &  (TOUTTR(L,J,I,KK),KK=1,NTRAC-1),
+     &  TOUTW(L,J,I)
               IF (L.EQ.NL) WRITE (50,102) TOUTLON,TOUTLAT,TOUTSP(J,I)
-   22            CONTINUE         
-   21    CONTINUE                 
-   20 CONTINUE                    
+   22            CONTINUE
+   21    CONTINUE
+   20 CONTINUE
 
- 107              FORMAT(2E13.5,I4,2E13.5)
+C     Repeat count is deliberately oversized: the format stops at the
+C     end of the output list, so adding a dye needs no edit here.
+ 107              FORMAT(2E13.5,I4,50E13.5)
  102              FORMAT(3E13.5)
 
 C-------- Emily Modif 3/3

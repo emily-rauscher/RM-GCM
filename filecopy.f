@@ -3,8 +3,12 @@ C             SUBROUTINE FILECOPY
 C**********************************************************               
       SUBROUTINE FILECOPY(ITS,IFT,ISF)
 
-      REAL TLON,TLAT,TU,TV,TT,TSP,TF,DAY,SSLON
-      INTEGER JG2,MG,NL,LL
+      REAL TLON,TLAT,TSP,TF,DAY,SSLON
+      INTEGER JG2,MG,NL
+C     The unit-26 record is relayed verbatim rather than parsed into a
+C     fixed variable list, which used to drop any column added in
+C     xsect2.f until this list was widened to match.
+      CHARACTER*512 TLINE
 
 
       REWIND 26 
@@ -23,8 +27,8 @@ C**********************************************************
       DO 20 L=1,NL
          DO 21 I=1,MG 
             DO 22 J=1,JG2
-               READ(26,107) TLON,TLAT,LL,TU,TV,TT
-               WRITE(ITS,107) TLON,TLAT,LL,TU,TV,TT
+               READ(26,'(A)') TLINE
+               WRITE(ITS,'(A)') TLINE(1:LEN_TRIM(TLINE))
                IF (L.EQ.NL) THEN
                   READ(50,102) TLON,TLAT,TSP
                   WRITE(IFT,102) TLON,TLAT,TSP
@@ -38,7 +42,6 @@ C**********************************************************
 
 
 
- 107  FORMAT(2E13.5,I4,2E13.5)
  102  FORMAT(3E13.5)
 
       READ(26,105) DAY,SSLON,SSLAT

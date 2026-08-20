@@ -192,8 +192,17 @@ C
       COMPLEX Z,D,T,TRA,SP,GS,SPA,VP,DTE,TT,TRAT,DT,ZT
      :       ,ZMI,DMI,TMI,TRAMI,SPMI
 C
+C     TRAG1 carries the dyes (2..NTRAC) to XSECT2, last index
+C     1..NTRAC-1. It sits after SPG1, so cxsect.f, which declares only
+C     the leading part of this common, is unaffected.
       COMMON/GRIDSS/ZG1(IGD,JG),DG1(IGD,JG),UG1(IGD,JG),VG1(IGD,JG),
-     :              TG1(IGD,JG),SPG1(IGC,JG)
+     :              TG1(IGD,JG),SPG1(IGC,JG),TRAG1(IGD,JG,NTRAC-1)
+C
+C     Sigma-dot from MGRMLT (SDOTG, current latitude) and its
+C     per-latitude store for XSECT2 (SDOTG1), kept separate from
+C     GRIDSS so the other GRIDSS users (cxsect.f) need no change.
+      COMMON/SDOTSS/SDOTG(IGD)
+      COMMON/SDOTS1/SDOTG1(IGD,JG)
 C
        COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)
      :               ,SNET(IGC,JG),RRFLUX(IGC,JG,6)
@@ -207,6 +216,7 @@ C
       REAL TMPLAT
 C     ER Modif to manage outputs
       INTEGER IDAYS(6),ITSOUT,IFTOUT,ISFOUT
+      INTEGER NSNAP,ITSOUT2,IFTOUT2,ISFOUT2
       REAL FDAY
 C
 C-----------------------------------------------------------------------
@@ -382,6 +392,16 @@ C     TK modified to play nice with restart runs
       ITSOUT=2600
       IFTOUT=5000
       ISFOUT=6400
+C     Second snapshot series: the same three files XSECT2 writes,
+C     copied every NSNAP steps for the whole run rather than 90 times
+C     in the last orbit like ITSOUT above. fort.27xx 3D, fort.70xx
+C     surface pressure, fort.90xx fluxes. Each snapshot takes one unit
+C     from each counter, and the ranges must not run into the next base
+C     in use (2700->5000, 7000->9000), so keep KTOTAL/NSNAP <= 2000.
+      NSNAP=KRUN/10
+      ITSOUT2=2700
+      IFTOUT2=7000
+      ISFOUT2=9000
 
 
 !      HERE WE MAKE OR READ IN THE AEROSOLS
@@ -509,6 +529,12 @@ C
             UG1(I,IH)=UG(I)
             VG1(I,IH)=VG(I)
             TG1(I,IH)=TG(I)
+            SDOTG1(I,IH)=SDOTG(I)
+         END DO
+         DO KK=2,NTRAC
+            DO I=1,IGD
+               TRAG1(I,IH,KK-1)=TRAG(I,KK)
+            END DO
          END DO
          DO I=1,IGC
             SPG1(I,IH)=SPG(I)
@@ -681,6 +707,18 @@ CC      call plotfields(0)
 C     ER modif for 90 outputs during last orbit of planet
       IF (KOUNT.GT.(KTOTAL-ABS(PORB)*ITSPD)) THEN       ! Note: if porb=0, won't do this
          CALL FINALORB(KOUNT,KTOTAL,ABS(PORB*ITSPD),ITSOUT,IFTOUT,ISFOUT)
+      ENDIF
+C     Additional whole-run snapshot series (fort.27xx/70xx/90xx), every
+C     NSNAP timesteps. Independent of the FINALORB series above; during
+C     the last orbit both may fire on the same step, which just means
+C     XSECT2 runs twice that step (it REWINDs fort.26/50/64 each call,
+C     so both copies still get current data).
+      IF (MOD(KOUNT,NSNAP).EQ.0) THEN
+         CALL XSECT2
+         CALL FILECOPY(ITSOUT2,IFTOUT2,ISFOUT2)
+         ITSOUT2=ITSOUT2+1
+         IFTOUT2=IFTOUT2+1
+         ISFOUT2=ISFOUT2+1
       ENDIF
       IF (KOUTE.EQ.KOUNTE) THEN
          CALL ENERGY

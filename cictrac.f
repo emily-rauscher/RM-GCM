@@ -122,9 +122,13 @@ C
       COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)              
      +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD           
      +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
-     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
-     +              ,BEGDOY,DOY                                           
-C                                                                         
+     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
+     +              ,BEGDOY,DOY
+C
+C     Settling-dye parameters (INVARPARAM, see inivarparam.f). Only
+C     PDYEFIX and PDYEUPPER are used here.
+      COMMON/DYEPAR/ADYE(NTRAC),RHODYE,PDYEFIX,PDYEUPPER,TRELAXORB
+C
             COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
      :              ,TSTARO(IGC,JG),TDEEPO(IGC,JG),smstar(igc,jg)         
@@ -271,10 +275,41 @@ CCCC      QSTAR(J,JH)=ESCON*PQSAT(TSTAR(J,JH))
                ENDDO                                                               
              PRINT '(i2,x,10(F5.1,x))',ih,(ct*tstar(k,ih)-273.15,k=1,10)         
             ENDIF                                                               
-            IOFM=MGPP                                                     
- 810     CONTINUE                                                         
-                                                                          
-         DO 70 KK=NTRACO+1,NTRAC                                          
+            IOFM=MGPP
+ 810     CONTINUE
+C
+C     Initialise the dyes (2..NTRAC): abundance 1 below PDYEFIX and
+C     above PDYEUPPER, 0 between. Both come from COMMON/DYEPAR/ so they
+C     cannot drift from the values DGRMLT relaxes to. PDYEUPPER has no
+C     matching relaxation - that 1 is a one-off initial condition.
+C     The test is an OR, so PDYEUPPER above PDYEFIX makes every level
+C     satisfy one clause and the field starts uniformly 1.
+C     Every dye starts alike, differing only in ADYE(KK); slots carried
+C     over from a restart (KK<=NTRACO) are left alone.
+C
+         DO 832 KK=2,NTRAC
+            IF (KK.GT.NTRACO) THEN
+               IOFM=0
+               DO 830 IHEM=1,NHEM
+                  DO I=1,MG
+                     J=I+IOFM
+                     DO L=1,NL
+                        K=J+(L-1)*IGC
+                        PRTR=SIGMA(L)*PLG(J)*P0
+                        IF (PRTR.GT.PDYEFIX .OR. PRTR.LT.PDYEUPPER)
+     +                     THEN
+                           TRAG(K,KK)=1.0
+                        ELSE
+                           TRAG(K,KK)=0.0
+                        ENDIF
+                     ENDDO
+                  ENDDO
+                  IOFM=MGPP
+ 830           CONTINUE
+            ENDIF
+ 832     CONTINUE
+C
+         DO 70 KK=NTRACO+1,NTRAC
             DO 300 I=1,IGD                                                
                TEMPTR(I)=TRAG(I,KK)                                       
  300        CONTINUE                                                      

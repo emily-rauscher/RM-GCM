@@ -75,12 +75,31 @@ C
      :              ,FVG(IGC,NL),UTG(IGC,NL),UTRAG(IGC,NL,NTRAC)          
      :              ,VTG(IGC,NL),VTRAG(IGC,NL,NTRAC)                      
      :              ,FVGT(IGC,NL),FUGT(IGC,NL)                            
-     :              ,GRPAD(NGRPAD)                                        
-C                                                                         
+     :              ,GRPAD(NGRPAD)
+C
+C     Full-level sigma-dot, exported for the diagnostic cross-section
+C     output in XSECT2. SDOTP below is local and is overwritten on the
+C     second hemisphere, so it is copied out here inside the IHEM loop.
+      COMMON/SDOTSS/SDOTG(IGC,NL)
+C
       DIMENSION SDOTP(MG,NLM),SUMD(MG),TPTA(MG),TPTB(MG)                  
       DIMENSION CC(NL,NL)                                                 
       EQUIVALENCE (CC(1,1),C(1))                                          
-C                                                                         
+C                                                                      
+C     Spectral (spherical harmonic) truncation is not shape-preserving:
+C     Gibbs ringing around sharp tracer gradients can drive grid-point
+C     values below zero even though the true field is non-negative.
+C     Clip the passive tracers (KK=2,NTRAC; KK=1 is water vapour, which
+C     has its own QMIN floor in the convection scheme) here, before the
+C     clipped field is used to build the advective tendency below, so
+C     the negative excursions cannot re-enter the spectral field.
+      DO 81 KK=2,NTRAC
+         DO 80 L=1,NL
+            DO 80 J=1,IGC
+               TRAG(J,L,KK)=MAX(TRAG(J,L,KK),0.0)
+ 80      CONTINUE
+ 81   CONTINUE
+C
       IOFM=0                                                              
 C                                                                         
 C     Loop over hemispheres                                               
@@ -114,12 +133,31 @@ C
          DO 130 L=1,NLM                                                   
             DO 140 I=1,MG                                                 
                J=I+IOFM                                                   
-               SDOTP(I,L)=SIGMAH(L)*(SUMD(I)+VPG(J))-SDOTP(I,L)           
- 140        CONTINUE                                                      
- 130     CONTINUE                                                         
-         DO 150 I=1,MG                                                    
-            SUMD(I)=0.0                                                   
- 150     CONTINUE                                                         
+               SDOTP(I,L)=SIGMAH(L)*(SUMD(I)+VPG(J))-SDOTP(I,L)
+ 140        CONTINUE
+ 130     CONTINUE
+C
+C        Copy sigma-dot out to full levels for the XSECT2 diagnostic.
+C        SDOTP(I,L) sits at the half level SIGMAH(L); a full level L is
+C        bounded by SIGMAH(L-1) above and SIGMAH(L) below, so take the
+C        mean of the two. Both outer boundaries (sigma=0 at the model
+C        top, sigma=1 at the surface) are rigid, i.e. sigma-dot=0
+C        there, which fixes the L=1 and L=NL end cases.
+         DO 132 L=1,NL
+            DO 131 I=1,MG
+               J=I+IOFM
+               IF (L.EQ.1) THEN
+                  SDOTG(J,L)=0.5*SDOTP(I,1)
+               ELSE IF (L.EQ.NL) THEN
+                  SDOTG(J,L)=0.5*SDOTP(I,NLM)
+               ELSE
+                  SDOTG(J,L)=0.5*(SDOTP(I,L-1)+SDOTP(I,L))
+               ENDIF
+ 131        CONTINUE
+ 132     CONTINUE
+         DO 150 I=1,MG
+            SUMD(I)=0.0
+ 150     CONTINUE
          DO 160 L=1,NL                                                    
             DO 170 I=1,MG                                                 
                TPTA(I)=0.0                                                
