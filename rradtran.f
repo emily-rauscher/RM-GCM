@@ -118,7 +118,7 @@
           ISL = 1
       endif
 
-      IF (bezier_interpolation .eq. .TRUE.) THEN
+      IF (bezier_interpolation .eqv. .TRUE.) THEN
           do J = 1, NL+1
              pe(J) = p_pass(J)
           end do
@@ -188,9 +188,19 @@
          EMIS(L) =  EMISIR
          RSFX(L) = 1.0 - EMIS(L)
 
-         if( wave(nprob(L)).gt.wavea(NBATCH) ) then
-             rsfx(L) = albedoa(NBATCH)
-         endif
+!     DISABLED: NPROB, WAVE, WAVEA and ALBEDOA are never assigned anywhere in
+!     the current code.  NPROB was initialised by "DATA NPROB /.../" in
+!     rsetuprad.f until that file was deleted in 3f6e466 (2021-07-22,
+!     "Picket Fence Model File"); this consumer outlived it.  WAVEA/ALBEDOA
+!     were meant to be read from unit 21, but that read has been commented
+!     out since the routine was first committed (45147e4, 2016-12-08).
+!     The subscript was therefore undefined: gfortran evaluated it to 0 and
+!     silently read out of bounds, ifort to -2147483648 and segfaulted.
+!     Verified inert before disabling: the branch never fired, and removing
+!     it left all model output byte-identical.
+!         if( wave(nprob(L)).gt.wavea(NBATCH) ) then
+!             rsfx(L) = albedoa(NBATCH)
+!         endif
 
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
@@ -722,7 +732,12 @@
 !     <firu> is upwelling infrared flux at top-of-atmosphere
 !     (spectrally-resolved)
 
-      do i = 1, NKGAUSS
+!     firu holds one entry per IR stream.  The IR streams are
+!     L = NKGAUSS+1..NBATCH, rebased by firu(L-NKGAUSS), so the count is
+!     NBATCH-NKGAUSS -- not NKGAUSS, which is the SOLAR stream count.
+!     The two are equal for corr-k (8 and 8) but not for picket fence
+!     (3 solar, 2 IR), where NKGAUSS ran one past the end of firu.
+      do i = 1, NBATCH-NKGAUSS
           firu(i) = 0.
       END DO
 
@@ -738,7 +753,7 @@
              END DO
           END DO
 
-          do i = 1, NKGAUSS
+          do i = 1, NBATCH-NKGAUSS
               tiru = tiru + firu(i)
           END DO
 

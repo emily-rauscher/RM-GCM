@@ -270,8 +270,8 @@ C-----------------------------------------------------------------------
 
 !       REAL TAUAEROSOL(nl+1,mg,2,jg)
 
-      NAMELIST/COMMENT/THECOMMENT
       CHARACTER(70) :: THECOMMENT
+      NAMELIST/COMMENT/THECOMMENT
 C
  2000 FORMAT(/' RESTART RECORD WRITTEN TO CHANNEL ',I3,/
      +        ' RKOUNT  RNTAPE  DAY  DOY  =',4F12.3)

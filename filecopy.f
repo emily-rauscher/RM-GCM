@@ -44,14 +44,20 @@ C     xsect2.f until this list was widened to match.
 
  102  FORMAT(3E13.5)
 
-      READ(26,105) DAY,SSLON,SSLAT
+C     Format 105 (used for WRITE) contains character literals, which are not
+C     legal in an INPUT format.  ifort accepts them and skips that many
+C     columns; gfortran rejects the READ at runtime.  Format 106 is the same
+C     layout with the literals replaced by equal-width X descriptors
+C     (17 and 22 columns), so the READs consume exactly what ifort consumed.
+      READ(26,107) DAY,SSLON,SSLAT
       WRITE(ITS,105) DAY,SSLON,SSLAT
-      READ(50,105) DAY,SSLON,SSLAT
+      READ(50,107) DAY,SSLON,SSLAT
       WRITE(IFT,105) DAY,SSLON,SSLAT
-      READ(64,105) DAY,SSLON,SSLAT
+      READ(64,107) DAY,SSLON,SSLAT
       WRITE(ISF,105) DAY,SSLON,SSLAT
 
  105  FORMAT(/' OUTPUTS FOR DAY ',F10.4,', SUBSTELLAR LON, LAT:',2F8.3)
+ 107  FORMAT(/17X,F10.4,22X,2F8.3)
 
       CLOSE(ITS)
       CLOSE(IFT)

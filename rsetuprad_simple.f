@@ -71,7 +71,7 @@
       real, automatic, dimension(NKGAUSS, 2*NL+2) :: k_irl_doubled, k_ray_doubled
       real, dimension(NKGAUSS, NL+1) :: k_Vl
       ! New variables for calculating the IR absorbtion coefficient as a power law
-      real, dimension(NLAYER) :: IR_ABS_COEFFICIENT
+      real, dimension(NDBL) :: IR_ABS_COEFFICIENT
 
 ! **********************************************************************
 !

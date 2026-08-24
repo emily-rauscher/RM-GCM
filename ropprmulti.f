@@ -55,8 +55,8 @@
       REAL DPG(NLAYER), p_pass(NLAYER), layer_pressure_bar(NLAYER)
       REAL CONDFACT(NLAYER,NCLOUDS)
 
-      REAL PI0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
-      REAL G0_TEMP(NSOL + NIR, NVERT, NCLOUDS)
+      REAL PI0_TEMP(NSOL + NIR, NLAYER, NCLOUDS)
+      REAL G0_TEMP(NSOL + NIR, NLAYER, NCLOUDS)
       REAL tauaer_temp(NTOTAL, NLAYER, NCLOUDS)
 
       REAL CLOUDLOC(NL+1,NCLOUDS)
@@ -252,7 +252,7 @@
                 CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
 
               CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
-              BASELEV = MAXVAL(CLOUDLOC(:,I),1)
+              BASELEV = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
               TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
 
                 ! DPG is CGS before that 10x

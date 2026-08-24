@@ -58,8 +58,8 @@
       real, automatic :: layer_pressure_bar(NLAYER)
       real, automatic :: CONDFACT(NLAYER,NCLOUDS)
 
-      REAL PI0_TEMP(NBATCH, NVERT, NCLOUDS)
-      REAL G0_TEMP(NBATCH, NVERT, NCLOUDS)
+      REAL PI0_TEMP(NBATCH, NLAYER, NCLOUDS)
+      REAL G0_TEMP(NBATCH, NLAYER, NCLOUDS)
       REAL tauaer_temp(NBATCH, NLAYER, NCLOUDS)
 
       real, automatic :: CLOUDLOC(NL+1,NCLOUDS)
