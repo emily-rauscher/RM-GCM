@@ -701,15 +701,15 @@ C       LFLUXDIAG block: must be serial, placed before OMP region
 
           DO LD=1,NL
             L=NL-LD+2
-            PR(LD)=SIGMA(LD)*EXP(PLG_forrad(im,jh_priv))*P0
+            PR(LD)=SIGMA(LD)*PLG_forrad(im,jh_priv)*P0
             PRB2T(L)=PR(LD)
-            T(LD)=(TG_forrad(im,ld,jh_priv)+T0(LD))*CT
+            T(LD)=TG_forrad(im,ld,jh_priv)*CT
             AEROPROF(LD)=0.0
           ENDDO
 
           AEROPROF(NL+1)=0.0
-          PRB2T(1)=EXP(PLG_forrad(im,jh_priv))*P0
-          PR(NL+1)=EXP(PLG_forrad(im,jh_priv))*P0
+          PRB2T(1)=PLG_forrad(im,jh_priv)*P0
+          PR(NL+1)=PLG_forrad(im,jh_priv)*P0
           T(NL+1)=((FBASEFLUX+rrflux(IM,jh_priv,1))/5.6704e-8)**0.25
 
           alat1=alat(jh_priv)*REAL(-(ihem*2.)+3)

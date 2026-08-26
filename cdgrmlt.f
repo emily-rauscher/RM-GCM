@@ -1,7 +1,7 @@
 C**********************************************************               
 C             SUBROUTINE DGRMLT                                           
 C**********************************************************               
-      SUBROUTINE DGRMLT(IH)                                                   
+      SUBROUTINE DGRMLT(IH,IPASS)
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -150,6 +150,7 @@ C
        COMMON/GSG/GSG(IGC,JG)                                             
       INTEGER IFIRST
       REAL TROPHT(MG,NHEM,JG)
+      INTEGER IPASS
 C
 C     Needed for PORB, OBLIQ (nightside settling source term below).
        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN,
@@ -314,6 +315,12 @@ C  Convert from volume mixing ratio to mass mixing ratio.
       IF(LCR) CALL CONVEC
       IF(LLR) CALL LSCRN
 
+C     IPASS=1 is the pre-pass for RADIATION_ALLLATS: it runs the T0
+C     addition (l.242), the PLG EXP (l.271), VDIFF and CONVEC, then
+C     returns so the radiation pre-pass sees exactly the TG/PLG that
+C     RADIATION saw when it lived inside this routine.  Returning here
+C     also stays clear of the accumulator store-back further below.
+      IF (IPASS.EQ.1) RETURN
       IF(LRD) CALL RADIATION(TROPHT,IH)
 
       if (LBL.AND.(.NOT.LOLDBL)) CALL SURFM

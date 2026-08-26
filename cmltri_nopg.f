@@ -792,6 +792,8 @@ C
                ENDDO
                CALL FFT991(DAG(1+NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,
      +                     1,MGPP,MG,NRSTWG,1)
+C              Run the grid physics first so TG/PLG are post-VDIFF/CONVEC
+               CALL DGRMLT(IH,1)
                DO I=1,IGD
                   TG_forrad(I,IH) = TG(I)
                ENDDO
@@ -870,7 +872,7 @@ CC!$omp end parallel
 C
 C        Calculate diabatic terms
 C
-            CALL DGRMLT(IH)
+            CALL DGRMLT(IH,2)
 C
 C        Write accumulated diagnostics to history file.
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad
