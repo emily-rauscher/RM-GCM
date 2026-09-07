@@ -8,6 +8,11 @@
         REAL :: OPAC_CIA(NTGRID, NPGRID, NWNO), TAURAY_PER_DPG(NTGRID, NPGRID, NWNO)
         REAL :: PLANCK_INTS(NWNO, 3925), PLANCK_TS(3925)
         INTEGER :: MINWNOSTEL
+        ! Optional pre-binned stellar spectrum, read from the INSIMPRAD namelist in fort.7.
+        ! If it is absent, or left as all zeros, stellar_spectrum.txt is integrated over the
+        ! bands instead.
+        REAL, PARAMETER :: STEL_SPEC_UNSET = -999.0
+        REAL :: STEL_SPEC_NML(NWNO) = STEL_SPEC_UNSET
         real :: CLOUD_KEXT(13, 100, NWNO), CLOUD_A(13, 100, NWNO), CLOUD_G(13, 100, NWNO)
         
 
@@ -18,6 +23,7 @@
             implicit none
             integer :: NWNO
             INTEGER :: I, J, K, L
+            INTEGER :: NSTELSET
             REAL :: METALLICITY, C_TO_O, FBASEFLUX
             REAL :: TINT
             INTEGER :: TINT_INDEX
@@ -152,8 +158,30 @@
             ! Read cloud opacities:
             CALL CLOUD_SETUP(NWNO, FOLDER, CLOUD_KEXT, CLOUD_A, CLOUD_G)
 
-            ! Read in the stellar spectrum
-            CALL BIN_STELLAR_SPECTRUM(trim(FOLDER)//"kcoeffs/stellar_spectrum.txt", STEL_SPEC, WNO_EDGES, NWNO)
+            ! Get the stellar spectrum. A pre-binned spectrum can be supplied directly through
+            ! STEL_SPEC_NML in fort.7 (NWNO values, summing to 1).
+            ! If it is absent, or all zeros, we fall back on integrating stellar_spectrum.txt.
+            NSTELSET = COUNT(STEL_SPEC_NML .NE. STEL_SPEC_UNSET)
+            IF (NSTELSET .NE. 0 .AND. NSTELSET .NE. NWNO) THEN
+                WRITE(*,*) 'STEL_SPEC_NML in fort.7 was given ', NSTELSET, ' values but this build has ', NWNO, ' bands'
+                WRITE(*,*) 'Give one value per band, or remove it to bin stellar_spectrum.txt instead'
+                STOP
+            END IF
+            IF (NSTELSET .EQ. NWNO .AND. ANY(STEL_SPEC_NML .NE. 0.0)) THEN
+                IF (ANY(STEL_SPEC_NML .LT. 0.0)) THEN
+                    WRITE(*,*) 'STEL_SPEC_NML in fort.7 contains negative values: ', STEL_SPEC_NML
+                    STOP
+                END IF
+                IF (ABS(SUM(STEL_SPEC_NML) - 1.0) .GT. 1.0E-3) THEN
+                    WRITE(*,*) 'WARNING: STEL_SPEC_NML in fort.7 sums to ', SUM(STEL_SPEC_NML),
+     &                         ' instead of 1, renormalizing'
+                END IF
+                STEL_SPEC = STEL_SPEC_NML / SUM(STEL_SPEC_NML)
+                WRITE(*,*) 'USING PRE-BINNED STELLAR SPECTRUM FROM fort.7'
+            ELSE
+                CALL BIN_STELLAR_SPECTRUM(trim(FOLDER)//"kcoeffs/stellar_spectrum.txt", STEL_SPEC, WNO_EDGES, NWNO)
+                WRITE(*,*) 'BINNED STELLAR SPECTRUM FROM ', trim(FOLDER)//"kcoeffs/stellar_spectrum.txt"
+            END IF
             ! WRITE(*,*) 'STELLAR SPECTRUM: ', STEL_SPEC
             ! WRITE(*,*) 'total stellar flux: ', SUM(STEL_SPEC)
 

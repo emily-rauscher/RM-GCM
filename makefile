@@ -16,5 +16,8 @@ igcm3_nopg: $(OBJS)
 %.o: %.f
 	$(FC) $(FFLAGS) -c $<
 
+# Everything that USEs corrkmodule needs corrk.o built first
+inisimprad.o rradtran.o corrk_setup.o ropprmulti_corrk.o rsetuprad_simple.o ropprmulti.o radiative_transfer_corrk.o rtwostr.o roppr1_corrk.o rradsub.o radd.o: corrk.o
+
 clean:
 	rm -f *.o *.mod igcm3_nopg
