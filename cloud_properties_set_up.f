@@ -1,15 +1,17 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
           include 'rcommons.h'
-          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY)
+          WRITE(*,*) "In get_cloud_scattering_properties_wrapper"
+          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 
-      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIRP, NSOLP, GASCON, METALLICITY)
+      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
           implicit none
-          integer :: I, J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIRP, NSOLP
+          save
+          integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
-          integer :: MET_INDEX, LOW_MET_INDEX, HIGH_MET_INDEX
-          real :: COND_CURVE_METS(5) ! These are log10(Z/Zsun) values for the pre-calculated curves
+          LOGICAL :: GRAYCLDV
+
 
           character (len = 40) :: haze_type
 
@@ -202,22 +204,24 @@
           REAL PI0_OPPR(5, 100, 100, 13)
           REAL G0_OPPR(5, 100, 100, 13)
 
+          ! Kennedy adding cond curve interpolation
+          INTEGER MET_INDEX, LOW_MET_INDEX, HIGH_MET_INDEX, I
+          REAL, dimension(5) :: COND_CURVE_METS ! These are log10(Z/Zsun) values for the pre-calculated curves
           REAL DENSITY(13)
           REAL FMOLW(13)
           REAL CLOUD_MOLAR_MASSES(13)
-
-          
 
           real, dimension(100) :: input_temperature_array
           real, dimension(80) :: input_pressure_array_cgs
 
           real, dimension(100) :: input_particle_size_array_in_meters
           real, dimension(80) :: particle_size_vs_layer_array_in_meters
-
-          REAL, dimension (100)  :: CLOUD_WAV_GRID
           REAL, dimension (500) :: HAZE_WAV_GRID
-          REAL :: exp_92_lnsig2_pi, sigma
-
+          REAL, dimension (100)  :: CLOUD_WAV_GRID
+          REAL, dimension (100)  :: STARLIGHT_WAV_WEIGHTS
+          REAL, dimension(100,100) :: TEMP_CLOUD_DATA
+          REAL TEFFSTAR, DLAMBDA
+          REAL exp_92_lnsig2_pi, sigma
       COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
      &                              DENSITY, FMOLW,
      &                              CORFACT,
@@ -778,6 +782,73 @@
           close(7)
           close(8)
           close(9)
+          HAZE_WAV_GRID = (/0.1, 0.101, 0.102, 0.103, 0.104, 0.105, 0.107, 0.108, 0.109, 0.11, 0.111, 0.112, 0.114,
+     &                  0.115, 0.116, 0.117, 0.119, 0.12, 0.121, 0.122, 0.124, 0.125, 0.126, 0.128, 0.129, 0.13,
+     &                  0.132, 0.133, 0.135, 0.136, 0.138, 0.139, 0.14, 0.142, 0.143, 0.145, 0.147, 0.148, 0.15,
+     &                  0.151, 0.153, 0.155, 0.156, 0.158, 0.16, 0.161, 0.163, 0.165, 0.166, 0.168, 0.17, 0.172,
+     &                  0.174, 0.176, 0.177, 0.179, 0.181, 0.183, 0.185, 0.187, 0.189, 0.191, 0.193, 0.195, 0.197,
+     &                  0.199, 0.202, 0.204, 0.206, 0.208, 0.21, 0.213, 0.215, 0.217, 0.219, 0.222, 0.224, 0.227,
+     &                  0.229, 0.231, 0.234, 0.236, 0.239, 0.241, 0.244, 0.247, 0.249, 0.252, 0.255, 0.257, 0.26,
+     &                  0.263, 0.266, 0.268, 0.271, 0.274, 0.277, 0.28, 0.283, 0.286, 0.289, 0.292, 0.295, 0.299,
+     &                  0.302, 0.305, 0.308, 0.311, 0.315, 0.318, 0.322, 0.325, 0.328, 0.332, 0.335, 0.339, 0.343,
+     &                  0.346, 0.35, 0.354, 0.358, 0.361, 0.365, 0.369, 0.373, 0.377, 0.381, 0.385, 0.389, 0.393,
+     &                  0.398, 0.402, 0.406, 0.41, 0.415, 0.419, 0.424, 0.428, 0.433, 0.437, 0.442, 0.447, 0.452,
+     &                  0.456, 0.461, 0.466, 0.471, 0.476, 0.481, 0.487, 0.492, 0.497, 0.502, 0.508, 0.513, 0.519,
+     &                  0.524, 0.53, 0.535, 0.541, 0.547, 0.553, 0.559, 0.564, 0.57, 0.577, 0.583, 0.589, 0.595,
+     &                  0.602, 0.608, 0.615, 0.621, 0.628, 0.634, 0.641, 0.648, 0.655, 0.662, 0.669, 0.676, 0.683,
+     &                  0.691, 0.698, 0.705, 0.713, 0.721, 0.728, 0.736, 0.744, 0.752, 0.76, 0.768, 0.776, 0.784,
+     &                  0.793, 0.801, 0.81, 0.819, 0.827, 0.836, 0.845, 0.854, 0.863, 0.872, 0.882, 0.891, 0.901,
+     &                  0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.991, 1.002, 1.012, 1.023, 1.034, 1.045,
+     &                  1.056, 1.067, 1.079, 1.09, 1.102, 1.114, 1.126, 1.138, 1.15, 1.162, 1.174, 1.187, 1.2,
+     &                  1.212, 1.225, 1.238, 1.252, 1.265, 1.279, 1.292, 1.306, 1.32, 1.334, 1.348, 1.363, 1.377,
+     &                  1.392, 1.407, 1.422, 1.437, 1.452, 1.468, 1.483, 1.499, 1.515, 1.531, 1.548, 1.564, 1.581,
+     &                  1.598, 1.615, 1.632, 1.65, 1.667, 1.685, 1.703, 1.721, 1.74, 1.758, 1.777, 1.796, 1.815,
+     &                  1.834, 1.854, 1.874, 1.894, 1.914, 1.934, 1.955, 1.976, 1.997, 2.018, 2.04, 2.062, 2.084,
+     &                  2.106, 2.128, 2.151, 2.174, 2.197, 2.221, 2.244, 2.268, 2.293, 2.317, 2.342, 2.367, 2.392,
+     &                  2.418, 2.443, 2.47, 2.496, 2.523, 2.549, 2.577, 2.604, 2.632, 2.66, 2.688, 2.717, 2.746,
+     &                  2.775, 2.805, 2.835, 2.865, 2.896, 2.927, 2.958, 2.99, 3.022, 3.054, 3.086, 3.119, 3.153,
+     &                  3.186, 3.22, 3.255, 3.289, 3.325, 3.36, 3.396, 3.432, 3.469, 3.506, 3.543, 3.581, 3.619,
+     &                  3.658, 3.697, 3.736, 3.776, 3.817, 3.857, 3.899, 3.94, 3.982, 4.025, 4.068, 4.111, 4.155,
+     &                  4.199, 4.244, 4.289, 4.335, 4.382, 4.428, 4.476, 4.523, 4.572, 4.62, 4.67, 4.72, 4.77,
+     &                  4.821, 4.872, 4.924, 4.977, 5.03, 5.084, 5.138, 5.193, 5.248, 5.304, 5.361, 5.418, 5.476,
+     &                  5.534, 5.594, 5.653, 5.714, 5.775, 5.836, 5.898, 5.961, 6.025, 6.089, 6.154, 6.22, 6.286,
+     &                  6.354, 6.421, 6.49, 6.559, 6.629, 6.7, 6.772, 6.844, 6.917, 6.991, 7.065, 7.141, 7.217,
+     &                  7.294, 7.372, 7.451, 7.53, 7.61, 7.692, 7.774, 7.857, 7.941, 8.025, 8.111, 8.198, 8.285,
+     &                  8.374, 8.463, 8.553, 8.645, 8.737, 8.83, 8.924, 9.02, 9.116, 9.213, 9.312, 9.411, 9.511,
+     &                  9.613, 9.716, 9.819, 9.924, 10.03, 10.137, 10.245, 10.355, 10.465, 10.577, 10.69, 10.804,
+     &                  10.919, 11.036, 11.154, 11.273, 11.393, 11.515, 11.638, 11.762, 11.887, 12.014, 12.143,
+     &                  12.272, 12.403, 12.536, 12.669, 12.805, 12.941, 13.079, 13.219, 13.36, 13.503, 13.647,
+     &                  13.793, 13.94, 14.089, 14.239, 14.391, 14.545, 14.7, 14.857, 15.015, 15.176, 15.338,
+     &                  15.501, 15.667, 15.834, 16.003, 16.174, 16.347, 16.521, 16.697, 16.876, 17.056, 17.238,
+     &                  17.422, 17.608, 17.796, 17.986, 18.178, 18.372, 18.568, 18.766, 18.966, 19.169, 19.373,
+     &                  19.58, 19.789, 20.0/)
+     
+     
+          CLOUD_WAV_GRID = (/ 
+     &                  0.1       ,  0.10549764,  0.11129751,  0.11741624,  0.12387136, 
+     &                  0.13068136,  0.13786574,  0.1454451 ,  0.15344114,  0.16187678, 
+     &                  0.17077617,  0.18016482,  0.19006963,  0.20051896,  0.21154277, 
+     &                  0.22317262,  0.23544184,  0.24838557,  0.2620409 ,  0.27644696, 
+     &                  0.29164501,  0.30767859,  0.32459363,  0.34243861,  0.36126464, 
+     &                  0.38112565,  0.40207855,  0.42418337,  0.44750342,  0.47210553, 
+     &                  0.49806018,  0.52544171,  0.55432858,  0.58480355,  0.61695392, 
+     &                  0.6508718 ,  0.68665436,  0.72440411,  0.76422921,  0.80624375, 
+     &                  0.8505681 ,  0.89732923,  0.94666113,  0.99870511,  1.05361028, 
+     &                  1.11153393,  1.17264202,  1.23710961,  1.30512139,  1.37687221, 
+     &                  1.45256763,  1.53242451,  1.61667163,  1.70555034,  1.79931529, 
+     &                  1.89823509,  2.00259314,  2.11268842,  2.22883634,  2.35136964, 
+     &                  2.48063938,  2.6170159 ,  2.7608899 ,  2.91267357,  3.07280176, 
+     &                  3.24173321,  3.41995189,  3.60796839,  3.80632136,  4.01557904, 
+     &                  4.23634095,  4.46923955,  4.71494206,  4.97415241,  5.24761319, 
+     &                  5.53610785,  5.8404629 ,  6.16155028,  6.50028987,  6.85765214, 
+     &                  7.23466087,  7.63239618,  8.05199753,  8.49466702,  8.96167288, 
+     &                  9.45435302,  9.97411891, 10.52245965, 11.10094616, 11.71123575, 
+     &                  12.35507684, 13.03431396, 13.75089307, 14.5068671 , 15.30440182,
+     &                  16.14578209, 17.03341839, 17.96985369, 18.9577708 , 20.0
+     &                  /)
+            
+
+
 
 !          haze_pressure_array_pascals = (/1.000e-01, 1.456e-01, 2.121e-01, 3.089e-01, 4.498e-01, 6.551e-01, 9.541e-01,
 !     &                                    1.389e+00, 2.024e+00, 2.947e+00, 4.292e+00, 6.251e+00, 9.103e+00, 1.326e+01,
@@ -883,6 +954,34 @@
      &    3.822e+06, 4.826e+06, 6.093e+06, 7.693e+06, 9.713e+06, 
      &    1.226e+07, 1.548e+07, 1.955e+07, 2.468e+07, 3.117e+07, 
      &    3.935e+07, 4.968e+07, 6.273e+07, 7.920e+07, 1.000e+08/)
+
+          input_particle_size_array_in_meters = (/
+     &    1.00000000e-09, 1.12332403e-09, 1.26185688e-09, 1.41747416e-09,
+     &    1.59228279e-09, 1.78864953e-09, 2.00923300e-09, 2.25701972e-09,
+     &    2.53536449e-09, 2.84803587e-09, 3.19926714e-09, 3.59381366e-09,
+     &    4.03701726e-09, 4.53487851e-09, 5.09413801e-09, 5.72236766e-09,
+     &    6.42807312e-09, 7.22080902e-09, 8.11130831e-09, 9.11162756e-09,
+     &    1.02353102e-08, 1.14975700e-08, 1.29154967e-08, 1.45082878e-08,
+     &    1.62975083e-08, 1.83073828e-08, 2.05651231e-08, 2.31012970e-08,
+     &    2.59502421e-08, 2.91505306e-08, 3.27454916e-08, 3.67837977e-08,
+     &    4.13201240e-08, 4.64158883e-08, 5.21400829e-08, 5.85702082e-08,
+     &    6.57933225e-08, 7.39072203e-08, 8.30217568e-08, 9.32603347e-08,
+     &    1.04761575e-07, 1.17681195e-07, 1.32194115e-07, 1.48496826e-07,
+     &    1.66810054e-07, 1.87381742e-07, 2.10490414e-07, 2.36448941e-07,
+     &    2.65608778e-07, 2.98364724e-07, 3.35160265e-07, 3.76493581e-07,
+     &    4.22924287e-07, 4.75081016e-07, 5.33669923e-07, 5.99484250e-07,
+     &    6.73415066e-07, 7.56463328e-07, 8.49753436e-07, 9.54548457e-07,
+     &    1.07226722e-06, 1.20450354e-06, 1.35304777e-06, 1.51991108e-06,
+     &    1.70735265e-06, 1.91791026e-06, 2.15443469e-06, 2.42012826e-06,
+     &    2.71858824e-06, 3.05385551e-06, 3.43046929e-06, 3.85352859e-06,
+     &    4.32876128e-06, 4.86260158e-06, 5.46227722e-06, 6.13590727e-06,
+     &    6.89261210e-06, 7.74263683e-06, 8.69749003e-06, 9.77009957e-06,
+     &    1.09749877e-05, 1.23284674e-05, 1.38488637e-05, 1.55567614e-05,
+     &    1.74752840e-05, 1.96304065e-05, 2.20513074e-05, 2.47707636e-05,
+     &    2.78255940e-05, 3.12571585e-05, 3.51119173e-05, 3.94420606e-05,
+     &    4.43062146e-05, 4.97702356e-05, 5.59081018e-05, 6.28029144e-05,
+     &    7.05480231e-05, 7.92482898e-05, 8.90215085e-05, 1.00000000e-04
+     &    /)
 
           input_particle_size_array_in_meters = (/
      &    1.00000000e-09, 1.12332403e-09, 1.26185688e-09, 1.41747416e-09,
@@ -1184,7 +1283,7 @@
       PI0_OPPR(3,1:100,1:100,7)=Mg2SiO4_wav_pi0
       PI0_OPPR(4,1:100,1:100,7)=Mg2SiO4_PlanckMean_pi0
       PI0_OPPR(5,1:100,1:100,7)=Mg2SiO4_rosselandMean_pi0
-
+      
       PI0_OPPR(1,1:100,1:100,8)=VO_wav_pi0
       PI0_OPPR(2,1:100,1:100,8)=VO_wav_pi0
       PI0_OPPR(3,1:100,1:100,8)=VO_wav_pi0
@@ -1238,13 +1337,13 @@
       KE_OPPR(3,1:100,1:100,3)=Na2S_wav_kext
       KE_OPPR(4,1:100,1:100,3)=Na2S_PlanckMean_kext
       KE_OPPR(5,1:100,1:100,3)=Na2S_rosselandMean_kext
-      
+    
       KE_OPPR(1,1:100,1:100,4)=MnS_wav_kext
       KE_OPPR(2,1:100,1:100,4)=MnS_wav_kext
       KE_OPPR(3,1:100,1:100,4)=MnS_wav_kext
       KE_OPPR(4,1:100,1:100,4)=MnS_PlanckMean_kext
       KE_OPPR(5,1:100,1:100,4)=MnS_rosselandMean_kext
-      
+    
       KE_OPPR(1,1:100,1:100,5)=Cr_wav_kext
       KE_OPPR(2,1:100,1:100,5)=Cr_wav_kext
       KE_OPPR(3,1:100,1:100,5)=Cr_wav_kext
@@ -1351,4 +1450,98 @@
      & COND_CURVE_METS(LOW_MET_INDEX), ' and ', COND_CURVE_METS(HIGH_MET_INDEX)
       ENDIF
 
+!   Now begins the cloud wavelength averaging:
+      IF (GRAYCLDV) THEN
+          write(*,*) "Model being run with gray clouds in starlight"
+          TEFFSTAR = 5780.0
+          DO I = 1, 100
+          IF (I < 100) THEN
+              DLAMBDA = CLOUD_WAV_GRID(I+1) - CLOUD_WAV_GRID(I)
+          ELSE
+              DLAMBDA = CLOUD_WAV_GRID(I) - CLOUD_WAV_GRID(I-1)
+          ENDIF
+          ! cgs blambda * dlambda in microns (units not neat, but does not matter)
+          STARLIGHT_WAV_WEIGHTS(I) = 5.96e14/(CLOUD_WAV_GRID(I)**5) * 
+     & 1/(EXP(14387.75/CLOUD_WAV_GRID(I)/TEFFSTAR) - 1) * DLAMBDA 
+          ENDDO
+          DO I = 1, 13
+            TEMP_CLOUD_DATA(1:100,1:100) = 0.0
+            DO J = 1, 100
+              ! Calculate the average ke for each particle size
+              TEMP_CLOUD_DATA(1:100,J) = SUM(KE_OPPR(1,1:100,J,I) * STARLIGHT_WAV_WEIGHTS(1:100))/SUM(STARLIGHT_WAV_WEIGHTS(1:100))
+            ENDDO
+            ! Assign to starlight channels, should now be wavelength-independent:
+            KE_OPPR(1,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            KE_OPPR(2,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            KE_OPPR(3,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            ! Do the same for pi0, g0
+            DO J = 1, 100
+              TEMP_CLOUD_DATA(1:100,J) = SUM(PI0_OPPR(1,1:100,J,I) * STARLIGHT_WAV_WEIGHTS(1:100))/SUM(STARLIGHT_WAV_WEIGHTS(1:100))
+            ENDDO
+            PI0_OPPR(1,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            PI0_OPPR(2,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            PI0_OPPR(3,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            DO J = 1, 100
+              TEMP_CLOUD_DATA(1:100,J) = SUM(G0_OPPR(1,1:100,J,I) * STARLIGHT_WAV_WEIGHTS(1:100))/SUM(STARLIGHT_WAV_WEIGHTS(1:100))
+            ENDDO
+            G0_OPPR(1,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            G0_OPPR(2,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+            G0_OPPR(3,1:100,1:100,I) = TEMP_CLOUD_DATA(1:100,1:100)
+          ENDDO
+      ENDIF
+    !   write(*,*) "AFTER AVERAGING:"
+    !   write(*,*) "Ke for KCl: ", KE_OPPR(1,1:100,20,1)
+      ! Setting up correction factor for mean vs median particle volume:
+      sigma = 2.0
+      exp_92_lnsig2_pi = EXP(-9.0/2.0 * LOG(sigma)*LOG(sigma)) / (4.D0*DATAN(1.D0))
+
+      ! Thomas interpolating cloud condensation curves
+      ! Temporarily define MET_INDEX (this is just to determine whether we need to interpolate)
+      WRITE(*,*), 'METALLICITY = ', METALLICITY
+      IF (METALLICITY .gt. -0.1 .AND. METALLICITY .lt. 0.1) THEN
+        MET_INDEX = 1
+      ELSE IF (METALLICITY .gt. 0.9 .AND. METALLICITY .lt. 1.1) THEN
+        MET_INDEX = 2
+      ELSE IF (METALLICITY .gt. 1.4 .AND. METALLICITY .lt. 1.6) THEN
+        MET_INDEX = 3
+      ELSE IF (METALLICITY .gt. 1.9 .AND. METALLICITY .lt. 2.1) THEN
+        MET_INDEX = 4
+      ELSE IF (METALLICITY .gt. 2.37 .AND. METALLICITY .lt. 2.57) THEN
+        MET_INDEX = 5
+      ELSE
+        ! If metallicity isnt close to one of the pre-calculated curves, interpolate between nearest 2
+        COND_CURVE_METS = (/0.0, 1.0, 1.5, 2.0, 2.5/)
+        If (METALLICITY .gt. 0.01 .AND. METALLICITY .lt. 0.99) THEN
+            LOW_MET_INDEX = 1
+            HIGH_MET_INDEX = 2
+        ELSE IF (METALLICITY .gt. 1.01	.AND. METALLICITY .lt. 1.49) THEN
+            LOW_MET_INDEX	= 2
+            HIGH_MET_INDEX = 3
+        ELSE IF (METALLICITY .gt. 1.51 .AND. METALLICITY .lt. 1.99) THEN
+            LOW_MET_INDEX = 3 
+            HIGH_MET_INDEX = 4
+        ELSE IF (METALLICITY .gt. 2.01 .AND. METALLICITY .lt. 2.49) THEN
+            LOW_MET_INDEX = 4
+            HIGH_MET_INDEX = 5
+        ELSE
+            LOW_MET_INDEX = 1
+            HIGH_MET_INDEX = 2
+            WRITE(*,*) 'EXTRAPOLATING to low Z condensation curves, not advised (cloud_properties_set_up.f)'
+            ! stop
+        END IF
+        MET_INDEX = 6
+        DO J = 1, NLAYER - 1
+            DO I = 1, NCLOUDS
+                ! WRITE(*,*) COND_CURVE_METS(LOW_MET_INDEX), COND_CURVE_METS(HIGH_MET_INDEX)
+                !TCONDS(6,J,I) = TCONDS(LOW_MET_INDEX,J,I) + ((METALLICITY - (COND_CURVE_METS(LOW_MET_INDEX))) * (TCONDS(HIGH_MET_INDEX,J,I) - TCONDS(LOW_MET_INDEX,J,I)) / (COND_CURVE_METS(HIGH_MET_INDEX) - COND_CURVE_METS(LOW_MET_INDEX)))
+                TCONDS(MET_INDEX,J,I) = (METALLICITY - (COND_CURVE_METS(LOW_MET_INDEX)))
+                TCONDS(MET_INDEX,J,I) = TCONDS(MET_INDEX,J,I) * (TCONDS(HIGH_MET_INDEX,J,I) - TCONDS(LOW_MET_INDEX,J,I))
+                TCONDS(MET_INDEX,J,I) = TCONDS(MET_INDEX,J,I) / (COND_CURVE_METS(HIGH_MET_INDEX) - COND_CURVE_METS(LOW_MET_INDEX))
+                TCONDS(MET_INDEX,J,I) = TCONDS(MET_INDEX,J,I) + TCONDS(LOW_MET_INDEX,J,I)
+            END DO
+        END DO
+        
+        WRITE(*,*) 'interpolating condensation curves between ', 
+     & COND_CURVE_METS(LOW_MET_INDEX), ' and ', COND_CURVE_METS(HIGH_MET_INDEX)
+      ENDIF
       END SUBROUTINE get_cloud_scattering_properties

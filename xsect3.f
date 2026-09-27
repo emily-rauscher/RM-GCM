@@ -65,11 +65,21 @@ C
 C     Constant arrays and variables associated with time and vertical     
 C     differencing. Also counters.                                        
 C                                                                         
-      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)              
-     +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD           
-     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
-     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
-     +              ,BEGDOY,DOY                                           
+      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)
+     +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD
+     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21
+     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
+     +              ,BEGDOY,DOY
+C
+      COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC
+     +              ,RNTAPO
+     +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR
+     +              ,KOUTP,KOUTE,KOUTH,KOUTR,DAY
+     +              ,SQR2,RSQR2,EAM1,EAM2,TOUT1,TOUT2,RMG
+     +              ,LSPO(NL),LGPO(NL)
+     $              ,LSHIST,LMINIH
+      LOGICAL LSHIST,LMINIH
+      LOGICAL LSPO,LGPO                                           
 C                                                                         
 C                                                                         
 C                                                                         

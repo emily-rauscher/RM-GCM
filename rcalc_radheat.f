@@ -27,48 +27,49 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V,k_IRl, k_Vl)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, Beta_IR, Beta_V,k_IRl, k_Vl, tau_ray_temp)
 
 !      use physical_constants
 
       include 'rcommons.h'
-
+      
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,kount
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
-      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
-      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
-      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
-      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
-      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
-      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
+      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD(NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S(NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(NBATCH,2*NL+2), EE1(NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1(NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
+      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NBATCH,2*NL+2)
       real heats_aerad_tot(NL+1), heati_aerad_tot(NL+1), radheat_tot(NL+1), cheati(NL+1), cheats(NL+1), radheat(NL+1)
 
-      REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
-      REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
+      REAL, DIMENSION(NBATCH,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NBATCH,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
-      real, dimension(2, NL+1) :: k_IRl
-      real, dimension(3, NL+1) :: k_Vl
+      real, dimension(NKGAUSS, NL+1) :: k_IRl, tau_ray_temp
+      real, dimension(NKGAUSS, NL+1) :: k_Vl
 
-      REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      REAL tau_IRe(NKGAUSS,NL+1), tau_Ve(NKGAUSS,NL+1)
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
-      real, dimension(2)  :: Beta_IR
-      real, dimension(3)  :: Beta_V
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL)  :: Beta_V
 
-      REAL PI0_TEMP(5, NL+1, 13)
-      REAL G0_TEMP(5, NL+1, 13)
-      REAL tauaer_temp(5, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, 13)
+      REAL G0_TEMP(NBATCH, NL+1, 13)
+      REAL tauaer_temp(NBATCH, NL+1, 13)
       INTEGER j1
       REAL denom
 
@@ -80,7 +81,7 @@
       real dpgsub(NDBL), pbarsub(NDBL)
       real, dimension(NL+1) :: z, htsw,htlw
       real, dimension(2,2,2) :: fluxes
-      real, dimension(NIR+NSOL,NDBL) :: TAURAY, TAUL, TAUGAS, TAUAER
+      real, dimension(NBATCH,NDBL) :: TAURAY, TAUL, TAUGAS, TAUAER
 
       real alat1, alon, incident_starlight_fraction
 
@@ -132,7 +133,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, fluxes, k_IRl, k_Vl)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, fluxes, k_IRl, k_Vl, tau_ray_temp)
 
       iffirst = 0
 
@@ -192,13 +193,13 @@ C     ER Modif: output pressures in bar instead of mbar
           DO IL=1,NLAYER                                                  
           WRITE(62,2033),p_pass(IL)*1e-5,
      &                   uTAUL(1,IL),
-     $                   uTAUL(NSOLP+1,IL),
+     $                   uTAUL(NKGAUSS+1,IL),
      &                   uOPD(1,IL),
-     &                   uOPD(NSOLP+1,IL),
+     &                   uOPD(NKGAUSS+1,IL),
      &                   uW0(1,IL),
-     &                   uW0(NSOLP+1,IL),
+     &                   uW0(NKGAUSS+1,IL),
      &                   uG0(1,IL),
-     &                   uG0(NSOLP+1,IL),
+     &                   uG0(NKGAUSS+1,IL),
      &                   DIRECTU(4,IL)+DIRECTU(5,IL),
      &                   TMI(1,IL)+TMI(2,IL)+TMI(3,IL),
      &                   TMI(4,IL)+TMI(5,IL)

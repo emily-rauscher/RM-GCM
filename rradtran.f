@@ -19,7 +19,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE, Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, kount, ITSPD)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom, kount, ITSPD, iband)
 
 !
 !     **************************************************************
@@ -34,39 +34,41 @@
 !                 are all loaded into interface common block).
 !     **************************************************************
 !
+      use corrkmodule, only : TS_CORRK, PS_CORRK, TS_LOG_CORRK,
+     &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
+     &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO, MINWNOSTEL
       include 'rcommons.h'
 
-      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, kount
+      INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, kount, itspd
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
-      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
-      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
-      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
-      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
-      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
-      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD( NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S( NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  NBATCH,2*NL+2), EE1( NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1( NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
       REAL qrad(NL+1),alb_tomi,alb_toai
 
       REAL ttsub(2*NL+2)
 
-      integer ITSPD
-      integer, parameter :: nwave_alb = NTOTAL
-      real wavea(nwave_alb),albedoa(nwave_alb),t(NZ)
-      real maxopd(nwave_alb)
-      real, dimension(NIR)  :: Beta_IR
-      real, dimension(NSOL) :: Beta_V
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
+      real wavea(NBATCH),albedoa(NBATCH),t(NZ)
+      real maxopd(NBATCH)
+      real, dimension(NKGAUSS)  :: Beta_IR
+      real, dimension(NKGAUSS) :: Beta_V
+      real, dimension(NBATCH,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
       real incident_starlight_fraction
-      integer solar_calculation_indexer
+      integer solar_calculation_indexer, iband
 
-      real, dimension(NTOTAL,NDBL) :: SLOPE
+      real, dimension(NBATCH,NDBL) :: SLOPE
       real pr(NLAYER), p_pass(NLAYER)
 
       real dpg(nl+1), pbar(nl+1)
@@ -85,16 +87,23 @@
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
 
-      REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
-      REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
+      REAL, DIMENSION(NBATCH,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NBATCH,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
-      REAL PI0_TEMP(5, NL+1, 13)
-      REAL G0_TEMP(5, NL+1, 13)
-      REAL tauaer_temp(5, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, 13)
+      REAL G0_TEMP(NBATCH, NL+1, 13)
+      REAL tauaer_temp(NBATCH, NL+1, 13)
       INTEGER j1
       real denom
+      ! Corr-K common block:
+    !   COMMON/CORRKGAS/OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC,
+    !  &      INT_SPEC, TAURAY_PER_DPG
+    !   REAL :: OPAC_CORRK(73, 20, NWNO, 8)
+    !   REAL :: TS_CORRK(73), PS_CORRK(20), TS_LOG_CORRK(73), PS_LOG_CORRK(20), WGTS_CORRK(8) 
+    !   REAL :: WNO_EDGES(NWNO+1), WNO_CTRS(NWNO), STEL_SPEC(NWNO), INT_SPEC(NWNO)
+    !   REAL :: TAURAY_PER_DPG(73, 20, NWNO)
 
-      integer L, J, K
+      integer L, J, K, chan_idx, stel_idx
 
       ! ADDING THESE
       real, dimension(NL+1) :: Tl, pl, pe, dpe
@@ -169,26 +178,28 @@
 
 !     SURFACE REFLECTIVITY AND EMISSIVITY
 !     Hack: use spectrally dependent surface albedo
-      DO 20 L =  1,NSOLP
+      DO 20 L =  1,NKGAUSS
          RSFX(L) = ALBSW
          EMIS(L) =  1.0 - RSFX(L)
  20   CONTINUE
 
 !...Hack: specify EMIS based on RSFX rather than visa versa
-      DO 30 L =  NSOLP+1,NTOTAL
+      DO 30 L =  NKGAUSS+1,NBATCH
          EMIS(L) =  EMISIR
          RSFX(L) = 1.0 - EMIS(L)
 
-         if( wave(nprob(L)).gt.wavea(nwave_alb) ) then
-             rsfx(L) = albedoa(nwave_alb)
+         if( wave(nprob(L)).gt.wavea(NBATCH) ) then
+             rsfx(L) = albedoa(NBATCH)
          endif
 
          EMIS(L) = 1.0 - RSFX(L)
  30   CONTINUE
 
 !     CALCULATE THE OPTICAL PROPERTIES
-      IF (AEROSOLCOMP.EQ. 'standard') THEN
-          CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
+    !   IF (AEROSOLCOMP.EQ. 'standard') THEN
+      IF ((opacity_method .EQ. 'dogray') .or. (opacity_method .EQ. 'picket')) THEN
+        ! write(*,*) "Using dogray or picket fence opacity method"
+        CALL OPPRMULTI(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
      &                   LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &                   EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &                   SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -207,15 +218,103 @@
      &                   qrad,alb_tomi,alb_toai, p_pass,
      &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD)
       ELSE
-          write(*,*) 'ERROR! Something is off about your version. Check with Isaac'
-          STOP
+        ! write(*,*), "TAUGAS:", TAUGAS(71,1:NLAYER)
+        CALL OPPRMULTI_CORRK(TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
+     &                   LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+     &                   EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &                   SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &                   GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &                   WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &                   uG0,uTAUL,W0,uW0,uopd,U1S,
+     &                   U1I,TOON_AK,B1,B2,EE1,EM1,
+     &                   EM2,EL1,EL2,GAMI,AF,
+     &                   BF,EF,SFCS,B3,CK1,CK2,
+     &                   CP,CPB,CM,CMB,DIRECT,EE3,
+     &                   EL3,FNET,TMI,AS,DF,
+     &                   DS,XK,DIREC,DIRECTU,DINTENT,
+     &                   UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &                   tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &                   qrad,alb_tomi,alb_toai, p_pass,
+     &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount,itspd,iband)
+        ! write(*,*) ""
+        ! write(*,*) ""
+        ! write(*,*) ""
+        ! write(*,*) ""
+        ! write(*,*) ""
+        ! write(*,*) "TAUL:", TAUL(71,1:NLAYER)
+        ! write(*,*) "TAUAER:", TAUAER(71,1:NLAYER)
+        ! write(*,*) ""
+        ! write(*,*) "TAUGAS:", TAUGAS
+        ! write(*,*) "TAUAER:", TAUAER
+        ! stop
       ENDIF
+    !       write(*,*) TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
+    !  &                   LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+    !  &                   EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+    !  &                   SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+    !  &                   GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+    !  &                   WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+    !  &                   uG0,uTAUL,W0,uW0,uopd,U1S,
+    !  &                   U1I,TOON_AK,B1,B2,EE1,EM1,
+    !  &                   EM2,EL1,EL2,GAMI,AF,
+    !  &                   BF,EF,SFCS,B3,CK1,CK2,
+    !  &                   CP,CPB,CM,CMB,DIRECT,EE3,
+    !  &                   EL3,FNET,TMI,AS,DF,
+    !  &                   DS,XK,DIREC,DIRECTU,DINTENT,
+    !  &                   UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+    !  &                   tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+    !  &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+    !  &                   qrad,alb_tomi,alb_toai, p_pass,
+    !  &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount
+        !   STOP
+    !   ELSE IF (AEROSOLCOMP.EQ. 'none') THEN
+    !       ! TK no aerosols, just gas
+    !       DO J = 1,NDBL
+    !         DO L = 1,NSOL
+    !             TAUL(L,J) = TAUGAS(L,J) + TAURAY(L,J)
+    !             W0(L,J) = TAURAY(L,J)/TAUL(L,J)
+    !             G0(L,J) = 0.0 ! Rayleigh g=0
+    !             OPD(L,J) = TAUGAS(L,J) + TAURAY(L,J) ! I think this is a test thing Mike put in that was never removed
+    !         END DO
+    !       END DO
+    !       DO I = 1,NGAUSS
+    !         DO L = NSOL+1,NTOTAL
+    !             Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
+    !         END DO
+    !       END DO
+    !       write(*,*) TAURAY,TAUL,TAUGAS,TAUAER,solar_calculation_indexer, DPG,
+    !  &                   LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
+    !  &                   EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+    !  &                   SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+    !  &                   GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+    !  &                   WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+    !  &                   uG0,uTAUL,W0,uW0,uopd,U1S,
+    !  &                   U1I,TOON_AK,B1,B2,EE1,EM1,
+    !  &                   EM2,EL1,EL2,GAMI,AF,
+    !  &                   BF,EF,SFCS,B3,CK1,CK2,
+    !  &                   CP,CPB,CM,CMB,DIRECT,EE3,
+    !  &                   EL3,FNET,TMI,AS,DF,
+    !  &                   DS,XK,DIREC,DIRECTU,DINTENT,
+    !  &                   UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+    !  &                   tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+    !  &                   fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+    !  &                   qrad,alb_tomi,alb_toai, p_pass,
+    !  &                   PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount
+    !       STOP
+        !   write(*,*) "ERROR! Thomas hasn't coded a workaround for corr-k clouds yet!"
+        !   STOP
+    !   ELSE
+    !       write(*,*) 'ERROR! Something is off about your version. Check with Isaac'
+    !       STOP
+    !   ENDIF
 
       SLOPE(:,:) = 0.0
       DS(:,:)    = 0.0
       DF(:,:)    = 0.0
-
-      CALL OPPR1(TAUL, SLOPE, t,
+      
+      IF ((opacity_method .EQ. 'dogray') .or. (opacity_method .EQ. 'picket')) THEN
+        CALL OPPR1(TAUL, SLOPE, t,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
@@ -232,11 +331,29 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers)
-
+      ELSE IF (opacity_method .EQ. 'correk') then
+        CALL OPPR1_CORRK(TAUL, SLOPE, t,
+     &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, EMISIR,
+     &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai, num_layers, iband)
+      ENDIF
 
 !     IF NO INFRARED SCATTERING THEN SET INDEX TO NUMBER OF SOLAR INTERVALS
       IF(IRS .EQ. 0) THEN
-          LLA  =  NSOLP
+          LLA  =  NKGAUSS
           write(*,*) "Something funny is going on, why no IR scattering?"
           stop
       ENDIF
@@ -272,7 +389,7 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers)
-
+    !   write(*,*) "before RADD: ", FNET(3,:NLAYER+1)
           CALL ADD(TAUL, solar_calculation_indexer, SLOPE,
      &             LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,EMISIR,
      &             EPSILON, HEATI, HEATS, HEAT, SOLNET,TPI, SQ3, SBK,AM, AVG, ALOS,
@@ -291,6 +408,7 @@
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers)
       ENDIF
+    !   write(*,*) "after RADD: ", FNET(3,:NLAYER+1)
 
 !     IF INFRARED CALCULATIONS ARE REQUIRED THEN NEWFLUX1 FOR MORE ACCURATE SOLUTION
       IF(IR .NE. 0) THEN
@@ -323,13 +441,13 @@
 !     LEVELS. THESE VALUES SHOULD BE SUPERIOR TO THOSE COMPUTED
 !     WITHOUT DOUBLING
 
-      DO L = NSOLP+1, NTOTAL
+      DO L = NKGAUSS+1, NBATCH ! IR un-doubling?
           K =  1
           DO J =  1,NLAYER
             FNET(L,J)      =  DIRECTU(L,k)-DIREC(L,k)
             DIRECTU(L,J)   =  DIRECTU(L,K)
             DIREC(L,J)     =  DIREC(L,K)
-            OPD(L,J)       =  OPD(L,K)
+            OPD(L,J)       =  OPD(L,K) 
             TAUL(L,J)      =  TAUL(L,K)
             W0(L,J)        =  W0(L,K)
             G0(L,J)        =  G0(L,K)
@@ -342,14 +460,28 @@
             K = K+2
           ENDDO
       END DO
+    !   write(*,*) "DIREC:" , DIREC(NSOL,:NLAYER+1)
+    !   write(*,*) "DIRECTU:" , DIRECTU(NSOL,:NLAYER+1)
 
+    !   WRITE(*,*) "FNET1: ", FNET(1,:NLAYER+1)
+    !   WRITE(*,*) "FNET8: ", FNET(8,:NLAYER+1)
+    !   WRITE(*,*) "FNET9: ", FNET(9,:NLAYER+1)
+
+!     MALSKY CHECK THAT THIS IS THE RIGHT BOUNDARY
+    !   write(*,*) "MU:" , U0
+    !   DO L = 1, NSOL
+    !     write(*,*) "FNET1: ", L, FNET(L,:NLAYER+1)
+    !     ! write(*,*) "DIREC: ", L, DIREC(L,:NLAYER+1)
+    !     write(*,*) "TAUL1: ", L, TAUL(L,:NLAYER+1)
+    !     write(*,*) "OPD: ", L, OPD(L,:NLAYER+1)
+    !   END DO
+      IF ((opacity_method .EQ. 'dogray') .or. (opacity_method .EQ. 'picket')) THEN
 !     ATTENTION! THE FOLLOWING IS A MODEL-SPECIFIC MODIFICATION:
 !     HERE WE PRESCRIBE THE BOTTOM BOUNDARY CONDITION NET FLUX IN THE IR.
 !     BE AWARE: IT ALSO AFFECTS THE UPWARD FLUX AT THE BASE IN NEWFLUX.
-
-      DO L = NSOLP+1,NTOTAL
+        DO L = NKGAUSS+1,NBATCH
           FNET(L,NLAYER)=FBASEFLUX
-      END DO
+        END DO
 
 !     SINCE WE ARE PLACING A CONSTRAINT ON THE NET FLUX AT THE BOTTOM OF
 !     THE MODEL (BY DEFINING  NET FLUX AT THE BASE TO EQUAL FBASEFLUX)
@@ -359,23 +491,48 @@
 !     HERE WE DERIVE THE UPWARD FLUX FROM THE NET FLUX, SELF CONSISTENT
 !     WITH BOTTOM BOUNDARY CONDITION
 
-!     MALSKY CHECK THAT THIS IS THE RIGHT BOUNDARY
-      DO L =  NSOLP+1,NTOTAL
-          DIRECTU(L,NDBL) = FBASEFLUX+DIREC(L,NDBL)
-      END DO
+        DO L = NKGAUSS+1,NBATCH
+          DIRECTU(L,NLAYER) = FBASEFLUX+DIREC(L,NLAYER)
+        END DO
+        ! Prepare to combine channels
+        DO J = 1, NLAYER
+            DO L = 1, NBATCH
+                IF (L .LE. NKGAUSS) THEN
+                    FNET(L,J) = FNET(L,J) * Beta_V(L)
+                ELSE
+                    FNET(L,J)    = FNET(L,J)    * Beta_IR(L - NKGAUSS)
+                    DIREC(L,J)   = DIREC(L,J)   * Beta_IR(L - NKGAUSS)
+                    DIRECTU(L,J) = DIRECTU(L,J) * Beta_IR(L - NKGAUSS)
+                END IF
+            END DO
+       END DO
+      ELSE IF (opacity_method .EQ. 'correk') THEN
+        DO L = NKGAUSS+1,NBATCH
+          FNET(L,NLAYER)= FBASEFLUX * INT_SPEC(iband)
+          DIRECTU(L,NLAYER) = (FBASEFLUX * INT_SPEC(iband)) + DIREC(L,NLAYER)
+        END DO
+        ! Prepare to combine channels
+        DO J = 1, NLAYER
+            DO L = 1, NBATCH
+                IF (L .LE. NKGAUSS) THEN
+                    FNET(L,J) = FNET(L,J) * WGTS_CORRK(L)
+                ELSE
+                    FNET(L,J)    = FNET(L,J)    * WGTS_CORRK(L - NKGAUSS)
+                    DIREC(L,J)   = DIREC(L,J)   * WGTS_CORRK(L - NKGAUSS)
+                    DIRECTU(L,J) = DIRECTU(L,J) * WGTS_CORRK(L - NKGAUSS)
+                END IF
+            END DO
+       END DO
+       ENDIF
+    !    DO L = 1, NSOL
+    !     write(*,*) "FNET2: ", L, FNET(L,:NLAYER+1)
+    !     ! write(*,*) "DIREC: ", L, DIREC(L,:NLAYER+1)
+    !     write(*,*) "TAUL2: ", L, TAUL(L,:NLAYER+1)
+    !    END DO
+      
+    !   write(*,*) "FBASEFLUX: ", FBASEFLUX
+    !   write(*,*) "intspec: ", INT_SPEC
 
-
-      DO J = 1, NLAYER
-           DO L = 1, NTOTAL
-               IF (L .LE. NSOLP) THEN
-                   FNET(L,J) = FNET(L,J) * Beta_V(L)
-               ELSE
-                   FNET(L,J)    = FNET(L,J)    * Beta_IR(L - NSOLP)
-                   DIREC(L,J)   = DIREC(L,J)   * Beta_IR(L - NSOLP)
-                   DIRECTU(L,J) = DIRECTU(L,J) * Beta_IR(L - NSOLP)
-               END IF
-           END DO
-      END DO
 
 !     CALCULATE INFRAFRED AND SOLAR HEATING RATES (DEG/DAY),
       DO 500 J      =  1,NVERT
@@ -385,13 +542,13 @@
           TERM1      =  FDEGDAY/(DPG(J+1)*G)
 
           IF(incident_starlight_fraction.ge. 0) THEN
-              DO 480 L     =  1,NSOLP
+              DO 480 L     =  solar_calculation_indexer,NKGAUSS
                   HEATS(J)   =  HEATS(J)+(FNET(L,J+1)-FNET(L,J)) * TERM1
  480          CONTINUE
           ENDIF
 
           IF (IR .NE. 0) THEN
-              DO L    =  NSOLP+1,NTOTAL
+              DO L    =  NKGAUSS+1,NBATCH
                   HEATI(J)   =  HEATI(J)+(FNET(L,J+1)-FNET(L,J))*TERM1
               END DO
           ENDIF
@@ -401,15 +558,18 @@
 !         Load heating rates [deg_K/s] into interface common block
           heats_aerad(j) =  heats(j)/scday
           heati_aerad(j) =  heati(j)/scday
+ 
+
 
 500   CONTINUE
 
-
+    !   write(*,*) "HEATS: ", heats_aerad
+    !   write(*,*) "HEATI: ", heati_aerad
 
 !     Here we Calculate (4 * pi * mean_intensity) for the IR.
       IF (IR .NE. 0) THEN
         DO J = 1, NVERT
-          DO L = NSOLP+1, NTOTAL
+          DO L = NKGAUSS+1, NBATCH
             TMI(L,J) = TMIU(L,J)+TMID(L,J)
           end do
         end do
@@ -444,7 +604,7 @@
 !     solar fluxes at top-of-atmosphere (spectrally-resolved)
 !     <alb_toa> is albedo at top-of-atmosphere (spectrally-resolved)
 
-      do 509 i = 1, nsoL
+      do 509 i = solar_calculation_indexer, NKGAUSS
           fsLu(i)    = 0.0
           fsLd(i)    = 0.0
 509   continue
@@ -467,31 +627,68 @@
       
       SOLNET   = 0.0
       IF (ISL .GT. 0) THEN
-          DO 510 L       =  1,NSOLP
-              SOLNET  = SOLNET - FNET(L,NLAYER)
-              fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
+          if ((opacity_method .eq. 'picket') .or. (opacity_method .eq. 'dogray')) then
+            DO L       =  solar_calculation_indexer,NKGAUSS
+                SOLNET  = SOLNET - FNET(L,NLAYER)
+                fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * Beta_V(L)
 
-              fsLu(L) = fsLu(L) + fp
+                fsLu(L) = fsLu(L) + fp
 
-              do 510 j = 1, NLAYER
-                  fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
-                  fm  =  ck1(L,j) * eL2(L,j) + ck2(L,j) * em2(L,j) + cmb(L,j)
+                do j = 1, NLAYER
+                    fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
+                    fm  =  ck1(L,j) * eL2(L,j) + ck2(L,j) * em2(L,j) + cmb(L,j)
 
-                  fupbs(j)    = fupbs(j)    + fp * Beta_V(L)
-                  fdownbs2(j) = fdownbs2(J) + fm * Beta_V(L)
-                  fnetbs(j)   = fnetbs(j)   + fnet(L,j)
+                    fupbs(j)    = fupbs(j)    + fp * Beta_V(L)
+                    fdownbs2(j) = fdownbs2(J) + fm * Beta_V(L)
+                    fnetbs(j)   = fnetbs(j)   + fnet(L,j)
 
-                  if (L .eq. nsolp) then
-                      fdownbs(J) = (fupbs(j) - fnetbs(j))
-                  endif
-510       CONTINUE
+                    if (L .eq. NKGAUSS) then
+                        fdownbs(J) = (fupbs(j) - fnetbs(j))
+                    endif
+                end do
+            END DO
+          else if (opacity_method .eq. 'correk') then
+            DO L       =  solar_calculation_indexer,NKGAUSS
+                SOLNET  = SOLNET - FNET(L,NLAYER)
+                fp      = (ck1(L,1) * eL2(L,1) - ck2(L,1) * em2(L,1) + cp(L,1)) * WGTS_CORRK(L)
 
-          do  i = 1, nsoL              
-              fsLd(i) = psol_aerad * incident_starlight_fraction * (Beta_V(i))
-              alb_toa(i) = fsLu(i)/fsLd(i)
-              tsLu = tsLu + fsLu(i)
-              total_downwelling = total_downwelling + fsLd(i)
-          END DO
+                fsLu(L) = fsLu(L) + fp
+
+                do j = 1, NLAYER
+                    fp  =  ck1(L,j) * eL1(L,j) + ck2(L,j) * em1(L,j) + cpb(L,j)
+                    fm  =  ck1(L,j) * eL2(L,j) + ck2(L,j) * em2(L,j) + cmb(L,j)
+
+                    fupbs(j)    = fupbs(j)    + fp  * WGTS_CORRK(L)
+                    fdownbs2(j) = fdownbs2(J) + fm  * WGTS_CORRK(L)
+                    fnetbs(j)   = fnetbs(j)   + fnet(L,j)
+
+                    if (L .eq. NKGAUSS) then
+                        fdownbs(J) = (fupbs(j) - fnetbs(j))
+                    endif
+                end do
+            END DO
+          end if
+        !   write(*,*) "incident_starlight_fraction:", incident_starlight_fraction
+        !   write(*,*) "fupbs:", fupbs
+        !   write(*,*) "FDOWNBS:", fdownbs
+        !   write(*,*) "FDOWNBS2:", fdownbs2
+    ! 510       CONTINUE
+          if ((opacity_method .eq. 'picket') .or. (opacity_method .eq. 'dogray')) then
+            do  i = solar_calculation_indexer, NKGAUSS
+                fsLd(i) = psol_aerad * incident_starlight_fraction * (Beta_V(i))
+                alb_toa(i) = fsLu(i)/fsLd(i)
+                tsLu = tsLu + fsLu(i)
+                total_downwelling = total_downwelling + fsLd(i)
+            END DO
+          else if (opacity_method .eq. 'correk') then
+            do  i = solar_calculation_indexer, NKGAUSS
+                fsLd(i) = psol_aerad * incident_starlight_fraction
+     &                    * WGTS_CORRK(i) * STEL_SPEC(iband)
+                alb_toa(i) = fsLu(i)/fsLd(i)
+                tsLu = tsLu + fsLu(i)
+                total_downwelling = total_downwelling + fsLd(i)
+            END DO
+          end if
 
 
 
@@ -525,14 +722,14 @@
 !     <firu> is upwelling infrared flux at top-of-atmosphere
 !     (spectrally-resolved)
 
-      do i = 1, nir
+      do i = 1, NKGAUSS
           firu(i) = 0.
       END DO
 
 
       IF (IR .NE. 0) THEN
-          DO L        =  NSOLP+1,NTOTAL
-             firu(L-nsol ) = firu( L-nsol ) + directu(L,1)
+          DO L        =  NKGAUSS+1,NBATCH
+             firu(L-NKGAUSS) = firu(L-NKGAUSS) + directu(L,1)
 
              do j = 1, nlayer
                  fupbi(j)   = fupbi(j)   + (directu(L,j))
@@ -541,7 +738,7 @@
              END DO
           END DO
 
-          do i = 1, nir
+          do i = 1, NKGAUSS
               tiru = tiru + firu(i)
           END DO
 
@@ -561,8 +758,21 @@ C     RFLUXES  Array to hold fluxes at top and bottom of atmosphere
 C     1st index - flux 1=SW, 2=LW
 C     2nd index - Direction 1=DN, 2=UP
 C     3rd index - Where 1=TOP, 2=SURFACE
-
-      if (NSOLP .gt. 1) then
+      if (opacity_method .eq. 'correk') then
+        do L = solar_calculation_indexer, NKGAUSS
+          RFLUXES_aerad(1,1,1) = RFLUXES_aerad(1,1,1) + fsl_dn_aerad(NLAYER) * WGTS_CORRK(L)
+          RFLUXES_aerad(1,1,2) = RFLUXES_aerad(1,1,2) + fsl_dn_aerad(1)/(1.0-ALBSW) * WGTS_CORRK(L)
+          RFLUXES_aerad(1,2,1) = RFLUXES_aerad(1,2,1) + fsl_up_aerad(NLAYER) * WGTS_CORRK(L)
+          RFLUXES_aerad(1,2,2) = RFLUXES_aerad(1,2,2) + RFLUXES_aerad(1,1,2)*ALBSW * WGTS_CORRK(L)
+        end do
+        do L = NKGAUSS+1, NBATCH
+          RFLUXES_aerad(2,1,1) = RFLUXES_aerad(2,1,1) + fir_dn_aerad(NLAYER) * WGTS_CORRK(L-NKGAUSS)
+          RFLUXES_aerad(2,1,2) = RFLUXES_aerad(2,1,2) + fir_dn_aerad(1) * WGTS_CORRK(L-NKGAUSS)
+          RFLUXES_aerad(2,2,1) = RFLUXES_aerad(2,2,1) + fir_up_aerad(NLAYER) * WGTS_CORRK(L-NKGAUSS)
+          RFLUXES_aerad(2,2,2) = RFLUXES_aerad(2,2,2) + fir_up_aerad(1) * WGTS_CORRK(L-NKGAUSS)
+        end do
+          
+      else if (NSOL .gt. 1) then ! picket-fence
           RFLUXES_aerad(1,1,1) = fsl_dn_aerad(NLAYER) * Beta_V(1) +
      &                           fsl_dn_aerad(NLAYER) * Beta_V(2) +
      &                           fsl_dn_aerad(NLAYER) * Beta_V(3)
@@ -591,7 +801,7 @@ C     3rd index - Where 1=TOP, 2=SURFACE
 
           RFLUXES_aerad(2,2,2) = fir_up_aerad(1) * Beta_IR(1) +
      &                           fir_up_aerad(1) * Beta_IR(2)
-      else
+      else ! double gray?
           RFLUXES_aerad(1,1,1)=fsl_dn_aerad(NLAYER)   ! SW down top
           RFLUXES_aerad(1,1,2)=fsl_dn_aerad(1)/(1.0-ALBSW)   ! SW down bottom
           RFLUXES_aerad(1,2,1)=fsl_up_aerad(NLAYER)  ! SW up top

@@ -24,7 +24,7 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom, fluxes, k_IRl, k_Vl)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom, fluxes, k_IRl, k_Vl, tau_ray_temp)
 
 
 !     iffirst is just the indicator for numbering and runs the setup
@@ -32,42 +32,44 @@
 !     p_pass--the layer boundary pressures in pascal (NL+1)
 !     both p_ and t_ pass begin at the top and go down.
 
+      use corrkmodule, only: NWNO, MINWNOSTEL
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,kount
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
-      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
-      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
-      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
-      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
-      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
-      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH), SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(NTOTAL+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD(NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S(NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  5,2*NL+2), EE1(NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1(NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
+      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NBATCH,2*NL+2)
 
-      REAL, DIMENSION(5,3,2*NL+2) :: Y1, Y2, Y4, Y8
-      REAL, DIMENSION(5,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
+      REAL, DIMENSION(NBATCH,3,2*NL+2) :: Y1, Y2, Y4, Y8
+      REAL, DIMENSION(NBATCH,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
-      real, dimension(2, NL+1) :: k_IRl
-      real, dimension(3, NL+1) :: k_Vl
+      real, dimension(NKGAUSS, NL+1) :: k_IRl, tau_ray_temp
+      real, dimension(NKGAUSS, NL+1) :: k_Vl
 
-      REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      REAL tau_IRe(NKGAUSS,NL+1), tau_Ve(NKGAUSS,NL+1)
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
-      real, dimension(2)  :: Beta_IR
-      real, dimension(3)  :: Beta_V
+      real, dimension(NIR)  :: Beta_IR
+      real, dimension(NSOL)  :: Beta_V
 
-      REAL PI0_TEMP(5, NL+1, 13)
-      REAL G0_TEMP(5, NL+1, 13)
-      REAL tauaer_temp(5, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, 13)
+      REAL G0_TEMP(NBATCH, NL+1, 13)
+      REAL tauaer_temp(NBATCH, NL+1, 13)
       INTEGER j1
       REAL DENOM
 
@@ -84,7 +86,7 @@
       real cheats(NZ), cheati(NZ)
       real htlw(NZ), htsw(NZ)
       real PSOL,PSOL_aerad
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
+      real, dimension(NBATCH,2*NL+2) :: TAURAY, TAUL, TAUGAS,TAUAER
 
       integer ifsetup
       real ibinm
@@ -98,7 +100,12 @@
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
 
-      integer itime, ntime, solar_calculation_indexer
+      integer solar_calculation_indexer
+      integer, AUTOMATIC :: itime, ntime
+      integer, AUTOMATIC :: iband, band_solar_calc_idx, nbands
+      real, AUTOMATIC :: tiru_acc, tslu_acc, total_downwelling_acc
+      real, AUTOMATIC :: fir_up_acc(NL+1), fir_dn_acc(NL+1), fir_net_acc(NL+1)
+      real, AUTOMATIC :: fsl_up_acc(NL+1), fsl_dn_acc(NL+1), fsl_net_acc(NL+1)
 
       ! Malsky add
       REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT1, incident_starlight_fraction
@@ -109,8 +116,8 @@
       real PI2
  582  FORMAT(I4,5(F12.3))
 
-      ! Malsky what does this do???
-      ibinm = ibinmin
+      ! ibinmin was always 0 (BSS-init static); ibinm was removed from args, so assign 0 directly
+      ibinm = 0
       ifsetup = 0
 
       if( iffirst.eq. 1 ) THEN
@@ -167,11 +174,19 @@ C Setup SW code
 
 C     globally averaged solar constant, vertical rays
       AMU0=1.0
-      PSOL=SOLC/4. * SQRT(3.0)
+      ! multiply by sqrt3 here, then divide by it later either explicitly if L1DZENITH=F or implicitly 
+      ! if L1DZENITH=T by setting the incident starlight fraction to 1/sqrt(3). This is my hacky way of making L1DZenith=T do a planet-average profile
+      ! It's weird and complicated because the cosine of the zenith angle and the fraction of flux that is incident on a given column are identical in 3-D,
+      ! but not if you want to take a 1-D average (see, e.g., Guillot+2010, Parmentier+Guillot 2014).
+      PSOL=SOLC/4. * SQRT(3.0) 
       IF(.NOT.L1DZENITH) THEN
          DDAY=FORCE1DDAYS
          IF(DAY.GT.DDAY) THEN
-            DFAC=MIN(1.0,(DAY - DDAY)/DDAY)
+            IF(DDAY.GT.0.0) THEN
+               DFAC=MIN(1.0,(DAY - DDAY)/DDAY)
+            ELSE
+               DFAC=1.0
+            ENDIF
             IF(.NOT.LDIUR) THEN
                AMU0=(1.0-DFAC)*AMU0
      &              +DFAC*MAX(0.0,SIN(alat1/360.*PI2)*SIN(SSLAT/360.*PI2)
@@ -184,19 +199,25 @@ C     globally averaged solar constant, vertical rays
      &              +COS(alat1/360.*PI2)*COS(SSLAT/360.*PI2)*SIN(DLENGTH))
             ENDIF
          ENDIF
+        if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
+          AMU0 = 0.0
+        endif
+        incident_starlight_fraction = MAX(0.0, AMU0)
+
       ELSE
-         AMU0=1/SQRT(3.0)
+         incident_starlight_fraction = 1.0 / SQRT(3.0)
+         ! AMU0 = 1.0 / SQRT(3.0)
       ENDIF
 
 
-      if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
-          AMU0 = 0.0
-      endif
+      ! if ((AMU0.gt.0) .and. (AMU0.lt.1e-6)) THEN
+      !     AMU0 = 0.0
+      ! endif
 
-      incident_starlight_fraction = MAX(0.0, AMU0)
+      ! incident_starlight_fraction = MAX(0.0, AMU0)
 
       if (incident_starlight_fraction .lt. 1e-10) THEN
-          solar_calculation_indexer = NSOLP + 1
+          solar_calculation_indexer = NSOL + 1
       ELSE
           solar_calculation_indexer = 1
       END IF
@@ -206,12 +227,49 @@ C     globally averaged solar constant, vertical rays
 
       if( if_diurnal.eq.1 ) ntime = 24
 
+      rfluxes_aerad = 0.
+
       do itime = 1, ntime
           t(NLAYER) = t(NLAYER-1)
 
-          call setuprad_simple(Beta_V, Beta_IR, t, pr, p_pass, incident_starlight_fraction,
+          cheats = 0.
+          cheati = 0.
+          radheat = 0.
+          radheat_tot = 0.
+          tiru_acc = 0.
+          tslu_acc = 0.
+          total_downwelling_acc = 0.
+          fir_up_acc = 0.
+          fir_dn_acc = 0.
+          fir_net_acc = 0.
+          fsl_up_acc = 0.
+          fsl_dn_acc = 0.
+          fsl_net_acc = 0.
+
+          IF (opacity_method .EQ. 'correk') THEN
+              nbands = NWNO
+          ELSE
+              nbands = 1
+          END IF
+
+          DO iband = 1, nbands
+              if (opacity_method .NE. 'correk') then
+                  ! picket/dogray have no wavenumber-band/g-point structure to
+                  ! batch over (unlike correk's NWNO bands x NKGAUSS g-points),
+                  ! so just pass the indexer through as-is for the single pass.
+                  band_solar_calc_idx = solar_calculation_indexer
+              else if (solar_calculation_indexer .gt. NKGAUSS) then
+                  band_solar_calc_idx = NKGAUSS + 1
+              else if (iband .lt. MINWNOSTEL) then
+                  band_solar_calc_idx = NKGAUSS + 1
+              else
+                  band_solar_calc_idx = 1
+              end if
+
+              call setuprad_simple(Beta_V((iband-1)*NKGAUSS+1), Beta_IR((iband-1)*NKGAUSS+1),
+     &  t, pr, p_pass, incident_starlight_fraction,
      &  TAURAY,TAUL,TAUGAS,TAUAER,
-     &  solar_calculation_indexer, DPG,
+     &  band_solar_calc_idx, DPG,
      &  ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &  fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &  pbar, dpgsub, pbarsub,
@@ -228,16 +286,20 @@ C     globally averaged solar constant, vertical rays
      &  EL3,FNET,TMI,AS,DF,
      &  DS,XK,DIREC,DIRECTU,DINTENT,
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
-     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  tiru,firu((iband-1)*NKGAUSS+1),fird((iband-1)*NKGAUSS+1),
+     &  fsLu((iband-1)*NKGAUSS+1),fsLd((iband-1)*NKGAUSS+1),
+     &  fsLn((iband-1)*NKGAUSS+1),alb_toa((iband-1)*NKGAUSS+1),fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val,
+     &  tau_IRe, tau_Ve, k_IRl, k_Vl, tau_ray_temp, iband)
 
-
-          call radtran(Beta_V, Beta_IR, incident_starlight_fraction,TAURAY,TAUL,TAUGAS,TAUAER,
-     &                 solar_calculation_indexer, DPG, pr, t, p_pass,
+              call radtran(Beta_V((iband-1)*NKGAUSS+1),
+     &                 Beta_IR((iband-1)*NKGAUSS+1), incident_starlight_fraction,
+     &                 TAURAY,TAUL,TAUGAS,TAUAER,
+     &                 band_solar_calc_idx, DPG, pr, t, p_pass,
      &             ifsetup, ibinm, rfluxes_aerad, psol_aerad, heati_aerad, heats_aerad,
      &             fsl_up_aerad, fsl_dn_aerad, fir_up_aerad, fir_dn_aerad, fir_net_aerad, fsl_net_aerad,
      &             pbar, dpgsub, pbarsub,
@@ -254,24 +316,50 @@ C     globally averaged solar constant, vertical rays
      &  EL3,FNET,TMI,AS,DF,
      &  DS,XK,DIREC,DIRECTU,DINTENT,
      &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
-     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  tiru,firu((iband-1)*NKGAUSS+1),fird((iband-1)*NKGAUSS+1),
+     &  fsLu((iband-1)*NKGAUSS+1),fsLd((iband-1)*NKGAUSS+1),
+     &  fsLn((iband-1)*NKGAUSS+1),alb_toa((iband-1)*NKGAUSS+1),fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  Y1, Y2, Y4, Y8, A1, A2, A3, A4, A5, A7, Y5,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount, ITSPD)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp, j1, denom,kount,itspd,iband)
 
-          cheats = 0.
-          cheati = 0.
-          radheat_tot = 0.
+              tiru_acc = tiru_acc + tiru
+              tslu_acc = tslu_acc + tslu
+              total_downwelling_acc = total_downwelling_acc + total_downwelling
 
-          do iz = 1,NZ
-              jz = NZ + 1 - iz
-              radheat(iz) = heats_aerad(jz) + heati_aerad(jz)
-              heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz) * SCDAY - cheats(iz)
-              heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz) * SCDAY - cheati(iz)
+              fir_up_acc  = fir_up_acc  + fir_up_aerad
+              fir_dn_acc  = fir_dn_acc  + fir_dn_aerad
+              fir_net_acc = fir_net_acc + fir_net_aerad
+              fsl_up_acc  = fsl_up_acc  + fsl_up_aerad
+              fsl_dn_acc  = fsl_dn_acc  + fsl_dn_aerad
+              fsl_net_acc = fsl_net_acc + fsl_net_aerad
 
-              radheat_tot(iz) = radheat_tot(iz)+heats_aerad(jz) * SCDAY-cheats(iz)+ heati_aerad(jz)*SCDAY - cheati(iz)
-          enddo
+              do iz = 1,NZ
+                  jz = NZ + 1 - iz
+                  radheat(iz) = radheat(iz) + heats_aerad(jz) + heati_aerad(jz)
+                  heats_aerad_tot(iz) = heats_aerad_tot(iz) + heats_aerad(jz)*SCDAY
+                  heati_aerad_tot(iz) = heati_aerad_tot(iz) + heati_aerad(jz)*SCDAY
+                  radheat_tot(iz) = radheat_tot(iz) + heats_aerad(jz)*SCDAY
+     &                                              + heati_aerad(jz)*SCDAY
+              end do
+          END DO ! iband
+
+          tiru = tiru_acc
+          tslu = tslu_acc
+          total_downwelling = total_downwelling_acc
+          fir_up_aerad  = fir_up_acc
+          fir_dn_aerad  = fir_dn_acc
+          fir_net_aerad = fir_net_acc
+          fsl_up_aerad  = fsl_up_acc
+          fsl_dn_aerad  = fsl_dn_acc
+          fsl_net_aerad = fsl_net_acc
+          if (total_downwelling_acc .gt. 0.) then
+              alb_toai = tslu_acc / total_downwelling_acc
+          end if
+          if (fsl_dn_acc(NL) .gt. 0.) then
+              alb_tomi = fsl_up_acc(NL) / fsl_dn_acc(NL)
+          end if
       enddo
 
 

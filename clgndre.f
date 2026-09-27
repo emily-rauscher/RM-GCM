@@ -9,7 +9,8 @@ C     recurrence relationships.
 C                                                                         
       REAL ALP(MJP,JL),DALP(MJP,JL)                                       
 C                                                                         
-      LM=2                                                                
+      LM=2
+      AN=0.
 C                                                                         
 C     Set P(0,0) and P(0,1)                                               
 C                                                                         

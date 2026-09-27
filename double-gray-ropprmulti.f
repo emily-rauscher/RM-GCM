@@ -28,22 +28,23 @@
 !     * ************************************************************
 !
       include 'rcommons.h'
-
+      
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1
       REAL EMISIR, EPSILON, HEATI(51), HEATS(51), HEAT(51), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
-      REAL GOL(5,2*50+2), WOL(5,2*50+2), WAVE(5+1), TT(50+1), Y3(5,3,2*50+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*50+2), OPD( 5,2*50+2), PTEMP(5,2*50+2)
-      REAL uG0(5,2*50+2), uTAUL(5,2*50+2), W0(5,2*50+2), uW0(5,2*50+2), uopd(5,2*50+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*50+2), B1(5,2*50+2), B2(  5,2*50+2), EE1( 5,2*50+2), EM1(5,2*50+2)
-      REAL EM2(5,2*50+2), EL1( 5,2*50+2), EL2(5,2*50+2), GAMI(5,2*50+2), AF(5,4*50+4)
-      REAL BF(5,4*50+4), EF(5,4*50+4), SFCS(5), B3(5,2*50+2), CK1(5,2*50+2), CK2(5,2*50+2)
-      REAL CP(5,2*50+2), CPB(5,2*50+2), CM(5,2*50+2), CMB(5,2*50+2), DIRECT(5,2*50+2), EE3(5,2*50+2)
-      REAL EL3(5,2*50+2), FNET(5,2*50+2), TMI(5,2*50+2), AS(5,4*50+4), DF(5,4*50+4)
-      REAL DS(5,4*50+4), XK(5,4*50+4), DIREC(5,2*50+2), DIRECTU(5,2*50+2), DINTENT(5,3,2*50+2)
-      REAL UINTENT(5,3,2*50+2), TMID(5,2*50+2), TMIU(5,2*50+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(50+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NTOTAL), RSFX(NTOTAL),NPROB(NTOTAL), SOL(NTOTAL)
+      REAL RAYPERBAR(NTOTAL),WEIGHT(NTOTAL)
+      REAL GOL(NTOTAL,2*50+2), WOL(NTOTAL,2*50+2), WAVE(5+1), TT(50+1), Y3(NTOTAL,3,2*50+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NTOTAL), PTEMPT(NTOTAL), G0(NTOTAL,2*50+2), OPD(NTOTAL,2*50+2), PTEMP(NTOTAL,2*50+2)
+      REAL uG0(NTOTAL,2*50+2), uTAUL(NTOTAL,2*50+2), W0(NTOTAL,2*50+2), uW0(NTOTAL,2*50+2), uopd(NTOTAL,2*50+2),  U1S( NTOTAL)
+      REAL U1I(NTOTAL), TOON_AK(NTOTAL,2*50+2), B1(NTOTAL,2*50+2), B2(  NTOTAL,2*50+2), EE1( NTOTAL,2*50+2), EM1(NTOTAL,2*50+2)
+      REAL EM2(NTOTAL,2*50+2), EL1( 5,2*50+2), EL2(NTOTAL,2*50+2), GAMI(NTOTAL,2*50+2), AF(NTOTAL,4*50+4)
+      REAL BF(NTOTAL,4*50+4), EF(NTOTAL,4*50+4), SFCS(NTOTAL), B3(NTOTAL,2*50+2), CK1(NTOTAL,2*50+2), CK2(NTOTAL,2*50+2)
+      REAL CP(NTOTAL,2*50+2), CPB(NTOTAL,2*50+2), CM(NTOTAL,2*50+2), CMB(NTOTAL,2*50+2), DIRECT(NTOTAL,2*50+2), EE3(NTOTAL,2*50+2)
+      REAL EL3(NTOTAL,2*50+2), FNET(NTOTAL,2*50+2), TMI(NTOTAL,2*50+2), AS(NTOTAL,4*50+4), DF(NTOTAL,4*50+4)
+      REAL DS(NTOTAL,4*50+4), XK(NTOTAL,4*50+4), DIREC(NTOTAL,2*50+2), DIRECTU(NTOTAL,2*50+2), DINTENT(NTOTAL,3,2*50+2)
+      REAL UINTENT(NTOTAL,3,2*50+2), TMID(NTOTAL,2*50+2), TMIU(NTOTAL,2*50+2), tslu,total_downwelling,alb_tot
+      REAL tiru,firu(NIR),fird(NIR),fsLu(NSOL), fsLd(NSOL),fsLn(NSOL),alb_toa(NSOL), fupbs(50+1)
       REAL fdownbs(50+1),fnetbs(50+1),fdownbs2(50+1), fupbi(50+1),fdownbi(50+1),fnetbi(50+1)
       REAL qrad(50+1),alb_tomi,alb_toais
 
@@ -91,7 +92,7 @@
       REAL TCONAL2O3(50+1),tconds_dg(50+1,13)
       REAL Al2O3QEVIS(50),Al2O3G0VIS(50),Al2O3PI0VIS(50)
       REAL Al2O3QEVIR(50),Al2O3G0VIR(50),Al2O3PI0VIR(50)
-      REAL MOLEF(13),DENSITY(13),RPS(50),TAUFACT,FMOLW(13)
+      REAL DENSITY(13),RPS(50),TAUFACT,FMOLW(13)
       REAL QEVIS(50+1,13),PI0VIS(50+1,13),G0VIS(50+1,13)
       REAL QEIR(50+1,13),PI0IR(50+1,13),G0IR(50+1,13)
       REAL CONDFACT(50+1,13),TAUAERSW(50+1,13),TAUAERLW(50+1,13)
@@ -903,13 +904,13 @@
 240   CONTINUE
 
       ! Fix it for N number of channels so it doesn't break
-      DO L = LLS+1, NSOLP
+      DO L = LLS+1, NSOL
           TAUAER(L,:) = TAUAER(1,:)
           WOL(L,:)    = WOL(1,:)
           GOL(L,:)    = GOL(1,:)
       END DO
 
-      DO L = LLS+1, NSOLP
+      DO L = LLS+1, NSOL
           TAUAER(L,:) = TAUAER(2,:)
           WOL(L,:)    = WOL(2,:)
           GOL(L,:)    = GOL(2,:)
@@ -920,7 +921,7 @@
           j1 = max(1, j-1)
 
 !         First the solar at standard resolution
-          DO L = solar_calculation_indexer,NSOLP
+          DO L = solar_calculation_indexer,NSOL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
               if(TAUL(L,J) .lt. 1d-6 ) then
@@ -971,7 +972,7 @@
 !     NOW AGAIN FOR THE IR
       DO J = 1,NDBL
           j1 = max( 1, j-1 )
-          DO L = NSOLP+1,NTOTAL
+          DO L = NSOL+1,NTOTAL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
 
@@ -1033,7 +1034,7 @@
           END DO
 
           DO I = 1,NGAUSS
-              DO L = NSOLP+1,NTOTAL
+              DO L = NSOL+1,NTOTAL
                   Y3(L,I,J) =   EXP(-TAUL(L,J)/GANGLE(I))
               END DO
           END DO

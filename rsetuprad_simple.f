@@ -22,7 +22,8 @@
      &  qrad,alb_tomi,alb_toai, num_layers, SLOPE,
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
-     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl)
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, tau_IRe, tau_Ve, k_IRl, k_Vl, tau_ray_temp,
+     &  iband)
 
 !     *********************************************************
 !     *  Purpose            :  Defines all constants, and     *
@@ -34,36 +35,41 @@
 !     * Such as adding more wavelength bins or mie calculations
 !     * then consult that program first.                      *
 !     * *******************************************************
+      use corrkmodule, only : corrk_setup, TS_CORRK, PS_CORRK, TS_LOG_CORRK, 
+     &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
+     &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO, MINWNOSTEL
       include 'rcommons.h'
-
+      ! KENNEDY NOTES: Changing the hardcoded stuff to be dependent on channel numbers
+      ! This block is repeated throughout the radiative transfer stuff, but I'm first changing here
+      ! WEIGHT doesn't seem to be used anywhere
+      ! WAVE depends on NPROB, which is definitely NTOTAL shaped, but it's not clear to me how it's used
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
-      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(5), RSFX(5),NPROB(5), SOL(5),RAYPERBAR(5),WEIGHT(5)
-      REAL GOL(5,2*NL+2), WOL(5,2*NL+2), WAVE(5+1), TT(NL+1), Y3(5,3,2*NL+2), U0, FDEGDAY
-      REAL WOT, GOT, PTEMPG(5), PTEMPT(5), G0(5,2*NL+2), OPD( 5,2*NL+2), PTEMP(5,2*NL+2)
-      REAL uG0(5,2*NL+2), uTAUL(5,2*NL+2), W0(5,2*NL+2), uW0(5,2*NL+2), uopd(5,2*NL+2),  U1S( 5)
-      REAL U1I(5), TOON_AK(5,2*NL+2), B1(5,2*NL+2), B2(  5,2*NL+2), EE1( 5,2*NL+2), EM1(5,2*NL+2)
-      REAL EM2(5,2*NL+2), EL1( 5,2*NL+2), EL2(5,2*NL+2), GAMI(5,2*NL+2), AF(5,4*NL+4)
-      REAL BF(5,4*NL+4), EF(5,4*NL+4), SFCS(5), B3(5,2*NL+2), CK1(5,2*NL+2), CK2(5,2*NL+2)
-      REAL CP(5,2*NL+2), CPB(5,2*NL+2), CM(5,2*NL+2), CMB(5,2*NL+2), DIRECT(5,2*NL+2), EE3(5,2*NL+2)
-      REAL EL3(5,2*NL+2), FNET(5,2*NL+2), TMI(5,2*NL+2), AS(5,4*NL+4), DF(5,4*NL+4)
-      REAL DS(5,4*NL+4), XK(5,4*NL+4), DIREC(5,2*NL+2), DIRECTU(5,2*NL+2), DINTENT(5,3,2*NL+2)
-      REAL UINTENT(5,3,2*NL+2), TMID(5,2*NL+2), TMIU(5,2*NL+2), tslu,total_downwelling,alb_tot
-      REAL tiru,firu(2),fird(2),fsLu(3), fsLd(3),fsLn(3),alb_toa(3), fupbs(NL+1)
+      REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH),SOL(NBATCH)
+      REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
+      REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
+      REAL WOT, GOT, PTEMPG(NBATCH), PTEMPT(NBATCH), G0(NBATCH,2*NL+2), OPD( NBATCH,2*NL+2), PTEMP(NBATCH,2*NL+2)
+      REAL uG0(NBATCH,2*NL+2), uTAUL(NBATCH,2*NL+2), W0(NBATCH,2*NL+2), uW0(NBATCH,2*NL+2), uopd(NBATCH,2*NL+2),  U1S( NBATCH)
+      REAL U1I(NBATCH), TOON_AK(NBATCH,2*NL+2), B1(NBATCH,2*NL+2), B2(  NBATCH,2*NL+2), EE1( NBATCH,2*NL+2), EM1(NBATCH,2*NL+2)
+      REAL EM2(NBATCH,2*NL+2), EL1( NBATCH,2*NL+2), EL2(NBATCH,2*NL+2), GAMI(NBATCH,2*NL+2), AF(NBATCH,4*NL+4)
+      REAL BF(NBATCH,4*NL+4), EF(NBATCH,4*NL+4), SFCS(NBATCH), B3(NBATCH,2*NL+2), CK1(NBATCH,2*NL+2), CK2(NBATCH,2*NL+2)
+      REAL CP(NBATCH,2*NL+2), CPB(NBATCH,2*NL+2), CM(NBATCH,2*NL+2), CMB(NBATCH,2*NL+2), DIRECT(NBATCH,2*NL+2), EE3(NBATCH,2*NL+2)
+      REAL EL3(NBATCH,2*NL+2), FNET(NBATCH,2*NL+2), TMI(NBATCH,2*NL+2), AS(NBATCH,4*NL+4), DF(NBATCH,4*NL+4)
+      REAL DS(NBATCH,4*NL+4), XK(NBATCH,4*NL+4), DIREC(NBATCH,2*NL+2), DIRECTU(NBATCH,2*NL+2), DINTENT(NBATCH,3,2*NL+2)
+      REAL UINTENT(NBATCH,3,2*NL+2), TMID(NBATCH,2*NL+2), TMIU(NBATCH,2*NL+2), tslu,total_downwelling,alb_tot
+      REAL tiru, firu(NKGAUSS),fird(NKGAUSS),fsLu(NKGAUSS), fsLd(NKGAUSS),fsLn(NKGAUSS),alb_toa(NKGAUSS), fupbs(NL+1)
       REAL fdownbs(NL+1),fnetbs(NL+1),fdownbs2(NL+1), fupbi(NL+1),fdownbi(NL+1),fnetbi(NL+1)
-      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(5,2*NL+2)
+      REAL qrad(NL+1),alb_tomi,alb_toai, SLOPE(NBATCH,2*NL+2)
 
-      REAL tau_IRe(2,NL+1), tau_Ve(3,NL+1)
+      REAL tau_IRe(NKGAUSS,NL+1), tau_Ve(NKGAUSS,NL+1), tau_ray_temp(NKGAUSS, NL+1)
       real, dimension(NL+1) :: dpe, Pl, Tl, pe
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
-      real, dimension(2, NL+1) :: k_IRl
-      real, dimension(2, 2*NL+2) :: k_irl_doubled
-
-      real, dimension(3, NL+1) :: k_Vl
-
+      real, dimension(NKGAUSS, NL+1) :: k_IRl
+      real, automatic, dimension(NKGAUSS, 2*NL+2) :: k_irl_doubled, k_ray_doubled
+      real, dimension(NKGAUSS, NL+1) :: k_Vl
       ! New variables for calculating the IR absorbtion coefficient as a power law
       real, dimension(NLAYER) :: IR_ABS_COEFFICIENT
 
@@ -72,20 +78,22 @@
 !           LOCAL DECLARATIONS
 !
 ! **********************************************************************
-      integer :: L, J, K, solar_calculation_indexer, I
+      integer :: L, J, K, solar_calculation_indexer, I, iband
       REAL G,WVO, incident_starlight_fraction
-      real, dimension(NIR)  :: Beta_IR
-      real, dimension(NSOL) :: Beta_V
+      real, dimension(NKGAUSS)  :: Beta_IR
+      real, dimension(NKGAUSS) :: Beta_V
       dimension rup_1(NGROUP)
       dimension rhoi(NRAD), dbnds(NRAD+1)
       dimension zbnds(6), pbnds(6), rn2ds(NRAD,6)
-      dimension tauem(5,NWAVE), ssam(5,NWAVE), asmm(5,NWAVE)
-      dimension temparr(6,NWAVE)
+      ! these three arent used?
+      dimension tauem(5,NBATCH), ssam(5,NBATCH), asmm(5,NBATCH)
+      dimension temparr(6,NBATCH)
       dimension pbndsm(6)
-      real, dimension(NIR+NSOL,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
+      real, dimension(NBATCH,2*NL+2) :: TAURAY,TAUL, TAUGAS,TAUAER
       real dpg(nl+1), pbar(nl+1)
       real dpgsub(2*nl+2), pbarsub(2*nl+2)
       real t(NLAYER), pr(NLAYER)
+      ! indorder not used
       integer i1, i2, indorder(5)
       logical all_ok
       integer ifsetup
@@ -100,12 +108,19 @@
       real fir_dn_aerad(NL+1)
       real fir_net_aerad(NL+1)
       real fsl_net_aerad(NL+1)
+      ! Corr-K common block:
+    !   COMMON/CORRKGAS/OPAC_CORRK, TS_CORRK, PS_CORRK, TS_LOG_CORRK, PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC,
+    !  &      INT_SPEC, TAURAY_PER_DPG
+    !   REAL :: OPAC_CORRK(NTGRID, NPGRID, NWNO, 8)
+    !   REAL :: TS_CORRK(NTGRID), PS_CORRK(NPGRID), TS_LOG_CORRK(NTGRID), PS_LOG_CORRK(NPGRID), WGTS_CORRK(8) 
+    !   REAL :: WNO_EDGES(NWNO+1), WNO_CTRS(NWNO), STEL_SPEC(NWNO), INT_SPEC(NWNO)
+    !   REAL :: TAURAY_PER_DPG(NTGRID, NPGRID, NWNO)
+      integer, AUTOMATIC :: stel_idx, chan_idx
 
       ! For getting a doubled grid for the IR channels
-      REAL :: LOG_START, LOG_END, LOG_STEP
+      REAL, AUTOMATIC :: LOG_START, LOG_END, LOG_STEP
       REAL, DIMENSION(NLAYER) :: P_PASS
       REAL, DIMENSION(2*NLAYER) :: P_PASS_SUB
-
 ! ******************************************
 !            DEFINE CONSTANTS
 ! *****************************************
@@ -127,7 +142,6 @@
 !     PI     - PI
 !     RGAS   - UNIVERSAL GAS CONSTANT (ERG / MOL K)
 !     SCDAY  - NUMBER OF SECONDS IN ONE DAY (S)
-
       AM= RGAS/R_AIR
       G = GA*100.
       AM= RGAS/R_AIR
@@ -164,15 +178,15 @@
       ENDIF
 
       ! SET WAVELENGTH LIMITS LLA AND LLS BASED ON VALUES OF ISL AND IR
-      LLA = NTOTAL
+      LLA = NBATCH
       LLS = 1
 
       IF(ISL .EQ. 0) THEN
-          LLS =  NSOLP+1
+          LLS = NKGAUSS+1
       ENDIF
 
       IF(IR .EQ. 0) THEN
-          LLA =  NSOLP
+          LLA = NKGAUSS
       ENDIF
 
       EMISIR       = SURFEMIS
@@ -275,14 +289,14 @@
       WOL(:,:)    = 0.0
       GOL(:,:)    = 0.0
 
-      IF (picket_fence_optical_depths) THEN
-          IF (NIRP .EQ. 1) THEN
+      IF (opacity_method .EQ. 'picket') THEN
+          IF (NIR .EQ. 1) THEN
               WRITE(*,*) 'Stopping! Running picket fence gas optics with the wrong number of channels'
               STOP
           ENDIF
       ENDIF
 
-      IF (picket_fence_optical_depths) THEN
+      IF (opacity_method .EQ. 'picket') THEN
         CALL opacity_wrapper(t, P_PASS, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
      &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
      &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
@@ -303,53 +317,59 @@
      &  dpe, Pl, Tl, pe,
      &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
      &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl)
-
-        DO L = solar_calculation_indexer,NSOL
+        
+        ! Thomas Hack to get consistency between DG and PF column densities starts here
+        DO L = solar_calculation_indexer,NKGAUSS
           DO J     =   1,NLAYER
-            TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J) ! 10 converts from m^2/kg to cm^2/g
+            TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J)
           END DO
         END DO
         k_irl_doubled = 0.0
-        ! smooth out the IR opacities to twice the resolution (linear interpolation)
-        DO L = NSOL+1,NTOTAL
+        ! smooth out the IR optical depths to twice the resolution (linear interpolation)
+        DO L = NKGAUSS+1,NBATCH
           k = 1
           DO J     =   1,NDBL, 2
-            k_irl_doubled(L-NSOL,J) = k_irl(L-NSOL, k)
-            k_irl_doubled(L-NSOL,J+1) = k_irl(L-NSOL, k)+ ABS(k_irl(L-NSOL,k) - k_irl(L-NSOL,k+1)) / 2.0
+            k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
+            k_irl_doubled(L-NKGAUSS,J+1) = k_irl(L-NKGAUSS, k)
+     &           + ABS(k_irl(L-NKGAUSS,k) - k_irl(L-NKGAUSS,min(k+1,NL+1))) / 2.0
+
             k = k + 1
           END DO
         END DO
-        DO L  = NSOL+1,NTOTAL
+        DO L  = NKGAUSS+1,NBATCH
           DO J     =   1,NDBL
-            TAUGAS(L,J) = k_irl_doubled(L-NSOL,J)*10. * DPGSUB(J) ! 10 converts from m^2/kg to cm^2/g
+            TAUGAS(L,J) = k_irl_doubled(L-NKGAUSS,J)*10. * DPGSUB(J)
+            ! write(*,*) J
           END DO
         END DO
-    ! Removed in v5.2
-    !     DO L = solar_calculation_indexer,NSOLP
+        ! Thomas Hack to get consistency between DG and PF column densities ends here
+
+    !     Old code for smoothing and stuff:
+    !     DO L = solar_calculation_indexer, NSOL
     !       tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
     !     END DO
 
-    !     DO L = NSOLP+1, NTOTAL
-    !       tau_IRe(L-NSOLP,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOLP,NLAYER-1))+
-    !  &            (LOG10(tau_IRe(L-NSOLP,NLAYER-1))-LOG10(tau_IRe(L-NSOLP,NLAYER-2))))
+    !     DO L = NSOL+1, NTOTAL
+    !       tau_IRe(L-NSOL,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOL,NLAYER-1))+
+    !  &            (LOG10(tau_IRe(L-NSOL,NLAYER-1))-LOG10(tau_IRe(L-NSOL,NLAYER-2))))
     !     END DO
 
-    !     DO L = solar_calculation_indexer,NSOLP
+    !     DO L = solar_calculation_indexer, NSOL
     !         DO J = 1,NLAYER
     !             TAUGAS(L,J) = tau_Ve(L,J)
     !         END DO
     !     END DO
 
-    !     DO L = NSOLP+1, NTOTAL
+    !     DO L = NSOL+1, NTOTAL
     !         k  =  1
     !         DO  J = 1,NDBL,2
-    !             TAUGAS(L, J)   = tau_IRe(L - NSOLP, k)
-    !             TAUGAS(L, J+1) = tau_IRe(L - NSOLP, k)+ ABS(tau_IRe(L - NSOLP,k) - tau_IRe(L - NSOLP,k+1)) / 2.0
+    !             TAUGAS(L, J)   = tau_IRe(L - NSOL, k)
+    !             TAUGAS(L, J+1) = tau_IRe(L - NSOL, k)+ ABS(tau_IRe(L - NSOL,k) - tau_IRe(L - NSOL,k+1)) / 2.0
     !             k = k + 1
     !         END DO
     !     END DO
-      ELSE
-          if (NSOLP .gt. 1) then
+      ELSE IF (opacity_method .EQ. 'dogray') THEN
+          if (NSOL .gt. 1) then
               Beta_V(1) = 1.0
               Beta_V(2) = 0.0
               Beta_V(3) = 0.0
@@ -395,17 +415,106 @@
           END IF
 
           ! Set the tau gas equal to the absorbtion coefficient times dpg
-          DO L = solar_calculation_indexer,NSOLP
+          DO L = solar_calculation_indexer,NKGAUSS
               DO J     =   1,NLAYER
                   TAUGAS(L,J) = ABSSW * DPG(J)
               END DO
           END DO
 
-          DO L  = NSOLP+1,NTOTAL
+          DO L  = NKGAUSS+1,NBATCH
              DO J     =   1,NDBL
                  TAUGAS(L,J)=IR_ABS_COEFFICIENT(J)*DPGsub(J)
              END DO
           END DO
+      ELSE IF (opacity_method .EQ. 'correk') THEN
+        CALL opacity_wrapper_corrk(t, P_PASS, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
+     &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
+     &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
+     &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,
+     &  GOL,WOL,WAVE,TT,Y3,U0,FDEGDAY,
+     &  WOT,GOT,PTEMPG,PTEMPT,G0,OPD,PTEMP,
+     &  uG0,uTAUL,W0,uW0,uopd,U1S,
+     &  U1I,TOON_AK,B1,B2,EE1,EM1,
+     &  EM2,EL1,EL2,GAMI,AF,
+     &  BF,EF,SFCS,B3,CK1,CK2,
+     &  CP,CPB,CM,CMB,DIRECT,EE3,
+     &  EL3,FNET,TMI,AS,DF,
+     &  DS,XK,DIREC,DIRECTU,DINTENT,
+     &  UINTENT,TMID,TMIU,tslu,total_downwelling,alb_tot,
+     &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
+     &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
+     &  qrad,alb_tomi,alb_toai, num_layers,
+     &  dpe, Pl, Tl, pe,
+     &  k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met,
+     &  Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val, k_IRl, k_Vl, tau_ray_temp,
+     &  iband)
+        ! WRITE(*,*) solar_calculation_indexer
+        ! solar calculation indexer is 1 when mu>0, NSOL+1 when mu==0, so we skip this loop
+        ! when starlight is a non-issue
+        ! Thomas Hack to get consistency between DG and PF column densities starts here
+        DO L = solar_calculation_indexer,NKGAUSS
+          DO J     =   1,NLAYER
+            TAUGAS(L,J) = k_VL(L,J)*10. * DPG(J)
+            TAURAY(L,J) = tau_ray_temp(L,J)*10. * DPG(J)
+          END DO
+        END DO
+        k_irl_doubled = 0.0
+        k_ray_doubled = 0.0
+        ! smooth out the IR optical depths to twice the resolution (linear interpolation)
+        DO L = NKGAUSS+1,NBATCH
+          k = 1
+          DO J     =   1,NDBL, 2
+            k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
+            k_irl_doubled(L-NKGAUSS,J+1) = k_irl(L-NKGAUSS, k)
+     &           + ABS(k_irl(L-NKGAUSS,k) - k_irl(L-NKGAUSS,min(k+1,NL+1))) / 2.0
+
+            k_ray_doubled(L-NKGAUSS,J) = tau_ray_temp(L-NKGAUSS, k)
+            k_ray_doubled(L-NKGAUSS,J+1) = tau_ray_temp(L-NKGAUSS, k)
+     &           + ABS(tau_ray_temp(L-NKGAUSS,k)
+     &                - tau_ray_temp(L-NKGAUSS,min(k+1,NL+1))) / 2.0
+            k = k + 1
+          END DO
+        END DO
+        ! multiply opacities by deltaP/g to get optical depths
+        DO L  = NKGAUSS+1,NBATCH
+          DO J     =   1,NDBL
+            TAUGAS(L,J) = k_irl_doubled(L-NKGAUSS,J)*10. * DPGSUB(J)
+            TAURAY(L,J) = k_ray_doubled(L-NKGAUSS,J)*10. * DPGSUB(J)
+          END DO
+        END DO
+        ! Thomas Hack to get consistency between DG and PF column densities ends here
+
+    !     Old code for smoothing and stuff (in case we need it later):
+    !     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+    !       tau_Ve(L,NLAYER) = 10.0**(LOG10(tau_Ve(L,NLAYER-1))+(LOG10(tau_Ve(L,NLAYER-1)) - LOG10(tau_Ve(L,NLAYER-2))))
+    !       tau_ray_temp(L, NLAYER) = 10.0**(LOG10(tau_ray_temp(L, NLAYER-1))+(LOG10(tau_ray_temp(L, NLAYER-1)) 
+    !  &         - LOG10(tau_ray_temp(L, NLAYER-2))))
+    !     END DO
+
+    !     DO L = NSOL+1, NTOTAL
+    !       tau_IRe(L-NSOL,NLAYER) = 10.0 ** (LOG10(tau_IRe(L-NSOL,NLAYER-1))+
+    !  &            (LOG10(tau_IRe(L-NSOL,NLAYER-1))-LOG10(tau_IRe(L-NSOL,NLAYER-2))))
+    !     END DO
+
+    !     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
+    !         DO J = 1,NLAYER
+    !             TAUGAS(L,J) = tau_Ve(L,J)
+    !             TAURAY(L,J) = tau_ray_temp(L,J)
+    !         END DO
+    !     END DO
+        
+    !     ! smooth out the IR optical depths to twice the resolution (linear interpolation)
+    !     DO L = NSOL+1, NTOTAL
+    !         k  =  1
+    !         DO  J = 1,NDBL,2
+    !             TAUGAS(L, J)   = tau_IRe(L - NSOL, k)
+    !             TAUGAS(L, J+1) = tau_IRe(L - NSOL, k)+ ABS(tau_IRe(L - NSOL,k) - tau_IRe(L - NSOL,k+1)) / 2.0
+
+    !             TAURAY(L, J)   = tau_ray_temp(L-NSOL, k)
+    !             TAURAY(L, J+1) = tau_ray_temp(L-NSOL, k)+ ABS(tau_ray_temp(L-NSOL,k) - tau_ray_temp(L-NSOL,k+1)) / 2.0
+    !             k = k + 1
+    !         END DO
+    !     END DO
       END IF
 
       FNET(:,:)   = 0.0
@@ -417,28 +526,43 @@
 !     CALCULATE RAYLEIGH OPTICAL DEPTH PARAMETERS.
 
       IF (RAYSCAT) THEN
-        DO J = 1,NLAYER
-          ! Calculate the rayleigh scattering
-          DO L = 1,NTOTAL
-            if( L .LE. NSOLP )then
-              TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
-            else
-              TAURAY(L,J)= 0.0
-            endif
+        if ((opacity_method .EQ. 'picket') .or. (opacity_method .EQ. 'dogray')) then
+          DO J = 1,NLAYER
+            ! Calculate the rayleigh scattering
+            DO L = 1,NBATCH
+              if( L .LE. NKGAUSS )then
+                TAURAY(L,J) = RAYPERBARCONS(L) * PBAR(J)
+              else
+                TAURAY(L,J)= 0.0
+              endif
+            END DO
           END DO
-        END DO
+        else if (opacity_method .EQ. 'correk') then
+          ! already done a few lines up
+          continue
+          ! DO J = 1, NLAYER
+          !   DO L = 1, NTOTAL
+          !     TAURAY(L,J) = 0.0
+          !   END DO
+          ! END DO
+        END IF
+        
       ELSE
         DO 320 J     = 1,NLAYER
-          DO 325 L    = 1,NTOTAL
+          DO 325 L    = 1,NBATCH
             TAURAY(L,J)= 0.0
 325       CONTINUE
 320     CONTINUE
       ENDIF
-
-      DO 360 L   =   1,NSOLP
-        SOL(L)  = PSOL_aerad
- 360  CONTINUE
-
+      if ((opacity_method .EQ. 'picket') .or. (opacity_method .EQ. 'dogray')) then
+        DO L   =   1,NKGAUSS
+          SOL(L)  = PSOL_aerad
+        END DO
+      else if (opacity_method .EQ. 'correk') then
+        DO L   =   1,NKGAUSS
+          SOL(L)  = PSOL_aerad * STEL_SPEC(iband)
+        END DO
+      END IF
 
 ! *********************************************************************
 !

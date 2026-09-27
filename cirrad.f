@@ -45,8 +45,9 @@ C***********************************************************************
 
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
      & JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,ABSSW1,ABSSTRAT,PRMIN,ALBSW1,
-     & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE, with_TiO_and_VO, picket_fence_optical_depths
-       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR, picket_fence_optical_depths
+     & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE, with_TiO_and_VO, opacity_method
+       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR
+       CHARACTER(len=6) opacity_method
 
 
 C-----------------------------------------------------------------------  
@@ -1597,9 +1598,9 @@ C used for the calculations, by setting the values in the paramter
 C statements                                                              
 C-----------------------------------------------------------------------  
 
-      INTEGER NN,MM,NHEM,NL,MOCT,MG,JG,NWJ2,NCRAY,JGL,NTRAC,NLEVRF
+      INTEGER NN,MM,NHEM,NL,MOCT,MG,JG,NWJ2,NCRAY,JGL,NTRAC,NLEVRF,NIR,NSOL,NTOTAL,NWNO,NKGAUSS,NBATCH
       include 'params.i'
-                           
+
       INTEGER MXGAS,MXLEV,MXBAND,MXCL                                     
                                                                           
       PARAMETER(MXGAS=8)     ! Maximum number of gases                    
@@ -1730,17 +1731,18 @@ C used for the calculations, by setting the values in the paramter
 C statements                                                              
 C-----------------------------------------------------------------------  
                       
-      INTEGER NN,MM,NHEM,NL,MOCT,MG,JG,NWJ2,NCRAY,JGL,NTRAC,NLEVRF
+      INTEGER NN,MM,NHEM,NL,MOCT,MG,JG,NWJ2,NCRAY,JGL,NTRAC,NLEVRF,NIR,NSOL,NTOTAL,NWNO,NKGAUSS,NBATCH
       include 'params.i'
 
-      LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR, picket_fence_optical_depths
+      LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR
+      CHARACTER(len=6) :: opacity_method
       REAL ABSMMRLW,ABSSW1,ALBSW1,ABSSTRAT,PRMIN,ABSSW2,SCATSW2,ASYMSW2,
      &     ABSLW1, with_TiO_and_VO
       INTEGER JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,NEWTB,NEWTE
 
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,ABSMMRLW,
      & JSKIPLON,JSKIPLAT,NSWMODEL,NLWMODEL,ABSSW1,ABSSTRAT,PRMIN,ALBSW1,
-     & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE, with_TiO_and_VO, picket_fence_optical_depths
+     & ABSSW2,SCATSW2,ASYMSW2,ABSLW1,NEWTB,NEWTE, with_TiO_and_VO, opacity_method
 
        LOGICAL LPLOTMAP
        REAL OOM_IN, RFCOEFF_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
@@ -3561,7 +3563,7 @@ C used for the calculations, by setting the values in the paramter
 C statements                                                              
 C-----------------------------------------------------------------------  
 
-      INTEGER NN,MM,NHEM,NL,MOCT,MG,JG,NWJ2,NCRAY,JGL,NTRAC,NLEVRF            
+      INTEGER NN,MM,NHEM,NL,MOCT,MG,JG,NWJ2,NCRAY,JGL,NTRAC,NLEVRF,NIR,NSOL,NTOTAL,NWNO,NKGAUSS,NBATCH
       include 'params.i'
                                                     
       INTEGER MXGAS,MXLEV,MXBAND,MXCL                                     

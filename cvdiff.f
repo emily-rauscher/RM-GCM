@@ -11,7 +11,7 @@ C
 C                                                                         
 C     Determines model resolution                                         
 C                                                                         
-      include 'params.i'
+      include 'rcommons.h'
 C      PARAMETER(NN=21,MM=21,NHEM=2,NL=5,MOCT=1,MG=64,JG=16,NWJ2=121       
 C     P         ,NCRAY=64,JGL=JG,NTRAC=1,NLEVRF=1)                         
                                                                           
@@ -19,45 +19,45 @@ C
 C                                                                         
 C     Sets basic constants, especially those needed for array dimensions  
 C                                                                         
-      PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
-     +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
-     +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
-     +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL             
-     +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG                    
-     +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL   
-     +,NWW=1+(MM-1)/MOCT)                                                 
-      PARAMETER(IGA=NWJ2*NHEM,IGB=IDB*NHEM,IGC=MGPP*NHEM,IGD=IDD*NHEM     
-     +,IGG=IDG*NHEM,IGL=IDL*NHEM,IGM=IDM*NHEM,IGN=IDN*NHEM                
-     +,IGO=IGA+IGA,IGP=IGB+IGB,NFTWG=(5+NTRAC)*NL+3                       
-     +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)           
+!       PARAMETER(MH=2,PI=3.14159265359,PI2=2.0*PI                          
+!      +,NNP=NN+1,MGPP=MG+2,JGP=JG+1,JGG=JG*NHEM,JGGP=JGG+1,MJP=NWJ2+NWJ2   
+!      +,NLM=NL-1,NLP=NL+1,NLPP=NL+2,NLA=NL+3,NLB=NL+4,NL2=NL*NL            
+!      +,IDA=(MG+MG+MG)/2+1,IDB=NWJ2*NL,IDC=IDB+IDB,IDD=MGPP*NL             
+!      +,IDE=NL2*NN,IDF=NCRAY*(MG+1),IDG=JG*NL,IDH=JG*MG                    
+!      +,IDI=NNP/2,IDJ=IDI*IDI,IDK=NL*IDI,IDL=MGPP/2,IDM=NNP/2,IDN=IDM*NL   
+!      +,NWW=1+(MM-1)/MOCT)                                                 
+!       PARAMETER(IGA=NWJ2*NHEM,IGB=IDB*NHEM,IGC=MGPP*NHEM,IGD=IDD*NHEM     
+!      +,IGG=IDG*NHEM,IGL=IDL*NHEM,IGM=IDM*NHEM,IGN=IDN*NHEM                
+!      +,IGO=IGA+IGA,IGP=IGB+IGB,NFTWG=(5+NTRAC)*NL+3                       
+!      +,NFTGW=(6+3*NTRAC)*NL+2,NFTGD=(3+NTRAC)*NL,NLTR=NL*NTRAC)           
 C     Number of 2D (surface) output fields. This value is                 
 C     Doubled due to averaged and instantaneous fields.                   
-      PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)                           
+      ! PARAMETER (N2DFLD=21,NGRPAD=N2DFLD*2*IGC)                           
 C                                                                         
 C                                                                         
 C     Basic planetary parameters for run plus information about           
 C     vertical grid structure                                             
 C                                                                         
 C     Note that RD and GASCON are identical and CPD is set from RD,AKAP.  
-      COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)                
-     +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)     
-     +              ,TKP(NL),C(NL2),SQH(NNP)                              
-     +              ,MF,MFP,JZF,NF                                    
-     +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT             
-     +              ,RD,RV,CPD,CLATNT                                     
-     +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
-     +              ,LFLUX                                                
-     +              ,LBALAN,LRESTIJ                                       
-     +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
-     +              ,LNOISE,NFP                                               
-      COMPLEX EZ,AIOCT                                                    
-      LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
-     +       ,LFLUX,LNOISE                                                
-     +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT                           
+!       COMMON        SQ(NNP),RSQ(NNP),SIGMAH(NLM),SIGMA(NL)                
+!      +              ,T01S2(NLM),T0(NL),ALPHA(NL),DSIGMA(NL),RDSIG(NL)     
+!      +              ,TKP(NL),C(NL2),SQH(NNP)                              
+!      +              ,MF,MFP,JZF,NF                                    
+!      +              ,AKAP,GA,GASCON,RADEA,WW,PFAC,EZ,AIOCT             
+!      +              ,RD,RV,CPD,CLATNT                                     
+!      +              ,P0,LRSTRT,LSHORT,LTVEC,LSTRETCH                         
+!      +              ,LFLUX                                                
+!      +              ,LBALAN,LRESTIJ                                       
+!      +              ,LCLIM, LPERPET, L22L,LOROG ,LCSFCT                   
+!      +              ,LNOISE,NFP                                               
+!       COMPLEX EZ,AIOCT                                                    
+!       LOGICAL LRSTRT,LSHORT,LTVEC,LSTRETCH,LBALAN,LRESTIJ                 
+!      +       ,LFLUX,LNOISE                                                
+!      +       ,LCLIM, LPERPET, L22L,LOROG,LCSFCT                           
 C                                                                         
 C           
 C                                                                         
-      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),G(NL2)              
+      COMMON/BATS/  BEGDAY,CTRA(NTRAC),BM1(IDE),AK(NNP),AQ(NL2),F(NL2)              
      +              ,TAU(NL2),KOUNT,KITS,KSTART,KTOTAL,KRUN,ITSPD           
      +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
      +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)            
@@ -114,20 +114,21 @@ C
      :       ,LNOICE,LOLDBL,LCOND,LNNSK                                   
 C                      
 
-       COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
-     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
-     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
-     & PORB, OBLIQ, ECCEN 
+!        COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
+!      & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
+!      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
+!      & PORB, OBLIQ, ECCEN 
       
-       LOGICAL LPLOTMAP
+!        LOGICAL LPLOTMAP
 
-       COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
-     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
-     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
-     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3),with_TiO_and_VO, picket_fence_optical_depths
+!        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+!      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
+!      & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
+!      & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3),with_TiO_and_VO, opacity_method
 
-       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
-     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS, picket_fence_optical_depths
+!        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
+!      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
+!        CHARACTER(len=6) :: opacity_method
 
        COMMON/MAG/ BFIELD,TDRAG_MIN,RAMPUP,LBDRAG
        LOGICAL LBDRAG
@@ -201,9 +202,9 @@ C           ENDIF
                
               RHO_CGS=P0*(SPG(J)+1.)*SIGMA(1)/(GASCON*CT*TG(J,1))*1.0e-3
               UTVD_BDRAG(J,1)=-UG(J,1)/MAX(TMAG(RHO_CGS,CT*TG(J,1),
-     & BFIELD,GASCON)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC
+     & BFIELD,GASCON,METALLICITY)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC
               VTVD_BDRAG(J,1)=-VG(J,1)/MAX(TMAG(RHO_CGS,CT*TG(J,1),
-     & BFIELD,GASCON)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC*0.0 !No Vdrag
+     & BFIELD,GASCON,METALLICITY)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC*0.0 !No Vdrag
               TTVD_BDRAG(J,1)=(-UTVD_BDRAG(J,1)*UG(J,1)
      & -VTVD_BDRAG(J,1)*VG(J,1))*(CG/(GASCON/AKAP)/CT)  !RFAC already here
            ELSE
@@ -293,9 +294,9 @@ C           ENDIF
               
              RHO_CGS=P0*(SPG(J)+1.)*SIGMA(L)/ (GASCON*CT*TG(J,L))*1.0e-3
                UTVD_BDRAG(J,L)=-UG(J,L)/MAX(TMAG(RHO_CGS,CT*TG(J,L),
-     & BFIELD,GASCON)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC
+     & BFIELD,GASCON,METALLICITY)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC
               VTVD_BDRAG(J,L)=-VG(J,L)/MAX(TMAG(RHO_CGS,CT*TG(J,L),
-     & BFIELD,GASCON)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC*0.0 !No Vdrag
+     & BFIELD,GASCON,METALLICITY)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC*0.0 !No Vdrag
               TTVD_BDRAG(J,L)=(-UTVD_BDRAG(J,L)*UG(J,L)
      & -VTVD_BDRAG(J,L)*VG(J,L))*(RADEA*WW*RADEA*WW/(GASCON/AKAP)/CT)
            ELSE
@@ -357,9 +358,9 @@ C           ENDIF
               RHO_CGS=P0*(SPG(J)+1.)*SIGMA(NL)/ 
      &              (GASCON*CT*TG(J,NL))*1.0e-3
               UTVD_BDRAG(J,NL)=-UG(J,NL)/MAX(TMAG(RHO_CGS,CT*TG(J,NL),
-     & BFIELD,GASCON)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC
+     & BFIELD,GASCON,METALLICITY)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC
               VTVD_BDRAG(J,NL)=-VG(J,NL)/MAX(TMAG(RHO_CGS,CT*TG(J,NL),
-     & BFIELD,GASCON)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC*0.0 !No Vdrag
+     & BFIELD,GASCON,METALLICITY)/ANG_FACTOR*WW,TDRAG_MIN)*RFAC*0.0 !No Vdrag
               TTVD_BDRAG(J,NL)=(-UTVD_BDRAG(J,NL)*UG(J,NL)
      & -VTVD_BDRAG(J,NL)*VG(J,NL))*(RADEA*WW*RADEA*WW/(GASCON/AKAP)/CT)
            ELSE
@@ -443,15 +444,16 @@ C      RETURN
 C      END
 
 C Function returning magnetic drag time
-      REAL*8 FUNCTION TMAG(dens, temp, bfield,gascon)
+      REAL*8 FUNCTION TMAG(dens, temp, bfield,gascon,METALLICITY)
  
       real*8 dens,temp,bfield ! in CGS
       real*8 gascon           ! in SI
       real*8 eta
+      real*8 METALLICITY
       
 C      eta=find_etasimp(dens,temp)
-      eta=find_eta(dens,temp,gascon)
-      tmag=4.0*3.141592*dens*eta/bfield/bfield
+      eta=find_eta(dens,temp,gascon,METALLICITY)
+      tmag=12.566371*dens*eta/bfield/bfield
 
 C      write(*,*)'TMAG(s)=',tmag
 
@@ -478,48 +480,71 @@ C Function returning magnetic resistivity
 
 
 C Function returning magnetic resistivity
-      REAL*8 FUNCTION FIND_ETA(Rho, Tref,gascon)
+      REAL*8 FUNCTION FIND_ETA(Rho, Tref,gascon,METALLICITY)
  
       real*8 Rho,Tref ! in CGS
       real*8 xe
-      real*8 mu, k, h, me, mp, e, Cl, Pi, ndens
-      real*8 f(28), c(28)  ! f:abundances H-Ni ; c:first ioniz. potent in eV  
+      real*8 mu, k, h3, me, mp, e, Cl, Pi, ndens, twopime3_2
+      real*8 f(28), c(28), of(28)  ! f:abundances H-Ni ; c:first ioniz. potent in eV
       real*8 ni(28), Ki(28), xi(28)
+      real*8 METALLICITY
 
       data f/2.66e10, 1.8e9, 60, 1.2, 9, 1.11e7, 2.31e6, 1.84e7, 
      & 780, 2.6e6, 6.0e4, 1.06e6, 8.5e4, 1.0e6, 6500, 5.0e5, 4740, 
      & 1.06e5, 3500, 6.25e4, 31, 2400, 254, 1.27e4, 9300, 9.0e5, 
      & 2200, 4.78e4/  ! solar abundances
 
+      data c/13.6, 24.6, 5.4, 9.32, 8.30, 11.26, 14.54, 13.61, 
+     & 17.42, 21.56, 5.14, 7.64, 5.98, 8.15, 10.55, 10.36, 13.01, 
+     & 15.76, 4.34, 6.11, 6.56, 6.83, 6.74, 6.76, 7.43, 7.90, 
+     & 7.86, 7.63/ ! first ionization potentials (eV)
+
+      ! If non-solar metallicity, adjust the abundances accordingly
+      IF (f(3) .eq. 60) THEN
+            IF (METALLICITY .NE. 0.0) THEN
+            write(*,*) 'using non-solar abundances for magnetic drag:'
+            DO I=28, 3, -1
+                  f(i) = f(i) * 10**METALLICITY
+                  f(i) = f(i) / f(1)
+            ENDDO
+            f(2) = f(2)/f(1)
+            f(1) = 1.0
+            WRITE(*,*) f
+            ELSE
+            write(*,*) 'using solar abundances for magnetic drag:'
+            DO I=28, 1, -1
+                  f(i) = f(i) / f(1)
+            ENDDO
+            write(*,*) f
+            ENDIF
+            DO I=28, 1, -1
+            c(i) = c(i) * 11605 ! converts from eV to deg K, but only once
+            ENDDO
+      ENDIF
+
 C      data f/2.66e10, 1.8e9, 180., 3.6, 27., 3.33e7, 6.93e6, 5.52e7, 
 C     & 2340., 7.8e6, 1.8e5, 3.18e6, 2.55e5, 3.0e6, 1.95e4, 1.5e6, 1.422e4, 
 C     & 3.18e5, 1.05e4, 1.875e5, 93., 7200., 762., 3.81e4, 2.79e4, 2.7e6, 
 C     & 6600., 1.434e5/  ! 3 x solar abundances
 
-      data c/13.6, 24.6, 5.4, 9.32, 8.30, 11.26, 14.54, 13.61, 
-     & 17.42, 21.56, 5.14, 7.64, 5.98, 8.15, 10.55, 10.36, 13.01, 
-     & 15.76, 4.34, 6.11, 6.56, 6.83, 6.74, 6.76, 7.43, 7.90, 
-     & 7.86, 7.63/
-
-C      mu = 1.67e-24
       mu = 8.3145/gascon*1.e3/6.022e23  ! cgs mass of particle
       k = 1.38e-16  ! erg/K
-      h = 6.62e-27
+      h3 = 2.9011753e-79
       me = 9.11e-28
+      twopime3_2 = 4.330593e-40
       mp = 1.67e-24  ! not used
       e = 4.8e-10
       Cl = 3e10 ! speed o light 
-      Pi=3.141592
+      Pi = 3.141592
 
       ndens=Rho/mu
 
       xe=0.0
       DO i=28, 1, -1
 C         c(i)=c(i)*11605 ! ev -> deg K
-         f(i)=f(i)/f(1)  ! abundance relative to H 
          ni(i)=ndens*f(i)
-         Ki(i)=(1.0/(ni(i)*k*Tref))*((2.0*Pi*me)**(3.0/2.0)/h)*
-     & ((k*Tref)**(5.0/2.0)/h) *(exp(-c(i)*11605/Tref)/h)
+         Ki(i)=(1.0/(ni(i)))*(twopime3_2)*
+     & ((k*Tref)**(3.0/2.0)) *(exp(-c(i)/Tref)) / h3
          xi(i)=(Ki(i)/(1.+Ki(i)))**0.5 
 C         write(*,*) i,f(i),xi(i),230*sqrt(Tref)/xi(i)
          xe=xe+f(i)*xi(i)

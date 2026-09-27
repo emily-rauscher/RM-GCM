@@ -215,7 +215,7 @@ C-----------------------------------------------------------------------
       EQUIVALENCE (DAG(1),UG(1)),(DAF(1),SPG(1)),(DAD(1),TNLG(1))
      : ,(DDZ(1),UTVDZ(1)),(ADDZ(1),AUTVDZ(1))
       INTEGER IODSIZE
-      PARAMETER (IODSIZE=MAX(NGRPAD+IGD,IGP*(3+NTRAC)+IGO)+7)
+      PARAMETER (IODSIZE=MAX(NGRPAD+IGD,IGP*(3+NTRAC)+IGO,IDDZ*2+6)+7)
       REAL*4 RODATA(IODSIZE)
       REAL R8DATA((3+NTRAC)*IGP)
       REAL R8SP(IGO)
@@ -225,6 +225,8 @@ C-----------------------------------------------------------------------
       EQUIVALENCE(R8SP(1),SP(1))
        REAL htnet
        COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
+       COMMON /RAD_ALLLATS/ TG_forrad(IGD,JG), PLG_forrad(IGC,JG),
+     &                      HTNET_old(NHEM,JG,MG,NL)
        REAL TAVE(IGP)
        real POSLATS(JG)
 
@@ -239,11 +241,13 @@ C-----------------------------------------------------------------------
        CHARACTER(30) :: AEROSOLCOMP
        REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(nl+1),TCON(nl+1)
        REAL MOLEF(13)
-       LOGICAL DELTASCALE,HAZES
+       LOGICAL GRAYCLDV
+       LOGICAL DELTASCALE, HAZES
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,MOLEF,AERLAYERS
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
+     &   GRAYCLDV,C_TO_O
 
 !       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
 !     &   CLOUDTOP,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
@@ -367,13 +371,14 @@ C        &&&&&&&&&&&&&&& END MODIFIED START &&&&&&&&&&&&&&&
       kflag=0
       CALL INITAL
 C     ER modif for output management
+C     TK modified to play nice with restart runs
       FDAY=KRUN/ITSPD
-      IDAYS(1)=5
-      IDAYS(2)=INT(FDAY/4.-1.)
-      IDAYS(3)=INT(FDAY/2.-1.)
-      IDAYS(4)=INT(FDAY*3./4.-1.)
-      IDAYS(5)=INT(FDAY-6.)
-      IDAYS(6)=INT(FDAY-2.)
+      IDAYS(1)=5 + BEGDAY
+      IDAYS(2)=INT(FDAY/4.-1.) + BEGDAY
+      IDAYS(3)=INT(FDAY/2.-1.) + BEGDAY
+      IDAYS(4)=INT(FDAY*3./4.-1.) + BEGDAY
+      IDAYS(5)=INT(FDAY-6.) + BEGDAY
+      IDAYS(6)=INT(FDAY-2.) + BEGDAY
       ITSOUT=2600
       IFTOUT=5000
       ISFOUT=6400
@@ -734,19 +739,47 @@ C
   232       CONTINUE
          ENDIF
 C
+C        Pre-pass: fill TG/PLG for all latitudes for parallel radiation
+C
+         IF (LRD) THEN
+            JL=1
+            IF (JGL.EQ.1) REWIND(25)
+            DO IH=1,JG
+               JH=IH
+               IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
+               CALL LTI
+               DO I=1,NTWG
+                  CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,
+     +                        1,MGPP,MG,NCRAY,1)
+               ENDDO
+               CALL FFT991(DAG(1+NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,
+     +                     1,MGPP,MG,NRSTWG,1)
+C              Run the grid physics first so TG/PLG are post-VDIFF/CONVEC
+               CALL DGRMLT(IH,1)
+               DO I=1,IGD
+                  TG_forrad(I,IH) = TG(I)
+               ENDDO
+               DO I=1,IGC
+                  PLG_forrad(I,IH) = PLG(I)
+               ENDDO
+               JL=JL+JINC
+            ENDDO
+            IF (mod(kount,ntstep_in).eq.0) THEN
+               CALL RADIATION_ALLLATS()
+            ENDIF
+         ENDIF
+
 C        Loop over latitude for spectral transforms
 C        and calculation of diabatic tendencies.
 C
-         IF (JGL.EQ.1) REWIND(25)
 C      REWIND NAVRD
 C      REWIND NAVWT
-
-
 
 !@@@@@@  HERE IS WHERE THE ITERATION OVER LATITUDE FOR  @@@@@@@@@@@@@@@@
 !@@@@@@  THE RADIATIVE TRANSFER BEGINS. SHOULD BE PARALELLIZED @@@@@@@@@
 
          JL=1
+         IF (JGL.EQ.1) REWIND(25)
          DO 260 IH=1,JG
             JH=IH
             IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
@@ -801,7 +834,7 @@ CC!$omp end parallel
 C
 C        Calculate diabatic terms
 C
-            CALL DGRMLT(IH)
+            CALL DGRMLT(IH,2)
 C
 C        Write accumulated diagnostics to history file.
             if (kflag.eq.1.and.nlat.gt.0) write(24)grpad

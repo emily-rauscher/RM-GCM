@@ -16,11 +16,12 @@ C
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
      & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
-     & ALBSW, NEWTB, NEWTE, RAYPERBARCONS(3), with_TiO_and_VO, picket_fence_optical_depths
+     & ALBSW, NEWTB, NEWTE, RAYPERBARCONS(3), with_TiO_and_VO, opacity_method
 
 
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
-     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS, picket_fence_optical_depths
+     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
+       CHARACTER(len=6) :: opacity_method
 
        INTEGER NCLOUDS
        PARAMETER(NCLOUDS=13)     ! NUMBER OF CLOUDS
@@ -30,13 +31,14 @@ C
        REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
        REAL MTLX, METALLICITY
        INTEGER MAXTAULOC,AERLAYERS
-       LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS
-
+       LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS, GRAYCLDV
+       REAL MOLEF(13)
 
        COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
+     &   GRAYCLDV
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
      +              ,RNTAPO                                               
@@ -64,9 +66,10 @@ C
       PARAMETER(MXBAND=9)    ! Maximum number of spectral bands (not      
                              ! including the whole spectrum, 0-3000cm-1)  
                                                                           
-      PARAMETER(MXCL=3)      ! Maximum number of cloud types              
-                                                                          
-C-----------------------------------------------------------------------  
+      PARAMETER(MXCL=3)      ! Maximum number of cloud types
+
+
+C-----------------------------------------------------------------------
 C                                                                         
 C  Switches for long wave radiation scheme                                
 C                                                                         
@@ -118,6 +121,6 @@ C
 !     +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
 !     +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
 !     +              ,BEGDOY,DOY 
-      PARAMETER (NRLEV=MXLEV+1)                                            
-********************************************************************      
-       save
+      PARAMETER (NRLEV=MXLEV+1)
+********************************************************************
+! save removed: see rglobrad.h comment. Bare save caused OMP race via static locals.

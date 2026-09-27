@@ -2,6 +2,10 @@ C**********************************************************
 C             SUBROUTINE INISIMPRAD                                          
 C**********************************************************               
       subroutine INISIMPRAD                                                 
+C     STEL_SPEC_NML is the optional pre-binned stellar spectrum (NWNO
+C     values summing to 1) read straight from fort.7; corrk_setup falls
+C     back on integrating stellar_spectrum.txt when it is left all zero.
+      use corrkmodule, only : STEL_SPEC_NML, STEL_SPEC_UNSET
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise the simplified radiation scheme             
 C-----------------------------------------------------------------------  
@@ -121,15 +125,18 @@ C
        COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
      & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
-     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3), with_TiO_and_VO, picket_fence_optical_depths
+     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3), with_TiO_and_VO, opacity_method
 
        REAL SURFEMIS,ABSSW,ABSLW,ALBSW
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
-     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS, picket_fence_optical_depths
+     + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
+       REAL with_TiO_and_VO
+       CHARACTER(len=6) :: opacity_method
        
        NAMELIST/INSIMPRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
      & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,FLXLIMDIF,SURFEMIS,
-     & RAYSCAT, RAYSCATLAM,AEROSOLS,ABSSW,ABSLW, ALBSW, NEWTB, NEWTE,with_TiO_and_VO, picket_fence_optical_depths
+     & RAYSCAT, RAYSCATLAM,AEROSOLS,ABSSW,ABSLW, ALBSW, NEWTB, NEWTE,with_TiO_and_VO, opacity_method,
+     & STEL_SPEC_NML
 
 
 c
@@ -197,6 +204,8 @@ C The following are related to the flags in the radiative transfer suite
         ALBSW           = 0.0
         NEWTB           = 0
         NEWTE           = 0
+C       This part sets the spectrum to -999 if it is not set in fort.7 so the code knows to fall back on integrating stellar_spectrum.txt
+        STEL_SPEC_NML   = STEL_SPEC_UNSET
 
 
 c       ABSSW2=0.3  ! optical thickness at surface (* Press)
@@ -355,7 +364,6 @@ C Factor of 10 to scale ABSSW1 from CGS to code units (like ABSLW1)
        write(60,*)'DOLWRAD',DOLWRAD
        write(60,*)'LWSCAT',LWSCAT
        write(60,*)'FLXLIMDIF',FLXLIMDIF
-       write(60,*)'FLD TAULIMIT',TAULIMIT
        write(60,*)'SURFEMIS',SURFEMIS
        write(60,*)'RAYSCAT',RAYSCAT
        write(60,*)'RAYSCATLAM',RAYSCATLAM

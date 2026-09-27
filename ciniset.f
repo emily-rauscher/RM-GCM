@@ -101,21 +101,32 @@ C
       COMMON/RESTOR/ZRES(IGN),DRES(IGN),TRES(IGN),SPRES(IGM),DAMP         
 C                                                                         
       COMMON/STATS/GMSP0,GMSPMI,LMASCOR,LMASOLD,LMASPRT
+      COMMON/SIMPIRRAD/LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,
+     & JSKIPLON,JSKIPLAT, DOSWRAD, DOLWRAD, LWSCAT,
+     & FLXLIMDIF,SURFEMIS, RAYSCAT, RAYSCATLAM(3), AEROSOLS,ABSSW, ABSLW,
+     & ALBSW, NEWTB, NEWTE,RAYPERBARCONS(3), with_TiO_and_VO, opacity_method
 
+      REAL SURFEMIS,ABSSW,ABSLW,ALBSW
+      LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
+     & ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
+      REAL with_TiO_and_VO
+      CHARACTER(len=6) :: opacity_method
       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
      &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS
+     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,GRAYCLDV,
+     &   C_TO_O
       NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
      &  AERTOTTAU,CLOUDBASE,CLOUDTOP,AERHFRAC,PI0AERSW,
-     &  ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON
+     &  ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,GRAYCLDV,
+     &  C_TO_O
       CHARACTER(30) :: AEROSOLMODEL
       CHARACTER(30) :: AEROSOLCOMP
       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
       REAL MOLEF(13)
-      REAL MTLX, METALLICITY
+      REAL MTLX, METALLICITY, C_TO_O
       INTEGER AERLAYERS
-      LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS
+      LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS, GRAYCLDV
 
       LOGICAL LMASCOR,LMASOLD,LMASPRT                                     
 C                                                                         
@@ -131,7 +142,14 @@ C
       NAMELIST/INPOP/RNTAPE,KOUNTH,KOUNTR,KOUNTP,KOUNTE                   
      + ,NCOEFF,NLAT,LGPO,LSPO                                             
      + ,RNTAPO,NTRACO                                                     
-     $     ,LSHIST,LMINIH                                                 
+     $     ,LSHIST,LMINIH        
+      COMMON/VARPARAM/OOM_IN, LPLOTMAP,NLPLOTMAP_IN,RFCOEFF_IN, 
+     & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS, 
+     & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB, 
+     & PORB, OBLIQ, ECCEN, TAULIMIT
+      REAL :: OOM_IN, RFCOEFF_IN, BOTRELAXTIME, FBASEFLUX
+      LOGICAL :: LPLOTMAP
+      INTEGER :: NLPLOTMAP_IN, NTSTEP_IN, NSKIP_IN                                         
 C
 C
 C                                                                         
@@ -464,8 +482,20 @@ CDIR$    IVDEP
       SIG_AREA     = 25.
       PHI_LON      = 65.
       GRAYCLDV     = .False.
+      C_TO_O       = 1.00
       READ(7,INCLOUDY)
-      CALL get_cloud_scattering_properties_wrapper
+C     INCLOUDY is physically the last namelist group INISET reads, but
+C     it sits AFTER INVARPARAM/INMAG/INBINVAL/INPHYS/INPRSIJ/INSIMPRAD
+C     in fort.7. Those are read later by INITAL, and namelist reads
+C     can't move backward in the file, so without this REWIND the
+C     very next READ(7,...) (INVARPARAM, in INITAL) hits EOF hunting
+C     forward for a group that's actually behind the current position.
+      REWIND(7)
+C     get_cloud_scattering_properties_wrapper / get_gas_opacity_corrk_wrapper
+C     moved to cinital.f (after INISIMPRAD) so they see the correct
+C     with_TiO_and_VO/opacity_method on every INISET/INITAL pass,
+C     including restart runs which only get a single pass.
+      write(*,*) ' '
 
 
       END                                                                 
