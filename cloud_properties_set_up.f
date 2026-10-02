@@ -6,6 +6,7 @@
 
 
       SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
+          use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -983,34 +984,6 @@
      &    7.05480231e-05, 7.92482898e-05, 8.90215085e-05, 1.00000000e-04
      &    /)
 
-          input_particle_size_array_in_meters = (/
-     &    1.00000000e-09, 1.12332403e-09, 1.26185688e-09, 1.41747416e-09,
-     &    1.59228279e-09, 1.78864953e-09, 2.00923300e-09, 2.25701972e-09,
-     &    2.53536449e-09, 2.84803587e-09, 3.19926714e-09, 3.59381366e-09,
-     &    4.03701726e-09, 4.53487851e-09, 5.09413801e-09, 5.72236766e-09,
-     &    6.42807312e-09, 7.22080902e-09, 8.11130831e-09, 9.11162756e-09,
-     &    1.02353102e-08, 1.14975700e-08, 1.29154967e-08, 1.45082878e-08,
-     &    1.62975083e-08, 1.83073828e-08, 2.05651231e-08, 2.31012970e-08,
-     &    2.59502421e-08, 2.91505306e-08, 3.27454916e-08, 3.67837977e-08,
-     &    4.13201240e-08, 4.64158883e-08, 5.21400829e-08, 5.85702082e-08,
-     &    6.57933225e-08, 7.39072203e-08, 8.30217568e-08, 9.32603347e-08,
-     &    1.04761575e-07, 1.17681195e-07, 1.32194115e-07, 1.48496826e-07,
-     &    1.66810054e-07, 1.87381742e-07, 2.10490414e-07, 2.36448941e-07,
-     &    2.65608778e-07, 2.98364724e-07, 3.35160265e-07, 3.76493581e-07,
-     &    4.22924287e-07, 4.75081016e-07, 5.33669923e-07, 5.99484250e-07,
-     &    6.73415066e-07, 7.56463328e-07, 8.49753436e-07, 9.54548457e-07,
-     &    1.07226722e-06, 1.20450354e-06, 1.35304777e-06, 1.51991108e-06,
-     &    1.70735265e-06, 1.91791026e-06, 2.15443469e-06, 2.42012826e-06,
-     &    2.71858824e-06, 3.05385551e-06, 3.43046929e-06, 3.85352859e-06,
-     &    4.32876128e-06, 4.86260158e-06, 5.46227722e-06, 6.13590727e-06,
-     &    6.89261210e-06, 7.74263683e-06, 8.69749003e-06, 9.77009957e-06,
-     &    1.09749877e-05, 1.23284674e-05, 1.38488637e-05, 1.55567614e-05,
-     &    1.74752840e-05, 1.96304065e-05, 2.20513074e-05, 2.47707636e-05,
-     &    2.78255940e-05, 3.12571585e-05, 3.51119173e-05, 3.94420606e-05,
-     &    4.43062146e-05, 4.97702356e-05, 5.59081018e-05, 6.28029144e-05,
-     &    7.05480231e-05, 7.92482898e-05, 8.90215085e-05, 1.00000000e-04
-     &    /)
-
           input_temperature_array = (/
      &    100.0, 139.39393939393938, 178.78787878787878, 218.1818181818182, 257.57575757575756,
      &    296.96969696969694, 336.3636363636364, 375.75757575757575, 415.1515151515151, 454.5454545454545,
@@ -1050,8 +1023,19 @@
      &    3.908e-06, 4.911e-06, 6.177e-06, 7.776e-06, 9.794e-06, 
      &    1.234e-05, 1.556e-05, 1.962e-05, 2.475e-05, 3.123e-05, 
      &    3.940e-05, 4.973e-05, 6.276e-05, 7.922e-05, 1.000e-04/)
+        !   write(*,*) 'Hard-coding micron-sized particles in cloud_properties_set_up.f'
+        !   DO J = 1, 80
+        !       particle_size_vs_layer_array_in_meters(J) = 1.0e-7
+        !   END DO
 
           DENSITY = (/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3/)
+
+!         If tracer clouds, take the dye's grain density from its own species
+          IF (KDYESPEC .GE. 1 .AND. KDYESPEC .LE. 13) THEN
+              WRITE(*,*) 'Dye settling density from species ',
+     &            KDYESPEC, ': ', RHODYE, ' -> ', DENSITY(KDYESPEC)
+              RHODYE = DENSITY(KDYESPEC)
+          END IF
 
           ! The molar masses of the different cloud species in grams/mol
           CLOUD_MOLAR_MASSES = (/74.55E-3,    ! KCl
@@ -1449,6 +1433,14 @@
         WRITE(*,*) 'interpolating condensation curves between ', 
      & COND_CURVE_METS(LOW_MET_INDEX), ' and ', COND_CURVE_METS(HIGH_MET_INDEX)
       ENDIF
+
+!     Record tracer cloud selected's condensation curve for later use in cloud formation (not use in classic clouds)
+      DO J = 1,80
+          TCDYE(J) = TCONDS(MET_INDEX,J,KDYESPEC)
+          PCDYE(J) = input_pressure_array_cgs(J) / 10.0
+      END DO
+      WRITE(*,*) 'Dye condensation curve from species ', KDYESPEC,
+     &    ': T_cond spans ', MINVAL(TCDYE), ' to ', MAXVAL(TCDYE), ' K'
 
 !   Now begins the cloud wavelength averaging:
       IF (GRAYCLDV) THEN

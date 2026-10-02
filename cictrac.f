@@ -1,7 +1,8 @@
 C**********************************************************               
 C             SUBROUTINE ICTRAC                                           
 C**********************************************************               
-      SUBROUTINE ICTRAC                                                   
+      SUBROUTINE ICTRAC
+      use tracerclds, only : PDYEFIX, PDYEUPPER
 C                                                                         
 C     *********PMF Version 1.0 (8.4.97)*******************                
 C     Subroutine which initialises the tracer fields.                     
@@ -127,7 +128,6 @@ C
 C
 C     Settling-dye parameters (INVARPARAM, see inivarparam.f). Only
 C     PDYEFIX and PDYEUPPER are used here.
-      COMMON/DYEPAR/ADYE(NTRAC),RHODYE,PDYEFIX,PDYEUPPER,TRELAXORB
 C
             COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
@@ -279,7 +279,7 @@ CCCC      QSTAR(J,JH)=ESCON*PQSAT(TSTAR(J,JH))
  810     CONTINUE
 C
 C     Initialise the dyes (2..NTRAC): abundance 1 below PDYEFIX and
-C     above PDYEUPPER, 0 between. Both come from COMMON/DYEPAR/ so they
+C     above PDYEUPPER, 0 between. Both come from tracerclds so they
 C     cannot drift from the values DGRMLT relaxes to. PDYEUPPER has no
 C     matching relaxation - that 1 is a one-off initial condition.
 C     The test is an OR, so PDYEUPPER above PDYEFIX makes every level

@@ -340,6 +340,7 @@ C**********************************************************
 C             SUBROUTINE RADIATION_ALLLATS
 C**********************************************************
       SUBROUTINE RADIATION_ALLLATS()
+      use tracerclds, only : LDYERAD, TRAG_forrad, QDYECOL
 C     Parallelized over all JG*MG columns simultaneously.
 C     Computes radiative heating rates and stores in HTNET.
 C     HTNET_old is saved before the parallel loop.
@@ -691,7 +692,10 @@ C       LFLUXDIAG block: must be serial, placed before OMP region
 !$OMP&  avg, alos, SCDAY, RGAS, GANGLE, GWEIGHT, GRATIO, RAYPERBAR,
 !$OMP&  sbk, num_layers, CHRF,
 !$OMP&  PNET, SNET, HTNET, ihem, iofm,
-!$OMP&  TG_forrad, PLG_forrad, T0)
+!$OMP&  TG_forrad, PLG_forrad, T0,
+C     Module variables from tracerclds. QDYECOL is NOT listed: it is
+C     THREADPRIVATE, which is a predetermined attribute.
+!$OMP&  TRAG_forrad, LDYERAD)
 
 !$OMP   DO SCHEDULE(GUIDED)
         DO col=1,JG*MG
@@ -724,10 +728,21 @@ C       LFLUXDIAG block: must be serial, placed before OMP region
 
           alon=REAL(i-1)/REAL(mg)*360.0
 
+C         Prescribed MAKECLOUDS field. AEROPROF is write-only now, the optical depth the RT actually uses is built in OPPRMULTI, which is where LDYERAD takes effect.
           IF((AEROSOLS).AND.(AEROSOLMODEL.NE.'Global')) THEN
             DO LD=1,NL+1
               AEROPROF(LD)=TAUAEROSOL(LD,i,ihem,jh_priv)
             ENDDO
+          ENDIF
+
+C         Hand this column's cloud profile to OPPRMULTI. Threadprivate
+C         rather than an extra argument through calc_radheat -> radsub
+C         -> radtran -> opprmulti, following /RADWORK/ above.
+          IF (LDYERAD) THEN
+            DO LD=1,NL
+              QDYECOL(LD)=MAX(TRAG_forrad(im,LD,jh_priv),0.0)
+            ENDDO
+            QDYECOL(NL+1)=0.0
           ENDIF
 
           rfluxes_aerad = 0.

@@ -29,6 +29,8 @@
 !     * ************************************************************
 !
       use corrkmodule  , only : MINWNOSTEL
+      use tracerclds, only : ADYE, KDYERAD, KDYESPEC, LDYERAD,
+     &                       QDYECOL, FCONDYE
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, MET_INDEX, itspd
@@ -219,7 +221,12 @@
         DO J = 1,NLAYER - 1
             layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
             temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
-            particle_size = particle_size_vs_layer_array_in_meters(layer_index) ! Convert to CGS
+            IF (LDYERAD) THEN
+C               if using the radiatively active dye, use the size from the fort.7
+                particle_size = ADYE(KDYERAD)
+            ELSE
+                particle_size = particle_size_vs_layer_array_in_meters(layer_index) ! Convert to CGS
+            END IF
             size_loc      = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
 
             DO I = 1,NCLOUDS
@@ -249,11 +256,34 @@
                     END DO
                 END IF
 
-                CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
+                IF (LDYERAD) THEN
+C                   Only KDYESPEC carries the dye; every other species
+C                   contributes nothing, so the TAUAER sum below is one
+C                   species' optics placed by the tracer rather than
+C                   the dye profile applied once per species.
+                    IF (I.EQ.KDYESPEC) THEN
+C                       TODO: resolve off-by-half indexing difference between the tracer and RT
+C                       Positivity is enforced
+                        CONDFACT(J,I) = max(QDYECOL(J),0.0)
+     &                                  * FCONDYE(p_pass(J), TT(J))
+                    ELSE
+                        CONDFACT(J,I) = 0.0
+                    END IF
+                ELSE
+                    CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
+                END IF
 
-              CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
+C             tracer CONDFACT can exceed 1 so clamp here to
+C             keep CLOUDLOC the 0-or-J presence flag BASELEV expects.
+              CLOUDLOC(J,I) = NINT(MIN(CONDFACT(J,I),1.0))*J
               BASELEV = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
-              TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
+C             The dye's own vertical profile says where the cloud is, so
+C             do not also clip it to AERLAYERS below the condensation base
+              IF (LDYERAD) THEN
+                TOPLEV(I) = 0
+              ELSE
+                TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
+              END IF
 
                 ! DPG is CGS before that 10x
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN

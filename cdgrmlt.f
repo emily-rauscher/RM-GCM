@@ -2,6 +2,8 @@ C**********************************************************
 C             SUBROUTINE DGRMLT                                           
 C**********************************************************               
       SUBROUTINE DGRMLT(IH,IPASS)
+      use tracerclds, only : ADYE, RHODYE, PDYEFIX, TRELAXORB, TRAPRV,
+     &                       FCONDYE
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -158,15 +160,6 @@ C     Needed for PORB, OBLIQ (nightside settling source term below).
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
      & PORB, OBLIQ, ECCEN
        LOGICAL LPLOTMAP
-C     Settling-dye parameters, set from the INVARPARAM namelist in
-C     fort.7 (see inivarparam.f). ADYE is indexed by tracer number, so
-C     ADYE(1) is the unused water-vapour slot.
-       COMMON/DYEPAR/ADYE(NTRAC),RHODYE,PDYEFIX,PDYEUPPER,TRELAXORB
-C     Previous timestep's dye field, one slice per dye. Seeded from a
-C     negative sentinel set in INIVARPARAM. Indexed by latitude IH:
-C     DGRMLT runs once per latitude per step from the serial loop in
-C     cmltri_nopg.f, so carrying it here is safe.
-       COMMON/DYEPRV/TRAPRV(IGC,NL,JG,NTRAC-1)
        DIMENSION QSED(NL)
 c
       common/gridsss/assbl1(igc,jg),ashbl1(igc,jg),aslbl1(igc,jg),        
@@ -437,7 +430,8 @@ C     dq/dt = (T/P) d/dz[ (P/T) q VFALL ]. For a mass mixing ratio the
 C     density factor is P/T INSIDE the derivative and T/P outside;
 C     reversed, a uniform q gives dq/dt>0, not the physical decay. No
 C     height coordinate here, so dz=-(GASCON*T/GA) dlnP per sigma
-C     layer. ADYE(KK)/RHODYE come from COMMON/DYEPAR/; CALC_V_FALL is
+C     layer. ADYE(KK) and RHODYE come from the tracerclds module;
+C     CALC_V_FALL is
 C     SI, as are GA, SIGMA*PLG*P0 and TG*CT, so VFALL is m/s for /WW.
 C     SEDSLN/SEDSLT use the PORB/OBLIQ formula of NIKOSRAD; night is
 C     where the local zenith-angle cosine is negative.
@@ -475,7 +469,6 @@ C              Seed the lagged store on its first use (see INIVARPARAM).
                   IF (TRAPRV(J,L,IH,KK-1).LT.0.0)
      +               TRAPRV(J,L,IH,KK-1)=TRAG(J,L,KK)
   296          CONTINUE
-               IF (COSZLC.LT.0.0) THEN
 C
 C                 Backward-Euler donor-cell sweep, bidiagonal because
 C                 grains only fall - one top-down pass:
@@ -493,6 +486,9 @@ C                 leapfrogs from TRAMI. Explicit limit R*DELT2 < 5.9e-2.
                      CALL CALC_V_FALL(PSED,ADYE(KK),GA,RHODYE,TSED,
      +                                VFALL)
                      DZSED=(GASCON*TSED/GA)*(DSIGMA(L)/SIGMA(L))
+C                    The dye is total species material, and only the condensed fraction falls. Scaling VFALL to the condensed fraction currently
+C                    TODO: TK decide if this ramp is worth it, in principle there should just be two tracers, one for the cloud and one for the gas
+                     VFALL=VFALL*FCONDYE(PSED,TSED)
                      CSED=VFALL/DZSED/WW*DELT2
                      IF (L.EQ.1) THEN
                         GSED=0.0
@@ -513,7 +509,6 @@ C                 TRAPRV shadows, so this lands the field on QSED.
                      TRANLG(J,L,KK)=TRANLG(J,L,KK)
      +                    +(QSED(L)-TRAPRV(J,L,IH,KK-1))/DELT2
   302             CONTINUE
-               ENDIF
 C              Deep reservoir, explicit: ~14x inside the limit above.
                DO 305 L=1,NL
                   PRSED=SIGMA(L)*PLG(J)*P0

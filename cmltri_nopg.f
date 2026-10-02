@@ -5,6 +5,7 @@
 
 
       SUBROUTINE IGCM3_SUB
+      use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad
 C!$ use omp_lib
 C**********************************************************************
 C                    IGCM3_1
@@ -800,6 +801,15 @@ C              Run the grid physics first so TG/PLG are post-VDIFF/CONVEC
                DO I=1,IGC
                   PLG_forrad(I,IH) = PLG(I)
                ENDDO
+               IF (LDYERAD) THEN
+C                 Record tracer quantities for radiative transfer, if we're doing that.
+                  DO LDY=1,NL
+                     DO IDY=1,IGC
+                        TRAG_forrad(IDY,LDY,IH) =
+     &                     TRAG(IDY+(LDY-1)*IGC,KDYERAD)
+                     ENDDO
+                  ENDDO
+               ENDIF
                JL=JL+JINC
             ENDDO
             IF (mod(kount,ntstep_in).eq.0) THEN

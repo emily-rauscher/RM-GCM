@@ -12,7 +12,7 @@
  CLATNT  = 2500000.00000000
  /
  &INPRN
- KRUN   = 4800.0,
+ KRUN   = 4800,
  BEGDAY   = 0.0,
  TSPD   = 4800.0,
  KITS     = 3,
@@ -43,7 +43,7 @@
  RNTAPE  = 0.000000000000000E+000,
  KOUNTH  = 48000,
  KOUNTR  = 48000,
- KOUNTP   = 4800.0,
+ KOUNTP   = 4800,
  KOUNTE  = 0,
  NCOEFF  = 0,
  NLAT    = 4,
@@ -72,10 +72,13 @@ PORB		    = 1.0,
 OBLIQ		    = 0.0,
 ECCEN		    = 0.0,
 ADYE		    = 0.0, 1.0e-5, 1.0E-6, 1.0E-7,
-RHODYE		    = 3.0E3,
 PDYEFIX		    = 1.0E5,
 PDYEUPPER	    = 1.0E6,
-TRELAXORB	    = 0.1
+TRELAXORB	    = 0.1,
+! Radiatively active dye stuff here, switch, tracer index, species index
+LDYERAD		    = F,
+KDYERAD		    = 3,
+KDYESPEC	    = 7
 /
 &INMAG
  LBDRAG = F,
@@ -130,7 +133,7 @@ STTEMP2=3357
  ITSLO   = 6
  /
  &INPRSIJ
- TFRC   = 0.005,0.005,0.005,47*0,
+ TFRC   = 0.0,0.0,0.0,47*0,
  RESTIM  = 50*1e30,
  RESTTT = 1094.89 ,
 1094.9 ,

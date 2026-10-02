@@ -2,6 +2,9 @@ C**********************************************************
 C             SUBROUTINE INIVARPARAM                                          
 C**********************************************************               
       subroutine INIVARPARAM                                                 
+      use tracerclds, only : ADYE, RHODYE, PDYEFIX, PDYEUPPER,
+     &                       TRELAXORB, KDYERAD, KDYESPEC, LDYERAD,
+     &                       TRAPRV
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -66,19 +69,10 @@ C
       
        LOGICAL LPLOTMAP
 
-C      Settling-dye parameters, shared with DGRMLT and ICTRAC. Their
-C      own common, so the ~15 routines declaring VARPARAM need no
-C      change. Read here rather than in ICTRAC because INIVARPARAM runs
-C      unconditionally, while ICTRAC only runs when .NOT.LRSTRT.
-C      ADYE is indexed by tracer, so ADYE(1) is the unused water slot.
-       COMMON/DYEPAR/ADYE(NTRAC),RHODYE,PDYEFIX,PDYEUPPER,TRELAXORB
-
-C      Lagged dye field for DGRMLT's implicit settling sweep. Seeded
-C      to a negative sentinel here because INIVARPARAM is the one
-C      routine that runs on both cold starts and restarts; DGRMLT
-C      swaps in the real field on first touch. Mixing ratios are
-C      non-negative, so a negative value is unambiguous.
-       COMMON/DYEPRV/TRAPRV(IGC,NL,JG,NTRAC-1)
+C      Radiatively active tracer cloud. LDYERAD=F leaves the RT on the prescribed
+C      ropprmulti field, and is off by default. One tracer only:
+C      KDYERAD picks it (2 = first dye) and the rest stay passive, which
+C      keeps the equal-but-for-radius comparison intact. 
 
        COMMON/MAG/ BFIELD,TDRAG_MIN,RAMPUP,LBDRAG
        LOGICAL LBDRAG
@@ -92,7 +86,8 @@ C      non-negative, so a negative value is unambiguous.
      & NTSTEP_IN, NSKIP_IN, BOTRELAXTIME, FBASEFLUX, FORCE1DDAYS,
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
      & PORB, OBLIQ, ECCEN,
-     & ADYE, RHODYE, PDYEFIX, PDYEUPPER, TRELAXORB
+     & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
+     & LDYERAD, KDYERAD, KDYESPEC
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -106,10 +101,14 @@ C      keys still gives a defined configuration.
        DO 5 KK=1,NTRAC
           ADYE(KK)=1.0E-6
     5  CONTINUE
+C      Guard value only; cloud_properties_set_up.f replaces
        RHODYE=3.0E3
        PDYEFIX=1.0E5
        PDYEUPPER=1.0E6
        TRELAXORB=0.1
+       LDYERAD=.FALSE.
+       KDYERAD=2
+       KDYESPEC=7
 
        DO 9 KK=1,NTRAC-1
           DO 8 JJ=1,JG
@@ -122,7 +121,24 @@ C      keys still gives a defined configuration.
     9  CONTINUE
 
        READ (7,INVARPARAM)
-       WRITE(2,INVARPARAM)             
+       WRITE(2,INVARPARAM)
+
+
+C      Check that the dye species is in range, and that the radiatively active
+C      tracer is a valid species. The dye species is used for both settling
+C      and radiative feedback
+       IF (KDYESPEC.LT.1 .OR. KDYESPEC.GT.13) THEN
+          WRITE(2,*) 'INIVARPARAM: KDYESPEC out of range 1-13:',
+     &               KDYESPEC
+          STOP 'KDYESPEC out of range'
+       ENDIF
+       IF (LDYERAD) THEN
+          IF (KDYERAD.LT.2 .OR. KDYERAD.GT.NTRAC) THEN
+             WRITE(2,*) 'INIVARPARAM: KDYERAD must be 2..NTRAC:',
+     &                  KDYERAD
+             STOP 'KDYERAD out of range'
+          ENDIF
+       ENDIF             
 
        READ (7,INMAG)
        WRITE(2,INMAG)
