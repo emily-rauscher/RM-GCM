@@ -4,7 +4,7 @@ C**********************************************************
       subroutine INIVARPARAM                                                 
       use tracerclds, only : ADYE, RHODYE, PDYEFIX, PDYEUPPER,
      &                       TRELAXORB, KDYERAD, KDYESPEC, LDYERAD,
-     &                       TRAPRV
+     &                       KDYEMODE, TCONDDYE, TEVAPDYE
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -70,9 +70,10 @@ C
        LOGICAL LPLOTMAP
 
 C      Radiatively active tracer cloud. LDYERAD=F leaves the RT on the prescribed
-C      ropprmulti field, and is off by default. One tracer only:
-C      KDYERAD picks it (2 = first dye) and the rest stay passive, which
-C      keeps the equal-but-for-radius comparison intact. 
+C      ropprmulti field, and is off by default. KDYEMODE=1 has one tracer per species:
+C      KDYERAD picks the active one (2 = first dye) and the rest stay passive
+C      (i.e., they don't contribute to the radiative transfer). With KDYEMODE=2
+C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
 
        COMMON/MAG/ BFIELD,TDRAG_MIN,RAMPUP,LBDRAG
        LOGICAL LBDRAG
@@ -87,7 +88,8 @@ C      keeps the equal-but-for-radius comparison intact.
      & OPACIR_POWERLAW, OPACIR_REFPRES, SOLC_IN, TOAALB,
      & PORB, OBLIQ, ECCEN,
      & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
-     & LDYERAD, KDYERAD, KDYESPEC
+     & LDYERAD, KDYERAD, KDYESPEC,
+     & KDYEMODE, TCONDDYE, TEVAPDYE
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -109,18 +111,13 @@ C      Guard value only; cloud_properties_set_up.f replaces
        LDYERAD=.FALSE.
        KDYERAD=2
        KDYESPEC=7
-
-       DO 9 KK=1,NTRAC-1
-          DO 8 JJ=1,JG
-             DO 7 LL=1,NL
-                DO 6 II=1,IGC
-                   TRAPRV(II,LL,JJ,KK)=-1.0
-    6           CONTINUE
-    7        CONTINUE
-    8     CONTINUE
-    9  CONTINUE
+       KDYEMODE=1
+       TCONDDYE=1.0E3
+C      Negative means "same as TCONDDYE", resolved after the read.
+       TEVAPDYE=-1.0
 
        READ (7,INVARPARAM)
+       IF (TEVAPDYE.LT.0.0) TEVAPDYE=TCONDDYE
        WRITE(2,INVARPARAM)
 
 
@@ -138,7 +135,27 @@ C      and radiative feedback
      &                  KDYERAD
              STOP 'KDYERAD out of range'
           ENDIF
-       ENDIF             
+       ENDIF
+
+C      Cloud scheme. Two-phase dyes come in vapour/solid pairs filling
+C      slots 2..NTRAC, and only a solid (odd) slot may be opaque.
+       IF (KDYEMODE.NE.1 .AND. KDYEMODE.NE.2) THEN
+          WRITE(2,*) 'INIVARPARAM: KDYEMODE must be 1 or 2:',
+     &               KDYEMODE
+          STOP 'KDYEMODE out of range'
+       ENDIF
+       IF (KDYEMODE.EQ.2) THEN
+          IF (MOD(NTRAC-1,2).NE.0) THEN
+             WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs NTRAC odd ',
+     &                  '(1 + 2 per vapour/solid pair):', NTRAC
+             STOP 'KDYEMODE=2 needs odd NTRAC'
+          ENDIF
+          IF (LDYERAD .AND. MOD(KDYERAD,2).NE.1) THEN
+             WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs KDYERAD on a ',
+     &                  'solid slot (3,5,...):', KDYERAD
+             STOP 'KDYERAD is not a solid slot'
+          ENDIF
+       ENDIF
 
        READ (7,INMAG)
        WRITE(2,INMAG)

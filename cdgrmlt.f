@@ -2,8 +2,9 @@ C**********************************************************
 C             SUBROUTINE DGRMLT                                           
 C**********************************************************               
       SUBROUTINE DGRMLT(IH,IPASS)
-      use tracerclds, only : ADYE, RHODYE, PDYEFIX, TRELAXORB, TRAPRV,
-     &                       FCONDYE
+      use tracerclds, only : ADYE, PDYEFIX, TRELAXORB,
+     &                       KDYEMODE, TCONDDYE, TEVAPDYE, QSATDYE,
+     &                       SETTLECOL, FCONDYE
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -161,6 +162,10 @@ C     Needed for PORB, OBLIQ (nightside settling source term below).
      & PORB, OBLIQ, ECCEN
        LOGICAL LPLOTMAP
        DIMENSION QSED(NL)
+C     One column for SETTLECOL, and the two-phase post-exchange state.
+       DIMENSION PCSED(NL),TCSED(NL),QCSED(NL),QVSED(NL)
+C     Per-level, grain-independent settling inputs, shared by all dyes.
+       DIMENSION GLAMC(NL),GRHOC(NL),GETAC(NL),FSCLC(NL)
 c
       common/gridsss/assbl1(igc,jg),ashbl1(igc,jg),aslbl1(igc,jg),        
      *               arrcr1(igc,jg),arrlr1(igc,jg),                       
@@ -425,7 +430,18 @@ C     orbital motion, so fall back to TRELAXORB rotation days.
       ENDIF
       RLXDYE=1.0/(PI2*TRELAXDYE)
 C
-C     Nightside gravitational settling of the dyes (tracers 2..NTRAC):
+C     Two-phase exchange: the fraction of the gap to equilibrium closed
+C     in DELT2, from exact integration of dq/dt=(qeq-q)/tau. TCONDDYE
+C     and TEVAPDYE are seconds, so tau*WW is model time; tau<=0 means
+C     instantaneous equilibrium.
+      IF (KDYEMODE.EQ.2) THEN
+         FCDYE=1.0
+         FEDYE=1.0
+         IF (TCONDDYE.GT.0.0) FCDYE=1.0-EXP(-DELT2/(TCONDDYE*WW))
+         IF (TEVAPDYE.GT.0.0) FEDYE=1.0-EXP(-DELT2/(TEVAPDYE*WW))
+      ENDIF
+C
+C     Gravitational settling of the dyes (tracers 2..NTRAC):
 C     dq/dt = (T/P) d/dz[ (P/T) q VFALL ]. For a mass mixing ratio the
 C     density factor is P/T INSIDE the derivative and T/P outside;
 C     reversed, a uniform q gives dq/dt>0, not the physical decay. No
@@ -461,69 +477,94 @@ C
             COSZLC=SIN(ALATLC/360.*PI2)*SIN(SEDSLT/360.*PI2)
      +            +COS(ALATLC/360.*PI2)*COS(SEDSLT/360.*PI2)
      +            *COS((ALON-SEDSLN)/360.*PI2)
+C           Calculate gas properties for each level
+            DO 290 L=1,NL
+               PCSED(L)=SIGMA(L)*PLG(J)*P0
+               TCSED(L)=TG(J,L)*CT
+               CALL SED_GAS(PCSED(L),TCSED(L),GLAMC(L),GRHOC(L),
+     +                      GETAC(L))
+               IF (KDYEMODE.EQ.1) THEN
+                  FSCLC(L)=FCONDYE(PCSED(L),TCSED(L))
+               ELSE
+                  FSCLC(L)=1.0
+               ENDIF
+  290       CONTINUE
+C           With LFLUX the dyes are advected in flux form, so TRAG holds
+C           p*q (PLG=p*/P0 by now, see the EXP above), not q. Everything
+C           below works in q: divide by PSDY on the way in, multiply the
+C           target by PSDY on the way out, as QG/QNLG are for tracer 1.
+            IF (LFLUX) THEN
+               PSDY=PLG(J)
+            ELSE
+               PSDY=1.0
+            ENDIF
+            IF (KDYEMODE.EQ.1) THEN
 C           Tracers 2..NTRAC are the dyes: identical but for ADYE(KK),
 C           so one run compares grain sizes. Tracer 1 is water vapour.
+C           Each dye is total species material, and only its condensed
+C           fraction (FCONDYE) falls.
             DO 308 KK=2,NTRAC
-C              Seed the lagged store on its first use (see INIVARPARAM).
-               DO 296 L=1,NL
-                  IF (TRAPRV(J,L,IH,KK-1).LT.0.0)
-     +               TRAPRV(J,L,IH,KK-1)=TRAG(J,L,KK)
-  296          CONTINUE
-C
-C                 Backward-Euler donor-cell sweep, bidiagonal because
-C                 grains only fall - one top-down pass:
-C                    q(L) = [ qprev(L) + GSED*q(L-1) ] / (1 + CSED)
-C                 CSED is the layer's own loss, GSED the gain from
-C                 above, q(0)=0. Centred differencing instead cancels
-C                 the layer's own term and decouples odd/even levels,
-C                 whose sawtooth drove q negative and then ran away.
-C                 Lagging to qprev buys the stability: ctstep.f
-C                 leapfrogs from TRAMI. Explicit limit R*DELT2 < 5.9e-2.
-                  UPSED=0.0
-                  DO 300 L=1,NL
-                     PSED=SIGMA(L)*PLG(J)*P0
-                     TSED=TG(J,L)*CT
-                     CALL CALC_V_FALL(PSED,ADYE(KK),GA,RHODYE,TSED,
-     +                                VFALL)
-                     DZSED=(GASCON*TSED/GA)*(DSIGMA(L)/SIGMA(L))
-C                    The dye is total species material, and only the condensed fraction falls. Scaling VFALL to the condensed fraction currently
-C                    TODO: TK decide if this ramp is worth it, in principle there should just be two tracers, one for the cloud and one for the gas
-                     VFALL=VFALL*FCONDYE(PSED,TSED)
-                     CSED=VFALL/DZSED/WW*DELT2
-                     IF (L.EQ.1) THEN
-                        GSED=0.0
-                     ELSE
-                        GSED=(TSED*PSEDU)/(PSED*TSEDU)
-     +                       *VFUP/DZSED/WW*DELT2
-                     ENDIF
-                     QSED(L)=(TRAPRV(J,L,IH,KK-1)+GSED*UPSED)
-     +                       /(1.0+CSED)
-                     UPSED=QSED(L)
-                     PSEDU=PSED
-                     TSEDU=TSED
-                     VFUP=VFALL
-  300             CONTINUE
-C                 As a tendency: ctstep.f leapfrogs from TRAMI, which
-C                 TRAPRV shadows, so this lands the field on QSED.
-                  DO 302 L=1,NL
-                     TRANLG(J,L,KK)=TRANLG(J,L,KK)
-     +                    +(QSED(L)-TRAPRV(J,L,IH,KK-1))/DELT2
-  302             CONTINUE
-C              Deep reservoir, explicit: ~14x inside the limit above.
+C              TRAG strides levels by IGC, so copy out the column.
+               DO 301 L=1,NL
+                  QCSED(L)=TRAG(J,L,KK)/PSDY
+  301          CONTINUE
+               CALL SETTLECOL(QCSED,PCSED,TCSED,SIGMA,DSIGMA,ADYE(KK),
+     +                        GA,GASCON,WW,DELT2,FSCLC,GLAMC,GRHOC,
+     +                        GETAC,QSED)
+               DO 302 L=1,NL
+                  TRANLG(J,L,KK)=TRANLG(J,L,KK)
+     +                 +(PSDY*QSED(L)-TRAG(J,L,KK))/DELT2
+  302          CONTINUE
+C              Deep reservoir, relaxing q toward 1.
                DO 305 L=1,NL
-                  PRSED=SIGMA(L)*PLG(J)*P0
-                  IF (PRSED.GT.PDYEFIX) THEN
+                  IF (PCSED(L).GT.PDYEFIX) THEN
                      TRANLG(J,L,KK)=TRANLG(J,L,KK)
-     +                    +(1.0-TRAG(J,L,KK))*RLXDYE
+     +                    +(PSDY-TRAG(J,L,KK))*RLXDYE
                   ENDIF
   305          CONTINUE
-C              Hand this column to the next step. Every column, not
-C              just night ones, so it stays valid as the terminator
-C              moves.
-               DO 307 L=1,NL
-                  TRAPRV(J,L,IH,KK-1)=TRAG(J,L,KK)
-  307          CONTINUE
   308       CONTINUE
+            ELIF (KDYEMODE.EQ.2) THEN
+C           Vapour/solid pairs: vapour KV=2P, solid KC=2P+1. First the
+C           pair relaxes toward equilibrium, solid = max(total-QSATDYE,0),
+C           exactly integrated over DELT2 so any timescale is stable and
+C           the total is untouched; then the solid alone settles.
+            DO 318 KV=2,NTRAC-1,2
+               KC=KV+1
+               DO 312 L=1,NL
+                  QVDY=TRAG(J,L,KV)/PSDY
+                  QCDY=TRAG(J,L,KC)/PSDY
+                  QTDY=QVDY+QCDY
+                  QEDY=MAX(QTDY-QSATDYE(PCSED(L),TCSED(L)),0.0)
+                  IF (QEDY.GT.QCDY) THEN
+                     QCDY=QCDY+(QEDY-QCDY)*FCDYE
+                  ELSE
+                     QCDY=QCDY+(QEDY-QCDY)*FEDYE
+                  ENDIF
+                  QCSED(L)=QCDY
+                  QVSED(L)=QTDY-QCDY
+  312          CONTINUE
+               CALL SETTLECOL(QCSED,PCSED,TCSED,SIGMA,DSIGMA,ADYE(KC),
+     +                        GA,GASCON,WW,DELT2,FSCLC,GLAMC,GRHOC,
+     +                        GETAC,QSED)
+               DO 314 L=1,NL
+                  TRANLG(J,L,KV)=TRANLG(J,L,KV)
+     +                 +(PSDY*QVSED(L)-TRAG(J,L,KV))/DELT2
+                  TRANLG(J,L,KC)=TRANLG(J,L,KC)
+     +                 +(PSDY*QSED(L)-TRAG(J,L,KC))/DELT2
+  314          CONTINUE
+C              Deep reservoir: relax the pair's total q toward 1,
+C              supplied as vapour; the exchange above decides its phase.
+               DO 316 L=1,NL
+                  IF (PCSED(L).GT.PDYEFIX) THEN
+                     TRANLG(J,L,KV)=TRANLG(J,L,KV)
+     +                    +(PSDY-TRAG(J,L,KV)-TRAG(J,L,KC))*RLXDYE
+                  ENDIF
+  316          CONTINUE
+  318       CONTINUE
+            ELSE
+               WRITE(*,*)'ERROR: KDYEMODE must be 1 or 2 (cdgrmlt.f)'
+               STOP
+            ENDIF
   310    CONTINUE
          IOFM=MGPP
   320 CONTINUE

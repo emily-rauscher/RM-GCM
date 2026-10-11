@@ -537,6 +537,17 @@ C
                TRAG1(I,IH,KK-1)=TRAG(I,KK)
             END DO
          END DO
+C        Flux form carries p*q; write q. SPG=p*/P0-1 here (MGRMLT).
+         IF (LFLUX) THEN
+            DO KK=2,NTRAC
+               DO L=1,NL
+                  DO I=1,IGC
+                     TRAG1(I+(L-1)*IGC,IH,KK-1)=
+     &                  TRAG1(I+(L-1)*IGC,IH,KK-1)/(1.0+SPG(I))
+                  END DO
+               END DO
+            END DO
+         ENDIF
          DO I=1,IGC
             SPG1(I,IH)=SPG(I)
          END DO
@@ -807,6 +818,9 @@ C                 Record tracer quantities for radiative transfer, if we're doin
                      DO IDY=1,IGC
                         TRAG_forrad(IDY,LDY,IH) =
      &                     TRAG(IDY+(LDY-1)*IGC,KDYERAD)
+C                       Flux form carries p*q; the RT wants q. DGRMLT has just made PLG=p*/P0.
+                        IF (LFLUX) TRAG_forrad(IDY,LDY,IH) =
+     &                     TRAG_forrad(IDY,LDY,IH)/PLG(IDY)
                      ENDDO
                   ENDDO
                ENDIF

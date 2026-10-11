@@ -2,7 +2,7 @@ C**********************************************************
 C             SUBROUTINE ICTRAC                                           
 C**********************************************************               
       SUBROUTINE ICTRAC
-      use tracerclds, only : PDYEFIX, PDYEUPPER
+      use tracerclds, only : PDYEFIX, PDYEUPPER, KDYEMODE
 C                                                                         
 C     *********PMF Version 1.0 (8.4.97)*******************                
 C     Subroutine which initialises the tracer fields.                     
@@ -279,13 +279,10 @@ CCCC      QSTAR(J,JH)=ESCON*PQSAT(TSTAR(J,JH))
  810     CONTINUE
 C
 C     Initialise the dyes (2..NTRAC): abundance 1 below PDYEFIX and
-C     above PDYEUPPER, 0 between. Both come from tracerclds so they
-C     cannot drift from the values DGRMLT relaxes to. PDYEUPPER has no
-C     matching relaxation - that 1 is a one-off initial condition.
-C     The test is an OR, so PDYEUPPER above PDYEFIX makes every level
-C     satisfy one clause and the field starts uniformly 1.
-C     Every dye starts alike, differing only in ADYE(KK); slots carried
-C     over from a restart (KK<=NTRACO) are left alone.
+C     above PDYEUPPER, 0 between (usually 1 everywhere).
+C     slots carried over from a restart (KK<=NTRACO) are left alone.
+C.    With KDYEMODE=2 vapour is even slots solid is odd slots.
+C     Solids start at 0, then relax toward phase equilibrium
 C
          DO 832 KK=2,NTRAC
             IF (KK.GT.NTRACO) THEN
@@ -296,8 +293,10 @@ C
                      DO L=1,NL
                         K=J+(L-1)*IGC
                         PRTR=SIGMA(L)*PLG(J)*P0
-                        IF (PRTR.GT.PDYEFIX .OR. PRTR.LT.PDYEUPPER)
-     +                     THEN
+                        IF (KDYEMODE.EQ.2 .AND. MOD(KK,2).EQ.1) THEN
+                           TRAG(K,KK)=0.0
+                        ELSE IF (PRTR.GT.PDYEFIX .OR.
+     +                           PRTR.LT.PDYEUPPER) THEN
                            TRAG(K,KK)=1.0
                         ELSE
                            TRAG(K,KK)=0.0

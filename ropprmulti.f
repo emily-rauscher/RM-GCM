@@ -30,7 +30,7 @@
 !
       use corrkmodule  , only : MINWNOSTEL
       use tracerclds, only : ADYE, KDYERAD, KDYESPEC, LDYERAD,
-     &                       QDYECOL, FCONDYE
+     &                       QDYECOL, FCONDYE, KDYEMODE
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, MET_INDEX, itspd
@@ -263,9 +263,15 @@ C                   species' optics placed by the tracer rather than
 C                   the dye profile applied once per species.
                     IF (I.EQ.KDYESPEC) THEN
 C                       TODO: resolve off-by-half indexing difference between the tracer and RT
-C                       Positivity is enforced
-                        CONDFACT(J,I) = max(QDYECOL(J),0.0)
+C                       Positivity is enforced (spectral dynamics can have slightly negative values from truncation).
+C                       A total-material dye (KDYEMODE=1) is opaque only in its condensed
+C                       fraction; a two-phase solid tracer is all opaque.
+                        IF (KDYEMODE .EQ. 2) THEN
+                            CONDFACT(J,I) = max(QDYECOL(J),0.0)
+                        ELSE
+                            CONDFACT(J,I) = max(QDYECOL(J),0.0)
      &                                  * FCONDYE(p_pass(J), TT(J))
+                        END IF
                     ELSE
                         CONDFACT(J,I) = 0.0
                     END IF

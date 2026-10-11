@@ -6,7 +6,8 @@
 
 
       SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
-          use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE
+          use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE,
+     &                           KDYEMODE, QSATDYE, PCLN1, RDLNPC
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -1439,8 +1440,27 @@
           TCDYE(J) = TCONDS(MET_INDEX,J,KDYESPEC)
           PCDYE(J) = input_pressure_array_cgs(J) / 10.0
       END DO
+!     Log-grid constants for IPCDYE's O(1) lookup in FCONDYE.
+      PCLN1  = LOG(PCDYE(1))
+      RDLNPC = 79.0 / (LOG(PCDYE(80)) - PCLN1)
       WRITE(*,*) 'Dye condensation curve from species ', KDYESPEC,
      &    ': T_cond spans ', MINVAL(TCDYE), ' to ', MAXVAL(TCDYE), ' K'
+
+!     The two-phase scheme inverts T_cond(P) for P*(T) in QSATDYE, which
+!     needs the curve strictly monotonic.
+      IF (KDYEMODE .EQ. 2) THEN
+          DO J = 2,80
+              IF ((TCDYE(J)-TCDYE(J-1))*(TCDYE(80)-TCDYE(1)) .LE. 0.0)
+     &        THEN
+                  WRITE(*,*) 'Dye condensation curve not monotonic at',
+     &                ' level ', J, ': ', TCDYE(J-1), TCDYE(J)
+                  STOP 'KDYEMODE=2 needs a monotonic T_cond(P)'
+              END IF
+          END DO
+    !       QSATDYE should return 1 on the curve itself; print the worst miss as a check on the inversion.
+    !       WRITE(*,*) 'QSATDYE on the curve, max |q_sat-1|: ',
+    !  &        MAXVAL((/ (ABS(QSATDYE(PCDYE(J),TCDYE(J))-1.0), J=1,80) /))
+      END IF
 
 !   Now begins the cloud wavelength averaging:
       IF (GRAYCLDV) THEN

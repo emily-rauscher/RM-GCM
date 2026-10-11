@@ -78,7 +78,12 @@ TRELAXORB	    = 0.1,
 ! Radiatively active dye stuff here, switch, tracer index, species index
 LDYERAD		    = F,
 KDYERAD		    = 3,
-KDYESPEC	    = 7
+KDYESPEC	    = 7,
+! Cloud scheme: 1 = one total-material tracer per dye, 2 = vapour/solid
+! pairs (vapour 2P, solid 2P+1; NTRAC odd). Timescales in seconds.
+KDYEMODE	    = 1,
+TCONDDYE	    = 1.0e+03,
+TEVAPDYE	    = 1.0e+02
 /
 &INMAG
  LBDRAG = F,
