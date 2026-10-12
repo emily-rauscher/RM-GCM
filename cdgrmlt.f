@@ -523,7 +523,7 @@ C              Deep reservoir, relaxing q toward 1.
                   ENDIF
   305          CONTINUE
   308       CONTINUE
-            ELIF (KDYEMODE.EQ.2) THEN
+            ELSE IF (KDYEMODE.EQ.2) THEN
 C           Vapour/solid pairs: vapour KV=2P, solid KC=2P+1. First the
 C           pair relaxes toward equilibrium, solid = max(total-QSATDYE,0),
 C           exactly integrated over DELT2 so any timescale is stable and
