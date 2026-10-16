@@ -340,7 +340,8 @@ C**********************************************************
 C             SUBROUTINE RADIATION_ALLLATS
 C**********************************************************
       SUBROUTINE RADIATION_ALLLATS()
-      use tracerclds, only : LDYERAD, TRAG_forrad, QDYECOL
+      use tracerclds, only : LDYERAD, TRAG_forrad, QDYECOL, KDYEMODE,
+     &                       FCONDYE
 C     Parallelized over all JG*MG columns simultaneously.
 C     Computes radiative heating rates and stores in HTNET.
 C     HTNET_old is saved before the parallel loop.
@@ -484,6 +485,8 @@ C     TTRD is computed by the stripped-down RADIATION subroutine.
 
       REAL TAVE(IGP)
 
+C     One level's opaque dye amount, on its way into QDYECOL.
+      REAL QLEV
       REAL PR(NL+1),T(NL+1),p_pass(nl+1),htlw(nl+1),htsw(nl+1)
       real dpg(nl+1), pbar(nl+1)
       real dpgsub(2*nl+2), pbarsub(2*nl+2)
@@ -656,7 +659,7 @@ C       LFLUXDIAG block: must be serial, placed before OMP region
         ENDIF
 
 !$OMP   PARALLEL default(none)
-!$OMP&  private(col, i, jh_priv, ld, l, PR, PRB2T, T, AEROPROF,
+!$OMP&  private(col, i, jh_priv, ld, l, PR, PRB2T, T, AEROPROF, QLEV,
 !$OMP&  p_pass, alon, rfluxes_aerad, fluxes, fsl_dn_aerad, fir_up_aerad,
 !$OMP&  k_irl, k_vl, htlw, htsw, thread_num,
 !$OMP&  psol_aerad, cheati, pl, dpg, tin, k_lowp,
@@ -695,7 +698,7 @@ C       LFLUXDIAG block: must be serial, placed before OMP region
 !$OMP&  TG_forrad, PLG_forrad, T0,
 C     Module variables from tracerclds. QDYECOL is NOT listed: it is
 C     THREADPRIVATE, which is a predetermined attribute.
-!$OMP&  TRAG_forrad, LDYERAD)
+!$OMP&  TRAG_forrad, LDYERAD, KDYEMODE)
 
 !$OMP   DO SCHEDULE(GUIDED)
         DO col=1,JG*MG
@@ -735,14 +738,22 @@ C         Prescribed MAKECLOUDS field. AEROPROF is write-only now, the optical d
             ENDDO
           ENDIF
 
-C         Hand this column's cloud profile to OPPRMULTI. Threadprivate
-C         rather than an extra argument through calc_radheat -> radsub
-C         -> radtran -> opprmulti, following /RADWORK/ above.
+C         Hand this column's radiatively active cloud profile to OPPRMULTI.
+C         Threadprivate rather than an extra argument through
+C         calc_radheat -> radsub -> radtran -> opprmulti, following
+C         /RADWORK/ above. RT layer J holds the mass between p_pass(J-1)
+C         and p_pass(J), the edges either side of GCM level J-1, so it
+C         takes level J-1's cloud; layer 1, above level 1, repeats it.
+C         A total-material dye (KDYEMODE=1) is opaque only in its
+C         condensed fraction, taken at the level as the settling takes
+C         it; a two-phase solid tracer is all opaque.
           IF (LDYERAD) THEN
             DO LD=1,NL
-              QDYECOL(LD)=MAX(TRAG_forrad(im,LD,jh_priv),0.0)
+              QLEV=MAX(TRAG_forrad(im,LD,jh_priv),0.0)
+              IF (KDYEMODE.EQ.1) QLEV=QLEV*FCONDYE(PR(LD),T(LD))
+              QDYECOL(LD+1)=QLEV
             ENDDO
-            QDYECOL(NL+1)=0.0
+            QDYECOL(1)=QDYECOL(2)
           ENDIF
 
           rfluxes_aerad = 0.

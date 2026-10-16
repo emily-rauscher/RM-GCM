@@ -7,7 +7,8 @@
 
       SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
           use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE,
-     &                           KDYEMODE, QSATDYE, PCLN1, RDLNPC
+     &                           KDYEMODE, QSATDYE, PCLN1, RDLNPC,
+     &                           LDYERAD, KDYERAD, ADYE
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -1036,6 +1037,22 @@
               WRITE(*,*) 'Dye settling density from species ',
      &            KDYESPEC, ': ', RHODYE, ' -> ', DENSITY(KDYESPEC)
               RHODYE = DENSITY(KDYESPEC)
+          END IF
+
+!         The RT takes the dye's optics from the nearest tabulated size
+!         but scales its optical depth by 1/ADYE**3, so a radius off the
+!         table gives an optical depth with no matching optics (1e-12 m
+!         is 1e9 times too opaque and the RT returns NaN).
+          IF (LDYERAD) THEN
+              IF (ADYE(KDYERAD) .LT. input_particle_size_array_in_meters(1)
+     &            .OR. ADYE(KDYERAD) .GT.
+     &            input_particle_size_array_in_meters(100)) THEN
+                  WRITE(*,*) 'ADYE(KDYERAD) = ', ADYE(KDYERAD),
+     &                ' m is outside the cloud optics size grid, ',
+     &                input_particle_size_array_in_meters(1), ' to ',
+     &                input_particle_size_array_in_meters(100), ' m'
+                  STOP 'ADYE(KDYERAD) outside the cloud optics size grid'
+              END IF
           END IF
 
           ! The molar masses of the different cloud species in grams/mol

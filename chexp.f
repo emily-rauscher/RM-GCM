@@ -94,62 +94,58 @@ C
       IGPAR=ISPAR                                                         
       IF (IALP.EQ.2.OR.IALP.EQ.4) IGPAR=1-ISPAR                           
 C                                                                         
-C     Perform inverse Legendre transform from spectral space to form      
-C     the even and odd contributions to the Fourier transforms.           
-C     Separate code for NHEM=1,2 to increase efficiency.                  
-C                                                                         
-      IF (NHEM.EQ.1) THEN                                                 
-         IA=ISPAR+1                                                       
-         IM=0                                                             
-         IP=0                                                             
-         DO 10 M=0,MM-1,MOCT                                              
-            IM=IM+1                                                       
-            DO 10 N=M,NN-1,2                                              
-               IP=IP+1                                                    
-               DO 10 L=1,NLS                                              
-                  GV(IM,L)=GV(IM,L)+ALPN(IP,IA,JL,IALP)*SV(IP,L)          
-   10    CONTINUE                                                         
-      ELSE                                                                
-         IA=ISPAR+1                                                       
-         IB=2-ISPAR                                                       
-         IM=0                                                             
-         IP=0                                                             
-         DO 20 M=0,MM-1,MOCT                                              
-            IM=IM+1                                                       
-            IG=IM+IDL                                                     
-            DO 20 N=M,NN-1,2                                              
-               IP=IP+1                                                    
-               DO 20 L=1,NLS                                              
-                  GV(IM,L)=GV(IM,L)+ALPN(IP,IA,JL,IALP)*SV(IP     ,L)     
-                  GV(IG,L)=GV(IG,L)+ALPN(IP,IB,JL,IALP)*SV(IP+NWJ2,L)     
-   20    CONTINUE                                                         
-      ENDIF                                                               
-C                                                                         
-C     For a global run, sum and difference even and odd contributions     
-C     to give the complete Fourier transforms at the northern and         
-C     southern latitude rows.  Separate code for each symmetry:           
-C        IGPAR=0 : even (IA) precedes odd (IB).                           
-C        IGPAR=1 : odd (IA) precedes even (IB).                           
-C                                                                         
-      IF (NHEM.EQ.2) THEN                                                 
-         IF (IGPAR.EQ.0) THEN                                             
-            DO 30 IA=1,NWW                                                
-               IB=IA+IDL                                                  
-               DO 30 L=1,NLS                                              
-                  TEMP=GV(IA,L)                                           
-                  GV(IA,L)=TEMP+GV(IB,L)                                  
-                  GV(IB,L)=TEMP-GV(IB,L)                                  
-   30       CONTINUE                                                      
-         ELSE                                                             
-            DO 40 IA=1,NWW                                                
-               IB=IA+IDL                                                  
-               DO 40 L=1,NLS                                              
-                  TEMP=GV(IA,L)                                           
-                  GV(IA,L)=GV(IB,L)+TEMP                                  
-                  GV(IB,L)=GV(IB,L)-TEMP                                  
-   40       CONTINUE                                                      
-         ENDIF                                                            
-      ENDIF                                                               
-C                                                                         
+C     Perform inverse Legendre transform from spectral space to form
+C     the even and odd contributions to the Fourier transforms, then
+C     (global run) sum and difference them to give the complete
+C     Fourier transforms at the northern and southern latitude rows:
+C        IGPAR=0 : even (first half) precedes odd (second half).
+C        IGPAR=1 : odd precedes even.
+C     Fields L are independent, so they are shared among OpenMP
+C     threads. Each GV(IM,L) still sums its N terms in the original
+C     order, so the result does not depend on the thread count. Small
+C     calls stay serial (IF clause) to avoid thread start-up costs.
+C
+      IA=ISPAR+1
+      IB=2-ISPAR
+!$OMP PARALLEL DO IF(NLS.GE.16) DEFAULT(SHARED)
+!$OMP& PRIVATE(L,M,N,IM,IG,IP,K,KB,TEMP)
+      DO 50 L=1,NLS
+         IM=0
+         IP=0
+         IF (NHEM.EQ.1) THEN
+            DO 10 M=0,MM-1,MOCT
+               IM=IM+1
+               DO 10 N=M,NN-1,2
+                  IP=IP+1
+                  GV(IM,L)=GV(IM,L)+ALPN(IP,IA,JL,IALP)*SV(IP,L)
+   10       CONTINUE
+         ELSE
+            DO 20 M=0,MM-1,MOCT
+               IM=IM+1
+               IG=IM+IDL
+               DO 20 N=M,NN-1,2
+                  IP=IP+1
+                  GV(IM,L)=GV(IM,L)+ALPN(IP,IA,JL,IALP)*SV(IP     ,L)
+                  GV(IG,L)=GV(IG,L)+ALPN(IP,IB,JL,IALP)*SV(IP+NWJ2,L)
+   20       CONTINUE
+            IF (IGPAR.EQ.0) THEN
+               DO 30 K=1,NWW
+                  KB=K+IDL
+                  TEMP=GV(K,L)
+                  GV(K,L)=TEMP+GV(KB,L)
+                  GV(KB,L)=TEMP-GV(KB,L)
+   30          CONTINUE
+            ELSE
+               DO 40 K=1,NWW
+                  KB=K+IDL
+                  TEMP=GV(K,L)
+                  GV(K,L)=GV(KB,L)+TEMP
+                  GV(KB,L)=GV(KB,L)-TEMP
+   40          CONTINUE
+            ENDIF
+         ENDIF
+   50 CONTINUE
+!$OMP END PARALLEL DO
+C
       RETURN                                                              
       END                                                                 

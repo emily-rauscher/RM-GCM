@@ -164,7 +164,10 @@ C     Needed for PORB, OBLIQ (nightside settling source term below).
        DIMENSION QSED(NL)
 C     One column for SETTLECOL, and the two-phase post-exchange state.
        DIMENSION PCSED(NL),TCSED(NL),QCSED(NL),QVSED(NL)
-C     Per-level, grain-independent settling inputs, shared by all dyes.
+C     Grain-independent settling inputs, shared by all dyes: sigma,
+C     temperature and gas properties at each layer's lower interface,
+C     and the condensed fraction FSCLC of the layer itself.
+       DIMENSION SHSED(NL),THSED(NL)
        DIMENSION GLAMC(NL),GRHOC(NL),GETAC(NL),FSCLC(NL)
 c
       common/gridsss/assbl1(igc,jg),ashbl1(igc,jg),aslbl1(igc,jg),        
@@ -445,10 +448,11 @@ C     Gravitational settling of the dyes (tracers 2..NTRAC):
 C     dq/dt = (T/P) d/dz[ (P/T) q VFALL ]. For a mass mixing ratio the
 C     density factor is P/T INSIDE the derivative and T/P outside;
 C     reversed, a uniform q gives dq/dt>0, not the physical decay. No
-C     height coordinate here, so dz=-(GASCON*T/GA) dlnP per sigma
-C     layer. ADYE(KK) and RHODYE come from the tracerclds module;
-C     CALC_V_FALL is
-C     SI, as are GA, SIGMA*PLG*P0 and TG*CT, so VFALL is m/s for /WW.
+C     height coordinate here, so SETTLECOL works in sigma-mass form,
+C     with the flux rho*VFALL taken at each layer's lower interface.
+C     ADYE(KK) and RHODYE come from the tracerclds module; SED_GAS and
+C     V_FALL_GRAIN are SI, as are GA, SIGMAH*PLG*P0 and TG*CT, so VFALL
+C     is m/s for /WW.
 C     SEDSLN/SEDSLT use the PORB/OBLIQ formula of NIKOSRAD; night is
 C     where the local zenith-angle cosine is negative.
       IF (PORB.NE.0.0) THEN
@@ -477,18 +481,34 @@ C
             COSZLC=SIN(ALATLC/360.*PI2)*SIN(SEDSLT/360.*PI2)
      +            +COS(ALATLC/360.*PI2)*COS(SEDSLT/360.*PI2)
      +            *COS((ALON-SEDSLN)/360.*PI2)
-C           Calculate gas properties for each level
+C           Layer pressures and temperatures, and the condensed
+C           fraction each layer passes to the flux below it
             DO 290 L=1,NL
                PCSED(L)=SIGMA(L)*PLG(J)*P0
                TCSED(L)=TG(J,L)*CT
-               CALL SED_GAS(PCSED(L),TCSED(L),GLAMC(L),GRHOC(L),
-     +                      GETAC(L))
                IF (KDYEMODE.EQ.1) THEN
                   FSCLC(L)=FCONDYE(PCSED(L),TCSED(L))
                ELSE
                   FSCLC(L)=1.0
                ENDIF
   290       CONTINUE
+C           Gas properties at each layer's lower interface, where the
+C           settling flux is evaluated: SIGMAH(L), or the surface for
+C           L=NL, with T linear in ln(sigma) between the two layers
+C           (the bottom layer's own T at the surface).
+            DO 291 L=1,NL
+               IF (L.LT.NL) THEN
+                  SHSED(L)=SIGMAH(L)
+                  THSED(L)=TCSED(L)+(TCSED(L+1)-TCSED(L))
+     +                 *LOG(SIGMAH(L)/SIGMA(L))
+     +                 /LOG(SIGMA(L+1)/SIGMA(L))
+               ELSE
+                  SHSED(L)=1.0
+                  THSED(L)=TCSED(L)
+               ENDIF
+               CALL SED_GAS(SHSED(L)*PLG(J)*P0,THSED(L),GLAMC(L),
+     +                      GRHOC(L),GETAC(L))
+  291       CONTINUE
 C           With LFLUX the dyes are advected in flux form, so TRAG holds
 C           p*q (PLG=p*/P0 by now, see the EXP above), not q. Everything
 C           below works in q: divide by PSDY on the way in, multiply the
@@ -508,7 +528,7 @@ C              TRAG strides levels by IGC, so copy out the column.
                DO 301 L=1,NL
                   QCSED(L)=TRAG(J,L,KK)/PSDY
   301          CONTINUE
-               CALL SETTLECOL(QCSED,PCSED,TCSED,SIGMA,DSIGMA,ADYE(KK),
+               CALL SETTLECOL(QCSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KK),
      +                        GA,GASCON,WW,DELT2,FSCLC,GLAMC,GRHOC,
      +                        GETAC,QSED)
                DO 302 L=1,NL
@@ -543,7 +563,7 @@ C           the total is untouched; then the solid alone settles.
                   QCSED(L)=QCDY
                   QVSED(L)=QTDY-QCDY
   312          CONTINUE
-               CALL SETTLECOL(QCSED,PCSED,TCSED,SIGMA,DSIGMA,ADYE(KC),
+               CALL SETTLECOL(QCSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KC),
      +                        GA,GASCON,WW,DELT2,FSCLC,GLAMC,GRHOC,
      +                        GETAC,QSED)
                DO 314 L=1,NL

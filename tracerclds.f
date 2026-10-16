@@ -52,8 +52,9 @@ C     --- work arrays ----------------------------------------------
 C     Snapshot of the radiatively active dye for RADIATION_ALLLATS,
 C     which loops every latitude while TRAG holds only the current one.
       REAL TRAG_forrad(IGC,NL,JG)
-C     One column's dye profile, handed to OPPRMULTI. Threadprivate
-C     because the RT runs its columns in parallel.
+C     One column's opaque dye amount per RT layer, handed to OPPRMULTI
+C     (filled, aligned to the RT layers, in RADIATION_ALLLATS).
+C     Threadprivate because the RT runs its columns in parallel.
       REAL QDYECOL(NL+1)
 !$OMP THREADPRIVATE(QDYECOL)
 C
@@ -153,43 +154,77 @@ C        Bisect for TCDYE(ILO) and TCDYE(IHI) bracketing TK.
       QSATDYE=EXP(PLNST)/PPA
       END FUNCTION QSATDYE
 C
-      SUBROUTINE SETTLECOL(QIN,PCOL,TCOL,SIG,DSIG,AD,GA,GASCON,WW,
+      SUBROUTINE SETTLECOL(QIN,SIG,SIGH,DSIG,THCOL,AD,GA,GASCON,WW,
      &                     DELT2,FSCL,GLAM,GRHO,GETA,QOUT)
-C     One column's gravitational settling over DELT2: backward-
-C     Euler donor-cell sweep,
-C        q(L) = [ qin(L) + GSED*q(L-1) ] / (1 + CSED),  q(0)=0,
-C     bidiagonal because grains only fall, so one top-down pass.
-C     PCOL in Pa and TCOL in K are the layer pressures and
-C     temperatures, AD the grain radius in m. The caller supplies the
-C     per-level quantities that do not depend on the grain, so a column
-C     computes them once for all its dyes: GLAM, GRHO, GETA are the gas
-C     mean free path, density and viscosity from SED_GAS, and FSCL
-C     scales VFALL - FCONDYE for a total-material dye (KDYEMODE=1), of
-C     which only the condensed part falls, and 1 for a solid tracer.
-      REAL QIN(NL),PCOL(NL),TCOL(NL),SIG(NL),DSIG(NL),QOUT(NL)
+C     One column's gravitational settling over DELT2: backward-Euler
+C     upwind sweep in sigma-mass form,
+C        DSIG(L)*q(L) = DSIG(L)*qin(L) + F(L-1)*qh(L-1) - F(L)*qh(L),
+C     F(0)=0. F(L) is the flux coefficient at layer L's lower interface,
+C     rho*VFALL*DELT2 over the column mass per unit sigma (ps/g),
+C        F(L) = GA*SIGH(L)*VFALL(L)/(GASCON*THCOL(L)) * DELT2/WW,
+C     every factor at the interface: SIGH(L) its sigma (1 at the
+C     surface), THCOL(L) its temperature. qh(L) is q reconstructed at
+C     that interface from upstream, linear in ln(sigma):
+C        qh(L) = q(L) + FH*PHI*(q(L)-q(L-1)),
+C     FH the interface's distance from SIG(L) in units of the spacing
+C     from SIG(L-1) (1/2 on the log grid). PHI is a minmod limiter on
+C     the slopes either side of L, taken from QIN so that qh stays
+C     linear in the unknowns and grains, which only fall, still allow
+C     one top-down pass. A cell whose qh would come out negative is
+C     re-solved with PHI=0, so q stays non-negative.
+C     First-order donor cell (PHI=0) on this grid, 1.38 per layer in
+C     sigma, errs by sqrt(1.38) either way: upwinding q, a uniform q
+C     settles at the right rate but a cloud layer descends 17% too
+C     fast; upwinding q*SIG instead (the original scheme), the layer
+C     moves at the right speed but a uniform q settles 15% too slowly.
+C     The reconstruction gets both within a few per cent. Each F*qh
+C     appears once with each sign, so column mass changes only by
+C     what leaves the bottom.
+C     AD is the grain radius in m. The caller supplies the grain-
+C     independent quantities, so a column computes them once for all
+C     its dyes: GLAM, GRHO, GETA are the gas mean free path, density
+C     and viscosity from SED_GAS at each interface. FSCL belongs to the
+C     donor layer above the interface and scales VFALL: FCONDYE for a
+C     total-material dye (KDYEMODE=1), of which only the condensed part
+C     falls, and 1 for a solid tracer.
+      REAL QIN(NL),SIG(NL),SIGH(NL),DSIG(NL),THCOL(NL),QOUT(NL)
       REAL FSCL(NL),GLAM(NL),GRHO(NL),GETA(NL)
       REAL AD,GA,GASCON,WW,DELT2
-      REAL UPSED,PSED,TSED,VFALL,DZSED,CSED,GSED,PSEDU,TSEDU,VFUP
+      REAL VFALL,FSED,FLXUP,FH,PHI,SUP,SDN,C1,QH
       INTEGER L
-      UPSED=0.0
+      FLXUP=0.0
       DO 300 L=1,NL
-         PSED=PCOL(L)
-         TSED=TCOL(L)
          CALL V_FALL_GRAIN(AD,GA,RHODYE,GLAM(L),GRHO(L),GETA(L),VFALL)
-         DZSED=(GASCON*TSED/GA)*(DSIG(L)/SIG(L))
-         VFALL=VFALL*FSCL(L)
-         CSED=VFALL/DZSED/WW*DELT2
+         FSED=GA*SIGH(L)*VFALL*FSCL(L)/(GASCON*THCOL(L))*DELT2/WW
+C        Limited upstream slope; none in the top layer, and the bottom
+C        layer, with nothing below, takes its upstream slope unlimited.
          IF (L.EQ.1) THEN
-            GSED=0.0
+            QOUT(L)=DSIG(L)*QIN(L)/(DSIG(L)+FSED)
+            QH=QOUT(L)
          ELSE
-            GSED=(TSED*PSEDU)/(PSED*TSEDU)
-     +           *VFUP/DZSED/WW*DELT2
+            FH=LOG(SIGH(L)/SIG(L))/LOG(SIG(L)/SIG(L-1))
+            SUP=(QIN(L)-QIN(L-1))/LOG(SIG(L)/SIG(L-1))
+            IF (L.LT.NL) THEN
+               SDN=(QIN(L+1)-QIN(L))/LOG(SIG(L+1)/SIG(L))
+            ELSE
+               SDN=SUP
+            ENDIF
+            IF (SUP*SDN.GT.0.0) THEN
+               PHI=MIN(1.0,SDN/SUP)
+            ELSE
+               PHI=0.0
+            ENDIF
+            C1=FH*PHI
+            QOUT(L)=(DSIG(L)*QIN(L)+FLXUP+FSED*C1*QOUT(L-1))
+     &             /(DSIG(L)+FSED*(1.0+C1))
+            QH=QOUT(L)+C1*(QOUT(L)-QOUT(L-1))
+            IF (QH.LT.0.0) THEN
+               C1=0.0
+               QOUT(L)=(DSIG(L)*QIN(L)+FLXUP)/(DSIG(L)+FSED)
+               QH=QOUT(L)
+            ENDIF
          ENDIF
-         QOUT(L)=(QIN(L)+GSED*UPSED)/(1.0+CSED)
-         UPSED=QOUT(L)
-         PSEDU=PSED
-         TSEDU=TSED
-         VFUP=VFALL
+         FLXUP=FSED*QH
   300 CONTINUE
       END SUBROUTINE SETTLECOL
 C

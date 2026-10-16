@@ -109,76 +109,73 @@ C
       IGPAR=ISPAR                                                         
       IF (IALP.EQ.2.OR.IALP.EQ.4) IGPAR=1-ISPAR                           
 C                                                                         
-C     For a global run, sum and difference the complete Fourier           
-C     transforms at the northern and southern latitude rows to give       
-C     the even and odd contributions.                                     
-C     Separate code for each symmetry:                                    
-C        IGPAR=0 : even (IA) to precede odd (IB).                         
-C        IGPAR=1 : odd (IA) to precede even (IB).                         
-C                                                                         
-      IF (NHEM.EQ.2) THEN                                                 
-         IF (IGPAR.EQ.0) THEN                                             
-            DO 10 IA=1,NWW                                                
-               IB=IA+IDL                                                  
-               DO 10 L=1,NLS                                              
-                  GVW(IA,L)=0.5*(GV(IA,L)+GV(IB,L))                       
-                  GVW(IB,L)=0.5*(GV(IA,L)-GV(IB,L))                       
-   10       CONTINUE                                                      
-         ELSE                                                             
-            DO 20 IA=1,NWW                                                
-               IB=IA+IDL                                                  
-               DO 20 L=1,NLS                                              
-                  GVW(IA,L)=0.5*(GV(IA,L)-GV(IB,L))                       
-                  GVW(IB,L)=0.5*(GV(IA,L)+GV(IB,L))                       
-   20       CONTINUE                                                      
-         ENDIF                                                            
-      ENDIF                                                               
-C                                                                         
-C     Set up the appropriate Gaussian weight for the current latitude,    
-C     dependent on transform type.                                        
-C     Assumes JH in /LEGAU/ contains latitude counter from calling loop.  
-C                                                                         
-      IF (IALP.EQ.1) AWT=AW(JH)*CSSQ(JH)                                  
-      IF (IALP.EQ.2) AWT=-AW(JH)                                          
-      IF (IALP.EQ.3) AWT=AW(JH)*CSSQ(JH)                                  
-      IF (IALP.EQ.4) AWT=-AW(JH)                                          
-C                                                                         
-C     Calculate POLY array in vector loop before main transform.          
-C                                                                         
-      DO 30 IHEM=1,NHEM                                                   
-         IA=(ISPAR+1)*(2-IHEM) + (2-ISPAR)*(IHEM-1)                       
-         DO 30 IP=1,NWJ2                                                  
-            POLY(IP,IHEM,IALP)=AWT*ALPN(IP,IA,JL,IALP)                    
-   30 CONTINUE                                                            
-C                                                                         
-C     Perform direct Legendre transform from the even and odd             
-C     parts of the Fourier transforms to spectral space.                  
-C     Separate code for NHEM=1,2 to increase efficiency.                  
-C                                                                         
-      IF (NHEM.EQ.1) THEN                                                 
-         IM=0                                                             
-         IP=0                                                             
-         DO 40 M=0,MM-1,MOCT                                              
-            IM=IM+1                                                       
-            DO 40 N=M,NN-1,2                                              
-               IP=IP+1                                                    
-               DO 40 L=1,NLS                                              
-                  SV(IP,L)=SV(IP,L) + POLY(IP,1,IALP)*GV(IM,L)            
-   40    CONTINUE                                                         
-      ELSE                                                                
-         IM=0                                                             
-         IP=0                                                             
-         DO 50 M=0,MM-1,MOCT                                              
-            IM=IM+1                                                       
-            IPM=IP                                                        
-            DO 50 L=1,NLS                                                 
-               IP=IPM                                                     
-               DO 50 N=M,NN-1,2                                           
-               IP=IP+1                                                    
-               SV(IP     ,L)=SV(IP     ,L)+POLY(IP,1,IALP)*GVW(IM    ,L)  
-               SV(IP+NWJ2,L)=SV(IP+NWJ2,L)+POLY(IP,2,IALP)*GVW(IM+IDL,L)  
-   50    CONTINUE                                                         
-      ENDIF                                                               
-C                                                                         
+C     Set up the appropriate Gaussian weight for the current latitude,
+C     dependent on transform type.
+C     Assumes JH in /LEGAU/ contains latitude counter from calling loop.
+C
+      IF (IALP.EQ.1) AWT=AW(JH)*CSSQ(JH)
+      IF (IALP.EQ.2) AWT=-AW(JH)
+      IF (IALP.EQ.3) AWT=AW(JH)*CSSQ(JH)
+      IF (IALP.EQ.4) AWT=-AW(JH)
+C
+C     Calculate POLY array in vector loop before main transform. POLY
+C     is in a shared COMMON, so it is filled here, serially, and only
+C     read inside the threaded loop below.
+C
+      DO 30 IHEM=1,NHEM
+         IA=(ISPAR+1)*(2-IHEM) + (2-ISPAR)*(IHEM-1)
+         DO 30 IP=1,NWJ2
+            POLY(IP,IHEM,IALP)=AWT*ALPN(IP,IA,JL,IALP)
+   30 CONTINUE
+C
+C     Per field L: for a global run, first sum and difference the
+C     complete Fourier transforms at the northern and southern rows to
+C     give the even and odd contributions,
+C        IGPAR=0 : even (first half) to precede odd (second half),
+C        IGPAR=1 : odd to precede even,
+C     then perform the direct Legendre transform to spectral space.
+C     Fields are independent, so they are shared among OpenMP threads;
+C     each SV element receives the same single update as before, so
+C     the result does not depend on the thread count. Small calls stay
+C     serial (IF clause) to avoid thread start-up costs.
+C
+!$OMP PARALLEL DO IF(NLS.GE.16) DEFAULT(SHARED)
+!$OMP& PRIVATE(L,M,N,IM,IP,K,KB)
+      DO 60 L=1,NLS
+         IM=0
+         IP=0
+         IF (NHEM.EQ.1) THEN
+            DO 40 M=0,MM-1,MOCT
+               IM=IM+1
+               DO 40 N=M,NN-1,2
+                  IP=IP+1
+                  SV(IP,L)=SV(IP,L) + POLY(IP,1,IALP)*GV(IM,L)
+   40       CONTINUE
+         ELSE
+            IF (IGPAR.EQ.0) THEN
+               DO 10 K=1,NWW
+                  KB=K+IDL
+                  GVW(K,L)=0.5*(GV(K,L)+GV(KB,L))
+                  GVW(KB,L)=0.5*(GV(K,L)-GV(KB,L))
+   10          CONTINUE
+            ELSE
+               DO 20 K=1,NWW
+                  KB=K+IDL
+                  GVW(K,L)=0.5*(GV(K,L)-GV(KB,L))
+                  GVW(KB,L)=0.5*(GV(K,L)+GV(KB,L))
+   20          CONTINUE
+            ENDIF
+            DO 50 M=0,MM-1,MOCT
+               IM=IM+1
+               DO 50 N=M,NN-1,2
+                  IP=IP+1
+                  SV(IP,L)=SV(IP,L)+POLY(IP,1,IALP)*GVW(IM,L)
+                  SV(IP+NWJ2,L)=SV(IP+NWJ2,L)
+     &                         +POLY(IP,2,IALP)*GVW(IM+IDL,L)
+   50       CONTINUE
+         ENDIF
+   60 CONTINUE
+!$OMP END PARALLEL DO
+C
       RETURN                                                              
       END                                                                 

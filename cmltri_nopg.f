@@ -85,6 +85,10 @@ C     Constants and arrays needed for the fast Fourier transforms
 C
       COMMON/COMFFT/NTGW,NRSTGW,NTWG,NRSTWG,NTGD,NRSTGD
      +              ,TRIG(IDA),WORK(IDF),IFAX(10)
+C     Per-thread FFT work space for the batched FFT991 loops below,
+C     which run their batches in parallel. WORK cannot be made private
+C     itself: it shares /COMFFT/ with TRIG and IFAX, which must not be.
+      REAL FWORK(IDF)
 C
       COMMON/COMGRM/DUDLSG(IGC,NL),DVDLSG(IGC,NL),DTDLSG(IGC,NL)
 C
@@ -358,10 +362,12 @@ C     (if nightside nothing needed from scheme because TRS=RESTTT=tnight,eq for 
 C        Go from grid point space to spectral space using
 C        direct Legendre and Fourier transforms
 C
+!$OMP PARALLEL DO PRIVATE(I,FWORK)
             DO I=1,NTGW
-               CALL FFT991(DAF(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP
+               CALL FFT991(DAF(1+(I-1)*NCRAY*MGPP),FWORK,TRIG,IFAX,1,MGPP
      +              ,MG,NCRAY,-1)
             ENDDO
+!$OMP END PARALLEL DO
 
             CALL FFT991(DAF(1+ NTGW*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG
      +           ,NRSTGW,-1)
@@ -506,14 +512,12 @@ C        inverse Legendre and Fourier transforms
 C
          CALL LTI
 
-CC!$omp parallel default(shared) private(I,WORK)
-CC!$omp do
+!$OMP PARALLEL DO PRIVATE(I,FWORK)
          DO 10 I=1,NTWG
-            CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG
+            CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),FWORK,TRIG,IFAX,1,MGPP,MG
      +                 ,NCRAY,1)
  10      CONTINUE
-CC!$omp end do
-CC!$omp end parallel
+!$OMP END PARALLEL DO
 
          CALL FFT991(DAG(1+ NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG
      +              ,NRSTWG,1)
@@ -557,14 +561,12 @@ C        Go from grid point space to spectral space using
 C        direct Legendre and Fourier transforms
 C
 
-CC!$omp parallel default(shared) private(I,WORK)
-CC!$omp do
+!$OMP PARALLEL DO PRIVATE(I,FWORK)
          DO 20 I=1,NTGW
-            CALL FFT991(DAF(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG
+            CALL FFT991(DAF(1+(I-1)*NCRAY*MGPP),FWORK,TRIG,IFAX,1,MGPP,MG
      +                 ,NCRAY,-1)
  20      CONTINUE
-CC!$omp end do
-CC!$omp end parallel
+!$OMP END PARALLEL DO
 
          CALL FFT991(DAF(1+ NTGW*NCRAY*MGPP),WORK,TRIG,IFAX,1,MGPP,MG
      +              ,NRSTGW,-1)
@@ -798,10 +800,12 @@ C
                JH=IH
                IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
                CALL LTI
+!$OMP PARALLEL DO PRIVATE(I,FWORK)
                DO I=1,NTWG
-                  CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,
+                  CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),FWORK,TRIG,IFAX,
      +                        1,MGPP,MG,NCRAY,1)
                ENDDO
+!$OMP END PARALLEL DO
                CALL FFT991(DAG(1+NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,
      +                     1,MGPP,MG,NRSTWG,1)
 C              Run the grid physics first so TG/PLG are post-VDIFF/CONVEC
@@ -882,14 +886,12 @@ C        inverse Legendre and Fourier transforms
 C
             CALL LTI
 
-CC!$omp parallel default(shared) private(I,WORK)
-CC!$omp do
+!$OMP PARALLEL DO PRIVATE(I,FWORK)
             DO 210 I=1,NTWG
-               CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,
+               CALL FFT991(DAG(1+(I-1)*NCRAY*MGPP),FWORK,TRIG,IFAX,
      +                 1,MGPP,MG,NCRAY,1)
  210        CONTINUE
-CC!$omp end do
-CC!$omp end parallel
+!$OMP END PARALLEL DO
 
             CALL FFT991(DAG(1+ NTWG*NCRAY*MGPP),WORK,TRIG,IFAX,
      +                  1,MGPP,MG,NRSTWG,1)
@@ -937,14 +939,12 @@ C
 C        Go from grid point space to spectral space using
 C        direct Legendre and Fourier transforms
 C
-CC!$omp parallel default(shared) private(I,WORK)
-CC!$omp do
+!$OMP PARALLEL DO PRIVATE(I,FWORK)
             DO 220 I=1,NTGD
-               CALL FFT991(DAD(1+(I-1)*NCRAY*MGPP),WORK,TRIG,IFAX,
+               CALL FFT991(DAD(1+(I-1)*NCRAY*MGPP),FWORK,TRIG,IFAX,
      +                     1,MGPP,MG,NCRAY,-1)
  220        CONTINUE
-CC!$omp end do
-CC!$omp end parallel
+!$OMP END PARALLEL DO
             CALL FFT991(DAD(1+ NTGD*NCRAY*MGPP),WORK,TRIG,IFAX,
      +                  1,MGPP,MG,NRSTGD,-1)
 C
