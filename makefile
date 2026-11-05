@@ -1,5 +1,5 @@
 # NOTE: there are no module dependency rules, so module-providing
-# sources must come early in OBJS (corrk.o, tracerclds.o).  This also
+# sources must come early in OBJS (corrk.o, tracerclds.o, dyeadv.o).  This also
 # means "make -j" is not safe.
 # Compiler selection.  gfortran is the default: ifort ships as an
 # x86_64 binary and will not execute on Apple Silicon once Rosetta is
@@ -62,7 +62,7 @@ endif
 #   co3interp -- its callers cmorc.f/cmorc_old.f are not built),
 #   plus double-gray-ropprmulti, rinterpol, chanal1, cinisurf and
 #   cinterp.  The sources are still here; only the build skips them.
-OBJS = corrk.o tracerclds.o ropprmulti_corrk.o radiative_transfer_picket_fence.o cmltri_nopg.o cbalanc.o cblayer.o cblsurf.o ccalndr.o ccbadj.o ccbcon.o cconvec.o ccubm.o ccudif.o cdanalv.o cdgrmlt.o cdifuse.o cdlsgcr.o cdryadj.o cdstep.o cenergy.o chanal.o chanalv.o chexp.o chexp1.o chexpv.o cictrac.o cinibal.o cinigau.o ciniphys.o ciniqs.o cinires.o ciniresij.o ciniset.o cinisi.o cinisp.o cinistr.o inisimprad.o inivarparam.o cinital.o clgndre.o clscrn.o cltd.o cltddia.o clti.o cltidt.o cmascor.o cmatinv.o cmgrmlt.o cnoise.o cpqsat.o cpvcr.o csetres.o csettee.o csetzt.o csfct.o cspdel2.o cspop.o csurfm.o ctbal.o ctstep.o cvdiff.o cwrsps.o cxsect.o cfft991.o cssum.o csdot.o cicamax.o cgwtlt.o cset99.o cqreig.o csgetrf.o csgetri.o csgemm.o crpassm.o cqpassm.o chessen.o cqrt.o cxerbla.o cilaenv.o csgetf2.o cslaswp.o cstrsm.o cstrtri.o csgemv.o csswap.o clsame.o cisamax.o csscal.o csger.o cstrmm.o cstrti2.o cstrmv.o cranf.o xsect2.o xsect3.o filecopy.o finalorb.o Binary.o rradiation.o rcalc_radheat.o rradsub.o rsetuprad_simple.o rradtran.o roppr1.o rtwostr.o radd.o rnewflux1.o rmakeclouds.o ropprmulti.o cloud_properties_set_up.o radiative_transfer_corrk.o corrk_setup.o roppr1_corrk.o calc_v_fall.o
+OBJS = corrk.o tracerclds.o dyeadv.o ropprmulti_corrk.o radiative_transfer_picket_fence.o cmltri_nopg.o cbalanc.o cblayer.o cblsurf.o ccalndr.o ccbadj.o ccbcon.o cconvec.o ccubm.o ccudif.o cdanalv.o cdgrmlt.o cdifuse.o cdlsgcr.o cdryadj.o cdstep.o cenergy.o chanal.o chanalv.o chexp.o chexp1.o chexpv.o cictrac.o cinibal.o cinigau.o ciniphys.o ciniqs.o cinires.o ciniresij.o ciniset.o cinisi.o cinisp.o cinistr.o inisimprad.o inivarparam.o cinital.o clgndre.o clscrn.o cltd.o cltddia.o clti.o cltidt.o cmascor.o cmatinv.o cmgrmlt.o cnoise.o cpqsat.o cpvcr.o csetres.o csettee.o csetzt.o csfct.o cspdel2.o cspop.o csurfm.o ctbal.o ctstep.o cvdiff.o cwrsps.o cxsect.o cfft991.o cssum.o csdot.o cicamax.o cgwtlt.o cset99.o cqreig.o csgetrf.o csgetri.o csgemm.o crpassm.o cqpassm.o chessen.o cqrt.o cxerbla.o cilaenv.o csgetf2.o cslaswp.o cstrsm.o cstrtri.o csgemv.o csswap.o clsame.o cisamax.o csscal.o csger.o cstrmm.o cstrti2.o cstrmv.o cranf.o xsect2.o xsect3.o filecopy.o finalorb.o Binary.o rradiation.o rcalc_radheat.o rradsub.o rsetuprad_simple.o rradtran.o roppr1.o rtwostr.o radd.o rnewflux1.o rmakeclouds.o ropprmulti.o cloud_properties_set_up.o radiative_transfer_corrk.o corrk_setup.o roppr1_corrk.o calc_v_fall.o
 
 igcm3_nopg: $(OBJS)
 	$(FC) $(FFLAGS) -o $@ $(OBJS)

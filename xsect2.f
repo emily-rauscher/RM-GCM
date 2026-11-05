@@ -2,6 +2,7 @@ C**********************************************************
 C             SUBROUTINE XSECT2                                            
 C**********************************************************               
       SUBROUTINE XSECT2                                             
+      use tracerclds, only : QDYE
 C                                                                         
 C
 C        
@@ -111,7 +112,7 @@ C
       LOGICAL LSPO,LGPO                                                   
 C                                                                         
       COMMON/GRIDSS/ZG1(IGD,JG),DG1(IGD,JG),UG1(IGD,JG),VG1(IGD,JG),
-     :              TG1(IGD,JG),SPG1(IGC,JG),TRAG1(IGD,JG,NTRAC-1)
+     :              TG1(IGD,JG),SPG1(IGC,JG)
 C
 C     Sigma-dot: SDOTG1 is the per-latitude store filled in the main
 C     timestep loop, SDOTG the working copy for the current latitude
@@ -160,7 +161,7 @@ C     compiled -recursive for (unused) OpenMP thread-safety, which
 C     forces its large local arrays onto the stack, and TOUTST is
 C     already close to the default 8MB stack limit (ulimit -s) on its
 C     own - growing it further reliably segfaults at the default limit.
-      REAL*8  TOUTTR(NL,JG*2,MG,NTRAC-1)
+      REAL*8  TOUTTR(NL,JG*2,MG,NDYE)
       SAVE    TOUTTR
 C     Vertical velocity output buffer, SAVEd for the same stack reason
 C     as TOUTTR above.
@@ -237,9 +238,6 @@ C         READ(24) ZG,DG,UG,VG,TG,SPG
             UG(I)=UG1(I,J)
             VG(I)=VG1(I,J)
             TG(I)=TG1(I,J)
-            DO KK=2,NTRAC
-               TRAG(I,KK)=TRAG1(I,J,KK-1)
-            ENDDO
             SDOTG(I)=SDOTG1(I,J)
          END DO
          DO I=1,IGC                                                       
@@ -292,8 +290,8 @@ C                 SDOTG is towards higher sigma (down), hence the sign.
                   TOUTST(L,JJ,I,1)=UB
                   TOUTST(L,JJ,I,2)=VB
                   TOUTST(L,JJ,I,3)=TB
-                  DO KK=2,NTRAC
-                     TOUTTR(L,JJ,I,KK-1)=TRAG(IOF+I,KK)
+                  DO KK=2,NDYE+1
+                     TOUTTR(L,JJ,I,KK-1)=QDYE(I,JJ,L,KK)
                   ENDDO
                   TOUTW(L,JJ,I)=WB
 
@@ -326,7 +324,7 @@ CC     :                     1,mg,1,jgg,1,nl,inetcount,inetcount)
            TOUTLAT=ALAT(J)
                   WRITE (26,107) TOUTLON,TOUTLAT,L,
      &  TOUTST(L,J,I,1),TOUTST(L,J,I,2),TOUTST(L,J,I,3),
-     &  (TOUTTR(L,J,I,KK),KK=1,NTRAC-1),
+     &  (TOUTTR(L,J,I,KK),KK=1,NDYE),
      &  TOUTW(L,J,I)
               IF (L.EQ.NL) WRITE (50,102) TOUTLON,TOUTLAT,TOUTSP(J,I)
    22            CONTINUE

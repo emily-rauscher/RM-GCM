@@ -178,7 +178,7 @@
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         IF (HAZES) THEN
             DO J = 1, NLAYER
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
+                haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(J))  ! Both of these are in PA
                 ! This grabs the optical depth per bar, then multiply it by the pressure in bars
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
                     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
@@ -194,8 +194,8 @@
             END DO
 
             DO J = 1, NLAYER
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1)  ! Both of these are in PA
-                temp_loc         = MINLOC(ABS(input_temperature_array - (TT(J))),1) ! Not needed for the stellar calc
+                haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(J))  ! Both of these are in PA
+                temp_loc         = NEARIDX(input_temperature_array, 100, TT(J)) ! Not needed for the stellar calc
 
                 ! This grabs the optical depth per bar, then multiply it by the pressure in bars
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
@@ -219,17 +219,27 @@
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         DO J = 1,NLAYER - 1
-            layer_index   = MINLOC(ABS(input_pressure_array_cgs - (p_pass(J) * 10.0)),1)
-            temp_loc      = MINLOC(ABS(input_temperature_array - (TT(J))),1)
+            layer_index   = NEARIDX(input_pressure_array_cgs, 80, p_pass(J) * 10.0)
+            temp_loc      = NEARIDX(input_temperature_array, 100, TT(J))
             IF (LDYERAD) THEN
 C               if using the radiatively active dye, use the size from the fort.7
                 particle_size = ADYE(KDYERAD)
             ELSE
                 particle_size = particle_size_vs_layer_array_in_meters(layer_index) ! Convert to CGS
             END IF
-            size_loc      = MINLOC(ABS(input_particle_size_array_in_meters - (particle_size)), 1)
+            size_loc      = NEARIDX(input_particle_size_array_in_meters, 100, particle_size)
 
             DO I = 1,NCLOUDS
+C               A species with no abundance adds no optical depth, so
+C               skip its table lookups; zero its entries, which the
+C               species sums below still read.
+                IF (MOLEF(I).EQ.0.0) THEN
+                    PI0_TEMP(:,J,I)    = 0.0
+                    G0_TEMP(:,J,I)     = 0.0
+                    tauaer_temp(:,J,I) = 0.0
+                    CLOUDLOC(J,I)      = 0.0
+                    CYCLE
+                END IF
                 ! GET THE SCATTERING PROPERTIES
                 IF (PICKET_FENCE_CLOUDS .eqv. .False.) THEN
                     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
@@ -276,14 +286,6 @@ C                       RADIATION_ALLLATS.
 C             tracer CONDFACT can exceed 1 so clamp here to
 C             keep CLOUDLOC the 0-or-J presence flag BASELEV expects.
               CLOUDLOC(J,I) = NINT(MIN(CONDFACT(J,I),1.0))*J
-              BASELEV = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
-C             The dye's own vertical profile says where the cloud is, so
-C             do not also clip it to AERLAYERS below the condensation base
-              IF (LDYERAD) THEN
-                TOPLEV(I) = 0
-              ELSE
-                TOPLEV(I)  = max(BASELEV-AERLAYERS,0)
-              END IF
 
                 ! DPG is CGS before that 10x
                 IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
@@ -320,6 +322,16 @@ C             do not also clip it to AERLAYERS below the condensation base
 
         ! Uncomment for compact clouds I think
         DO I = 1,NCLOUDS
+C           Cloud base: the deepest condensing layer, once the whole
+C           column is known. The dye's own vertical profile says where
+C           the cloud is, so do not also clip it to AERLAYERS below the
+C           condensation base.
+            IF (LDYERAD) THEN
+                TOPLEV(I) = 0
+            ELSE
+                BASELEV   = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
+                TOPLEV(I) = max(BASELEV-AERLAYERS,0)
+            END IF
             DO J = 1, TOPLEV(I)
                 tauaer_temp(:,J,I) = 0.0
             END DO
@@ -337,7 +349,11 @@ C             do not also clip it to AERLAYERS below the condensation base
         IF (PICKET_FENCE_CLOUDS .eqv. .FALSE.) THEN
             !     SW AT STANDARD VERTICAL RESOLUTION
             DO J = 1,NLAYER
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1) ! Pascals
+                IF (HAZES) THEN
+                    haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
+                ELSE
+                    haze_layer_index = 1
+                END IF
 
                 DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
                     WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
@@ -352,8 +368,13 @@ C             do not also clip it to AERLAYERS below the condensation base
         !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
             k = 1
             DO J = 1,NDBL,2
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(K))),1)  ! Both of these are in pa
-                temp_loc         = MINLOC(ABS(input_temperature_array - (TT(K))),1) ! Not needed for the stellar calc
+                IF (HAZES) THEN
+                    haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(K))  ! Both of these are in pa
+                    temp_loc = NEARIDX(input_temperature_array, 100, TT(K)) ! Not needed for the stellar calc
+                ELSE
+                    haze_layer_index = 1
+                    temp_loc         = 1
+                END IF
 
                 JJ = J
 
@@ -377,7 +398,11 @@ C             do not also clip it to AERLAYERS below the condensation base
         ELSE
         !     SW AT STANDARD VERTICAL RESOLUTION
             DO J = 1,NLAYER
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(J))),1) ! Pascals
+                IF (HAZES) THEN
+                    haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(J)) ! Pascals
+                ELSE
+                    haze_layer_index = 1
+                END IF
                 DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
                     WAV_LOC = CLOUD_WAVELENGTH_INDEXES(L)
                     TAUAER(L,J) = SUM(tauaer_temp(L,J,1:NCLOUDS)) + TAU_HAZE(L,J)
@@ -391,8 +416,13 @@ C             do not also clip it to AERLAYERS below the condensation base
         !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
             k = 1
             DO J = 1,NDBL,2
-                haze_layer_index = MINLOC(ABS((haze_pressure_array_pascals) - (p_pass(K))),1) ! Both of these are in pa
-                temp_loc         = MINLOC(ABS(input_temperature_array - (TT(K))),1) ! Not needed for the stellar calc
+                IF (HAZES) THEN
+                    haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(K)) ! Both of these are in pa
+                    temp_loc = NEARIDX(input_temperature_array, 100, TT(K)) ! Not needed for the stellar calc
+                ELSE
+                    haze_layer_index = 1
+                    temp_loc         = 1
+                END IF
 
                 JJ = J
 
@@ -598,5 +628,40 @@ C             do not also clip it to AERLAYERS below the condensation base
           END DO
       END DO
       RETURN
+
+      CONTAINS
+
+      INTEGER FUNCTION NEARIDX(ARR, N, VAL)
+C         Index of the entry of ARR nearest VAL, the same answer as
+C         MINLOC(ABS(ARR-VAL),1) (ties go to the lower index) but by
+C         bisection, for a strictly increasing table: a few comparisons
+C         instead of a scan of the whole table, and no temporary array.
+          INTEGER, INTENT(IN) :: N
+          REAL, INTENT(IN) :: ARR(N), VAL
+          INTEGER, AUTOMATIC :: LO, HI, MID
+          IF (VAL .LE. ARR(1)) THEN
+              NEARIDX = 1
+              RETURN
+          ELSE IF (VAL .GE. ARR(N)) THEN
+              NEARIDX = N
+              RETURN
+          ENDIF
+          LO = 1
+          HI = N
+          DO WHILE (HI - LO .GT. 1)
+              MID = (LO + HI) / 2
+              IF (VAL .GE. ARR(MID)) THEN
+                  LO = MID
+              ELSE
+                  HI = MID
+              END IF
+          END DO
+          IF (ABS(ARR(HI) - VAL) .LT. ABS(ARR(LO) - VAL)) THEN
+              NEARIDX = HI
+          ELSE
+              NEARIDX = LO
+          END IF
+      END FUNCTION NEARIDX
       END
+
 

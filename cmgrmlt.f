@@ -2,6 +2,7 @@ C**********************************************************
 C             SUBROUTINE MGRMLT                                           
 C**********************************************************               
       SUBROUTINE MGRMLT                                                   
+      use dyegrid, only : DYE_STOREROW
 C                                                                         
 C     Computes nonlinear tendencies in grid point space                   
 C     for the present latitude                                            
@@ -85,20 +86,6 @@ C
       DIMENSION SDOTP(MG,NLM),SUMD(MG),TPTA(MG),TPTB(MG)                  
       DIMENSION CC(NL,NL)                                                 
       EQUIVALENCE (CC(1,1),C(1))                                          
-C                                                                      
-C     Spectral (spherical harmonic) truncation is not shape-preserving:
-C     Gibbs ringing around sharp tracer gradients can drive grid-point
-C     values below zero even though the true field is non-negative.
-C     Clip the passive tracers (KK=2,NTRAC; KK=1 is water vapour, which
-C     has its own QMIN floor in the convection scheme) here, before the
-C     clipped field is used to build the advective tendency below, so
-C     the negative excursions cannot re-enter the spectral field.
-      DO 81 KK=2,NTRAC
-         DO 80 L=1,NL
-            DO 80 J=1,IGC
-               TRAG(J,L,KK)=MAX(TRAG(J,L,KK),0.0)
- 80      CONTINUE
- 81   CONTINUE
 C
       IOFM=0                                                              
 C                                                                         
@@ -130,6 +117,16 @@ C
             VPG(J)=VPG(J)+DSIGMA(NL)*SECSQ(JH)*(UG(J,NL)*PMG(J)+          
      1             VG(J,NL)*PJG(J))                                       
  121     CONTINUE                                                         
+C
+C        This row's winds and p* (time t) for DYEADV. GWT is per
+C        hemisphere, hence *NHEM.
+         IF (IHEM.EQ.1) THEN
+            CALL DYE_STOREROW(JH,IOFM,IGC,UG,VG,SPG,SI(JH),
+     +                        GWT(JH)*NHEM)
+         ELSE
+            CALL DYE_STOREROW(2*JG+1-JH,IOFM,IGC,UG,VG,SPG,-SI(JH),
+     +                        GWT(JH)*NHEM)
+         ENDIF
          DO 130 L=1,NLM                                                   
             DO 140 I=1,MG                                                 
                J=I+IOFM                                                   

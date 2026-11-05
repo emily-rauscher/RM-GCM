@@ -4,28 +4,20 @@ C**********************************************************
       MODULE tracerclds
 C
 C     State for the settling dye tracers and their optional coupling
-C     into the radiative transfer. This replaces the DYEPAR, DYERAD,
-C     DYEDEN, DYEPRV and DYECOL common blocks, which between them had
-C     to be repeated in seventeen places: a module is checked by the
-C     compiler, whereas a mismatched COMMON is silent corruption.
-C
-C     No IMPLICIT NONE: params.i is a bare PARAMETER statement relying
-C     on implicit integer typing, as everywhere else in this model.
+C     into the radiative transfer.
 C
       include 'params.i'
       PARAMETER(MGPP=MG+2,IGC=MGPP*NHEM)
       SAVE
 C
-C     --- namelist configuration (INVARPARAM in fort.7) -------------
-C     ADYE is indexed by TRACER number, so ADYE(1) is the water vapour
-C     slot and is never used; set ADYE(2:NTRAC), one radius per dye.
-      REAL ADYE(NTRAC)
+C     Grain radius per dye, indexed 2..NDYE+1; ADYE(1) is unused.
+      REAL ADYE(NDYE+1)
 C     Grain density. Read from the namelist, then overwritten with
 C     DENSITY(KDYESPEC) when the cloud tables load, so the settling and
 C     the OPPRMULTI optics cannot describe different particles.
       REAL RHODYE
-C     Deep reservoir below PDYEFIX, upper-atmosphere fill above
-C     PDYEUPPER, relaxation timescale in orbits.
+C     Below PDYEFIX the dyes relax toward 1 on TRELAXORB (orbits). Above
+C     PDYEUPPER they start at 1 (initial state only).
       REAL PDYEFIX,PDYEUPPER,TRELAXORB
 C
 C     --- radiatively active dye ------------------------------------
@@ -41,16 +33,48 @@ C     --- cloud scheme ----------------------------------------------
 C     KDYEMODE=1: each dye is total species material, and is all-vapor 
 C     or all-solid depending on T from FCONDYE. KDYEMODE=2: dyes come in
 C     vapour/solid pairs, vapour in slot 2P and solid in 2P+1, so
-C     NTRAC=1+2*(number of pairs). The pair exchanges mass by relaxing
+C     NDYE=2*(number of pairs). The pair exchanges mass by relaxing
 C     to the QSATDYE equilibrium on TCONDDYE (supersaturated) or
 C     TEVAPDYE (subsaturated), both in seconds. Only the solid falls
 C     and only the solid is opaque; its radius is ADYE(2P+1).
       INTEGER KDYEMODE
       REAL TCONDDYE,TEVAPDYE
 C
+C     T: rescale each dye once a step (dyeadv.f) so its mass changes
+C     only through the physics, not through the finite-volume vs
+C     spectral p* mismatch.
+      LOGICAL LDYEFIX
+C
+C     --- grid-point dye state ----------------------------------------
+C     Mixing ratios q on the Gaussian grid, rows 1..2*JG north to south:
+C     latitude JH of the model's hemisphere loop is row JH in the north
+C     (IOFM=0) and 2*JG+1-JH in the south (IOFM=MGPP).
+      REAL QDYE(MG,2*JG,NL,2:NDYE+1)
+C     Winds and surface pressure stored by MGRMLT at the current time
+C     level t, as the model carries them: UDY=u cos(lat)/(a*Omega),
+C     VDY=v cos(lat)/(a*Omega), PSDYE=p*/P0. UDYM/VDYM hold the winds of
+C     the previous step, for extrapolating to the middle of the step.
+      REAL UDY(MG,2*JG,NL),VDY(MG,2*JG,NL)
+      REAL UDYM(MG,2*JG,NL),VDYM(MG,2*JG,NL)
+      REAL PSDYE(MG,2*JG)
+C     Per row: sin(latitude) and the Gaussian weight, which is the
+C     row's width in sin(latitude) (the weights over all rows sum to 2).
+      REAL AMUDY(2*JG),WDY(2*JG)
+C     LDYEINI: QDYE holds a state. LDYEPRV: UDYM/VDYM hold the winds of
+C     a previous step of length DTDYM. DAYDY: model day of QDYE. DTDY:
+C     length of the latest dye step in model time (1/Omega), which the
+C     physics in DGRMLT also integrates over.
+      LOGICAL :: LDYEINI=.FALSE.,LDYEPRV=.FALSE.
+      REAL DAYDY,DTDY,DTDYM
+C     Fixer bookkeeping, per dye, in units of sum(p*/P0*DSIGMA*WDY*q):
+C     DYMTGT is the mass the last advection left, DMPHYS what the
+C     physics has added since. LDYMTGT: DYMTGT is set.
+      REAL DYMTGT(2:NDYE+1),DMPHYS(2:NDYE+1)
+      LOGICAL :: LDYMTGT=.FALSE.
+C
 C     --- work arrays ----------------------------------------------
-C     Snapshot of the radiatively active dye for RADIATION_ALLLATS,
-C     which loops every latitude while TRAG holds only the current one.
+C     The radiatively active dye in the model's (IGC,NL,JG) grid
+C     layout, copied from QDYE for RADIATION_ALLLATS.
       REAL TRAG_forrad(IGC,NL,JG)
 C     One column's opaque dye amount per RT layer, handed to OPPRMULTI
 C     (filled, aligned to the RT layers, in RADIATION_ALLLATS).
@@ -64,8 +88,7 @@ C     out in cloud_properties_set_up.f once MET_INDEX is final. The dye
 C     is TOTAL species material, gas plus solid, so both the settling
 C     in DGRMLT and the opacity in OPPRMULTI have to take the condensed
 C     fraction from FCONDYE below; only solids fall, and only solids
-C     are opaque. Held here, and read through one function, so the two
-C     cannot drift apart.
+C     are opaque.
       REAL TCDYE(80),PCDYE(80)
 C     PCDYE is uniform in ln P (to the 4 digits it is tabulated with),
 C     so IPCDYE finds a pressure's bracket from its log rather than by

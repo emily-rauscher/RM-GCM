@@ -2,7 +2,6 @@ C**********************************************************
 C             SUBROUTINE ICTRAC                                           
 C**********************************************************               
       SUBROUTINE ICTRAC
-      use tracerclds, only : PDYEFIX, PDYEUPPER, KDYEMODE
 C                                                                         
 C     *********PMF Version 1.0 (8.4.97)*******************                
 C     Subroutine which initialises the tracer fields.                     
@@ -125,9 +124,6 @@ C
      +              ,DELT,DELT2,CV,CG,CT,CQ,PNU,PNU2,PNU21                
      +              ,NTRACO,KOLOUR(NTRAC),RGG(NL2)
      +              ,BEGDOY,DOY
-C
-C     Settling-dye parameters (INVARPARAM, see inivarparam.f). Only
-C     PDYEFIX and PDYEUPPER are used here.
 C
             COMMON/PHYS/  CCR,RCON,DTBUOY,TSLA,TSLB,TSLC,TSLD,CUT1,CUT2
      :              ,TSTAR(IGC,JG),QSTAR(IGC,JG),FRAD(JG,NHEM)            
@@ -278,35 +274,6 @@ CCCC      QSTAR(J,JH)=ESCON*PQSAT(TSTAR(J,JH))
             IOFM=MGPP
  810     CONTINUE
 C
-C     Initialise the dyes (2..NTRAC): abundance 1 below PDYEFIX and
-C     above PDYEUPPER, 0 between (usually 1 everywhere).
-C     slots carried over from a restart (KK<=NTRACO) are left alone.
-C.    With KDYEMODE=2 vapour is even slots solid is odd slots.
-C     Solids start at 0, then relax toward phase equilibrium
-C
-         DO 832 KK=2,NTRAC
-            IF (KK.GT.NTRACO) THEN
-               IOFM=0
-               DO 830 IHEM=1,NHEM
-                  DO I=1,MG
-                     J=I+IOFM
-                     DO L=1,NL
-                        K=J+(L-1)*IGC
-                        PRTR=SIGMA(L)*PLG(J)*P0
-                        IF (KDYEMODE.EQ.2 .AND. MOD(KK,2).EQ.1) THEN
-                           TRAG(K,KK)=0.0
-                        ELSE IF (PRTR.GT.PDYEFIX .OR.
-     +                           PRTR.LT.PDYEUPPER) THEN
-                           TRAG(K,KK)=1.0
-                        ELSE
-                           TRAG(K,KK)=0.0
-                        ENDIF
-                     ENDDO
-                  ENDDO
-                  IOFM=MGPP
- 830           CONTINUE
-            ENDIF
- 832     CONTINUE
 C
          DO 70 KK=NTRACO+1,NTRAC
             DO 300 I=1,IGD                                                

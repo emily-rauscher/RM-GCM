@@ -29,6 +29,8 @@
 !     * ************************************************************
 !
       use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT, NWNO
+      use tracerclds, only : ADYE, KDYERAD, KDYESPEC, LDYERAD,
+     &                       QDYECOL
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, itspd, iband
@@ -276,12 +278,28 @@
 
             CALL LOG_INTERP_WEIGHTS(input_pressure_array_cgs, 80, p_pass(J) * 10.0,
      &                              layer_index, p_weight)
-            particle_size = LERP(particle_size_vs_layer_array_in_meters(layer_index),
+            IF (LDYERAD) THEN
+C               Radiatively active dye: its own grain size from fort.7.
+                particle_size = ADYE(KDYERAD)
+            ELSE
+                particle_size = LERP(particle_size_vs_layer_array_in_meters(layer_index),
      &                            particle_size_vs_layer_array_in_meters(layer_index+1), p_weight)
+            END IF
             CALL LOG_INTERP_WEIGHTS(input_particle_size_array_in_meters, 100, particle_size,
      &                              size_loc, size_weight)
             !corr-k version:
             DO I = 1, NCLOUDS
+C               A species with no abundance adds no optical depth, so
+C               skip its interpolations; zero its entries, which the
+C               species sums below still read.
+                IF (MOLEF(I).EQ.0.0) THEN
+                    PI0_TEMP(:,J,I)    = 0.0
+                    G0_TEMP(:,J,I)     = 0.0
+                    tauaer_temp(:,J,I) = 0.0
+                    CONDFACT(J,I)      = 0.0
+                    CLOUDLOC(J,I)      = 0.0
+                    CYCLE
+                END IF
                 DO L = solar_calculation_indexer,NKGAUSS
                     PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,iband), CLOUD_A(I,size_loc+1,iband), size_weight)
                     G0_TEMP(L,J,I)  = LERP(CLOUD_G(I,size_loc,iband), CLOUD_G(I,size_loc+1,iband), size_weight)
@@ -295,9 +313,23 @@
                 tconds_hi = TCONDS(MET_INDEX,layer_index+1,I)
                 tconds_interp = tconds_lo + p_weight * (tconds_hi - tconds_lo)
                 kext_interp = LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight)
-                CONDFACT(J,I) = min(max((tconds_interp-TT(J))/10.,0.0),1.0)
+                IF (LDYERAD) THEN
+C                   Only KDYESPEC carries the dye, placed by the tracer:
+C                   QDYECOL is this RT layer's opaque amount, aligned and
+C                   made non-negative in RADIATION_ALLLATS (as for
+C                   OPPRMULTI).
+                    IF (I.EQ.KDYESPEC) THEN
+                        CONDFACT(J,I) = QDYECOL(J)
+                    ELSE
+                        CONDFACT(J,I) = 0.0
+                    END IF
+                ELSE
+                    CONDFACT(J,I) = min(max((tconds_interp-TT(J))/10.,0.0),1.0)
+                END IF
 
-                CLOUDLOC(J,I) = NINT(CONDFACT(J,I))*J
+C               Tracer CONDFACT can exceed 1, so clamp to keep CLOUDLOC
+C               the 0-or-J presence flag BASELEV expects.
+                CLOUDLOC(J,I) = NINT(MIN(CONDFACT(J,I),1.0))*J
 
                 corfact_interp = LERP(CORFACT(layer_index), CORFACT(layer_index+1), p_weight)
 
@@ -316,8 +348,14 @@
             END DO
         END DO
         DO I = 1, NCLOUDS
-            BASELEV = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
-            TOPLEV(I) = max(BASELEV-AERLAYERS,0)
+C           The dye's own vertical profile says where the cloud is, so
+C           do not also clip it to AERLAYERS below the condensation base.
+            IF (LDYERAD) THEN
+                TOPLEV(I) = 0
+            ELSE
+                BASELEV = MAXVAL(CLOUDLOC(1:NLAYER-1,I),1)
+                TOPLEV(I) = max(BASELEV-AERLAYERS,0)
+            END IF
         END DO
         ! write(*,*) "CONDFACT:", CONDFACT(:,6)
         ! write(*,*) "CONDCURVE:", Tconds(MET_INDEX,:,6)

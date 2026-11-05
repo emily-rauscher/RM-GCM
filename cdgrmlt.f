@@ -4,7 +4,7 @@ C**********************************************************
       SUBROUTINE DGRMLT(IH,IPASS)
       use tracerclds, only : ADYE, PDYEFIX, TRELAXORB,
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, QSATDYE,
-     &                       SETTLECOL, FCONDYE
+     &                       SETTLECOL, FCONDYE, QDYE, DTDY, DMPHYS
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -420,31 +420,37 @@ C
         QNLG(J,L)=QNLG(J,L)+QTVD(J,L)+QTCR(J,L)+QTLR(J,L)
   200 CONTINUE
 C
-C     Deep reservoir: relax toward 1 below PDYEFIX at all local times.
-C     Must be a tendency, not a reset of TRAG, which is rebuilt from
-C     spectral TRA every call. RLXDYE follows the DAMP=1/(PI2*RESTIM)
-C     convention of cinires.f. TRELAXORB is in orbits and PORB the
-C     period in rotation days, hence TRELAXORB*PORB; PORB=0 means no
-C     orbital motion, so fall back to TRELAXORB rotation days.
+C     Dye physics, applied in place to QDYE over the interval DTDY that
+C     DYEADV just advected. The air-mass-weighted change of each dye goes
+C     into DMPHYS, which the mass fixer in DYEADV counts as real.
+      IF (NDYE.LT.1 .OR. DTDY.LE.0.0) GOTO 330
+C
+C     Deep reservoir: relax toward 1 below PDYEFIX at all local times,
+C     integrated exactly over DTDY. RLXDYE follows the
+C     DAMP=1/(PI2*RESTIM) convention of cinires.f. TRELAXORB is in
+C     orbits and PORB the period in rotation days, hence
+C     TRELAXORB*PORB; PORB=0 means no orbital motion, so fall back to
+C     TRELAXORB rotation days.
       IF (PORB.NE.0.0) THEN
          TRELAXDYE=TRELAXORB*PORB
       ELSE
          TRELAXDYE=TRELAXORB
       ENDIF
       RLXDYE=1.0/(PI2*TRELAXDYE)
+      FRDYE=1.0-EXP(-DTDY*RLXDYE)
 C
 C     Two-phase exchange: the fraction of the gap to equilibrium closed
-C     in DELT2, from exact integration of dq/dt=(qeq-q)/tau. TCONDDYE
+C     in DTDY, from exact integration of dq/dt=(qeq-q)/tau. TCONDDYE
 C     and TEVAPDYE are seconds, so tau*WW is model time; tau<=0 means
 C     instantaneous equilibrium.
       IF (KDYEMODE.EQ.2) THEN
          FCDYE=1.0
          FEDYE=1.0
-         IF (TCONDDYE.GT.0.0) FCDYE=1.0-EXP(-DELT2/(TCONDDYE*WW))
-         IF (TEVAPDYE.GT.0.0) FEDYE=1.0-EXP(-DELT2/(TEVAPDYE*WW))
+         IF (TCONDDYE.GT.0.0) FCDYE=1.0-EXP(-DTDY/(TCONDDYE*WW))
+         IF (TEVAPDYE.GT.0.0) FEDYE=1.0-EXP(-DTDY/(TEVAPDYE*WW))
       ENDIF
 C
-C     Gravitational settling of the dyes (tracers 2..NTRAC):
+C     Gravitational settling of the dyes (2..NDYE+1):
 C     dq/dt = (T/P) d/dz[ (P/T) q VFALL ]. For a mass mixing ratio the
 C     density factor is P/T INSIDE the derivative and T/P outside;
 C     reversed, a uniform q gives dq/dt>0, not the physical decay. No
@@ -475,6 +481,13 @@ C
          ELSE
             ALATLC=-ALAT(JH)
          ENDIF
+C        Grid-store row, and the row's weight for the DMPHYS sums.
+         IF (IHEM.EQ.1) THEN
+            IRDY=JH
+         ELSE
+            IRDY=2*JG+1-JH
+         ENDIF
+         WDYR=GWT(JH)*NHEM
          DO 310 I=1,MG
             J=I+IOFM
             ALON=360.0*REAL(I-1)/REAL(MG)
@@ -509,50 +522,38 @@ C           (the bottom layer's own T at the surface).
                CALL SED_GAS(SHSED(L)*PLG(J)*P0,THSED(L),GLAMC(L),
      +                      GRHOC(L),GETAC(L))
   291       CONTINUE
-C           With LFLUX the dyes are advected in flux form, so TRAG holds
-C           p*q (PLG=p*/P0 by now, see the EXP above), not q. Everything
-C           below works in q: divide by PSDY on the way in, multiply the
-C           target by PSDY on the way out, as QG/QNLG are for tracer 1.
-            IF (LFLUX) THEN
-               PSDY=PLG(J)
-            ELSE
-               PSDY=1.0
-            ENDIF
             IF (KDYEMODE.EQ.1) THEN
-C           Tracers 2..NTRAC are the dyes: identical but for ADYE(KK),
-C           so one run compares grain sizes. Tracer 1 is water vapour.
-C           Each dye is total species material, and only its condensed
-C           fraction (FCONDYE) falls.
-            DO 308 KK=2,NTRAC
-C              TRAG strides levels by IGC, so copy out the column.
+C           Each dye is total species material, identical but for
+C           ADYE(KK), so one run compares grain sizes; only its
+C           condensed fraction (FCONDYE) falls.
+            DO 308 KK=2,NDYE+1
                DO 301 L=1,NL
-                  QCSED(L)=TRAG(J,L,KK)/PSDY
+                  QVSED(L)=QDYE(I,IRDY,L,KK)
   301          CONTINUE
-               CALL SETTLECOL(QCSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KK),
-     +                        GA,GASCON,WW,DELT2,FSCLC,GLAMC,GRHOC,
+               CALL SETTLECOL(QVSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KK),
+     +                        GA,GASCON,WW,DTDY,FSCLC,GLAMC,GRHOC,
      +                        GETAC,QSED)
-               DO 302 L=1,NL
-                  TRANLG(J,L,KK)=TRANLG(J,L,KK)
-     +                 +(PSDY*QSED(L)-TRAG(J,L,KK))/DELT2
-  302          CONTINUE
 C              Deep reservoir, relaxing q toward 1.
                DO 305 L=1,NL
                   IF (PCSED(L).GT.PDYEFIX) THEN
-                     TRANLG(J,L,KK)=TRANLG(J,L,KK)
-     +                    +(PSDY-TRAG(J,L,KK))*RLXDYE
+                     QSED(L)=QSED(L)+(1.0-QSED(L))*FRDYE
                   ENDIF
+                  DMPHYS(KK)=DMPHYS(KK)+PLG(J)*DSIGMA(L)*WDYR
+     +                       *(QSED(L)-QVSED(L))
+                  QDYE(I,IRDY,L,KK)=QSED(L)
   305          CONTINUE
   308       CONTINUE
             ELSE IF (KDYEMODE.EQ.2) THEN
 C           Vapour/solid pairs: vapour KV=2P, solid KC=2P+1. First the
 C           pair relaxes toward equilibrium, solid = max(total-QSATDYE,0),
-C           exactly integrated over DELT2 so any timescale is stable and
-C           the total is untouched; then the solid alone settles.
-            DO 318 KV=2,NTRAC-1,2
+C           exactly integrated over DTDY so any timescale is stable and
+C           the total is untouched; then the solid alone settles; then
+C           the deep reservoir relaxes the total toward 1, as vapour.
+            DO 318 KV=2,NDYE,2
                KC=KV+1
                DO 312 L=1,NL
-                  QVDY=TRAG(J,L,KV)/PSDY
-                  QCDY=TRAG(J,L,KC)/PSDY
+                  QVDY=QDYE(I,IRDY,L,KV)
+                  QCDY=QDYE(I,IRDY,L,KC)
                   QTDY=QVDY+QCDY
                   QEDY=MAX(QTDY-QSATDYE(PCSED(L),TCSED(L)),0.0)
                   IF (QEDY.GT.QCDY) THEN
@@ -564,21 +565,20 @@ C           the total is untouched; then the solid alone settles.
                   QVSED(L)=QTDY-QCDY
   312          CONTINUE
                CALL SETTLECOL(QCSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KC),
-     +                        GA,GASCON,WW,DELT2,FSCLC,GLAMC,GRHOC,
+     +                        GA,GASCON,WW,DTDY,FSCLC,GLAMC,GRHOC,
      +                        GETAC,QSED)
-               DO 314 L=1,NL
-                  TRANLG(J,L,KV)=TRANLG(J,L,KV)
-     +                 +(PSDY*QVSED(L)-TRAG(J,L,KV))/DELT2
-                  TRANLG(J,L,KC)=TRANLG(J,L,KC)
-     +                 +(PSDY*QSED(L)-TRAG(J,L,KC))/DELT2
-  314          CONTINUE
-C              Deep reservoir: relax the pair's total q toward 1,
-C              supplied as vapour; the exchange above decides its phase.
                DO 316 L=1,NL
+C                 (Floored at 0: it may only take vapour that exists.)
                   IF (PCSED(L).GT.PDYEFIX) THEN
-                     TRANLG(J,L,KV)=TRANLG(J,L,KV)
-     +                    +(PSDY-TRAG(J,L,KV)-TRAG(J,L,KC))*RLXDYE
+                     QVSED(L)=MAX(QVSED(L)+(1.0-QVSED(L)-QSED(L))*FRDYE,
+     +                            0.0)
                   ENDIF
+                  DMPHYS(KV)=DMPHYS(KV)+PLG(J)*DSIGMA(L)*WDYR
+     +                       *(QVSED(L)-QDYE(I,IRDY,L,KV))
+                  DMPHYS(KC)=DMPHYS(KC)+PLG(J)*DSIGMA(L)*WDYR
+     +                       *(QSED(L)-QDYE(I,IRDY,L,KC))
+                  QDYE(I,IRDY,L,KV)=QVSED(L)
+                  QDYE(I,IRDY,L,KC)=QSED(L)
   316          CONTINUE
   318       CONTINUE
             ELSE
@@ -588,6 +588,7 @@ C              supplied as vapour; the exchange above decides its phase.
   310    CONTINUE
          IOFM=MGPP
   320 CONTINUE
+  330 CONTINUE
 C
       IF (LFLUX) THEN
 C        Convert to volume mixing ratio from mass mixing ratio.           

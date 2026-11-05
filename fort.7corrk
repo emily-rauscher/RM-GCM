@@ -70,7 +70,20 @@ SOLC_IN		    = 4.736e5,
 TOAALB		    = 0.00,
 PORB		    = 1.0,
 OBLIQ		    = 0.0,
-ECCEN		    = 0.0
+ECCEN		    = 0.0,
+ADYE		    = 0.0, 1.0e-6, 1.0E-6
+PDYEFIX		    = 1.0E5,
+PDYEUPPER	    = 1.0E6,
+TRELAXORB	    = 0.1,
+! Radiatively active dye stuff here, switch, tracer index, species index
+LDYERAD		    = F,
+KDYERAD		    = 3,
+KDYESPEC	    = 7,
+! Cloud scheme: 1 = one total-material tracer per dye, 2 = vapour/solid
+! pairs (vapour 2P, solid 2P+1; NDYE even). Timescales in seconds.
+KDYEMODE	    = 1,
+TCONDDYE	    = 1.0e+03,
+TEVAPDYE	    = 1.0e+02
 /
 &INMAG
  LBDRAG = F,
@@ -216,7 +229,7 @@ STTEMP2=3357
  METALLICITY     = 0.0,
  HAZES           = F,
  PICKET_FENCE_CLOUDS = T,
- MOLEF = 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
+ MOLEF = 0.0,0.0,0.0,0.0,0.0,0.0,1.745e-5,0.0,0.0,0.0,0.0,0.0,0.0
  !MOLEF = 1.23e-7,0.0,0.0,0.0,4.4e-7,3.26e-5,1.745e-5,9.56e-9,0.0,0.0,1.99e-6,7.83e-8,1.385e-6,
  AERLAYERS       = 50,
  AERTOTTAU       = 100.,

@@ -4,7 +4,7 @@ C**********************************************************
       subroutine INIVARPARAM                                                 
       use tracerclds, only : ADYE, RHODYE, PDYEFIX, PDYEUPPER,
      &                       TRELAXORB, KDYERAD, KDYESPEC, LDYERAD,
-     &                       KDYEMODE, TCONDDYE, TEVAPDYE
+     &                       KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -89,7 +89,7 @@ C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
      & PORB, OBLIQ, ECCEN,
      & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
      & LDYERAD, KDYERAD, KDYESPEC,
-     & KDYEMODE, TCONDDYE, TEVAPDYE
+     & KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -100,9 +100,10 @@ C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
 
 C      Defaults before the namelist read, so a fort.7 predating these
 C      keys still gives a defined configuration.
-       DO 5 KK=1,NTRAC
+       DO 5 KK=1,NDYE+1
           ADYE(KK)=1.0E-6
     5  CONTINUE
+       LDYEFIX=.TRUE.
 C      Guard value only; cloud_properties_set_up.f replaces
        RHODYE=3.0E3
        PDYEFIX=1.0E5
@@ -130,25 +131,25 @@ C      and radiative feedback
           STOP 'KDYESPEC out of range'
        ENDIF
        IF (LDYERAD) THEN
-          IF (KDYERAD.LT.2 .OR. KDYERAD.GT.NTRAC) THEN
-             WRITE(2,*) 'INIVARPARAM: KDYERAD must be 2..NTRAC:',
+          IF (KDYERAD.LT.2 .OR. KDYERAD.GT.NDYE+1) THEN
+             WRITE(2,*) 'INIVARPARAM: KDYERAD must be 2..NDYE+1:',
      &                  KDYERAD
              STOP 'KDYERAD out of range'
           ENDIF
        ENDIF
 
 C      Cloud scheme. Two-phase dyes come in vapour/solid pairs filling
-C      slots 2..NTRAC, and only a solid (odd) slot may be opaque.
+C      slots 2..NDYE+1, and only a solid (odd) slot may be opaque.
        IF (KDYEMODE.NE.1 .AND. KDYEMODE.NE.2) THEN
           WRITE(2,*) 'INIVARPARAM: KDYEMODE must be 1 or 2:',
      &               KDYEMODE
           STOP 'KDYEMODE out of range'
        ENDIF
        IF (KDYEMODE.EQ.2) THEN
-          IF (MOD(NTRAC-1,2).NE.0) THEN
-             WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs NTRAC odd ',
-     &                  '(1 + 2 per vapour/solid pair):', NTRAC
-             STOP 'KDYEMODE=2 needs odd NTRAC'
+          IF (MOD(NDYE,2).NE.0) THEN
+             WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs NDYE even ',
+     &                  '(2 per vapour/solid pair):', NDYE
+             STOP 'KDYEMODE=2 needs even NDYE'
           ENDIF
           IF (LDYERAD .AND. MOD(KDYERAD,2).NE.1) THEN
              WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs KDYERAD on a ',

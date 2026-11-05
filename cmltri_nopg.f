@@ -5,7 +5,8 @@
 
 
       SUBROUTINE IGCM3_SUB
-      use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad
+      use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad, QDYE
+      use dyegrid, only : DYE_START, DYEADV, DYE_RSWRITE
 C!$ use omp_lib
 C**********************************************************************
 C                    IGCM3_1
@@ -197,11 +198,8 @@ C
       COMPLEX Z,D,T,TRA,SP,GS,SPA,VP,DTE,TT,TRAT,DT,ZT
      :       ,ZMI,DMI,TMI,TRAMI,SPMI
 C
-C     TRAG1 carries the dyes (2..NTRAC) to XSECT2, last index
-C     1..NTRAC-1. It sits after SPG1, so cxsect.f, which declares only
-C     the leading part of this common, is unaffected.
       COMMON/GRIDSS/ZG1(IGD,JG),DG1(IGD,JG),UG1(IGD,JG),VG1(IGD,JG),
-     :              TG1(IGD,JG),SPG1(IGC,JG),TRAG1(IGD,JG,NTRAC-1)
+     :              TG1(IGD,JG),SPG1(IGC,JG)
 C
 C     Sigma-dot from MGRMLT (SDOTG, current latitude) and its
 C     per-latitude store for XSECT2 (SDOTG1), kept separate from
@@ -536,22 +534,6 @@ C
             TG1(I,IH)=TG(I)
             SDOTG1(I,IH)=SDOTG(I)
          END DO
-         DO KK=2,NTRAC
-            DO I=1,IGD
-               TRAG1(I,IH,KK-1)=TRAG(I,KK)
-            END DO
-         END DO
-C        Flux form carries p*q; write q. SPG=p*/P0-1 here (MGRMLT).
-         IF (LFLUX) THEN
-            DO KK=2,NTRAC
-               DO L=1,NL
-                  DO I=1,IGC
-                     TRAG1(I+(L-1)*IGC,IH,KK-1)=
-     &                  TRAG1(I+(L-1)*IGC,IH,KK-1)/(1.0+SPG(I))
-                  END DO
-               END DO
-            END DO
-         ENDIF
          DO I=1,IGC
             SPG1(I,IH)=SPG(I)
          END DO
@@ -577,6 +559,10 @@ C
  5    CONTINUE
 C!$omp end do
 C!$omp end parallel
+C
+C     MGRMLT has now stored every row's winds and p*; the first time
+C     round, give the grid-point dyes their initial (or restart) state.
+      CALL DYE_START(LRSTRT,DAY,SIGMA,DSIGMA,P0)
 C
       IF (LBALAN) THEN
 C        Balance spectral fields
@@ -643,6 +629,7 @@ C
          RKOUNT=KOUNT
          WRITE(11) RKOUNT,RNTAPE,DAY,DOY,Z,D,T,TRA,SP,RNTAPE
      +     ,ZMI,DMI,TMI,TRAMI,SPMI,HTNET,RNTAPE
+         CALL DYE_RSWRITE(11)
          IF (LMASCOR)THEN
            RREC=2.0
            WRITE(11) RKOUNT,RNTAPE,DAY,RREC,GMSP0,GMSPMI,RNTAPE
@@ -758,6 +745,12 @@ C Adiabatic part of timestep
 C
          CALL TSTEP
 C
+C Advect the grid-point dyes from the old time level to the new one,
+C over the model time this step advanced (DAY is already updated).
+C Ten lines a day of dye_adv.txt diagnostics.
+C
+         CALL DYEADV(DAY,PI2,KOUNT,MAX(ITSPD/10,1))
+C
 C Mass correction.
 C
          IF (LMASCOR) THEN
@@ -817,14 +810,12 @@ C              Run the grid physics first so TG/PLG are post-VDIFF/CONVEC
                   PLG_forrad(I,IH) = PLG(I)
                ENDDO
                IF (LDYERAD) THEN
-C                 Record tracer quantities for radiative transfer, if we're doing that.
+C                 The radiatively active dye for the RT.
                   DO LDY=1,NL
-                     DO IDY=1,IGC
-                        TRAG_forrad(IDY,LDY,IH) =
-     &                     TRAG(IDY+(LDY-1)*IGC,KDYERAD)
-C                       Flux form carries p*q; the RT wants q. DGRMLT has just made PLG=p*/P0.
-                        IF (LFLUX) TRAG_forrad(IDY,LDY,IH) =
-     &                     TRAG_forrad(IDY,LDY,IH)/PLG(IDY)
+                     DO IDY=1,MG
+                        TRAG_forrad(IDY,LDY,IH)=QDYE(IDY,IH,LDY,KDYERAD)
+                        TRAG_forrad(IDY+MGPP,LDY,IH)=
+     &                     QDYE(IDY,2*JG+1-IH,LDY,KDYERAD)
                      ENDDO
                   ENDDO
                ENDIF
@@ -1024,6 +1015,7 @@ CC      call end_netcdf
       RKOUNT=KOUNT
       WRITE(12) RKOUNT,RNTAPE,DAY,DOY,Z,D,T,TRA,SP,RNTAPE
      +     ,ZMI,DMI,TMI,TRAMI,SPMI,HTNET,RNTAPE
+      CALL DYE_RSWRITE(12)
       IF(LMASCOR)THEN
          RREC=2.0
          WRITE(12) RKOUNT,RNTAPE,DAY,RREC,GMSP0,GMSPMI,RNTAPE
