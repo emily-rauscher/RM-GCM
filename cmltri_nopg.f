@@ -1212,16 +1212,21 @@ C
 C
       SUBROUTINE GRIDCHK(X,KM)
 C     X is /GRIDP/ member KM: its first element must be GRIDALL(IOFFG(KM)).
+C     Compare addresses, not a stored marker: writing through X and
+C     reading back through GRIDALL is aliasing the optimiser may assume
+C     away, which made this check fail spuriously at -O3.
       REAL X(*)
       INTEGER KM
-      REAL XSAVE
-      XSAVE=X(1)
-      X(1)=-12345.678
-      IF (GRIDALL(IOFFG(KM)).NE.-12345.678) THEN
+      IF (.NOT.SAMEADR(X,GRIDALL(IOFFG(KM)))) THEN
          WRITE(*,*) 'GRIDCHK: /GRIDP/ member ',KM,' not at offset ',
      &              IOFFG(KM)
          STOP 'GRIDP offsets'
       ENDIF
-      X(1)=XSAVE
       END SUBROUTINE GRIDCHK
+      LOGICAL FUNCTION SAMEADR(A,B)
+C     True if A(1) and B(1) are the same storage location.
+      USE ISO_C_BINDING, ONLY: C_LOC, C_ASSOCIATED
+      REAL, TARGET :: A(*), B(*)
+      SAMEADR=C_ASSOCIATED(C_LOC(A(1)),C_LOC(B(1)))
+      END FUNCTION SAMEADR
       END SUBROUTINE
