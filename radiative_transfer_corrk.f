@@ -182,14 +182,6 @@
         T_idx = NEAREST_INDEX(TS_CORRK, NTGRID, Tin)
         P_idx = NEAREST_INDEX(PS_CORRK, NPGRID, Pin)
 
-        ! Nearest-neighbor the rayleigh scattering optical depth (faster than bilinear and accurate enough)
-        do chan_idx = 1, NSOL
-
-          gauss_idx = chan_idx
-          wave_idx = iband
-
-          tau_ray_temp(chan_idx, k) = TAURAY_PER_DPG(T_idx, P_idx, wave_idx)
-        end do
         ! Set up indices for bilinear interpolation
         if (PS_CORRK(P_idx) .gt. Pin) then
           P_idx = P_idx - 1
@@ -209,12 +201,22 @@
           wave_idx = iband
           ! k_IRl(chan_idx, k) = OPAC_CORRK(T_idx, P_idx, wave_idx, gauss_idx)
           ! interpolate molecular line opacities
-
-          call bilinear_interpolation(LOG10(Tin), log10(Pin), TS_LOG_CORRK(T_idx), TS_LOG_CORRK(T_idx+1), PS_LOG_CORRK(P_idx), 
-     &                                  PS_LOG_CORRK(P_idx+1), 
-     &                                  OPAC_CORRK(T_idx, P_idx, wave_idx, gauss_idx), OPAC_CORRK(T_idx+1, P_idx, 
-     &                                  wave_idx, gauss_idx), OPAC_CORRK(T_idx, P_idx+1, wave_idx, gauss_idx), 
+          ! Corner order is Q11=(T_i,P_j), Q12=(T_i,P_j+1), Q21=(T_i+1,P_j), Q22=(T_i+1,P_j+1),
+          ! matching bilinear_interpolation's Q_ab = f(x_a, y_b). Passing (T_i+1,P_j) and
+          ! (T_i,P_j+1) the other way round makes log k jump at every table grid line.
+          call bilinear_interpolation(LOG10(Tin), log10(Pin), TS_LOG_CORRK(T_idx), TS_LOG_CORRK(T_idx+1), PS_LOG_CORRK(P_idx),
+     &                                  PS_LOG_CORRK(P_idx+1),
+     &                                  OPAC_CORRK(T_idx, P_idx, wave_idx, gauss_idx), OPAC_CORRK(T_idx, P_idx+1,
+     &                                  wave_idx, gauss_idx), OPAC_CORRK(T_idx+1, P_idx, wave_idx, gauss_idx),
      &                                  OPAC_CORRK(T_idx+1, P_idx+1, wave_idx, gauss_idx), k_IRl(chan_idx, k))
+
+          ! Rayleigh scattering (log10 tau per dpg), interpolated the same way rather than
+          ! nearest-neighbour, which stepped at the midpoints between grid lines
+          call bilinear_interpolation(LOG10(Tin), log10(Pin), TS_LOG_CORRK(T_idx), TS_LOG_CORRK(T_idx+1), PS_LOG_CORRK(P_idx),
+     &                                  PS_LOG_CORRK(P_idx+1),
+     &                                  TAURAY_PER_DPG(T_idx, P_idx, wave_idx), TAURAY_PER_DPG(T_idx, P_idx+1, wave_idx),
+     &                                  TAURAY_PER_DPG(T_idx+1, P_idx, wave_idx), TAURAY_PER_DPG(T_idx+1, P_idx+1, wave_idx),
+     &                                  tau_ray_temp(chan_idx, k))
           ! interpolate CIA opacities (now rolled into molecular opacities)
     !       call bilinear_interpolation(LOG10(Tin), log10(Pin), TS_LOG_CORRK(T_idx), TS_LOG_CORRK(T_idx+1), PS_LOG_CORRK(P_idx), 
     !  &                                  PS_LOG_CORRK(P_idx+1), 
@@ -222,7 +224,7 @@
     !  &                                  OPAC_CIA(T_idx, P_idx+1, wave_idx), OPAC_CIA(T_idx+1, P_idx+1, wave_idx), 
     !  &                                  k_CIA(chan_idx, k))
 
-          ! interpolate Rayleigh scattering opacities (This is now nearest-neighbor, see above)
+          ! interpolate Rayleigh scattering opacities (now done above, alongside the line opacities)
     !       call bilinear_interpolation(LOG10(Tin), log10(Pin), TS_LOG_CORRK(T_idx), TS_LOG_CORRK(T_idx+1), PS_LOG_CORRK(P_idx), 
     !  &                       PS_LOG_CORRK(P_idx+1), 
     !  &                       TAURAY_PER_DPG(T_idx, P_idx, wave_idx), TAURAY_PER_DPG(T_idx+1, P_idx, wave_idx),
