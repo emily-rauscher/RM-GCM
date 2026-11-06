@@ -92,42 +92,7 @@ C
 C     Loop over hemispheres                                               
 C                                                                         
       DO 800 IHEM=1,NHEM                                                  
-C        The columns of a row are independent, so contiguous blocks of
-C        them run in parallel (MGRBLK, below), each through the
-C        original loops over its own columns. Each column is computed
-C        exactly as before, so the result does not depend on the number
-C        of threads, and the inner loops still vectorise.
-         NBLK=MIN(16,MG)
-!$OMP PARALLEL DO PRIVATE(IB)
-         DO 90 IB=1,NBLK
-            CALL MGRBLK(IOFM,(IB-1)*MG/NBLK+1,IB*MG/NBLK)
-   90    CONTINUE
-!$OMP END PARALLEL DO
-C
-C        This row's winds and p* (time t) for DYEADV. GWT is per
-C        hemisphere, hence *NHEM.
-         IF (IHEM.EQ.1) THEN
-            CALL DYE_STOREROW(JH,IOFM,IGC,UG,VG,SPG,SI(JH),
-     +                        GWT(JH)*NHEM)
-         ELSE
-            CALL DYE_STOREROW(2*JG+1-JH,IOFM,IGC,UG,VG,SPG,-SI(JH),
-     +                        GWT(JH)*NHEM)
-         ENDIF
-         IOFM=MGPP
- 800  CONTINUE                                                            
-      RETURN
-C
-      CONTAINS
-C
-      SUBROUTINE MGRBLK(IOFM,I0,I1)
-C     MGRMLT for columns I0..I1 of the hemisphere at offset IOFM. Its
-C     loop counters and scalars are declared here, so each thread has
-C     its own; the arrays are MGRMLT's, and each block writes only its
-C     own columns of them.
-      INTEGER IOFM,I0,I1
-      INTEGER I,J,L,LL,KK,K
-      REAL TSUM,VGPG,FAC,FAC2
-         DO 100 I=I0,I1
+         DO 100 I=1,MG                                                    
             J=I+IOFM                                                      
             SUMD(I)=0.0                                                   
             VPG(J)=0.0                                                    
@@ -138,7 +103,7 @@ C
 C                                                                         
  100     CONTINUE                                                         
          DO 110 L=1,NLM                                                   
-            DO 120 I=I0,I1
+            DO 120 I=1,MG                                                 
               J=I+IOFM                                                    
               SUMD(I)=SUMD(I)+DSIGMA(L)*DG(J,L)                           
               VPG(J)=VPG(J)+DSIGMA(L)*SECSQ(JH)*(UG(J,L)*PMG(J)+          
@@ -146,14 +111,24 @@ C
               SDOTP(I,L)=SUMD(I)+VPG(J)                                   
  120        CONTINUE                                                      
  110     CONTINUE                                                         
-         DO 121 I=I0,I1
+         DO 121 I=1,MG                                                    
             J=I+IOFM                                                      
             SUMD(I)=SUMD(I)+DSIGMA(NL)*DG(J,NL)                           
             VPG(J)=VPG(J)+DSIGMA(NL)*SECSQ(JH)*(UG(J,NL)*PMG(J)+          
      1             VG(J,NL)*PJG(J))                                       
  121     CONTINUE                                                         
+C
+C        This row's winds and p* (time t) for DYEADV. GWT is per
+C        hemisphere, hence *NHEM.
+         IF (IHEM.EQ.1) THEN
+            CALL DYE_STOREROW(JH,IOFM,IGC,UG,VG,SPG,SI(JH),
+     +                        GWT(JH)*NHEM)
+         ELSE
+            CALL DYE_STOREROW(2*JG+1-JH,IOFM,IGC,UG,VG,SPG,-SI(JH),
+     +                        GWT(JH)*NHEM)
+         ENDIF
          DO 130 L=1,NLM                                                   
-            DO 140 I=I0,I1
+            DO 140 I=1,MG                                                 
                J=I+IOFM                                                   
                SDOTP(I,L)=SIGMAH(L)*(SUMD(I)+VPG(J))-SDOTP(I,L)
  140        CONTINUE
@@ -166,7 +141,7 @@ C        mean of the two. Both outer boundaries (sigma=0 at the model
 C        top, sigma=1 at the surface) are rigid, i.e. sigma-dot=0
 C        there, which fixes the L=1 and L=NL end cases.
          DO 132 L=1,NL
-            DO 131 I=I0,I1
+            DO 131 I=1,MG
                J=I+IOFM
                IF (L.EQ.1) THEN
                   SDOTG(J,L)=0.5*SDOTP(I,1)
@@ -177,37 +152,37 @@ C        there, which fixes the L=1 and L=NL end cases.
                ENDIF
  131        CONTINUE
  132     CONTINUE
-         DO 150 I=I0,I1
+         DO 150 I=1,MG
             SUMD(I)=0.0
  150     CONTINUE
          DO 160 L=1,NL                                                    
-            DO 170 I=I0,I1
+            DO 170 I=1,MG                                                 
                TPTA(I)=0.0                                                
                TPTB(I)=0.0                                                
  170        CONTINUE                                                      
             DO 180 LL=1,L                                                 
-               DO 190 I=I0,I1
+               DO 190 I=1,MG                                              
                   J=I+IOFM                                                
                   VGPG=SECSQ(JH)*(UG(J,LL)*PMG(J)+VG(J,LL)*PJG(J))        
                   TPTA(I)=TPTA(I)+CC(LL,L)*VGPG                           
                   TPTB(I)=TPTB(I)+CC(LL,L)*(VGPG+DG(J,LL))                
  190           CONTINUE                                                   
  180        CONTINUE                                                      
-            DO 200 I=I0,I1
+            DO 200 I=1,MG                                                 
                J=I+IOFM                                                   
                UTG(J,L)=UG(J,L)*TG(J,L)                                   
                VTG(J,L)=VG(J,L)*TG(J,L)                                   
                EG(J,L)=UG(J,L)*UG(J,L)+VG(J,L)*VG(J,L)                    
  200        CONTINUE                                                      
             DO 202 KK=1,NTRAC                                             
-               DO 201 I=I0,I1
+               DO 201 I=1,MG                                              
                   J=I+IOFM                                                
                   UTRAG(J,L,KK)=UG(J,L)*TRAG(J,L,KK)                      
                   VTRAG(J,L,KK)=VG(J,L)*TRAG(J,L,KK)                      
   201          CONTINUE                                                   
   202       CONTINUE                                                      
             IF (L.GT.1.AND.L.LT.NL) THEN                                  
-               DO 210 I=I0,I1
+               DO 210 I=1,MG                                              
                   J=I+IOFM                                                
                   TSUM=SECSQ(JH)*(UG(J,L)*PMG(J)+VG(J,L)*PJG(J))          
                   SUMD(I)=SUMD(I)+TSUM*DSIGMA(L)                          
@@ -228,14 +203,14 @@ C        there, which fixes the L=1 and L=NL end cases.
  210           CONTINUE                                                   
                DO 213 KK=1,NTRAC                                          
                   IF (.NOT.LFLUX) THEN                                    
-                     DO 211 I=I0,I1
+                     DO 211 I=1,MG                                        
                         J=I+IOFM                                          
                         TRANLG(J,L,KK)=TRAG(J,L,KK)*DG(J,L)-RDSIG(L)*     
      1                    (SDOTP(I,L  )*(TRAG(J,L+1,KK)-TRAG(J,L  ,KK))   
      2                    +SDOTP(I,L-1)*(TRAG(J,L  ,KK)-TRAG(J,L-1,KK)))  
   211                CONTINUE                                             
                   ELSE                                                    
-                     DO 212 I=I0,I1
+                     DO 212 I=1,MG                                        
                         J=I+IOFM                                          
                         TRANLG(J,L,KK)=RDSIG(L)*                          
      1                    (SDOTP(I,L  )*(TRAG(J,L+1,KK)+TRAG(J,L  ,KK))   
@@ -252,7 +227,7 @@ C        there, which fixes the L=1 and L=NL end cases.
                   FAC=0.0                                                 
                   FAC2=-1.                                                
                ENDIF                                                      
-               DO 220 I=I0,I1
+               DO 220 I=1,MG                                              
                   J=I+IOFM                                                
                   TSUM=SECSQ(JH)*(UG(J,L)*PMG(J)+VG(J,L)*PJG(J))          
                   SUMD(I)=SUMD(I)+TSUM*DSIGMA(L)*FAC                      
@@ -267,13 +242,13 @@ C        there, which fixes the L=1 and L=NL end cases.
  220           CONTINUE                                                   
                DO 223 KK=1,NTRAC                                          
                   IF (.NOT.LFLUX) THEN                                    
-                     DO 221 I=I0,I1
+                     DO 221 I=1,MG                                        
                         J=I+IOFM                                          
                         TRANLG(J,L,KK)=TRAG(J,L,KK)*DG(J,L)-RDSIG(L)*     
      1                         SDOTP(I,K)*(TRAG(J,K+1,KK)-TRAG(J,K,KK))   
   221                CONTINUE                                             
                   ELSE                                                    
-                     DO 222 I=I0,I1
+                     DO 222 I=1,MG                                        
                         J=I+IOFM                                          
                         TRANLG(J,L,KK)=RDSIG(L)*FAC2*                     
      1                         SDOTP(I,K)*(TRAG(J,K+1,KK)+TRAG(J,K,KK))   
@@ -282,5 +257,7 @@ C        there, which fixes the L=1 and L=NL end cases.
   223          CONTINUE                                                   
             ENDIF                                                         
  160     CONTINUE                                                         
-      END SUBROUTINE MGRBLK
+         IOFM=MGPP                                                        
+ 800  CONTINUE                                                            
+      RETURN                                                              
       END                                                                 
