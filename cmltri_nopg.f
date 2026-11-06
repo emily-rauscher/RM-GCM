@@ -236,6 +236,23 @@ C-----------------------------------------------------------------------
       EQUIVALENCE (R8DATA(1),Z(1))
       REAL R8TT(IGP)
       EQUIVALENCE(R8TT(1),TT(1))
+C
+C     Latitudes in parallel in the adiabatic loop: each latitude works
+C     in its own buffer GBUF(:,IH), laid out as /GRIDP/ (IOFFG gives
+C     each member's offset, found once from the common's own
+C     addresses), and its own copy of the spectral vorticity ZLOC(:,IH).
+C     ZSEQ holds the planetary-vorticity-removed coefficients each
+C     latitude sees in the serial loop; GRIDALL is /GRIDP/ as one array.
+      REAL, ALLOCATABLE, SAVE :: GBUF(:,:)
+      COMPLEX, ALLOCATABLE, SAVE :: ZLOC(:,:)
+      COMPLEX ZSEQ(NL,JG)
+      INTEGER, SAVE :: IOFFG(24)=0, LGRID=0
+      INTEGER IHL,JLX,KG
+C     /GRIDP/ from CHIG to FUGT, without GRPAD
+      INTEGER LGRIDP
+      PARAMETER (LGRIDP=(15+4*NTRAC)*IGD+5*IGC)
+      REAL GRIDALL(LGRIDP)
+      EQUIVALENCE (GRIDALL(1),CHIG(1))
       EQUIVALENCE(R8SP(1),SP(1))
        REAL htnet
        COMMON /RADHT/ HTNET(NHEM,JG,MG,NL)
@@ -502,6 +519,154 @@ C     Main loop over latitudes
 C
 C!$omp parallel default(shared) private(IH,JH,JL,WORK)
 C!$omp do
+C     With the Legendre polynomials in memory, the latitudes run in
+C     parallel. Each does LTI, the FFTs and MGRMLT in its own buffer;
+C     LTD, which adds into the spectral tendencies, runs in latitude
+C     order (ORDERED), so every sum is formed exactly as in the serial
+C     loop below and the result does not depend on the thread count.
+      IF (JGL.EQ.JG .AND. .NOT.LTVEC) THEN
+         IF (LGRID.EQ.0) THEN
+C           Offsets of the members in /GRIDP/'s declared order
+            IOFFG(1)=1
+            DO KG=2,7
+               IOFFG(KG)=IOFFG(KG-1)+IGD
+            ENDDO
+            IOFFG(8)=IOFFG(7)+IGD
+            IOFFG(9)=IOFFG(8)+NTRAC*IGD
+            DO KG=10,13
+               IOFFG(KG)=IOFFG(KG-1)+IGC
+            ENDDO
+            IOFFG(14)=IOFFG(13)+IGC
+            IOFFG(15)=IOFFG(14)+IGD
+            IOFFG(16)=IOFFG(15)+IGD
+            IOFFG(17)=IOFFG(16)+NTRAC*IGD
+            IOFFG(18)=IOFFG(17)+IGD
+            IOFFG(19)=IOFFG(18)+IGD
+            IOFFG(20)=IOFFG(19)+IGD
+            IOFFG(21)=IOFFG(20)+NTRAC*IGD
+            IOFFG(22)=IOFFG(21)+IGD
+            IOFFG(23)=IOFFG(22)+NTRAC*IGD
+            IOFFG(24)=IOFFG(23)+IGD
+            LGRID=IOFFG(24)+IGD-1
+            IF (LGRID.NE.LGRIDP) STOP 'GRIDP length'
+C           Check each offset against the common itself: a value put in
+C           the member's first element must appear there in GRIDALL.
+            CALL GRIDCHK(CHIG,1)
+            CALL GRIDCHK(SFG,2)
+            CALL GRIDCHK(UG,3)
+            CALL GRIDCHK(VG,4)
+            CALL GRIDCHK(ZG,5)
+            CALL GRIDCHK(DG,6)
+            CALL GRIDCHK(TG,7)
+            CALL GRIDCHK(TRAG,8)
+            CALL GRIDCHK(PLG,9)
+            CALL GRIDCHK(PJG,10)
+            CALL GRIDCHK(PMG,11)
+            CALL GRIDCHK(SPG,12)
+            CALL GRIDCHK(VPG,13)
+            CALL GRIDCHK(EG,14)
+            CALL GRIDCHK(TNLG,15)
+            CALL GRIDCHK(TRANLG,16)
+            CALL GRIDCHK(FUG,17)
+            CALL GRIDCHK(FVG,18)
+            CALL GRIDCHK(UTG,19)
+            CALL GRIDCHK(UTRAG,20)
+            CALL GRIDCHK(VTG,21)
+            CALL GRIDCHK(VTRAG,22)
+            CALL GRIDCHK(FVGT,23)
+            CALL GRIDCHK(FUGT,24)
+            ALLOCATE(GBUF(LGRID,JG),ZLOC(IGB,JG))
+         ENDIF
+C        Planetary vorticity: the serial loop takes EZ off these
+C        coefficients before each latitude's LTI and adds it back after;
+C        reproduce that sequence, so each latitude sees the same values.
+         DO IHL=1,JG
+            DO L=1,NL
+               ZSEQ(L,IHL)=Z(1+(L-1)*IGA)-EZ
+               Z(1+(L-1)*IGA)=ZSEQ(L,IHL)+EZ
+            ENDDO
+         ENDDO
+!$OMP PARALLEL DO ORDERED SCHEDULE(STATIC,1)
+!$OMP& PRIVATE(IHL,JLX,I,L,FWORK)
+         DO 6 IHL=1,JG
+            JLX=1+(IHL-1)*JINC
+            DO I=1,IGB
+               ZLOC(I,IHL)=Z(I)
+            ENDDO
+            DO L=1,NL
+               ZLOC(1+(L-1)*IGA,IHL)=ZSEQ(L,IHL)
+            ENDDO
+            CALL LTIP(ZLOC(1,IHL),
+     +   GBUF(IOFFG(1),IHL),GBUF(IOFFG(2),IHL),GBUF(IOFFG(3),IHL),
+     +   GBUF(IOFFG(4),IHL),GBUF(IOFFG(5),IHL),GBUF(IOFFG(6),IHL),
+     +   GBUF(IOFFG(7),IHL),GBUF(IOFFG(8),IHL),GBUF(IOFFG(9),IHL),
+     +   GBUF(IOFFG(10),IHL),GBUF(IOFFG(11),IHL),GBUF(IOFFG(12),IHL),
+     +   GBUF(IOFFG(13),IHL),GBUF(IOFFG(14),IHL),GBUF(IOFFG(15),IHL),
+     +   GBUF(IOFFG(16),IHL),GBUF(IOFFG(17),IHL),GBUF(IOFFG(18),IHL),
+     +   GBUF(IOFFG(19),IHL),GBUF(IOFFG(20),IHL),GBUF(IOFFG(21),IHL),
+     +   GBUF(IOFFG(22),IHL),GBUF(IOFFG(23),IHL),GBUF(IOFFG(24),IHL),
+     +   IHL,JLX)
+C           Inverse FFT of the fields from UG on (DAG in the serial loop)
+            DO I=1,NTWG
+               CALL FFT991(GBUF(IOFFG(3)+(I-1)*NCRAY*MGPP,IHL),FWORK,
+     +                     TRIG,IFAX,1,MGPP,MG,NCRAY,1)
+            ENDDO
+            CALL FFT991(GBUF(IOFFG(3)+NTWG*NCRAY*MGPP,IHL),FWORK,TRIG,
+     +                  IFAX,1,MGPP,MG,NRSTWG,1)
+            CALL MGRMLTP(
+     +   GBUF(IOFFG(1),IHL),GBUF(IOFFG(2),IHL),GBUF(IOFFG(3),IHL),
+     +   GBUF(IOFFG(4),IHL),GBUF(IOFFG(5),IHL),GBUF(IOFFG(6),IHL),
+     +   GBUF(IOFFG(7),IHL),GBUF(IOFFG(8),IHL),GBUF(IOFFG(9),IHL),
+     +   GBUF(IOFFG(10),IHL),GBUF(IOFFG(11),IHL),GBUF(IOFFG(12),IHL),
+     +   GBUF(IOFFG(13),IHL),GBUF(IOFFG(14),IHL),GBUF(IOFFG(15),IHL),
+     +   GBUF(IOFFG(16),IHL),GBUF(IOFFG(17),IHL),GBUF(IOFFG(18),IHL),
+     +   GBUF(IOFFG(19),IHL),GBUF(IOFFG(20),IHL),GBUF(IOFFG(21),IHL),
+     +   GBUF(IOFFG(22),IHL),GBUF(IOFFG(23),IHL),GBUF(IOFFG(24),IHL),
+     +   SDOTG1(1,IHL),IHL)
+C           Grid-point fields for XSECT
+            DO I=1,IGD
+               ZG1(I,IHL)=GBUF(IOFFG(5)-1+I,IHL)
+               DG1(I,IHL)=GBUF(IOFFG(6)-1+I,IHL)
+               UG1(I,IHL)=GBUF(IOFFG(3)-1+I,IHL)
+               VG1(I,IHL)=GBUF(IOFFG(4)-1+I,IHL)
+               TG1(I,IHL)=GBUF(IOFFG(7)-1+I,IHL)
+            ENDDO
+            DO I=1,IGC
+               SPG1(I,IHL)=GBUF(IOFFG(12)-1+I,IHL)
+            ENDDO
+C           Direct FFT of the fields from SPG on (DAF in the serial loop)
+            DO I=1,NTGW
+               CALL FFT991(GBUF(IOFFG(12)+(I-1)*NCRAY*MGPP,IHL),FWORK,
+     +                     TRIG,IFAX,1,MGPP,MG,NCRAY,-1)
+            ENDDO
+            CALL FFT991(GBUF(IOFFG(12)+NTGW*NCRAY*MGPP,IHL),FWORK,TRIG,
+     +                  IFAX,1,MGPP,MG,NRSTGW,-1)
+!$OMP ORDERED
+            JH=IHL
+            JL=JLX
+            CALL LTDP(
+     +   GBUF(IOFFG(1),IHL),GBUF(IOFFG(2),IHL),GBUF(IOFFG(3),IHL),
+     +   GBUF(IOFFG(4),IHL),GBUF(IOFFG(5),IHL),GBUF(IOFFG(6),IHL),
+     +   GBUF(IOFFG(7),IHL),GBUF(IOFFG(8),IHL),GBUF(IOFFG(9),IHL),
+     +   GBUF(IOFFG(10),IHL),GBUF(IOFFG(11),IHL),GBUF(IOFFG(12),IHL),
+     +   GBUF(IOFFG(13),IHL),GBUF(IOFFG(14),IHL),GBUF(IOFFG(15),IHL),
+     +   GBUF(IOFFG(16),IHL),GBUF(IOFFG(17),IHL),GBUF(IOFFG(18),IHL),
+     +   GBUF(IOFFG(19),IHL),GBUF(IOFFG(20),IHL),GBUF(IOFFG(21),IHL),
+     +   GBUF(IOFFG(22),IHL),GBUF(IOFFG(23),IHL),GBUF(IOFFG(24),IHL),
+     +   IHL)
+!$OMP END ORDERED
+    6    CONTINUE
+!$OMP END PARALLEL DO
+C        Leave /GRIDP/, SDOTG and JH, JL as the serial loop leaves them.
+         DO KG=1,LGRID
+            GRIDALL(KG)=GBUF(KG,JG)
+         ENDDO
+         DO I=1,IGD
+            SDOTG(I)=SDOTG1(I,JG)
+         ENDDO
+         JH=JG
+         JL=1+JG*JINC
+      ELSE
       DO 5 IH=1,JG
          JH=IH
          IF(JGL.EQ.1) READ(25) ALP,DALP,RLP,RDLP
@@ -558,6 +723,7 @@ C
 !!         JL=1+JINC*IH
 !!         write(*,*) IH, JH, JL, JINC
  5    CONTINUE
+      ENDIF
 C!$omp end do
 C!$omp end parallel
 C
@@ -1041,4 +1207,21 @@ C      CALL PGCLOS
 
 
       STOP
+C
+      CONTAINS
+C
+      SUBROUTINE GRIDCHK(X,KM)
+C     X is /GRIDP/ member KM: its first element must be GRIDALL(IOFFG(KM)).
+      REAL X(*)
+      INTEGER KM
+      REAL XSAVE
+      XSAVE=X(1)
+      X(1)=-12345.678
+      IF (GRIDALL(IOFFG(KM)).NE.-12345.678) THEN
+         WRITE(*,*) 'GRIDCHK: /GRIDP/ member ',KM,' not at offset ',
+     &              IOFFG(KM)
+         STOP 'GRIDP offsets'
+      ENDIF
+      X(1)=XSAVE
+      END SUBROUTINE GRIDCHK
       END SUBROUTINE
