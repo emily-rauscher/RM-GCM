@@ -5,7 +5,8 @@
 
 
       SUBROUTINE IGCM3_SUB
-      use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad, QDYE
+      use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad, QDYE,
+     &                       LBENCH
       use dyegrid, only : DYE_START, DYEADV, DYE_RSWRITE
 C!$ use omp_lib
 C**********************************************************************
@@ -705,8 +706,9 @@ CC      call plotfields(0)
          CALL SPOP
          KOUTP=0
       ENDIF
-C     ER modif for 90 outputs during last orbit of planet
-      IF (KOUNT.GT.(KTOTAL-ABS(PORB)*ITSPD)) THEN       ! Note: if porb=0, won't do this
+C     ER modif for 90 outputs during last orbit of planet. Neither this
+C     nor the NSNAP series below is written in benchmark mode (LBENCH).
+      IF (.NOT.LBENCH .AND. KOUNT.GT.(KTOTAL-ABS(PORB)*ITSPD)) THEN       ! Note: if porb=0, won't do this
          CALL FINALORB(KOUNT,KTOTAL,ABS(PORB*ITSPD),ITSOUT,IFTOUT,ISFOUT)
       ENDIF
 C     Additional whole-run snapshot series (fort.27xx/70xx/90xx), every
@@ -714,7 +716,7 @@ C     NSNAP timesteps. Independent of the FINALORB series above; during
 C     the last orbit both may fire on the same step, which just means
 C     XSECT2 runs twice that step (it REWINDs fort.26/50/64 each call,
 C     so both copies still get current data).
-      IF (MOD(KOUNT,NSNAP).EQ.0) THEN
+      IF (.NOT.LBENCH .AND. MOD(KOUNT,NSNAP).EQ.0) THEN
          CALL XSECT2
          CALL FILECOPY(ITSOUT2,IFTOUT2,ISFOUT2)
          ITSOUT2=ITSOUT2+1

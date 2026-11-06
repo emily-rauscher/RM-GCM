@@ -4,7 +4,8 @@ C**********************************************************
       SUBROUTINE DGRMLT(IH,IPASS)
       use tracerclds, only : ADYE, PDYEFIX, TRELAXORB,
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, QSATDYE,
-     &                       SETTLECOL, FCONDYE, QDYE, DTDY, DMPHYS
+     &                       SETTLECOL, FCONDYE, QDYE, DTDY, DMPHYS,
+     &                       TDYPHY
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -168,6 +169,11 @@ C     Grain-independent settling inputs, shared by all dyes: sigma,
 C     temperature and gas properties at each layer's lower interface,
 C     and the condensed fraction FSCLC of the layer itself.
        DIMENSION SHSED(NL),THSED(NL)
+C     Each column's dye change per level, added into DMPHYS afterwards
+C     in a fixed order (so the sum does not depend on the number of
+C     threads), weighted by the air mass there.
+       DIMENSION DMCOL(NL,MG,2:NDYE+1)
+       INTEGER*8 ICDY0,ICDY1,ICDYR
        DIMENSION GLAMC(NL),GRHOC(NL),GETAC(NL),FSCLC(NL)
 c
       common/gridsss/assbl1(igc,jg),ashbl1(igc,jg),aslbl1(igc,jg),        
@@ -422,7 +428,9 @@ C
 C
 C     Dye physics, applied in place to QDYE over the interval DTDY that
 C     DYEADV just advected. The air-mass-weighted change of each dye goes
-C     into DMPHYS, which the mass fixer in DYEADV counts as real.
+C     into DMPHYS, which the mass fixer in DYEADV counts as real. The
+C     columns are independent, so each row runs them in parallel.
+      CALL SYSTEM_CLOCK(ICDY0,ICDYR)
       IF (NDYE.LT.1 .OR. DTDY.LE.0.0) GOTO 330
 C
 C     Deep reservoir: relax toward 1 below PDYEFIX at all local times,
@@ -488,6 +496,10 @@ C        Grid-store row, and the row's weight for the DMPHYS sums.
             IRDY=2*JG+1-JH
          ENDIF
          WDYR=GWT(JH)*NHEM
+!$OMP PARALLEL DO DEFAULT(SHARED)
+!$OMP& PRIVATE(I,J,ALON,COSZLC,L,KK,KV,KC,QVDY,QCDY,QTDY,QEDY,
+!$OMP&   PCSED,TCSED,FSCLC,SHSED,THSED,GLAMC,GRHOC,GETAC,
+!$OMP&   QCSED,QVSED,QSED)
          DO 310 I=1,MG
             J=I+IOFM
             ALON=360.0*REAL(I-1)/REAL(MG)
@@ -538,8 +550,7 @@ C              Deep reservoir, relaxing q toward 1.
                   IF (PCSED(L).GT.PDYEFIX) THEN
                      QSED(L)=QSED(L)+(1.0-QSED(L))*FRDYE
                   ENDIF
-                  DMPHYS(KK)=DMPHYS(KK)+PLG(J)*DSIGMA(L)*WDYR
-     +                       *(QSED(L)-QVSED(L))
+                  DMCOL(L,I,KK)=QSED(L)-QVSED(L)
                   QDYE(I,IRDY,L,KK)=QSED(L)
   305          CONTINUE
   308       CONTINUE
@@ -573,10 +584,8 @@ C                 (Floored at 0: it may only take vapour that exists.)
                      QVSED(L)=MAX(QVSED(L)+(1.0-QVSED(L)-QSED(L))*FRDYE,
      +                            0.0)
                   ENDIF
-                  DMPHYS(KV)=DMPHYS(KV)+PLG(J)*DSIGMA(L)*WDYR
-     +                       *(QVSED(L)-QDYE(I,IRDY,L,KV))
-                  DMPHYS(KC)=DMPHYS(KC)+PLG(J)*DSIGMA(L)*WDYR
-     +                       *(QSED(L)-QDYE(I,IRDY,L,KC))
+                  DMCOL(L,I,KV)=QVSED(L)-QDYE(I,IRDY,L,KV)
+                  DMCOL(L,I,KC)=QSED(L)-QDYE(I,IRDY,L,KC)
                   QDYE(I,IRDY,L,KV)=QVSED(L)
                   QDYE(I,IRDY,L,KC)=QSED(L)
   316          CONTINUE
@@ -586,9 +595,23 @@ C                 (Floored at 0: it may only take vapour that exists.)
                STOP
             ENDIF
   310    CONTINUE
+!$OMP END PARALLEL DO
+C        Column by column, level by level, as a serial loop would add,
+C        and with the same expression, so it rounds the same way.
+         DO 315 I=1,MG
+            J=I+IOFM
+            DO 315 KK=2,NDYE+1
+               DO 315 L=1,NL
+                  DMPHYS(KK)=DMPHYS(KK)+PLG(J)*DSIGMA(L)*WDYR
+     +                       *DMCOL(L,I,KK)
+  315    CONTINUE
          IOFM=MGPP
   320 CONTINUE
   330 CONTINUE
+      IF (NDYE.GE.1) THEN
+         CALL SYSTEM_CLOCK(ICDY1)
+         TDYPHY=TDYPHY+REAL(ICDY1-ICDY0)/REAL(ICDYR)
+      ENDIF
 C
       IF (LFLUX) THEN
 C        Convert to volume mixing ratio from mass mixing ratio.           

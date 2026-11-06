@@ -45,6 +45,13 @@ C     only through the physics, not through the finite-volume vs
 C     spectral p* mismatch.
       LOGICAL LDYEFIX
 C
+C     Benchmark mode (INVARPARAM; not dye-specific, kept here as the
+C     module the namelist already fills): T skips the snapshot series
+C     written in the main loop, fort.26xx/50xx/64xx over the last orbit
+C     and fort.27xx/70xx/90xx every NSNAP steps, so timings are not
+C     dominated by output. Default F.
+      LOGICAL LBENCH
+C
 C     --- grid-point dye state ----------------------------------------
 C     Mixing ratios q on the Gaussian grid, rows 1..2*JG north to south:
 C     latitude JH of the model's hemisphere loop is row JH in the north
@@ -71,6 +78,9 @@ C     DYMTGT is the mass the last advection left, DMPHYS what the
 C     physics has added since. LDYMTGT: DYMTGT is set.
       REAL DYMTGT(2:NDYE+1),DMPHYS(2:NDYE+1)
       LOGICAL :: LDYMTGT=.FALSE.
+C     Wall-clock seconds since the last line of dye_adv.txt spent in
+C     the dye physics (DGRMLT), for the timing columns written there.
+      REAL :: TDYPHY=0.0
 C
 C     --- work arrays ----------------------------------------------
 C     The radiatively active dye in the model's (IGC,NL,JG) grid

@@ -31,6 +31,11 @@ C     Sweep-order switch, and the diagnostics accumulated between lines
 C     of dye_adv.txt: largest subcycle counts (horizontal, vertical),
 C     and the largest |fixer correction| per dye.
       INTEGER :: KDYSTP=0,IUDYA=0
+C     Wall-clock accounting for dye_adv.txt: seconds in DYEADV, and in
+C     whole model steps (DYEADV call to DYEADV call), since the last
+C     line; ICLAST is the clock at the previous call.
+      REAL :: TDYADV=0.0,TDYSTP=0.0
+      INTEGER*8 :: ICLAST=-1
       INTEGER NSUBMX(2)
       REAL CORRMX(2:NDYE+1)
 C     Work arrays of DYEADV, kept here rather than on the stack: cell
@@ -185,8 +190,12 @@ C     dye_adv.txt.
       REAL CDIV(NL),CSUM
       INTEGER I,IP,R,L,KK,ID,NSUB
       REAL ML(NL),QL(NL,NDYE),FL(0:NL)
+      INTEGER*8 IC0,IC1,ICR
 C
       IF (NDYE.LT.1) RETURN
+      CALL SYSTEM_CLOCK(IC0,ICR)
+      IF (ICLAST.GE.0) TDYSTP=TDYSTP+REAL(IC0-ICLAST)/REAL(ICR)
+      ICLAST=IC0
       DT=PI2*(DAY-DAYDY)
       IF (DT.LE.0.0) RETURN
       DLAM=PI2/REAL(MG)
@@ -296,6 +305,7 @@ C     H on even ones.
       DO 200 ID=1,2
          IF ((ID.EQ.1) .EQV. (MOD(KDYSTP,2).EQ.1)) THEN
 !$OMP PARALLEL DO PRIVATE(NSUB) REDUCTION(MAX:NSUBMX)
+!$OMP& SCHEDULE(DYNAMIC)
             DO 110 L=1,NL
                CALL HSTEP(L,NSUB)
                NSUBMX(1)=MAX(NSUBMX(1),NSUB)
@@ -349,13 +359,19 @@ C
       DTDY=DT
       DAYDY=DAY
 C
+      CALL SYSTEM_CLOCK(IC1)
+      TDYADV=TDYADV+REAL(IC1-IC0)/REAL(ICR)
+C
 C     Diagnostics: per dye the lowest q now and the largest fixer
-C     correction, and the largest subcycle counts, since the last line.
+C     correction, and the largest subcycle counts, since the last line;
+C     then wall-clock seconds since the last line in dye advection, in
+C     dye physics (DGRMLT), and in whole model steps.
       IF (MOD(KOUNT,MAX(NDIAG,1)).EQ.0) THEN
          IF (IUDYA.EQ.0) THEN
             OPEN(NEWUNIT=IUDYA,FILE='dye_adv.txt',POSITION='APPEND')
             WRITE(IUDYA,'(A)') '# day, subcycles h z, then per dye'//
-     &         ' 2..NDYE+1: min q, max |fixer correction|'
+     &         ' 2..NDYE+1: min q, max |fixer correction|; then wall'//
+     &         ' s since last line: dye advection, dye physics, steps'
          ENDIF
          WRITE(IUDYA,'(F12.5,2I4)',ADVANCE='NO') DAY,NSUBMX
          DO 240 KK=2,NDYE+1
@@ -363,9 +379,12 @@ C     correction, and the largest subcycle counts, since the last line.
             WRITE(IUDYA,'(2(1X,ES11.4))',ADVANCE='NO') QMN,CORRMX(KK)
             CORRMX(KK)=0.0
   240    CONTINUE
-         WRITE(IUDYA,*)
+         WRITE(IUDYA,'(3(1X,F10.3))') TDYADV,TDYPHY,TDYSTP
          FLUSH(IUDYA)
          NSUBMX=0
+         TDYADV=0.0
+         TDYPHY=0.0
+         TDYSTP=0.0
       ENDIF
       END SUBROUTINE DYEADV
 C
