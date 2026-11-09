@@ -5,7 +5,7 @@ C**********************************************************
       use tracerclds, only : ADYE, RHODYE, PDYEFIX, PDYEUPPER,
      &                       TRELAXORB, KDYERAD, KDYESPEC, LDYERAD,
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX,
-     &                       LBENCH
+     &                       LBENCH, PDYEBUD, NDYEBUD
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -90,7 +90,8 @@ C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
      & PORB, OBLIQ, ECCEN,
      & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
      & LDYERAD, KDYERAD, KDYESPEC,
-     & KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX, LBENCH
+     & KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX, LBENCH,
+     & PDYEBUD, NDYEBUD
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -106,6 +107,8 @@ C      keys still gives a defined configuration.
     5  CONTINUE
        LDYEFIX=.TRUE.
        LBENCH=.FALSE.
+       PDYEBUD=1.0E3
+       NDYEBUD=0
 C      Guard value only; cloud_properties_set_up.f replaces
        RHODYE=3.0E3
        PDYEFIX=1.0E5

@@ -42,8 +42,16 @@ C     and only the solid is opaque; its radius is ADYE(2P+1).
 C
 C     T: rescale each dye once a step (dyeadv.f) so its mass changes
 C     only through the physics, not through the finite-volume vs
-C     spectral p* mismatch.
+C     spectral p* mismatch; with KDYEMODE=2 each vapour/solid pair is
+C     rescaled together, by one factor, so it is the pair's total that
+C     is held.
       LOGICAL LDYEFIX
+C
+C     Budget of the dye mass above PDYEBUD (Pa; <=0 turns it off), per
+C     process, written to dye_budget.txt every NDYEBUD steps (0: with
+C     the lines of dye_adv.txt). Diagnostic only.
+      REAL PDYEBUD
+      INTEGER NDYEBUD
 C
 C     Benchmark mode (INVARPARAM; not dye-specific, kept here as the
 C     module the namelist already fills): T skips the snapshot series

@@ -6,6 +6,7 @@ C**********************************************************
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, QSATDYE,
      &                       SETTLECOL, FCONDYE, QDYE, DTDY, DMPHYS,
      &                       TDYPHY
+      use dyegrid, only : AM, LBUD, DYBUD
 C                                                                         
 C     COMPUTE DIABATIC TENDENCIES IN GRID POINT SPACE FOR PRESENT LAT.    
 C     ACCUMULATE TIME AVERAGES FOR PRINTED OUTPUT AND HISTORY             
@@ -173,6 +174,9 @@ C     Each column's dye change per level, added into DMPHYS afterwards
 C     in a fixed order (so the sum does not depend on the number of
 C     threads), weighted by the air mass there.
        DIMENSION DMCOL(NL,MG,2:NDYE+1)
+C     And each column's change of the dye mass inside the dye budget
+C     region (dyeadv.f), by exchange, settling, relaxation.
+       DIMENSION BDCOL(3,MG,2:NDYE+1)
        INTEGER*8 ICDY0,ICDY1,ICDYR
        DIMENSION GLAMC(NL),GRHOC(NL),GETAC(NL),FSCLC(NL)
 c
@@ -499,9 +503,10 @@ C        Grid-store row, and the row's weight for the DMPHYS sums.
 !$OMP PARALLEL DO DEFAULT(SHARED)
 !$OMP& PRIVATE(I,J,ALON,COSZLC,L,KK,KV,KC,QVDY,QCDY,QTDY,QEDY,
 !$OMP&   PCSED,TCSED,FSCLC,SHSED,THSED,GLAMC,GRHOC,GETAC,
-!$OMP&   QCSED,QVSED,QSED)
+!$OMP&   QCSED,QVSED,QSED,QPRE,WBUD)
          DO 310 I=1,MG
             J=I+IOFM
+            BDCOL(:,I,:)=0.0
             ALON=360.0*REAL(I-1)/REAL(MG)
             COSZLC=SIN(ALATLC/360.*PI2)*SIN(SEDSLT/360.*PI2)
      +            +COS(ALATLC/360.*PI2)*COS(SEDSLT/360.*PI2)
@@ -547,8 +552,14 @@ C           condensed fraction (FCONDYE) falls.
      +                        GETAC,QSED)
 C              Deep reservoir, relaxing q toward 1.
                DO 305 L=1,NL
+                  QPRE=QSED(L)
                   IF (PCSED(L).GT.PDYEFIX) THEN
                      QSED(L)=QSED(L)+(1.0-QSED(L))*FRDYE
+                  ENDIF
+                  IF (L.LE.LBUD(I,IRDY)) THEN
+                     WBUD=AM(I,IRDY,L)
+                     BDCOL(2,I,KK)=BDCOL(2,I,KK)+WBUD*(QPRE-QVSED(L))
+                     BDCOL(3,I,KK)=BDCOL(3,I,KK)+WBUD*(QSED(L)-QPRE)
                   ENDIF
                   DMCOL(L,I,KK)=QSED(L)-QVSED(L)
                   QDYE(I,IRDY,L,KK)=QSED(L)
@@ -579,10 +590,20 @@ C           the deep reservoir relaxes the total toward 1, as vapour.
      +                        GA,GASCON,WW,DTDY,FSCLC,GLAMC,GRHOC,
      +                        GETAC,QSED)
                DO 316 L=1,NL
+                  QPRE=QVSED(L)
 C                 (Floored at 0: it may only take vapour that exists.)
                   IF (PCSED(L).GT.PDYEFIX) THEN
                      QVSED(L)=MAX(QVSED(L)+(1.0-QVSED(L)-QSED(L))*FRDYE,
      +                            0.0)
+                  ENDIF
+                  IF (L.LE.LBUD(I,IRDY)) THEN
+                     WBUD=AM(I,IRDY,L)
+                     BDCOL(1,I,KV)=BDCOL(1,I,KV)
+     +                    +WBUD*(QPRE-QDYE(I,IRDY,L,KV))
+                     BDCOL(1,I,KC)=BDCOL(1,I,KC)
+     +                    +WBUD*(QCSED(L)-QDYE(I,IRDY,L,KC))
+                     BDCOL(2,I,KC)=BDCOL(2,I,KC)+WBUD*(QSED(L)-QCSED(L))
+                     BDCOL(3,I,KV)=BDCOL(3,I,KV)+WBUD*(QVSED(L)-QPRE)
                   ENDIF
                   DMCOL(L,I,KV)=QVSED(L)-QDYE(I,IRDY,L,KV)
                   DMCOL(L,I,KC)=QSED(L)-QDYE(I,IRDY,L,KC)
@@ -605,6 +626,11 @@ C        and with the same expression, so it rounds the same way.
                   DMPHYS(KK)=DMPHYS(KK)+PLG(J)*DSIGMA(L)*WDYR
      +                       *DMCOL(L,I,KK)
   315    CONTINUE
+         DO 319 I=1,MG
+            DO 319 KK=2,NDYE+1
+               DO 319 KB=1,3
+                  DYBUD(5+KB,KK)=DYBUD(5+KB,KK)+BDCOL(KB,I,KK)
+  319    CONTINUE
          IOFM=MGPP
   320 CONTINUE
   330 CONTINUE

@@ -44,6 +44,26 @@ C     air masses, face fluxes, and the winds used for the step.
       REAL FX(MG,2*JG,NL),FY(MG,0:2*JG,NL),FZ(MG,2*JG,0:NL)
       REAL UE(MG,2*JG,NL),VE(MG,2*JG,NL)
 C
+C     Upper-atmosphere budget (dye_budget.txt), for p < PDYEBUD. The
+C     region is levels 1..LBUD(I,R) of each column, reset from the new
+C     p* at the top of each DYEADV. DYBUD(K,KK) is the change of the
+C     region's sum(AM*q) for dye KK since the last line, by process K:
+C     1 region boundary moving with p*, 2 AM rebuilt from the spectral
+C     p* (q kept), 3 fixer, 4 horizontal advection, 5 vertical
+C     advection, then from DGRMLT 6 vapour/solid exchange, 7 settling,
+C     8 deep relaxation and vapour floor. Every term is measured with
+C     the AM held here at the time, so they add up to the change in
+C     the region total (RBPREV to the current one). BUDS: region total
+C     as of the latest term; SCSUM: sum of the fixer's SC-1. LBUDOK: AM
+C     holds a previous step's masses, so terms 1 and 2 can be measured.
+      INTEGER, PARAMETER :: NBUD=8
+      INTEGER :: LBUD(MG,2*JG)=0,IUDYB=0
+      REAL :: DYBUD(NBUD,2:NDYE+1)=0.0,SCSUM(2:NDYE+1)=0.0
+      REAL BUDS(2:NDYE+1),RBPREV(2:NDYE+1)
+      LOGICAL :: LBUDOK=.FALSE.
+C     Layer sigmas and P0 (Pa), from DYE_START, for the region.
+      REAL SIGDY(NL),P0DY
+C
       CONTAINS
 C
 C**********************************************************
@@ -80,7 +100,9 @@ C     else the initial profile.
       IF (NDYE.LT.1 .OR. LDYEINI) RETURN
       DO 5 L=1,NL
          DSIGDY(L)=DSIGMA(L)
+         SIGDY(L)=SIGMA(L)
     5 CONTINUE
+      P0DY=P0
       EMUDY(0)=1.0
       DO 10 R=1,2*JG
          EMUDY(R)=EMUDY(R-1)-WDY(R)
@@ -187,8 +209,8 @@ C     dye_adv.txt.
       REAL DAY,PI2
       INTEGER KOUNT,NDIAG
       REAL DT,DLAM,PE,TI,WIN,SC,ACT,TGT,QMN,CR0,CR1,CRE
-      REAL CDIV(NL),CSUM
-      INTEGER I,IP,R,L,KK,ID,NSUB
+      REAL CDIV(NL),CSUM,S
+      INTEGER I,IP,R,L,KK,ID,NSUB,KB,NB,KG,NG
       REAL ML(NL),QL(NL,NDYE),FL(0:NL)
       INTEGER*8 IC0,IC1,ICR
 C
@@ -200,9 +222,35 @@ C
       IF (DT.LE.0.0) RETURN
       DLAM=PI2/REAL(MG)
 C
+C     Budget: the region moves to the new p*, before AM does.
+      IF (PDYEBUD.GT.0.0) THEN
+         IF (LBUDOK) THEN
+            DO 4 KK=2,NDYE+1
+               BUDS(KK)=REGSUM(KK)
+    4       CONTINUE
+         ENDIF
+         DO 6 R=1,2*JG
+            DO 6 I=1,MG
+               L=0
+    5          IF (L.LT.NL) THEN
+                  IF (SIGDY(L+1)*PSDYE(I,R)*P0DY.LT.PDYEBUD) THEN
+                     L=L+1
+                     GOTO 5
+                  ENDIF
+               ENDIF
+               LBUD(I,R)=L
+    6    CONTINUE
+         IF (LBUDOK) CALL BUDADD(1)
+      ENDIF
+C
 C     Cell air masses from the spectral p*, then
 C     the fixer (LDYEFIX), which rescales each dye to the mass the last
-C     advection left plus the physics since (DMPHYS, from DGRMLT).
+C     advection left plus the physics since (DMPHYS, from DGRMLT). A
+C     vapour/solid pair (KDYEMODE=2) is rescaled as one, with a single
+C     factor for both: the p* mismatch changes the two in opposite
+C     directions, and fixing each alone would put the solid's whole
+C     share back where the solid is (aloft) while taking the vapour's
+C     from the whole atmosphere, so the pair's total would grow aloft.
 !$OMP PARALLEL DO PRIVATE(I,R)
       DO 10 L=1,NL
          DO 10 R=1,2*JG
@@ -210,26 +258,53 @@ C     advection left plus the physics since (DMPHYS, from DGRMLT).
                AM(I,R,L)=PSDYE(I,R)*DSIGDY(L)*WDY(R)
    10 CONTINUE
 !$OMP END PARALLEL DO
+      IF (PDYEBUD.GT.0.0) THEN
+         IF (LBUDOK) THEN
+            CALL BUDADD(2)
+         ELSE
+C           First step of the run: the budget starts here.
+            DO 11 KK=2,NDYE+1
+               BUDS(KK)=REGSUM(KK)
+               RBPREV(KK)=BUDS(KK)
+   11       CONTINUE
+         ENDIF
+      ENDIF
 C
 C     Serial sums, so the result does not depend on the thread count.
-      DO 20 KK=2,NDYE+1
+      IF (KDYEMODE.EQ.2) THEN
+         NG=2
+      ELSE
+         NG=1
+      ENDIF
+      DO 20 KG=2,NDYE+1,NG
          ACT=0.0
-         DO 15 L=1,NL
-            DO 15 R=1,2*JG
-               DO 15 I=1,MG
-                  ACT=ACT+AM(I,R,L)*QDYE(I,R,L,KK)
-   15    CONTINUE
+         TGT=0.0
+         DO 16 KK=KG,KG+NG-1
+            DO 15 L=1,NL
+               DO 15 R=1,2*JG
+                  DO 15 I=1,MG
+                     ACT=ACT+AM(I,R,L)*QDYE(I,R,L,KK)
+   15       CONTINUE
+            TGT=TGT+DYMTGT(KK)+DMPHYS(KK)
+   16    CONTINUE
          IF (LDYEFIX .AND. LDYMTGT .AND. ACT.GT.0.0) THEN
-            TGT=DYMTGT(KK)+DMPHYS(KK)
             SC=MAX(TGT,0.0)/ACT
-            CORRMX(KK)=MAX(CORRMX(KK),ABS(SC-1.0))
+            DO 19 KK=KG,KG+NG-1
+               CORRMX(KK)=MAX(CORRMX(KK),ABS(SC-1.0))
 !$OMP PARALLEL DO PRIVATE(I,R)
-            DO 18 L=1,NL
-               DO 18 R=1,2*JG
-                  DO 18 I=1,MG
-                     QDYE(I,R,L,KK)=QDYE(I,R,L,KK)*SC
-   18       CONTINUE
+               DO 18 L=1,NL
+                  DO 18 R=1,2*JG
+                     DO 18 I=1,MG
+                        QDYE(I,R,L,KK)=QDYE(I,R,L,KK)*SC
+   18          CONTINUE
 !$OMP END PARALLEL DO
+               IF (PDYEBUD.GT.0.0) THEN
+                  S=REGSUM(KK)
+                  DYBUD(3,KK)=DYBUD(3,KK)+(S-BUDS(KK))
+                  BUDS(KK)=S
+                  SCSUM(KK)=SCSUM(KK)+(SC-1.0)
+               ENDIF
+   19       CONTINUE
          ENDIF
    20 CONTINUE
 C
@@ -304,6 +379,7 @@ C     H on even ones.
       KDYSTP=KDYSTP+1
       DO 200 ID=1,2
          IF ((ID.EQ.1) .EQV. (MOD(KDYSTP,2).EQ.1)) THEN
+            KB=4
 !$OMP PARALLEL DO PRIVATE(NSUB) REDUCTION(MAX:NSUBMX)
 !$OMP& SCHEDULE(DYNAMIC)
             DO 110 L=1,NL
@@ -312,6 +388,7 @@ C     H on even ones.
   110       CONTINUE
 !$OMP END PARALLEL DO
          ELSE
+            KB=5
 !$OMP PARALLEL DO PRIVATE(I,L,KK,ML,QL,FL,NSUB) COLLAPSE(2)
 !$OMP& REDUCTION(MAX:NSUBMX)
             DO 130 R=1,2*JG
@@ -333,7 +410,9 @@ C     H on even ones.
   130       CONTINUE
 !$OMP END PARALLEL DO
          ENDIF
+         IF (PDYEBUD.GT.0.0) CALL BUDADD(KB)
   200 CONTINUE
+      LBUDOK=.TRUE.
 C
 C     Mass the advection leaves, the fixer's next target.
       DO 220 KK=2,NDYE+1
@@ -386,7 +465,76 @@ C     dye physics (DGRMLT), and in whole model steps.
          TDYPHY=0.0
          TDYSTP=0.0
       ENDIF
+C
+C     dye_budget.txt: per dye, the region total now (end of advection)
+C     and each process's change since the last line, then what they
+C     leave unexplained (round-off), the sum of the fixer's SC-1, and
+C     the global min and max q. The DGRMLT terms of this step go into
+C     the next line.
+      NB=NDYEBUD
+      IF (NB.LE.0) NB=MAX(NDIAG,1)
+      IF (PDYEBUD.GT.0.0 .AND. MOD(KOUNT,NB).EQ.0) THEN
+         IF (IUDYB.EQ.0) THEN
+            OPEN(NEWUNIT=IUDYB,FILE='dye_budget.txt',POSITION='APPEND')
+            WRITE(IUDYB,'(A,ES12.5,A)') '# region p < ',PDYEBUD,
+     &         ' Pa; sums of AM*q, AM=p*/P0*dsigma*gauss weight'
+            WRITE(IUDYB,'(A)') '# day, region air mass, then per dye'//
+     &         ' 2..NDYE+1: region total, d(boundary), d(AM rebuild),'//
+     &         ' d(fixer), d(horiz adv), d(vert adv), d(exchange),'//
+     &         ' d(settling), d(relax+floor), residual, sum(SC-1),'//
+     &         ' min q, max q'
+         ENDIF
+         S=0.0
+         DO 250 R=1,2*JG
+            DO 250 I=1,MG
+               DO 248 L=1,LBUD(I,R)
+                  S=S+AM(I,R,L)
+  248          CONTINUE
+  250    CONTINUE
+         WRITE(IUDYB,'(F12.5,1X,ES24.15E3)',ADVANCE='NO') DAY,S
+         DO 260 KK=2,NDYE+1
+            S=BUDS(KK)-RBPREV(KK)
+            DO 255 KB=1,NBUD
+               S=S-DYBUD(KB,KK)
+  255       CONTINUE
+            WRITE(IUDYB,'(13(1X,ES24.15E3))',ADVANCE='NO') BUDS(KK),
+     &         (DYBUD(KB,KK),KB=1,NBUD),S,SCSUM(KK),
+     &         MINVAL(QDYE(:,:,:,KK)),MAXVAL(QDYE(:,:,:,KK))
+            RBPREV(KK)=BUDS(KK)
+            DYBUD(:,KK)=0.0
+            SCSUM(KK)=0.0
+  260    CONTINUE
+         WRITE(IUDYB,*)
+         FLUSH(IUDYB)
+      ENDIF
       END SUBROUTINE DYEADV
+C
+C**********************************************************
+      REAL FUNCTION REGSUM(KK)
+C     The budget region's dye mass, sum(AM*q), for dye KK; serial, so
+C     it does not depend on the thread count.
+      INTEGER KK,I,R,L
+      REGSUM=0.0
+      DO 20 R=1,2*JG
+         DO 20 I=1,MG
+            DO 10 L=1,LBUD(I,R)
+               REGSUM=REGSUM+AM(I,R,L)*QDYE(I,R,L,KK)
+   10       CONTINUE
+   20 CONTINUE
+      END FUNCTION REGSUM
+C
+C**********************************************************
+      SUBROUTINE BUDADD(KB)
+C     Book the change of every dye's region total since the last term
+C     to process KB.
+      INTEGER KB,KK
+      REAL S
+      DO 10 KK=2,NDYE+1
+         S=REGSUM(KK)
+         DYBUD(KB,KK)=DYBUD(KB,KK)+(S-BUDS(KK))
+         BUDS(KK)=S
+   10 CONTINUE
+      END SUBROUTINE BUDADD
 C
 C**********************************************************
       SUBROUTINE PPMFLUX(N,AM,Q,FS,LPER,G)
