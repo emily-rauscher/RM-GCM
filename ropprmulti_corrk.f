@@ -15,7 +15,8 @@
      &  tiru,firu,fird,fsLu,fsLd,fsLn,alb_toa,fupbs,
      &  fdownbs,fnetbs,fdownbs2,fupbi,fdownbi,fnetbi,
      &  qrad,alb_tomi,alb_toai, p_pass,
-     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, itspd, iband)
+     &  PI0_TEMP, G0_TEMP, tauaer_temp,j1,denom,kount, itspd, iband,
+     &  DPGSUB)
 !
 !     **************************************************************
 !     *  Purpose             :  CaLculates optical properties      *
@@ -57,6 +58,9 @@
       REAL DENOM
 
       REAL DPG(NLAYER), p_pass(NLAYER)
+C     LW sublayer masses
+      REAL DPGSUB(2*NL+2)
+      REAL, AUTOMATIC :: FSUB
       real, automatic :: layer_pressure_bar(NLAYER)
       real, automatic :: CONDFACT(NLAYER,NCLOUDS)
 
@@ -532,6 +536,17 @@ C           do not also clip it to AERLAYERS below the condensation base.
                 TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
                 WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
                 GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
+            END DO
+        END DO
+
+C       Split each layer's LW cloud tau between its two sublayers by mass
+C       (it was copied into both, doubling the LW cloud column). After the
+C       smoothing, which assumes equal sublayers.
+        DO J = 1,NDBL,2
+            FSUB = DPGSUB(J)/(DPGSUB(J)+DPGSUB(J+1))
+            DO L = NKGAUSS+1,NBATCH
+                TAUAER(L,J)   = TAUAER(L,J)*FSUB
+                TAUAER(L,J+1) = TAUAER(L,J+1)*(1.0-FSUB)
             END DO
         END DO
 
