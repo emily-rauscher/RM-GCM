@@ -84,7 +84,12 @@ KDYESPEC	    = 7,
 KDYEMODE	    = 1,
 TCONDDYE	    = 1.0e+03,
 TEVAPDYE	    = 1.0e+02,
-LBENCH          = F
+LBENCH          = F,
+! Single-column RT: T runs the RT once for the RESTTT column (&INPRSIJ) at
+! stellar zenith angle ZEN1COL (degrees), writes rt1col.txt and
+! rt1col_bands.txt, and stops. Needs LRSTRT=F and LDYERAD=F.
+L1COLRT         = F,
+ZEN1COL         = 0.0
 /
 &INMAG
  LBDRAG = F,
@@ -221,7 +226,7 @@ STTEMP2=3357
  NEWTB           = 0,
  NEWTE           = 0,
  with_TiO_and_VO = 1,
- opacity_method = 'picket'
+ opacity_method = 'correk'
  /
  &INCLOUDY
  AEROSOLMODEL    ='Global',
