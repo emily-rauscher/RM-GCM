@@ -61,14 +61,10 @@
             end if
             ! write(*,*) 'METALLICITY: ', dummyMETALLICITY_str
             ! write(*,*) 'C_TO_O: ', dummyC_TO_O_str
-            IF (NWNO.eq.11) THEN
-                FOLDER = '../11bands/'
-            ELSE IF (NWNO.eq.30) THEN
-                FOLDER = '../30bands/'
-            ELSE
-                WRITE(*,*) 'NWNO is wrong in nwno.inc, options are 11 and 30'
-            STOP
-                END IF
+            ! The band set for NWNO bands lives in ../<NWNO>bands/ (e.g.
+            ! ../11bands/), with the kcoeffs/, continuum/, rayleigh/ and
+            ! clouds/ layout of the existing sets.
+            WRITE(FOLDER,'(A,I0,A)') '../', NWNO, 'bands/'
             ! FOLDER = '../11bands/'
             FNM= trim(FOLDER)//"kcoeffs/feh"//trim(dummyMETALLICITY_str)//"_co_"//trim(dummyC_TO_O_str)//trim(tiovo_str)//".txt"
             CIAFNM= trim(FOLDER)//"continuum/cia+hmin_feh"//trim(dummyMETALLICITY_str)//"_co_"//trim(dummyC_TO_O_str)

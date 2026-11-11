@@ -1,7 +1,23 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
+          use tracerclds, only : LDYERAD, KDYESPEC
           include 'rcommons.h'
           WRITE(*,*) "In get_cloud_scattering_properties_wrapper"
           call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
+!         OPPRMULTI(_CORRK) builds cloud optical depth only for
+!         AEROSOLCOMP='standard', and skips a species with MOLEF=0;
+!         either would leave the radiatively active dye transparent.
+          IF (LDYERAD) THEN
+              IF (AEROSOLCOMP .NE. 'standard') THEN
+                  WRITE(*,*) 'LDYERAD needs AEROSOLCOMP=standard, not ',
+     &                AEROSOLCOMP
+                  STOP 'LDYERAD needs AEROSOLCOMP=standard'
+              END IF
+              IF (MOLEF(KDYESPEC) .LE. 0.0) THEN
+                  WRITE(*,*) 'LDYERAD needs MOLEF(KDYESPEC) > 0; MOLEF(',
+     &                KDYESPEC, ') = ', MOLEF(KDYESPEC)
+                  STOP 'LDYERAD needs MOLEF(KDYESPEC) > 0'
+              END IF
+          END IF
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 

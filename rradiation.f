@@ -341,7 +341,7 @@ C             SUBROUTINE RADIATION_ALLLATS
 C**********************************************************
       SUBROUTINE RADIATION_ALLLATS()
       use tracerclds, only : LDYERAD, TRAG_forrad, QDYECOL, KDYEMODE,
-     &                       FCONDYE
+     &                       FCONDYE, L1COLRT, T1COL
 C     Parallelized over all JG*MG columns simultaneously.
 C     Computes radiative heating rates and stores in HTNET.
 C     HTNET_old is saved before the parallel loop.
@@ -607,6 +607,9 @@ C     local arrays under -recursive.
 C     Local scalars
       INTEGER :: col, i, jh_priv, ihem, ihem_save, nskip, ntstep
       INTEGER :: iofm, ld, l, thread_num, nthreads
+C     Hemispheres and columns to run: all of them, or the one column of
+C     the single-column RT (L1COLRT).
+      INTEGER :: nhemrt, ncolrt
       REAL :: CHRF, alat1, alon, SWALB, tstart, tend
       REAL :: SSLON, SSLAT
 
@@ -627,7 +630,15 @@ C     Save HTNET_old before any updates (serial, before OMP region)
         ENDDO
       ENDDO
 
-      DO 900 ihem=1,nhem
+      IF (L1COLRT) THEN
+        nhemrt=1
+        ncolrt=1
+      ELSE
+        nhemrt=nhem
+        ncolrt=JG*MG
+      ENDIF
+
+      DO 900 ihem=1,nhemrt
         iofm=0
         IF (ihem.eq.2) iofm=MGPP
 
@@ -695,13 +706,13 @@ C       LFLUXDIAG block: must be serial, placed before OMP region
 !$OMP&  avg, alos, SCDAY, RGAS, GANGLE, GWEIGHT, GRATIO, RAYPERBAR,
 !$OMP&  sbk, num_layers, CHRF,
 !$OMP&  PNET, SNET, HTNET, ihem, iofm,
-!$OMP&  TG_forrad, PLG_forrad, T0,
+!$OMP&  TG_forrad, PLG_forrad, T0, ncolrt,
 C     Module variables from tracerclds. QDYECOL is NOT listed: it is
 C     THREADPRIVATE, which is a predetermined attribute.
-!$OMP&  TRAG_forrad, LDYERAD, KDYEMODE)
+!$OMP&  TRAG_forrad, LDYERAD, KDYEMODE, L1COLRT, T1COL)
 
 !$OMP   DO SCHEDULE(GUIDED)
-        DO col=1,JG*MG
+        DO col=1,ncolrt
           jh_priv = (col-1)/MG + 1
           i       = MOD(col-1,MG) + 1
           im = i + iofm
@@ -718,6 +729,19 @@ C     THREADPRIVATE, which is a predetermined attribute.
           PRB2T(1)=PLG_forrad(im,jh_priv)*P0
           PR(NL+1)=PLG_forrad(im,jh_priv)*P0
           T(NL+1)=((FBASEFLUX+rrflux(IM,jh_priv,1))/5.6704e-8)**0.25
+
+C         Single-column RT: the initial-condition profile at p*=P0
+C         instead.
+          IF (L1COLRT) THEN
+            DO LD=1,NL
+              L=NL-LD+2
+              PR(LD)=SIGMA(LD)*P0
+              PRB2T(L)=PR(LD)
+              T(LD)=T1COL(LD)
+            ENDDO
+            PRB2T(1)=P0
+            PR(NL+1)=P0
+          ENDIF
 
           alat1=alat(jh_priv)*REAL(-(ihem*2.)+3)
 

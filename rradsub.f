@@ -32,7 +32,8 @@
 !     p_pass--the layer boundary pressures in pascal (NL+1)
 !     both p_ and t_ pass begin at the top and go down.
 
-      use corrkmodule, only: NWNO, MINWNOSTEL
+      use corrkmodule, only: NWNO, MINWNOSTEL, WNO_EDGES
+      use tracerclds, only : L1COLRT, ZEN1COL
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,kount
@@ -111,6 +112,8 @@
       REAL AMU0, SOLC, DDAY, FORCE1DDAYS, DFAC, temporary_local_variable, ALON, ALAT1, incident_starlight_fraction
 
       real fluxes(2,2,2)
+C     Single-column RT output (L1COLRT): units, level and edge counters.
+      integer, AUTOMATIC :: iu1c, iub1c, ld1c, k1c
       REAL SSLON,SSLAT  ! ER:
       REAL DLENGTH  ! ER: half-length of solar day
       real PI2
@@ -216,6 +219,17 @@ C     globally averaged solar constant, vertical rays
 
       ! incident_starlight_fraction = MAX(0.0, AMU0)
 
+C     Single-column RT: the zenith angle comes from fort.7, not from
+C     the column's latitude, longitude and the orbit, and the column
+C     gets the full SOLC_IN*(1-TOAALB) times its cosine, as a 3-D column
+C     does.
+      IF (L1COLRT) THEN
+         incident_starlight_fraction = MAX(0.0, COS(ZEN1COL*PI/180.0))
+         IF (incident_starlight_fraction .lt. 1e-6)
+     &      incident_starlight_fraction = 0.0
+         PSOL = SOLC
+      ENDIF
+
       if (incident_starlight_fraction .lt. 1e-10) THEN
           solar_calculation_indexer = NSOL + 1
       ELSE
@@ -228,6 +242,16 @@ C     globally averaged solar constant, vertical rays
       if( if_diurnal.eq.1 ) ntime = 24
 
       rfluxes_aerad = 0.
+
+      IF (L1COLRT) THEN
+         OPEN(NEWUNIT=iub1c, FILE='rt1col_bands.txt',
+     &        STATUS='REPLACE')
+         WRITE(iub1c,'(A)') '# Single-column RT, per band. One line '//
+     &      'per band and GCM level (1 = top): band, wno_lo, wno_hi '//
+     &      '[cm-1], level, p [Pa], SW heating, LW heating [K/day], '//
+     &      'net SW, net LW flux [W/m2, up positive] at the edge '//
+     &      'above the level'
+      ENDIF
 
       do itime = 1, ntime
           t(NLAYER) = t(NLAYER-1)
@@ -328,6 +352,18 @@ C     globally averaged solar constant, vertical rays
               tslu_acc = tslu_acc + tslu
               total_downwelling_acc = total_downwelling_acc + total_downwelling
 
+C             Edge k (1 = top) is index NL+2-k of the *_aerad fluxes;
+C             heats_aerad(ld) and heati_aerad(ld) belong to GCM level ld.
+              IF (L1COLRT) THEN
+                  DO ld1c = 1, NL
+                      WRITE(iub1c,'(I4,2(1X,F10.2),I4,5(1X,ES15.6E3))')
+     &                  iband, WNO_EDGES(iband), WNO_EDGES(iband+1),
+     &                  ld1c, pr(ld1c), heats_aerad(ld1c)*SCDAY,
+     &                  heati_aerad(ld1c)*SCDAY,
+     &                  fsl_net_aerad(NL+2-ld1c), fir_net_aerad(NL+2-ld1c)
+                  END DO
+              END IF
+
               fir_up_acc  = fir_up_acc  + fir_up_aerad
               fir_dn_acc  = fir_dn_acc  + fir_dn_aerad
               fir_net_acc = fir_net_acc + fir_net_aerad
@@ -374,6 +410,33 @@ C     globally averaged solar constant, vertical rays
       htlw    = heati_aerad_tot
       htsw    = heats_aerad_tot
       fluxes  = rfluxes_aerad
+
+C     Single-column RT totals: GCM level LD has htsw(NL+2-LD) (as
+C     RADIATION_ALLLATS maps it), edge k (1 = top, at p_pass(k)) has
+C     the *_aerad fluxes at index NL+2-k.
+      IF (L1COLRT) THEN
+         CLOSE(iub1c)
+         OPEN(NEWUNIT=iu1c, FILE='rt1col.txt', STATUS='REPLACE')
+         WRITE(iu1c,'(A,ES14.6,A,F8.4,A,F8.3,A,F10.6,A,I5,2A)')
+     &      '# SOLC_IN=', SOLC_IN, ' TOAALB=', TOAALB, ' ZEN1COL=',
+     &      ZEN1COL, ' mu0=', incident_starlight_fraction, ' NWNO=',
+     &      NWNO, ' opacity_method=', opacity_method
+         WRITE(iu1c,'(A)') '# levels (1 = top): level, p [Pa], T [K],'//
+     &      ' SW, LW, net heating [K/day]'
+         DO ld1c = 1, NL
+            WRITE(iu1c,'(I4,5(1X,ES15.6E3))') ld1c, pr(ld1c), t(ld1c),
+     &         htsw(NL+2-ld1c), htlw(NL+2-ld1c),
+     &         htsw(NL+2-ld1c)+htlw(NL+2-ld1c)
+         END DO
+         WRITE(iu1c,'(A)') '# edges (1 = top): edge, p [Pa], SW up, '//
+     &      'SW down, LW up, LW down [W/m2]'
+         DO k1c = 1, NL+1
+            WRITE(iu1c,'(I4,5(1X,ES15.6E3))') k1c, p_pass(k1c),
+     &         fsl_up_aerad(NL+2-k1c), fsl_dn_aerad(NL+2-k1c),
+     &         fir_up_aerad(NL+2-k1c), fir_dn_aerad(NL+2-k1c)
+         END DO
+         CLOSE(iu1c)
+      ENDIF
 
       !write(*,*) ALAT1, ',', ALON, ',', TT(1), ','
       !if (ALAT1 .lt. -19 .and. ALAT1 .gt. -20 .and. ALON .eq. 315) THEN

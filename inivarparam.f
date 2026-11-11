@@ -5,7 +5,8 @@ C**********************************************************
       use tracerclds, only : ADYE, RHODYE, PDYEFIX, PDYEUPPER,
      &                       TRELAXORB, KDYERAD, KDYESPEC, LDYERAD,
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX,
-     &                       LBENCH, PDYEBUD, NDYEBUD
+     &                       LBENCH, PDYEBUD, NDYEBUD,
+     &                       L1COLRT, ZEN1COL
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -91,7 +92,7 @@ C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
      & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
      & LDYERAD, KDYERAD, KDYESPEC,
      & KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX, LBENCH,
-     & PDYEBUD, NDYEBUD
+     & PDYEBUD, NDYEBUD, L1COLRT, ZEN1COL
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -107,6 +108,8 @@ C      keys still gives a defined configuration.
     5  CONTINUE
        LDYEFIX=.TRUE.
        LBENCH=.FALSE.
+       L1COLRT=.FALSE.
+       ZEN1COL=0.0
        PDYEBUD=1.0E3
        NDYEBUD=0
 C      Guard value only; cloud_properties_set_up.f replaces
@@ -126,6 +129,12 @@ C      Negative means "same as TCONDDYE", resolved after the read.
        IF (TEVAPDYE.LT.0.0) TEVAPDYE=TCONDDYE
        WRITE(2,INVARPARAM)
 
+C      Single-column RT: its clouds come from the condensation curve, as
+C      the column has no dye state.
+       IF (L1COLRT .AND. LDYERAD) THEN
+          WRITE(2,*) 'INIVARPARAM: L1COLRT needs LDYERAD=F'
+          STOP 'L1COLRT needs LDYERAD=F'
+       ENDIF
 
 C      Check that the dye species is in range, and that the radiatively active
 C      tracer is a valid species. The dye species is used for both settling

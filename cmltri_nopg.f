@@ -6,7 +6,7 @@
 
       SUBROUTINE IGCM3_SUB
       use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad, QDYE,
-     &                       LBENCH
+     &                       LBENCH, L1COLRT, T1COL
       use dyegrid, only : DYE_START, DYEADV, DYE_RSWRITE
 C!$ use omp_lib
 C**********************************************************************
@@ -730,6 +730,21 @@ C
 C     MGRMLT has now stored every row's winds and p*; the first time
 C     round, give the grid-point dyes their initial (or restart) state.
       CALL DYE_START(LRSTRT,DAY,SIGMA,DSIGMA,P0)
+C
+C     Single-column RT (L1COLRT): one RT call for the initial-condition
+C     column, TRS (RESTTT of fort.7 when given), which writes rt1col.txt
+C     and rt1col_bands.txt, then stop.
+      IF (L1COLRT) THEN
+         IF (.NOT.LRD) STOP 'L1COLRT needs LRD=T'
+C        SETZT, which fills TRS, runs only with LRESTIJ.
+         IF (.NOT.LRESTIJ) STOP 'L1COLRT needs LRESTIJ=T'
+         DO L=1,NL
+            T1COL(L)=TRS(L)*CT
+         ENDDO
+         CALL RADIATION_ALLLATS()
+         WRITE(*,*) 'L1COLRT: wrote rt1col.txt and rt1col_bands.txt'
+         STOP
+      ENDIF
 C
       IF (LBALAN) THEN
 C        Balance spectral fields

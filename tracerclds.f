@@ -60,6 +60,15 @@ C     and fort.27xx/70xx/90xx every NSNAP steps, so timings are not
 C     dominated by output. Default F.
       LOGICAL LBENCH
 C
+C     Single-column RT mode (INVARPARAM; not dye-specific either): T runs
+C     the RT once, for one column with the initial-condition profile
+C     (RESTTT of fort.7, via TRS in SETZT) at p*=P0 and stellar zenith
+C     angle ZEN1COL (degrees), writes rt1col.txt and rt1col_bands.txt,
+C     and stops. Default F. T1COL: that profile in K, top to bottom.
+      LOGICAL L1COLRT
+      REAL ZEN1COL
+      REAL T1COL(NL)
+C
 C     --- grid-point dye state ----------------------------------------
 C     Mixing ratios q on the Gaussian grid, rows 1..2*JG north to south:
 C     latitude JH of the model's hemisphere loop is row JH in the north

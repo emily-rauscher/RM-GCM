@@ -2,6 +2,7 @@ C************************************************************
 C                   SUBROUTINE INITAL                                     
 C************************************************************             
       SUBROUTINE INITAL                                                   
+      use corrkmodule, only : NWNO
 C                                                                         
 C     INITAL calls other initialisation routines.                         
 C                                                                         
@@ -110,6 +111,14 @@ C     '_witiovo' table regardless of fort.7 (self-corrected on the
 C     second INISET/INITAL pass of a fresh start, but restarts only get
 C     one pass and never picked up the correct table).
       WRITE(*,*) 'C to O ratio: ', C_TO_O
+C     Corr-k needs NKGAUSS g-points per band, in both the SW and the IR.
+      IF (opacity_method .EQ. 'correk') THEN
+         IF (NIR.NE.NWNO*NKGAUSS .OR. NSOL.NE.NWNO*NKGAUSS) THEN
+            WRITE(*,*) 'INITAL: corr-k needs NIR=NSOL=NWNO*NKGAUSS;',
+     &         ' NIR,NSOL,NWNO,NKGAUSS =', NIR, NSOL, NWNO, NKGAUSS
+            STOP 'params.i NIR/NSOL do not match nwno.inc NWNO'
+         ENDIF
+      ENDIF
       CALL get_cloud_scattering_properties_wrapper
       CALL get_gas_opacity_corrk_wrapper(METALLICITY, C_TO_O, FBASEFLUX,
      &                                   GASCON, with_TiO_and_VO)
