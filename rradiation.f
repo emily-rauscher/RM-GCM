@@ -265,22 +265,7 @@ c     The following for parallel testing --MTR
       REAL tauaer_temp(NBATCH, NL+1, 13)
       INTEGER j1
       real denom
-      REAL, dimension (500) :: HAZE_WAV_GRID
-      REAL, dimension (100)  :: CLOUD_WAV_GRID
       INTEGER printt
-      REAL :: exp_92_lnsig2_pi
-
-      COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW,
-     &                              CORFACT,
-     &                              input_particle_size_array_in_meters,
-     &                              input_temperature_array,
-     &                              particle_size_vs_layer_array_in_meters,
-     &                              input_pressure_array_cgs,
-     &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
-     &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
-     &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
 
       COMMON /RAD_ALLLATS/ TG_forrad(IGC,NL,JG), PLG_forrad(IGC,JG),
      &                     HTNET_old(NHEM,JG,MG,NL)
@@ -575,22 +560,7 @@ C     local arrays under -recursive.
 
       INTEGER j1
       real denom
-      REAL, dimension (500) :: HAZE_WAV_GRID
-      REAL, dimension (100)  :: CLOUD_WAV_GRID
       INTEGER printt
-      REAL :: exp_92_lnsig2_pi
-
-      COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW,
-     &                              CORFACT,
-     &                              input_particle_size_array_in_meters,
-     &                              input_temperature_array,
-     &                              particle_size_vs_layer_array_in_meters,
-     &                              input_pressure_array_cgs,
-     &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
-     &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
-     &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
 
       DATA EPSILON / 1d-6  /
       DATA SBK    / 5.6697E-8    /
