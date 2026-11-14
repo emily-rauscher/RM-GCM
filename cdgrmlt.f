@@ -149,7 +149,7 @@ C
 C                                                                         
       LOGICAL LSUM,LWRITE                                                 
        COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)            
-     :               ,SNET(IGC,JG),RRFLUX(IGC,JG,6)                       
+     :               ,SNET(IGC,JG),RRFLUX(IGC,JG,8)                       
      :               ,TTSW(IGC,NL),TTLW(IGC,NL)                           
       REAL UTBL(IGC),VTBL(IGC),TTBL(IGC),QTBL(IGC)                        
        COMMON/GSG/GSG(IGC,JG)                                             

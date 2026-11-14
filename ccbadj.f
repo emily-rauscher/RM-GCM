@@ -113,7 +113,7 @@ C
      +              ,BEGDOY,DOY                                           
 C                                                                         
        COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)            
-     :               ,SNET(IGC,JG),RRFLUX(IGC,JG,6)                       
+     :               ,SNET(IGC,JG),RRFLUX(IGC,JG,8)                       
      :               ,TTSW(IGC,NL),TTLW(IGC,NL)                           
       REAL PL(NL),PSL(NL),PSK(NL),TSL(NL),TR(NL),QR(NL),CBC(NL),GH1(NL)   
 C                                                                         

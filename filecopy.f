@@ -32,8 +32,9 @@ C     xsect2.f until this list was widened to match.
                IF (L.EQ.NL) THEN
                   READ(50,102) TLON,TLAT,TSP
                   WRITE(IFT,102) TLON,TLAT,TSP
-                  READ(64,102) TLON,TLAT,TF
-                  WRITE(ISF,102) TLON,TLAT,TF
+C     unit 64 is relayed verbatim too, so its SW columns are kept
+                  READ(64,'(A)') TLINE
+                  WRITE(ISF,'(A)') TLINE(1:LEN_TRIM(TLINE))
                ENDIF
 
  22         CONTINUE

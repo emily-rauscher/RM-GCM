@@ -115,7 +115,7 @@ C
      *            ,(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))      
 C                                                                         
        COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)            
-     :               ,SNET(IGC,JG),RRFLUX(IGC,JG,6)                       
+     :               ,SNET(IGC,JG),RRFLUX(IGC,JG,8)                       
      :               ,TTSW(IGC,NL),TTLW(IGC,NL)                           
 C                                                                         
       REAL DQDT(NL)                                                       

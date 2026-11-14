@@ -129,7 +129,7 @@ C
 c                                                                         
 C KM Modif needed to pass rrflux array (OLR in fort.29)--ER Modif to fort.64
       COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)            
-     &               ,SNET(IGC,JG),RRFLUX(IGC,JG,6)                       
+     &               ,SNET(IGC,JG),RRFLUX(IGC,JG,8)                       
      &               ,TTSW(IGC,NL),TTLW(IGC,NL)                           
 
 C
@@ -176,6 +176,8 @@ C     TOUTT(L,*) are T at: sub,anti-stellar, E,W limb (at eqtr), N,S pole for L
       REAL*8  TOUTSP(JG*2,MG)
 C----- KM modif for OLR flux i fort.29      
       REAL*8 TOUTFLUX(MG,JG*2)
+C     TK: SW down (incident) and up (reflected) at TOA, written next to OLR
+      REAL*8 TOUTSWD(MG,JG*2),TOUTSWU(MG,JG*2)
 C------
       REAL SSLON,SSLAT
 C--- erin for binary flux output                                                                                                  
@@ -381,8 +383,12 @@ C 111              FORMAT(3E13.5)
 
            IF (IHEM.EQ.1) THEN
            TOUTFLUX(I,J)=RRFLUX(IM,J,6)
+           TOUTSWD(I,J)=RRFLUX(IM,J,7)
+           TOUTSWU(I,J)=RRFLUX(IM,J,8)
            ELSE
            TOUTFLUX(I,2*JG-J+1)=RRFLUX(IM,J,6)
+           TOUTSWD(I,2*JG-J+1)=RRFLUX(IM,J,7)
+           TOUTSWU(I,2*JG-J+1)=RRFLUX(IM,J,8)
            ENDIF
            
         ENDDO         
@@ -394,7 +400,10 @@ C 111              FORMAT(3E13.5)
           TOUTLON= 360.0*(I-1)/MG
         DO J=1,JG*2
            TOUTLAT=ALAT(J)
-                  WRITE (64,109) TOUTLON,TOUTLAT, TOUTFLUX(I,J)
+C     TK: columns are lon, lat, OLR, SW down at TOA, SW up at TOA (W m-2)
+                  WRITE (64,114) TOUTLON,TOUTLAT, TOUTFLUX(I,J),
+     &                           TOUTSWD(I,J),TOUTSWU(I,J)
+ 114              FORMAT(5E13.5)
         ENDDO         
        ENDDO
 

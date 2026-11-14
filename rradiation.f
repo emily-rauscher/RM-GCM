@@ -157,7 +157,7 @@ C     Tracer No. 1
       EQUIVALENCE (QG(1,1),TRAG(1,1,1)) , (QNLG(1,1),TRANLG(1,1,1)),(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))
 C
       COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)
-     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)
+     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,8)
      :     ,TTSW(IGC,NL),TTLW(IGC,NL)
 
       COMMON/GSG/GSG(IGC,JG)
@@ -456,7 +456,7 @@ C     TTRD is computed by the stripped-down RADIATION subroutine.
       EQUIVALENCE (QG(1,1),TRAG(1,1,1)) , (QNLG(1,1),TRANLG(1,1,1)),(QTLR(1,1),UTRAG(1,1,1)),(QTCR(1,1),VTRAG(1,1,1))
 
       COMMON/CPIERS/ICFLAG(IGC,5,2),CFRAC(IGC,5),PNET(IGC,JG)
-     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,6)
+     :     ,SNET(IGC,JG),RRFLUX(IGC,JG,8)
      :     ,TTSW(IGC,NL),TTLW(IGC,NL)
 
       COMMON/GSG/GSG(IGC,JG)
@@ -802,6 +802,9 @@ C         it; a two-phase solid tracer is all opaque.
           rrflux(im,jh_priv,4)=fluxes(2,2,2)
           rrflux(im,jh_priv,5)=fluxes(1,1,1)-fluxes(1,2,1)
           rrflux(im,jh_priv,6)=fluxes(2,2,1)
+C         TK: SW down (incident) and up (reflected) at TOA, for albedo maps in fort.64
+          rrflux(im,jh_priv,7)=fluxes(1,1,1)
+          rrflux(im,jh_priv,8)=fluxes(1,2,1)
 
           DO l=nl,1,-1
             LD=NL+1-L
