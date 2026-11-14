@@ -330,8 +330,10 @@
           k = 1
           DO J     =   1,NDBL, 2
             k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
-            k_irl_doubled(L-NKGAUSS,J+1) = k_irl(L-NKGAUSS, k)
-     &           + ABS(k_irl(L-NKGAUSS,k) - k_irl(L-NKGAUSS,min(k+1,NL+1))) / 2.0
+C           The second sublayer takes the midpoint of this layer and the
+C           next, whichever way the opacity changes.
+            k_irl_doubled(L-NKGAUSS,J+1) = 0.5*(k_irl(L-NKGAUSS, k)
+     &           + k_irl(L-NKGAUSS,min(k+1,NL+1)))
 
             k = k + 1
           END DO
@@ -465,13 +467,14 @@
           k = 1
           DO J     =   1,NDBL, 2
             k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
-            k_irl_doubled(L-NKGAUSS,J+1) = k_irl(L-NKGAUSS, k)
-     &           + ABS(k_irl(L-NKGAUSS,k) - k_irl(L-NKGAUSS,min(k+1,NL+1))) / 2.0
+C           The second sublayer takes the midpoint of this layer and the
+C           next, whichever way the opacity changes.
+            k_irl_doubled(L-NKGAUSS,J+1) = 0.5*(k_irl(L-NKGAUSS, k)
+     &           + k_irl(L-NKGAUSS,min(k+1,NL+1)))
 
             k_ray_doubled(L-NKGAUSS,J) = tau_ray_temp(L-NKGAUSS, k)
-            k_ray_doubled(L-NKGAUSS,J+1) = tau_ray_temp(L-NKGAUSS, k)
-     &           + ABS(tau_ray_temp(L-NKGAUSS,k)
-     &                - tau_ray_temp(L-NKGAUSS,min(k+1,NL+1))) / 2.0
+            k_ray_doubled(L-NKGAUSS,J+1) = 0.5*(tau_ray_temp(L-NKGAUSS,k)
+     &           + tau_ray_temp(L-NKGAUSS,min(k+1,NL+1)))
             k = k + 1
           END DO
         END DO
@@ -548,11 +551,9 @@
         END IF
         
       ELSE
-        DO 320 J     = 1,NLAYER
-          DO 325 L    = 1,NBATCH
-            TAURAY(L,J)= 0.0
-325       CONTINUE
-320     CONTINUE
+C       All of it: the corr-k IR Rayleigh depths above fill the doubled
+C       grid, 1..NDBL, not only 1..NLAYER.
+        TAURAY(:,:) = 0.0
       ENDIF
       if ((opacity_method .EQ. 'picket') .or. (opacity_method .EQ. 'dogray')) then
         DO L   =   1,NKGAUSS
