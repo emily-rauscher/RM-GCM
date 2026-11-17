@@ -30,7 +30,7 @@
 !     * ************************************************************
 !
       use corrkmodule  , only : MINWNOSTEL
-      use tracerclds, only : ADYE, KDYERAD, KDYESPEC, LDYERAD,
+      use tracerclds, only : ADYE, KSLOTRAD, ISPRAD, LDYERAD,
      &                       QDYECOL
       include 'rcommons.h'
 
@@ -103,6 +103,8 @@ C     LW sublayer masses
       INTEGER K,J,L, iradgas
       INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index, haze_layer_index
       real particle_size
+C     Which radiatively active dye carries species I (0 = none).
+      INTEGER KDR
 
       REAL, dimension (500) :: HAZE_WAV_GRID
       REAL, dimension (100)  :: CLOUD_WAV_GRID
@@ -228,24 +230,34 @@ C     LW sublayer masses
         DO J = 1,NLAYER - 1
             layer_index   = NEARIDX(input_pressure_array_cgs, 80, p_pass(J) * 10.0)
             temp_loc      = NEARIDX(input_temperature_array, 100, TT(J))
-            IF (LDYERAD) THEN
-C               if using the radiatively active dye, use the size from the fort.7
-                particle_size = ADYE(KDYERAD)
-            ELSE
+C           Grain size: the layer's prescribed size, or with dyes, each
+C           dye's own (set per species below).
+            IF (.NOT.LDYERAD) THEN
                 particle_size = particle_size_vs_layer_array_in_meters(layer_index) ! Convert to CGS
+                size_loc      = NEARIDX(input_particle_size_array_in_meters, 100, particle_size)
             END IF
-            size_loc      = NEARIDX(input_particle_size_array_in_meters, 100, particle_size)
 
             DO I = 1,NCLOUDS
 C               A species with no abundance adds no optical depth, so
 C               skip its table lookups; zero its entries, which the
 C               species sums below still read.
-                IF (MOLEF(I).EQ.0.0) THEN
+C               With dyes, so does a species no dye carries (KDR=0).
+                IF (LDYERAD) THEN
+                    KDR = ISPRAD(I)
+                ELSE
+                    KDR = 1
+                END IF
+                IF (MOLEF(I).EQ.0.0 .OR. KDR.EQ.0) THEN
                     PI0_TEMP(:,J,I)    = 0.0
                     G0_TEMP(:,J,I)     = 0.0
                     tauaer_temp(:,J,I) = 0.0
                     CLOUDLOC(J,I)      = 0.0
                     CYCLE
+                END IF
+                IF (LDYERAD) THEN
+C                   The dye's own grain size from fort.7.
+                    particle_size = ADYE(KSLOTRAD(KDR))
+                    size_loc = NEARIDX(input_particle_size_array_in_meters, 100, particle_size)
                 END IF
                 ! GET THE SCATTERING PROPERTIES
                 IF (PICKET_FENCE_CLOUDS .eqv. .False.) THEN
@@ -274,18 +286,10 @@ C               species sums below still read.
                 END IF
 
                 IF (LDYERAD) THEN
-C                   Only KDYESPEC carries the dye; every other species
-C                   contributes nothing, so the TAUAER sum below is one
-C                   species' optics placed by the tracer rather than
-C                   the dye profile applied once per species.
-                    IF (I.EQ.KDYESPEC) THEN
-C                       QDYECOL is already this RT layer's opaque
-C                       amount, aligned and made non-negative in
-C                       RADIATION_ALLLATS.
-                        CONDFACT(J,I) = QDYECOL(J)
-                    ELSE
-                        CONDFACT(J,I) = 0.0
-                    END IF
+C                   The species' dye places it: QDYECOL is already this
+C                   RT layer's opaque amount, aligned and made
+C                   non-negative in RADIATION_ALLLATS.
+                    CONDFACT(J,I) = QDYECOL(J,KDR)
                 ELSE
                     CONDFACT(J,I) = min(max((Tconds(MET_INDEX,layer_index,I)-TT(J))/10.,0.0),1.0)
                 END IF

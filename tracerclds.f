@@ -8,26 +8,35 @@ C     into the radiative transfer.
 C
       include 'params.i'
       PARAMETER(MGPP=MG+2,IGC=MGPP*NHEM)
+C     Most vapour/solid pairs (KDYEMODE=2), hence most radiatively
+C     active dyes, NDYE allows: one cloud species per pair.
+      PARAMETER(NPAIRMX=MAX(NDYE/2,1))
       SAVE
 C
 C     Grain radius per dye, indexed 2..NDYE+1; ADYE(1) is unused.
       REAL ADYE(NDYE+1)
-C     Grain density. Read from the namelist, then overwritten with
-C     DENSITY(KDYESPEC) when the cloud tables load, so the settling and
-C     the OPPRMULTI optics cannot describe different particles.
-      REAL RHODYE
+C     Grain density of each pair's species (index as KDYESPEC), set to
+C     DENSITY(KDYESPEC(P)) when the cloud tables load, so the settling
+C     and the OPPRMULTI optics cannot describe different particles.
+      REAL RHODYE(NPAIRMX)
 C     Below PDYEFIX the dyes relax toward 1 on TRELAXORB (orbits). Above
 C     PDYEUPPER they start at 1 (initial state only).
       REAL PDYEFIX,PDYEUPPER,TRELAXORB
 C
 C     --- radiatively active dye ------------------------------------
-C     LDYERAD off leaves the RT on the prescribed condensation-curve
-C     clouds. On, the single tracer KDYERAD places the cloud and
-C     ADYE(KDYERAD) sets its optical grain size, with KDYESPEC
-C     selecting which cloud species supplies the optics (indexed as
-C     MOLEF is: 7 = Mg2SiO4).
-      INTEGER KDYERAD,KDYESPEC
+C     KDYESPEC(P): the cloud species (indexed as MOLEF is: 7 = Mg2SiO4,
+C     13 = Al2O3) of vapour/solid pair P in KDYEMODE=2, one species per
+C     pair; KDYEMODE=1 uses KDYESPEC(1) for every dye. LDYERAD off
+C     leaves the RT on the prescribed condensation-curve clouds. On,
+C     the dyes place the clouds instead: in KDYEMODE=2 every pair's
+C     solid, in KDYEMODE=1 the single tracer KDYERAD; each with its own
+C     ADYE as its optical grain size.
+      INTEGER KDYERAD,KDYESPEC(NPAIRMX)
       LOGICAL LDYERAD
+C     The radiatively active dyes, set in INIVARPARAM: NDYERAD of them,
+C     number N in dye slot KSLOTRAD(N) and of species KDYESPEC(N);
+C     ISPRAD(I) is the one of species I (0 = none).
+      INTEGER NDYERAD,KSLOTRAD(NPAIRMX),ISPRAD(13)
 C
 C     --- cloud scheme ----------------------------------------------
 C     KDYEMODE=1: each dye is total species material, and is all-vapor 
@@ -100,23 +109,25 @@ C     the dye physics (DGRMLT), for the timing columns written there.
       REAL :: TDYPHY=0.0
 C
 C     --- work arrays ----------------------------------------------
-C     The radiatively active dye in the model's (IGC,NL,JG) grid
+C     The radiatively active dyes in the model's (IGC,NL,JG) grid
 C     layout, copied from QDYE for RADIATION_ALLLATS.
-      REAL TRAG_forrad(IGC,NL,JG)
-C     One column's opaque dye amount per RT layer, handed to OPPRMULTI
-C     (filled, aligned to the RT layers, in RADIATION_ALLLATS).
-C     Threadprivate because the RT runs its columns in parallel.
-      REAL QDYECOL(NL+1)
+      REAL TRAG_forrad(IGC,NL,JG,NPAIRMX)
+C     One column's opaque amount of each active dye per RT layer, handed
+C     to OPPRMULTI (filled, aligned to the RT layers, in
+C     RADIATION_ALLLATS). Threadprivate because the RT runs its columns
+C     in parallel.
+      REAL QDYECOL(NL+1,NPAIRMX)
 !$OMP THREADPRIVATE(QDYECOL)
 C
-C     --- condensation curve for the dye species --------------------
-C     TCONDS(MET_INDEX,:,KDYESPEC) and its pressure grid in Pa, copied
-C     out in cloud_properties_set_up.f once MET_INDEX is final. The dye
-C     is TOTAL species material, gas plus solid, so both the settling
-C     in DGRMLT and the opacity in OPPRMULTI have to take the condensed
-C     fraction from FCONDYE below; only solids fall, and only solids
-C     are opaque.
-      REAL TCDYE(80),PCDYE(80)
+C     --- condensation curves of the dye species --------------------
+C     TCDYE(:,P) is TCONDS(MET_INDEX,:,KDYESPEC(P)), on the pressure
+C     grid PCDYE in Pa, copied out in cloud_properties_set_up.f once
+C     MET_INDEX is final. A KDYEMODE=1 dye is TOTAL species material,
+C     gas plus solid, so both its settling in DGRMLT and its opacity in
+C     OPPRMULTI take the condensed fraction from FCONDYE; a KDYEMODE=2
+C     pair takes its equilibrium from QSATDYE. Only solids fall, and
+C     only solids are opaque.
+      REAL TCDYE(80,NPAIRMX),PCDYE(80)
 C     PCDYE is uniform in ln P (to the 4 digits it is tabulated with),
 C     so IPCDYE finds a pressure's bracket from its log rather than by
 C     searching: PCLN1=LOG(PCDYE(1)), RDLNPC=79/(LOG(PCDYE(80))-PCLN1),
@@ -150,16 +161,17 @@ C     Index of the PCDYE entry nearest PPA (Pa).
       IPCDYE=IP
       END FUNCTION IPCDYE
 C
-      REAL FUNCTION FCONDYE(PPA,TK)
-C     Condensed fraction of the dye species at pressure PPA (Pa) and
-C     temperature TK (K): 0 all vapour, 1 all solid, over the same 10 K
-C     ramp OPPRMULTI uses for its own species.
+      REAL FUNCTION FCONDYE(PPA,TK,IP)
+C     Condensed fraction of species KDYESPEC(IP) at pressure PPA (Pa)
+C     and temperature TK (K): 0 all vapour, 1 all solid, over the same
+C     10 K ramp OPPRMULTI uses for its own species.
       REAL PPA,TK
-      FCONDYE=MIN(MAX((TCDYE(IPCDYE(PPA))-TK)/10.0,0.0),1.0)
+      INTEGER IP
+      FCONDYE=MIN(MAX((TCDYE(IPCDYE(PPA),IP)-TK)/10.0,0.0),1.0)
       END FUNCTION FCONDYE
 C
-      REAL FUNCTION QSATDYE(PPA,TK)
-C     Saturation abundance of the dye species, in the dyes' units
+      REAL FUNCTION QSATDYE(PPA,TK,IP)
+C     Saturation abundance of species KDYESPEC(IP), in the dyes' units
 C     (1 = deep abundance), at pressure PPA (Pa) and temperature TK (K).
 C     The condensation curve is where an abundance-1 gas saturates, so
 C     the saturation vapour pressure at TK is that gas's partial
@@ -169,28 +181,28 @@ C     linearly in 1/T (Clausius-Clapeyron); beyond the table the
 C     end-to-end slope is used. Needs TCDYE monotonic in P, which
 C     cloud_properties_set_up.f checks when KDYEMODE=2.
       REAL PPA,TK,RT,SLOPE,PLNST
-      INTEGER ILO,IHI,IMID,IEND
+      INTEGER IP,ILO,IHI,IMID,IEND
       LOGICAL LUP
       RT=1.0/TK
-      LUP=TCDYE(80).GT.TCDYE(1)
-      IF ((TK.LE.TCDYE(1)).EQV.LUP .OR. TK.EQ.TCDYE(1)) THEN
+      LUP=TCDYE(80,IP).GT.TCDYE(1,IP)
+      IF ((TK.LE.TCDYE(1,IP)).EQV.LUP .OR. TK.EQ.TCDYE(1,IP)) THEN
          IEND=1
-      ELSE IF ((TK.GE.TCDYE(80)).EQV.LUP .OR. TK.EQ.TCDYE(80)) THEN
+      ELSE IF ((TK.GE.TCDYE(80,IP)).EQV.LUP .OR. TK.EQ.TCDYE(80,IP)) THEN
          IEND=80
       ELSE
          IEND=0
       ENDIF
       IF (IEND.NE.0) THEN
          SLOPE=(LOG(PCDYE(80))-LOG(PCDYE(1)))
-     &        /(1.0/TCDYE(80)-1.0/TCDYE(1))
-         PLNST=LOG(PCDYE(IEND))+(RT-1.0/TCDYE(IEND))*SLOPE
+     &        /(1.0/TCDYE(80,IP)-1.0/TCDYE(1,IP))
+         PLNST=LOG(PCDYE(IEND))+(RT-1.0/TCDYE(IEND,IP))*SLOPE
       ELSE
-C        Bisect for TCDYE(ILO) and TCDYE(IHI) bracketing TK.
+C        Bisect for TCDYE(ILO,IP) and TCDYE(IHI,IP) bracketing TK.
          ILO=1
          IHI=80
    10    IF (IHI-ILO.GT.1) THEN
             IMID=(ILO+IHI)/2
-            IF ((TCDYE(IMID).LT.TK).EQV.LUP) THEN
+            IF ((TCDYE(IMID,IP).LT.TK).EQV.LUP) THEN
                ILO=IMID
             ELSE
                IHI=IMID
@@ -198,14 +210,14 @@ C        Bisect for TCDYE(ILO) and TCDYE(IHI) bracketing TK.
             GOTO 10
          ENDIF
          SLOPE=(LOG(PCDYE(IHI))-LOG(PCDYE(ILO)))
-     &        /(1.0/TCDYE(IHI)-1.0/TCDYE(ILO))
-         PLNST=LOG(PCDYE(ILO))+(RT-1.0/TCDYE(ILO))*SLOPE
+     &        /(1.0/TCDYE(IHI,IP)-1.0/TCDYE(ILO,IP))
+         PLNST=LOG(PCDYE(ILO))+(RT-1.0/TCDYE(ILO,IP))*SLOPE
       ENDIF
       QSATDYE=EXP(PLNST)/PPA
       END FUNCTION QSATDYE
 C
-      SUBROUTINE SETTLECOL(QIN,SIG,SIGH,DSIG,THCOL,AD,GA,GASCON,WW,
-     &                     DELT2,FSCL,GLAM,GRHO,GETA,QOUT)
+      SUBROUTINE SETTLECOL(QIN,SIG,SIGH,DSIG,THCOL,AD,RHOD,GA,GASCON,
+     &                     WW,DELT2,FSCL,GLAM,GRHO,GETA,QOUT)
 C     One column's gravitational settling over DELT2: backward-Euler
 C     upwind sweep in sigma-mass form,
 C        DSIG(L)*q(L) = DSIG(L)*qin(L) + F(L-1)*qh(L-1) - F(L)*qh(L),
@@ -230,7 +242,8 @@ C     moves at the right speed but a uniform q settles 15% too slowly.
 C     The reconstruction gets both within a few per cent. Each F*qh
 C     appears once with each sign, so column mass changes only by
 C     what leaves the bottom.
-C     AD is the grain radius in m. The caller supplies the grain-
+C     AD is the grain radius in m and RHOD its density in kg/m3 (the
+C     species' RHODYE). The caller supplies the grain-
 C     independent quantities, so a column computes them once for all
 C     its dyes: GLAM, GRHO, GETA are the gas mean free path, density
 C     and viscosity from SED_GAS at each interface. FSCL belongs to the
@@ -239,12 +252,12 @@ C     total-material dye (KDYEMODE=1), of which only the condensed part
 C     falls, and 1 for a solid tracer.
       REAL QIN(NL),SIG(NL),SIGH(NL),DSIG(NL),THCOL(NL),QOUT(NL)
       REAL FSCL(NL),GLAM(NL),GRHO(NL),GETA(NL)
-      REAL AD,GA,GASCON,WW,DELT2
+      REAL AD,RHOD,GA,GASCON,WW,DELT2
       REAL VFALL,FSED,FLXUP,FH,PHI,SUP,SDN,C1,QH
       INTEGER L
       FLXUP=0.0
       DO 300 L=1,NL
-         CALL V_FALL_GRAIN(AD,GA,RHODYE,GLAM(L),GRHO(L),GETA(L),VFALL)
+         CALL V_FALL_GRAIN(AD,GA,RHOD,GLAM(L),GRHO(L),GETA(L),VFALL)
          FSED=GA*SIGH(L)*VFALL*FSCL(L)/(GASCON*THCOL(L))*DELT2/WW
 C        Limited upstream slope; none in the top layer, and the bottom
 C        layer, with nothing below, takes its upstream slope unlimited.

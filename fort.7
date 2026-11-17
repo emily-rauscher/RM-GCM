@@ -75,12 +75,17 @@ ADYE		    = 0.0, 1.0e-6, 1.0E-6
 PDYEFIX		    = 1.0E5,
 PDYEUPPER	    = 1.0E6,
 TRELAXORB	    = 0.1,
-! Radiatively active dye stuff here, switch, tracer index, species index
+! Radiatively active dye stuff here: switch, tracer index (KDYEMODE=1
+! only; in KDYEMODE=2 every pair's solid is active), and the cloud species
+! (as MOLEF: 7 = Mg2SiO4, 13 = Al2O3), one per vapour/solid pair in
+! KDYEMODE=2 (e.g. KDYESPEC = 7, 13 with NDYE=4), each needing MOLEF > 0
 LDYERAD		    = F,
 KDYERAD		    = 3,
 KDYESPEC	    = 7,
 ! Cloud scheme: 1 = one total-material tracer per dye, 2 = vapour/solid
-! pairs (vapour 2P, solid 2P+1; NDYE even). Timescales in seconds.
+! pairs (vapour 2P, solid 2P+1; NDYE even), each pair its own species
+! with its own condensation curve, grain density and ADYE(2P+1) radius.
+! Timescales in seconds.
 KDYEMODE	    = 1,
 TCONDDYE	    = 1.0e+03,
 TEVAPDYE	    = 1.0e+02,

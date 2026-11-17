@@ -6,7 +6,8 @@ C**********************************************************
      &                       TRELAXORB, KDYERAD, KDYESPEC, LDYERAD,
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX,
      &                       LBENCH, PDYEBUD, NDYEBUD,
-     &                       L1COLRT, ZEN1COL
+     &                       L1COLRT, ZEN1COL, NPAIRMX, NDYERAD,
+     &                       KSLOTRAD, ISPRAD
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -119,7 +120,10 @@ C      Guard value only; cloud_properties_set_up.f replaces
        TRELAXORB=0.1
        LDYERAD=.FALSE.
        KDYERAD=2
-       KDYESPEC=7
+C      One species per vapour/solid pair (KDYEMODE=2); KDYEMODE=1 and
+C      a one-pair run read only the first, so "KDYESPEC = 7" still works.
+       KDYESPEC=0
+       KDYESPEC(1)=7
        KDYEMODE=1
        TCONDDYE=1.0E3
 C      Negative means "same as TCONDDYE", resolved after the read.
@@ -136,40 +140,70 @@ C      the column has no dye state.
           STOP 'L1COLRT needs LDYERAD=F'
        ENDIF
 
-C      Check that the dye species is in range, and that the radiatively active
-C      tracer is a valid species. The dye species is used for both settling
-C      and radiative feedback
-       IF (KDYESPEC.LT.1 .OR. KDYESPEC.GT.13) THEN
-          WRITE(2,*) 'INIVARPARAM: KDYESPEC out of range 1-13:',
-     &               KDYESPEC
-          STOP 'KDYESPEC out of range'
-       ENDIF
-       IF (LDYERAD) THEN
-          IF (KDYERAD.LT.2 .OR. KDYERAD.GT.NDYE+1) THEN
-             WRITE(2,*) 'INIVARPARAM: KDYERAD must be 2..NDYE+1:',
-     &                  KDYERAD
-             STOP 'KDYERAD out of range'
-          ENDIF
-       ENDIF
-
 C      Cloud scheme. Two-phase dyes come in vapour/solid pairs filling
-C      slots 2..NDYE+1, and only a solid (odd) slot may be opaque.
+C      slots 2..NDYE+1, each pair with its own species.
        IF (KDYEMODE.NE.1 .AND. KDYEMODE.NE.2) THEN
           WRITE(2,*) 'INIVARPARAM: KDYEMODE must be 1 or 2:',
      &               KDYEMODE
           STOP 'KDYEMODE out of range'
        ENDIF
+       IF (KDYEMODE.EQ.2 .AND. MOD(NDYE,2).NE.0) THEN
+          WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs NDYE even ',
+     &               '(2 per vapour/solid pair):', NDYE
+          STOP 'KDYEMODE=2 needs even NDYE'
+       ENDIF
+
+C      Species in use: one per pair in KDYEMODE=2, KDYESPEC(1) for every
+C      dye in KDYEMODE=1. Each must be a cloud species 1-13, and no
+C      species may be used by two pairs.
        IF (KDYEMODE.EQ.2) THEN
-          IF (MOD(NDYE,2).NE.0) THEN
-             WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs NDYE even ',
-     &                  '(2 per vapour/solid pair):', NDYE
-             STOP 'KDYEMODE=2 needs even NDYE'
+          NSPDY=NDYE/2
+       ELSE
+          NSPDY=1
+       ENDIF
+       DO 30 KP=1,NSPDY
+          IF (KDYESPEC(KP).LT.1 .OR. KDYESPEC(KP).GT.13) THEN
+             WRITE(2,*) 'INIVARPARAM: KDYESPEC(',KP,') must be a ',
+     &                  'cloud species 1-13 (one per pair):',
+     &                  KDYESPEC(KP)
+             WRITE(*,*) 'INIVARPARAM: KDYESPEC(',KP,') must be a ',
+     &                  'cloud species 1-13 (one per pair):',
+     &                  KDYESPEC(KP)
+             STOP 'KDYESPEC out of range'
           ENDIF
-          IF (LDYERAD .AND. MOD(KDYERAD,2).NE.1) THEN
-             WRITE(2,*) 'INIVARPARAM: KDYEMODE=2 needs KDYERAD on a ',
-     &                  'solid slot (3,5,...):', KDYERAD
-             STOP 'KDYERAD is not a solid slot'
+          DO 25 KQ=1,KP-1
+             IF (KDYESPEC(KQ).EQ.KDYESPEC(KP)) THEN
+                WRITE(2,*) 'INIVARPARAM: species ',KDYESPEC(KP),
+     &                     ' is in KDYESPEC twice'
+                WRITE(*,*) 'INIVARPARAM: species ',KDYESPEC(KP),
+     &                     ' is in KDYESPEC twice'
+                STOP 'KDYESPEC repeats a species'
+             ENDIF
+   25     CONTINUE
+   30  CONTINUE
+
+C      The radiatively active dyes: every pair's solid in KDYEMODE=2,
+C      the single tracer KDYERAD in KDYEMODE=1.
+       NDYERAD=0
+       ISPRAD=0
+       IF (LDYERAD) THEN
+          IF (KDYEMODE.EQ.2) THEN
+             NDYERAD=NSPDY
+             DO 35 KP=1,NSPDY
+                KSLOTRAD(KP)=2*KP+1
+   35        CONTINUE
+          ELSE
+             IF (KDYERAD.LT.2 .OR. KDYERAD.GT.NDYE+1) THEN
+                WRITE(2,*) 'INIVARPARAM: KDYERAD must be 2..NDYE+1:',
+     &                     KDYERAD
+                STOP 'KDYERAD out of range'
+             ENDIF
+             NDYERAD=1
+             KSLOTRAD(1)=KDYERAD
           ENDIF
+          DO 40 KP=1,NDYERAD
+             ISPRAD(KDYESPEC(KP))=KP
+   40     CONTINUE
        ENDIF
 
        READ (7,INMAG)

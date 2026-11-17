@@ -1,6 +1,7 @@
       SUBROUTINE get_cloud_scattering_properties_wrapper
-          use tracerclds, only : LDYERAD, KDYESPEC
+          use tracerclds, only : LDYERAD, KDYESPEC, NDYERAD
           include 'rcommons.h'
+          INTEGER KP
           WRITE(*,*) "In get_cloud_scattering_properties_wrapper"
           call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
 !         OPPRMULTI(_CORRK) builds cloud optical depth only for
@@ -12,11 +13,14 @@
      &                AEROSOLCOMP
                   STOP 'LDYERAD needs AEROSOLCOMP=standard'
               END IF
-              IF (MOLEF(KDYESPEC) .LE. 0.0) THEN
-                  WRITE(*,*) 'LDYERAD needs MOLEF(KDYESPEC) > 0; MOLEF(',
-     &                KDYESPEC, ') = ', MOLEF(KDYESPEC)
-                  STOP 'LDYERAD needs MOLEF(KDYESPEC) > 0'
-              END IF
+              DO KP = 1, NDYERAD
+                  IF (MOLEF(KDYESPEC(KP)) .LE. 0.0) THEN
+                      WRITE(*,*) 'LDYERAD needs MOLEF > 0 for every ',
+     &                    'dye species; MOLEF(', KDYESPEC(KP), ') = ',
+     &                    MOLEF(KDYESPEC(KP))
+                      STOP 'LDYERAD needs MOLEF(KDYESPEC) > 0'
+                  END IF
+              END DO
           END IF
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
@@ -24,7 +28,8 @@
       SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
           use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE,
      &                           KDYEMODE, QSATDYE, PCLN1, RDLNPC,
-     &                           LDYERAD, KDYERAD, ADYE
+     &                           LDYERAD, KDYERAD, ADYE, NPAIRMX,
+     &                           NDYERAD, KSLOTRAD
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -1048,28 +1053,33 @@
 
           DENSITY = (/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3/)
 
-!         If tracer clouds, take the dye's grain density from its own species
-          IF (KDYESPEC .GE. 1 .AND. KDYESPEC .LE. 13) THEN
-              WRITE(*,*) 'Dye settling density from species ',
-     &            KDYESPEC, ': ', RHODYE, ' -> ', DENSITY(KDYESPEC)
-              RHODYE = DENSITY(KDYESPEC)
-          END IF
+!         Each dye pair's grain density from its own species (pairs
+!         beyond those in use have KDYESPEC=0 and keep the guard value).
+          DO K = 1, NPAIRMX
+              IF (KDYESPEC(K) .GE. 1 .AND. KDYESPEC(K) .LE. 13) THEN
+                  RHODYE(K) = DENSITY(KDYESPEC(K))
+                  WRITE(*,*) 'Dye settling density from species ',
+     &                KDYESPEC(K), ': ', RHODYE(K)
+              END IF
+          END DO
 
 !         The RT takes the dye's optics from the nearest tabulated size
 !         but scales its optical depth by 1/ADYE**3, so a radius off the
 !         table gives an optical depth with no matching optics (1e-12 m
 !         is 1e9 times too opaque and the RT returns NaN).
-          IF (LDYERAD) THEN
-              IF (ADYE(KDYERAD) .LT. input_particle_size_array_in_meters(1)
-     &            .OR. ADYE(KDYERAD) .GT.
+          DO K = 1, NDYERAD
+              IF (ADYE(KSLOTRAD(K)) .LT.
+     &            input_particle_size_array_in_meters(1) .OR.
+     &            ADYE(KSLOTRAD(K)) .GT.
      &            input_particle_size_array_in_meters(100)) THEN
-                  WRITE(*,*) 'ADYE(KDYERAD) = ', ADYE(KDYERAD),
+                  WRITE(*,*) 'ADYE(', KSLOTRAD(K), ') = ',
+     &                ADYE(KSLOTRAD(K)),
      &                ' m is outside the cloud optics size grid, ',
      &                input_particle_size_array_in_meters(1), ' to ',
      &                input_particle_size_array_in_meters(100), ' m'
-                  STOP 'ADYE(KDYERAD) outside the cloud optics size grid'
+                  STOP 'radiative dye ADYE outside the optics size grid'
               END IF
-          END IF
+          END DO
 
           ! The molar masses of the different cloud species in grams/mol
           CLOUD_MOLAR_MASSES = (/74.55E-3,    ! KCl
@@ -1485,32 +1495,40 @@
      & COND_CURVE_METS(LOW_MET_INDEX), ' and ', COND_CURVE_METS(HIGH_MET_INDEX)
       ENDIF
 
-!     Record tracer cloud selected's condensation curve for later use in cloud formation (not use in classic clouds)
+!     Record each dye species' condensation curve for later use in cloud
+!     formation (not used in classic clouds); pairs beyond those in use
+!     have KDYESPEC=0 and are skipped.
       DO J = 1,80
-          TCDYE(J) = TCONDS(MET_INDEX,J,KDYESPEC)
           PCDYE(J) = input_pressure_array_cgs(J) / 10.0
       END DO
 !     Log-grid constants for IPCDYE's O(1) lookup in FCONDYE.
       PCLN1  = LOG(PCDYE(1))
       RDLNPC = 79.0 / (LOG(PCDYE(80)) - PCLN1)
-      WRITE(*,*) 'Dye condensation curve from species ', KDYESPEC,
-     &    ': T_cond spans ', MINVAL(TCDYE), ' to ', MAXVAL(TCDYE), ' K'
+      DO K = 1, NPAIRMX
+        IF (KDYESPEC(K) .GE. 1 .AND. KDYESPEC(K) .LE. 13) THEN
+          DO J = 1,80
+              TCDYE(J,K) = TCONDS(MET_INDEX,J,KDYESPEC(K))
+          END DO
+          WRITE(*,*) 'Dye condensation curve from species ',
+     &        KDYESPEC(K), ': T_cond spans ', MINVAL(TCDYE(:,K)),
+     &        ' to ', MAXVAL(TCDYE(:,K)), ' K'
 
-!     The two-phase scheme inverts T_cond(P) for P*(T) in QSATDYE, which
-!     needs the curve strictly monotonic.
-      IF (KDYEMODE .EQ. 2) THEN
-          DO J = 2,80
-              IF ((TCDYE(J)-TCDYE(J-1))*(TCDYE(80)-TCDYE(1)) .LE. 0.0)
-     &        THEN
-                  WRITE(*,*) 'Dye condensation curve not monotonic at',
-     &                ' level ', J, ': ', TCDYE(J-1), TCDYE(J)
+!         The two-phase scheme inverts T_cond(P) for P*(T) in QSATDYE,
+!         which needs the curve strictly monotonic (a species with no
+!         curve in the files, all zero, fails here too).
+          IF (KDYEMODE .EQ. 2) THEN
+            DO J = 2,80
+              IF ((TCDYE(J,K)-TCDYE(J-1,K))*(TCDYE(80,K)-TCDYE(1,K))
+     &            .LE. 0.0) THEN
+                  WRITE(*,*) 'Dye condensation curve of species ',
+     &                KDYESPEC(K), ' not monotonic at level ', J, ': ',
+     &                TCDYE(J-1,K), TCDYE(J,K)
                   STOP 'KDYEMODE=2 needs a monotonic T_cond(P)'
               END IF
-          END DO
-    !       QSATDYE should return 1 on the curve itself; print the worst miss as a check on the inversion.
-    !       WRITE(*,*) 'QSATDYE on the curve, max |q_sat-1|: ',
-    !  &        MAXVAL((/ (ABS(QSATDYE(PCDYE(J),TCDYE(J))-1.0), J=1,80) /))
-      END IF
+            END DO
+          END IF
+        END IF
+      END DO
 
 !   Now begins the cloud wavelength averaging:
       IF (GRAYCLDV) THEN

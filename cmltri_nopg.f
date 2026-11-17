@@ -5,8 +5,8 @@
 
 
       SUBROUTINE IGCM3_SUB
-      use tracerclds, only : KDYERAD, LDYERAD, TRAG_forrad, QDYE,
-     &                       LBENCH, L1COLRT, T1COL
+      use tracerclds, only : NDYERAD, KSLOTRAD, LDYERAD, TRAG_forrad,
+     &                       QDYE, LBENCH, L1COLRT, T1COL
       use dyegrid, only : DYE_START, DYEADV, DYE_RSWRITE
 C!$ use omp_lib
 C**********************************************************************
@@ -993,12 +993,15 @@ C              Run the grid physics first so TG/PLG are post-VDIFF/CONVEC
                   PLG_forrad(I,IH) = PLG(I)
                ENDDO
                IF (LDYERAD) THEN
-C                 The radiatively active dye for the RT.
-                  DO LDY=1,NL
-                     DO IDY=1,MG
-                        TRAG_forrad(IDY,LDY,IH)=QDYE(IDY,IH,LDY,KDYERAD)
-                        TRAG_forrad(IDY+MGPP,LDY,IH)=
-     &                     QDYE(IDY,2*JG+1-IH,LDY,KDYERAD)
+C                 The radiatively active dyes for the RT.
+                  DO KDR=1,NDYERAD
+                     DO LDY=1,NL
+                        DO IDY=1,MG
+                           TRAG_forrad(IDY,LDY,IH,KDR)=
+     &                        QDYE(IDY,IH,LDY,KSLOTRAD(KDR))
+                           TRAG_forrad(IDY+MGPP,LDY,IH,KDR)=
+     &                        QDYE(IDY,2*JG+1-IH,LDY,KSLOTRAD(KDR))
+                        ENDDO
                      ENDDO
                   ENDDO
                ENDIF

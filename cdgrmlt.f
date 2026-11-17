@@ -2,7 +2,7 @@ C**********************************************************
 C             SUBROUTINE DGRMLT                                           
 C**********************************************************               
       SUBROUTINE DGRMLT(IH,IPASS)
-      use tracerclds, only : ADYE, PDYEFIX, TRELAXORB,
+      use tracerclds, only : ADYE, RHODYE, PDYEFIX, TRELAXORB,
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, QSATDYE,
      &                       SETTLECOL, FCONDYE, QDYE, DTDY, DMPHYS,
      &                       TDYPHY
@@ -501,7 +501,7 @@ C        Grid-store row, and the row's weight for the DMPHYS sums.
          ENDIF
          WDYR=GWT(JH)*NHEM
 !$OMP PARALLEL DO DEFAULT(SHARED)
-!$OMP& PRIVATE(I,J,ALON,COSZLC,L,KK,KV,KC,QVDY,QCDY,QTDY,QEDY,
+!$OMP& PRIVATE(I,J,ALON,COSZLC,L,KK,KV,KC,KP,QVDY,QCDY,QTDY,QEDY,
 !$OMP&   PCSED,TCSED,FSCLC,SHSED,THSED,GLAMC,GRHOC,GETAC,
 !$OMP&   QCSED,QVSED,QSED,QPRE,WBUD)
          DO 310 I=1,MG
@@ -517,7 +517,7 @@ C           fraction each layer passes to the flux below it
                PCSED(L)=SIGMA(L)*PLG(J)*P0
                TCSED(L)=TG(J,L)*CT
                IF (KDYEMODE.EQ.1) THEN
-                  FSCLC(L)=FCONDYE(PCSED(L),TCSED(L))
+                  FSCLC(L)=FCONDYE(PCSED(L),TCSED(L),1)
                ELSE
                   FSCLC(L)=1.0
                ENDIF
@@ -548,8 +548,8 @@ C           condensed fraction (FCONDYE) falls.
                   QVSED(L)=QDYE(I,IRDY,L,KK)
   301          CONTINUE
                CALL SETTLECOL(QVSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KK),
-     +                        GA,GASCON,WW,DTDY,FSCLC,GLAMC,GRHOC,
-     +                        GETAC,QSED)
+     +                        RHODYE(1),GA,GASCON,WW,DTDY,FSCLC,GLAMC,
+     +                        GRHOC,GETAC,QSED)
 C              Deep reservoir, relaxing q toward 1.
                DO 305 L=1,NL
                   QPRE=QSED(L)
@@ -573,11 +573,13 @@ C           the total is untouched; then the solid alone settles; then
 C           the deep reservoir relaxes the total toward 1, as vapour.
             DO 318 KV=2,NDYE,2
                KC=KV+1
+C              Pair KP, with its own species' curve and grain density.
+               KP=KV/2
                DO 312 L=1,NL
                   QVDY=QDYE(I,IRDY,L,KV)
                   QCDY=QDYE(I,IRDY,L,KC)
                   QTDY=QVDY+QCDY
-                  QEDY=MAX(QTDY-QSATDYE(PCSED(L),TCSED(L)),0.0)
+                  QEDY=MAX(QTDY-QSATDYE(PCSED(L),TCSED(L),KP),0.0)
                   IF (QEDY.GT.QCDY) THEN
                      QCDY=QCDY+(QEDY-QCDY)*FCDYE
                   ELSE
@@ -587,8 +589,8 @@ C           the deep reservoir relaxes the total toward 1, as vapour.
                   QVSED(L)=QTDY-QCDY
   312          CONTINUE
                CALL SETTLECOL(QCSED,SIGMA,SHSED,DSIGMA,THSED,ADYE(KC),
-     +                        GA,GASCON,WW,DTDY,FSCLC,GLAMC,GRHOC,
-     +                        GETAC,QSED)
+     +                        RHODYE(KP),GA,GASCON,WW,DTDY,FSCLC,GLAMC,
+     +                        GRHOC,GETAC,QSED)
                DO 316 L=1,NL
                   QPRE=QVSED(L)
 C                 (Floored at 0: it may only take vapour that exists.)

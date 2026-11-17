@@ -30,7 +30,7 @@
 !     * ************************************************************
 !
       use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT, NWNO
-      use tracerclds, only : ADYE, KDYERAD, KDYESPEC, LDYERAD,
+      use tracerclds, only : ADYE, KSLOTRAD, ISPRAD, LDYERAD,
      &                       QDYECOL
       include 'rcommons.h'
 
@@ -106,6 +106,8 @@ C     LW sublayer masses
       INTEGER, AUTOMATIC :: size_loc, temp_loc, layer_index, haze_layer_index
       INTEGER solar_calculation_indexer
       REAL, AUTOMATIC :: particle_size
+C     Which radiatively active dye carries species I (0 = none).
+      INTEGER, AUTOMATIC :: KDR
       REAL, AUTOMATIC :: p_weight, size_weight, tconds_interp, corfact_interp
       REAL, AUTOMATIC :: tconds_lo, tconds_hi, kext_interp
 
@@ -286,27 +288,38 @@ C     LW sublayer masses
 
             CALL LOG_INTERP_WEIGHTS(input_pressure_array_cgs, 80, p_pass(J) * 10.0,
      &                              layer_index, p_weight)
-            IF (LDYERAD) THEN
-C               Radiatively active dye: its own grain size from fort.7.
-                particle_size = ADYE(KDYERAD)
-            ELSE
+C           Grain size: the layer's prescribed size, or with dyes, each
+C           dye's own (set per species below).
+            IF (.NOT.LDYERAD) THEN
                 particle_size = LERP(particle_size_vs_layer_array_in_meters(layer_index),
      &                            particle_size_vs_layer_array_in_meters(layer_index+1), p_weight)
+                CALL LOG_INTERP_WEIGHTS(input_particle_size_array_in_meters, 100, particle_size,
+     &                                  size_loc, size_weight)
             END IF
-            CALL LOG_INTERP_WEIGHTS(input_particle_size_array_in_meters, 100, particle_size,
-     &                              size_loc, size_weight)
             !corr-k version:
             DO I = 1, NCLOUDS
 C               A species with no abundance adds no optical depth, so
 C               skip its interpolations; zero its entries, which the
 C               species sums below still read.
-                IF (MOLEF(I).EQ.0.0) THEN
+C               With dyes, so does a species no dye carries (KDR=0).
+                IF (LDYERAD) THEN
+                    KDR = ISPRAD(I)
+                ELSE
+                    KDR = 1
+                END IF
+                IF (MOLEF(I).EQ.0.0 .OR. KDR.EQ.0) THEN
                     PI0_TEMP(:,J,I)    = 0.0
                     G0_TEMP(:,J,I)     = 0.0
                     tauaer_temp(:,J,I) = 0.0
                     CONDFACT(J,I)      = 0.0
                     CLOUDLOC(J,I)      = 0.0
                     CYCLE
+                END IF
+                IF (LDYERAD) THEN
+C                   The dye's own grain size from fort.7.
+                    particle_size = ADYE(KSLOTRAD(KDR))
+                    CALL LOG_INTERP_WEIGHTS(input_particle_size_array_in_meters, 100,
+     &                                      particle_size, size_loc, size_weight)
                 END IF
                 DO L = solar_calculation_indexer,NKGAUSS
                     PI0_TEMP(L,J,I) = LERP(CLOUD_A(I,size_loc,iband), CLOUD_A(I,size_loc+1,iband), size_weight)
@@ -322,15 +335,10 @@ C               species sums below still read.
                 tconds_interp = tconds_lo + p_weight * (tconds_hi - tconds_lo)
                 kext_interp = LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight)
                 IF (LDYERAD) THEN
-C                   Only KDYESPEC carries the dye, placed by the tracer:
-C                   QDYECOL is this RT layer's opaque amount, aligned and
-C                   made non-negative in RADIATION_ALLLATS (as for
-C                   OPPRMULTI).
-                    IF (I.EQ.KDYESPEC) THEN
-                        CONDFACT(J,I) = QDYECOL(J)
-                    ELSE
-                        CONDFACT(J,I) = 0.0
-                    END IF
+C                   The species' dye places it: QDYECOL is this RT
+C                   layer's opaque amount, aligned and made non-negative
+C                   in RADIATION_ALLLATS (as for OPPRMULTI).
+                    CONDFACT(J,I) = QDYECOL(J,KDR)
                 ELSE
                     CONDFACT(J,I) = min(max((tconds_interp-TT(J))/10.,0.0),1.0)
                 END IF
