@@ -1150,7 +1150,7 @@
 
       ! The condensation curves get read from file now instead of being hardcoded. in CLOUD_DATA, there should be both the orig (50 pressures, from Eliza Kempton's group) and new (80 pressures, interpolated) files for each metallicity.
       ! The first column is pressure (cgs), then each cloud species gets its own column in the usual order
-      write(*,*) 'Reading ONLY Mg2SiO4 and AL2O3 condensation curves from file!!'
+      write(*,*) 'Reading CARMA condensation curves from file, no SiO2, VO, Ni, Ca2SiO4, or CaTiO3!!'
 
       open(UNIT=10, FILE='../CLOUD_DATA/condcurves_0.1xsolar_special.txt')
       read(10,*) dummy_tconds
