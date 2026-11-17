@@ -7,7 +7,7 @@ C**********************************************************
      &                       KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX,
      &                       LBENCH, PDYEBUD, NDYEBUD,
      &                       L1COLRT, ZEN1COL, NPAIRMX, NDYERAD,
-     &                       KSLOTRAD, ISPRAD
+     &                       KSLOTRAD, ISPRAD, LDYELOGN
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -93,7 +93,7 @@ C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
      & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
      & LDYERAD, KDYERAD, KDYESPEC,
      & KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX, LBENCH,
-     & PDYEBUD, NDYEBUD, L1COLRT, ZEN1COL
+     & PDYEBUD, NDYEBUD, L1COLRT, ZEN1COL, LDYELOGN
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -108,6 +108,7 @@ C      keys still gives a defined configuration.
           ADYE(KK)=1.0E-6
     5  CONTINUE
        LDYEFIX=.TRUE.
+       LDYELOGN=.TRUE.
        LBENCH=.FALSE.
        L1COLRT=.FALSE.
        ZEN1COL=0.0

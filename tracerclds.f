@@ -15,6 +15,25 @@ C     active dyes, NDYE allows: one cloud species per pair.
 C
 C     Grain radius per dye, indexed 2..NDYE+1; ADYE(1) is unused.
       REAL ADYE(NDYE+1)
+C     Grain size distribution: ADYE is the median radius of a number-
+C     weighted lognormal of width SIGDYE, as in the cloud optics, whose
+C     Mie tables (CLOUD_KEXT etc.) and exp_92_lnsig2_pi correction were
+C     built for it; SIGDYE must match the sigma those tables used.
+C     LDYELOGN (INVARPARAM, default T): settle that distribution, with
+C     its mass-weighted mean fall speed; F settles single grains of
+C     radius ADYE, as before (and bit-identical to it).
+      REAL, PARAMETER :: SIGDYE=2.0
+      LOGICAL LDYELOGN
+C     8-point Gauss-Hermite rule (weight exp(-x**2)) for that mean.
+      INTEGER, PARAMETER :: NQDYE=8
+      REAL, PARAMETER :: XQDYE(NQDYE)=(/-2.9306374202572441,
+     &   -1.981656756695843,-1.1571937124467802,-0.38118699020732211,
+     &   0.38118699020732211,1.1571937124467802,1.981656756695843,
+     &   2.9306374202572441/)
+      REAL, PARAMETER :: WQDYE(NQDYE)=(/0.00019960407221136783,
+     &   0.017077983007413467,0.20780232581489183,0.66114701255824149,
+     &   0.66114701255824149,0.20780232581489183,0.017077983007413467,
+     &   0.00019960407221136783/)
 C     Grain density of each pair's species (index as KDYESPEC), set to
 C     DENSITY(KDYESPEC(P)) when the cloud tables load, so the settling
 C     and the OPPRMULTI optics cannot describe different particles.
@@ -243,7 +262,14 @@ C     The reconstruction gets both within a few per cent. Each F*qh
 C     appears once with each sign, so column mass changes only by
 C     what leaves the bottom.
 C     AD is the grain radius in m and RHOD its density in kg/m3 (the
-C     species' RHODYE). The caller supplies the grain-
+C     species' RHODYE). With LDYELOGN, AD is the median radius of the
+C     lognormal number distribution of width SIGDYE, and VFALL is its
+C     mass-weighted mean: weighted by mass, ln r is again normal, with
+C     the same width s=ln(SIGDYE) and median AD*exp(3*s**2), so
+C        VFALL = sum_k WQDYE(k)*v(AD*exp(3*s**2+sqrt(2)*s*XQDYE(k)))
+C                / sqrt(pi),
+C     v the single-grain speed of V_FALL_GRAIN (to <3e-4 of the exact
+C     mean, except near its 100 m/s cap). The caller supplies the grain-
 C     independent quantities, so a column computes them once for all
 C     its dyes: GLAM, GRHO, GETA are the gas mean free path, density
 C     and viscosity from SED_GAS at each interface. FSCL belongs to the
@@ -254,10 +280,28 @@ C     falls, and 1 for a solid tracer.
       REAL FSCL(NL),GLAM(NL),GRHO(NL),GETA(NL)
       REAL AD,RHOD,GA,GASCON,WW,DELT2
       REAL VFALL,FSED,FLXUP,FH,PHI,SUP,SDN,C1,QH
-      INTEGER L
+      REAL RQ(NQDYE),WQ(NQDYE),SL,VK
+      INTEGER L,K
+C     The quadrature radii and weights, the same at every level.
+      IF (LDYELOGN) THEN
+         SL=LOG(SIGDYE)
+         DO 10 K=1,NQDYE
+            RQ(K)=AD*EXP(3.0*SL*SL+SQRT(2.0)*SL*XQDYE(K))
+            WQ(K)=WQDYE(K)/SQRT(4.0*ATAN(1.0))
+   10    CONTINUE
+      ENDIF
       FLXUP=0.0
       DO 300 L=1,NL
-         CALL V_FALL_GRAIN(AD,GA,RHOD,GLAM(L),GRHO(L),GETA(L),VFALL)
+         IF (LDYELOGN) THEN
+            VFALL=0.0
+            DO 20 K=1,NQDYE
+               CALL V_FALL_GRAIN(RQ(K),GA,RHOD,GLAM(L),GRHO(L),GETA(L),
+     &                           VK)
+               VFALL=VFALL+WQ(K)*VK
+   20       CONTINUE
+         ELSE
+            CALL V_FALL_GRAIN(AD,GA,RHOD,GLAM(L),GRHO(L),GETA(L),VFALL)
+         ENDIF
          FSED=GA*SIGH(L)*VFALL*FSCL(L)/(GASCON*THCOL(L))*DELT2/WW
 C        Limited upstream slope; none in the top layer, and the bottom
 C        layer, with nothing below, takes its upstream slope unlimited.

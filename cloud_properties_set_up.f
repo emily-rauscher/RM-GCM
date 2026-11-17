@@ -29,7 +29,7 @@
           use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE,
      &                           KDYEMODE, QSATDYE, PCLN1, RDLNPC,
      &                           LDYERAD, KDYERAD, ADYE, NPAIRMX,
-     &                           NDYERAD, KSLOTRAD
+     &                           NDYERAD, KSLOTRAD, SIGDYE
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -1439,7 +1439,9 @@
       KE_OPPR(5,1:100,1:100,13)=Al2O3_rosselandMean_kext
 
       ! Setting up correction factor for mean vs median particle volume:
-      sigma = 2.0 ! should eventually not be hardcoded
+      ! The lognormal width the Mie tables were built for, shared with
+      ! the dye settling (tracerclds).
+      sigma = SIGDYE
       exp_92_lnsig2_pi = EXP(-9.0/2.0 * LOG(sigma)*LOG(sigma)) / (4.D0*DATAN(1.D0))
       
       ! Thomas interpolating cloud condensation curves in metallicity
@@ -1572,7 +1574,7 @@
     !   write(*,*) "AFTER AVERAGING:"
     !   write(*,*) "Ke for KCl: ", KE_OPPR(1,1:100,20,1)
       ! Setting up correction factor for mean vs median particle volume:
-      sigma = 2.0
+      sigma = SIGDYE
       exp_92_lnsig2_pi = EXP(-9.0/2.0 * LOG(sigma)*LOG(sigma)) / (4.D0*DATAN(1.D0))
 
       END SUBROUTINE get_cloud_scattering_properties
