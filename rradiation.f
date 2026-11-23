@@ -131,6 +131,11 @@ C
 
       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
       LOGICAL DELTASCALE,HAZES,PICKET_FENCE_CLOUDS,GRAYCLDV
+C     Declared as in every other copy of /CLOUDY/ (unused here, but left
+C     implicit they gave this copy a different layout and size).
+      CHARACTER(30) :: AEROSOLCOMP
+      INTEGER MAXTAULOC,AERLAYERS
+      REAL MOLEF(NCLOUDS)
 
       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &               CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
@@ -261,8 +266,8 @@ c     The following for parallel testing --MTR
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
 
-      REAL PI0_TEMP(NBATCH, NL+1, 13), G0_TEMP(NBATCH, NL+1, 13)
-      REAL tauaer_temp(NBATCH, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, NCLOUDS), G0_TEMP(NBATCH, NL+1, NCLOUDS)
+      REAL tauaer_temp(NBATCH, NL+1, NCLOUDS)
       INTEGER j1
       real denom
       INTEGER printt
@@ -434,6 +439,11 @@ C     TTRD is computed by the stripped-down RADIATION subroutine.
 
       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
       LOGICAL DELTASCALE,HAZES,PICKET_FENCE_CLOUDS,GRAYCLDV
+C     Declared as in every other copy of /CLOUDY/ (unused here, but left
+C     implicit they gave this copy a different layout and size).
+      CHARACTER(30) :: AEROSOLCOMP
+      INTEGER MAXTAULOC,AERLAYERS
+      REAL MOLEF(NCLOUDS)
 
       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
      &               CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
@@ -544,8 +554,8 @@ C     Which radiatively active dye QDYECOL is being filled for.
       real :: k_IR, k_lowP, k_hiP, Tin, Pin, Freedman_met
       real :: Freedman_T, Freedman_P, Tl10, Pl10, temperature_val, pressure_val
 
-      REAL PI0_TEMP(NBATCH, NL+1, 13), G0_TEMP(NBATCH, NL+1, 13)
-      REAL tauaer_temp(NBATCH, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, NCLOUDS), G0_TEMP(NBATCH, NL+1, NCLOUDS)
+      REAL tauaer_temp(NBATCH, NL+1, NCLOUDS)
 
 C     Large workspace arrays: put in COMMON /RADWORK/ so they are in
 C     static (non-stack) storage; THREADPRIVATE gives each OMP thread

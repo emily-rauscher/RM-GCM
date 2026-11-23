@@ -22,7 +22,7 @@ C     built for it; SIGDYE must match the sigma those tables used.
 C     LDYELOGN (INVARPARAM, default T): settle that distribution, with
 C     its mass-weighted mean fall speed; F settles single grains of
 C     radius ADYE, as before (and bit-identical to it).
-      REAL, PARAMETER :: SIGDYE=2.0
+      REAL, PARAMETER :: SIGDYE=1.65
       LOGICAL LDYELOGN
 C     8-point Gauss-Hermite rule (weight exp(-x**2)) for that mean.
       INTEGER, PARAMETER :: NQDYE=8
@@ -55,7 +55,7 @@ C     ADYE as its optical grain size.
 C     The radiatively active dyes, set in INIVARPARAM: NDYERAD of them,
 C     number N in dye slot KSLOTRAD(N) and of species KDYESPEC(N);
 C     ISPRAD(I) is the one of species I (0 = none).
-      INTEGER NDYERAD,KSLOTRAD(NPAIRMX),ISPRAD(13)
+      INTEGER NDYERAD,KSLOTRAD(NPAIRMX),ISPRAD(NCLOUDS)
 C
 C     --- cloud scheme ----------------------------------------------
 C     KDYEMODE=1: each dye is total species material, and is all-vapor 

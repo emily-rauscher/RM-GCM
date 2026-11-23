@@ -1,3 +1,6 @@
+!     Number of cloud species (NCLOUDS), shared by everything that
+!     includes this file.
+      include 'nclouds.inc'
 ! Picket-fence or double-gray
 !C     T2 L50  full sphere
 !      PARAMETER(NN=2,MM=2,NHEM=2, NL=50,MOCT=1,MG=8,JG=2,NWJ2=2
@@ -8,7 +11,8 @@
 !     NTRAC is the number of SPECTRAL tracers: 1, water vapour only.
 !     NDYE is the number of cloud dye tracers, on the Gaussian grid
 !     (dyeadv.f), numbered 2..NDYE+1 with a radius ADYE(KK) each in
-!     fort.7. KDYEMODE=2 needs NDYE even.
+!     fort.7. KDYEMODE=2 needs NDYE even: NDYE = 2 x the number of
+!     cloud species (KDYESPEC in fort.7), one vapour/solid pair each.
 !     KOLOUR in fort.7 takes NTRAC (=1) entries.
       PARAMETER(NN=31,MM=31,NHEM=2, NL=50,MOCT=1,MG=96,JG=24,NWJ2=256
      +,NCRAY=8,JGL=JG,NTRAC=1,NLEVRF=1,NIR=2,NSOL=3,NTOTAL=5,

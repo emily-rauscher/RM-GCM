@@ -2,8 +2,26 @@
           use tracerclds, only : LDYERAD, KDYESPEC, NDYERAD
           include 'rcommons.h'
           INTEGER KP
+!         Which species have the CLOUD_DATA optics (KE/PI0/G0_OPPR) the
+!         double-gray and picket-fence RT use; corr-k uses the band
+!         tables instead, so a corr-k-only species may have none.
+          LOGICAL LHASOPT(NCLOUDS)
           WRITE(*,*) "In get_cloud_scattering_properties_wrapper"
-          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
+          call get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV,
+     &                                         LHASOPT)
+!         Outside corr-k, a species with MOLEF > 0 but no such optics
+!         would be a silently transparent cloud.
+          IF (opacity_method .NE. 'correk') THEN
+              DO KP = 1, NCLOUDS
+                  IF (MOLEF(KP) .GT. 0.0 .AND. .NOT. LHASOPT(KP)) THEN
+                      WRITE(*,*) 'Cloud species ', KP, ' has MOLEF = ',
+     &                    MOLEF(KP), ' but no CLOUD_DATA optics, which ',
+     &                    'opacity_method=', opacity_method, ' needs; ',
+     &                    'use it with correk only, or set its MOLEF to 0'
+                      STOP 'cloud species without optics for this RT'
+                  END IF
+              END DO
+          END IF
 !         OPPRMULTI(_CORRK) builds cloud optical depth only for
 !         AEROSOLCOMP='standard', and skips a species with MOLEF=0;
 !         either would leave the radiatively active dye transparent.
@@ -25,15 +43,23 @@
       END SUBROUTINE get_cloud_scattering_properties_wrapper
 
 
-      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV)
+      SUBROUTINE get_cloud_scattering_properties(NCLOUDS, NLAYER, NVERT, NIR, NSOL, GASCON, METALLICITY, GRAYCLDV,
+     &                                           LHASOPT)
           use tracerclds, only : RHODYE, KDYESPEC, TCDYE, PCDYE,
      &                           KDYEMODE, QSATDYE, PCLN1, RDLNPC,
      &                           LDYERAD, KDYERAD, ADYE, NPAIRMX,
-     &                           NDYERAD, KSLOTRAD, SIGDYE
+     &                           NDYERAD, KSLOTRAD, SIGDYE,
+     &                           NCLD => NCLOUDS
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
+!         NCLOUDS is the argument here (the caller passes the parameter);
+!         arrays in COMMON need the constant itself, taken from tracerclds
+!         as NCLD.
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
+!         Out: species I has CLOUD_DATA optics (a species without a read
+!         block below keeps zero KE_OPPR, which is fine for corr-k).
+          LOGICAL LHASOPT(NCLOUDS)
           LOGICAL :: GRAYCLDV
 
 
@@ -217,23 +243,27 @@
           real, dimension(100,100) :: Al2O3_wav_kext
           real, dimension(100,100) :: Al2O3_wav_pi0
 
+        !   real, dimension(100,100) :: MgSiO3_wav_gg
+        !   real, dimension(100,100) :: MgSiO3_wav_kext
+        !   real, dimension(100,100) :: MgSiO3_wav_pi0
+
           ! SET UP THE CONDENSATION CURVES
           ! SHOULD BE MET DEPENDENT EVENTUALLY
 
           REAL CORFACT(80)
-          REAL TCONDS(7, 80, 13)
+          REAL TCONDS(7, 80, NCLD)
           REAL DUMMY_TCONDS(NCLOUDS+1, 80) ! +1 is pressure axis in the files
 
-          REAL KE_OPPR(5, 100, 100, 13)
-          REAL PI0_OPPR(5, 100, 100, 13)
-          REAL G0_OPPR(5, 100, 100, 13)
+          REAL KE_OPPR(5, 100, 100, NCLD)
+          REAL PI0_OPPR(5, 100, 100, NCLD)
+          REAL G0_OPPR(5, 100, 100, NCLD)
 
           ! Kennedy adding cond curve interpolation
           INTEGER MET_INDEX, LOW_MET_INDEX, HIGH_MET_INDEX, I
           REAL, dimension(6) :: COND_CURVE_METS ! These are log10(Z/Zsun) values for the pre-calculated curves
-          REAL DENSITY(13)
-          REAL FMOLW(13)
-          REAL CLOUD_MOLAR_MASSES(13)
+          REAL DENSITY(NCLD)
+          REAL FMOLW(NCLD)
+          REAL CLOUD_MOLAR_MASSES(NCLD)
 
           real, dimension(100) :: input_temperature_array
           real, dimension(80) :: input_pressure_array_cgs
@@ -806,6 +836,36 @@
           close(7)
           close(8)
           close(9)
+
+        !   open (1, file='../CLOUD_DATA/MgSiO3_rosselandMean_gg.txt')
+        !   open (2, file='../CLOUD_DATA/MgSiO3_rosselandMean_kext.txt')
+        !   open (3, file='../CLOUD_DATA/MgSiO3_rosselandMean_pi0.txt')
+        !   open (4, file='../CLOUD_DATA/MgSiO3_wav_gg.txt')
+        !   open (5, file='../CLOUD_DATA/MgSiO3_wav_kext.txt')
+        !   open (6, file='../CLOUD_DATA/MgSiO3_wav_pi0.txt')
+        !   open (7, file='../CLOUD_DATA/MgSiO3_PlanckMean_gg.txt')
+        !   open (8, file='../CLOUD_DATA/MgSiO3_PlanckMean_kext.txt')
+        !   open (9, file='../CLOUD_DATA/MgSiO3_PlanckMean_pi0.txt')
+          
+        !   read(1,*) MgSiO3_rosselandMean_gg
+        !   read(2,*) MgSiO3_rosselandMean_kext
+        !   read(3,*) MgSiO3_rosselandMean_pi0
+        !   read(4,*) MgSiO3_wav_gg
+        !   read(5,*) MgSiO3_wav_kext
+        !   read(6,*) MgSiO3_wav_pi0
+        !   read(7,*) MgSiO3_PlanckMean_gg
+        !   read(8,*) MgSiO3_PlanckMean_kext
+        !   read(9,*) MgSiO3_PlanckMean_pi0
+          
+        !   close(1)
+        !   close(2)
+        !   close(3)
+        !   close(4)
+        !   close(5)
+        !   close(6)
+        !   close(7)
+        !   close(8)
+        !   close(9)
           HAZE_WAV_GRID = (/0.1, 0.101, 0.102, 0.103, 0.104, 0.105, 0.107, 0.108, 0.109, 0.11, 0.111, 0.112, 0.114,
      &                  0.115, 0.116, 0.117, 0.119, 0.12, 0.121, 0.122, 0.124, 0.125, 0.126, 0.128, 0.129, 0.13,
      &                  0.132, 0.133, 0.135, 0.136, 0.138, 0.139, 0.14, 0.142, 0.143, 0.145, 0.147, 0.148, 0.15,
@@ -1051,12 +1111,12 @@
         !       particle_size_vs_layer_array_in_meters(J) = 1.0e-7
         !   END DO
 
-          DENSITY = (/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3/)
+          DENSITY = (/1.98e3,4.09e3,1.86e3,4.0e3,5.22e3,2.65e3,3.27e3,5.76e3,8.9e3, 7.9e3,3.34e3,3.98e3,3.95e3,3.190e3/)
 
 !         Each dye pair's grain density from its own species (pairs
 !         beyond those in use have KDYESPEC=0 and keep the guard value).
           DO K = 1, NPAIRMX
-              IF (KDYESPEC(K) .GE. 1 .AND. KDYESPEC(K) .LE. 13) THEN
+              IF (KDYESPEC(K) .GE. 1 .AND. KDYESPEC(K) .LE. NCLD) THEN
                   RHODYE(K) = DENSITY(KDYESPEC(K))
                   WRITE(*,*) 'Dye settling density from species ',
      &                KDYESPEC(K), ': ', RHODYE(K)
@@ -1094,13 +1154,14 @@
      &                           55.85E-3,    ! Fe
      &                           172.23E-3,   ! Ca2Si04
      &                           135.94E-3,   ! CaTiO3
-     &                           102.00E-3/)   ! Al2O3
+     &                           102.00E-3,   ! Al2O3
+     &                           100.39E-3/)   ! MgSiO3
 
 
           GAS_CONSTANT_R = 8.314462618 ! This is in SI
 
           ! Gives the FMOLW in SI.
-          DO J = 1, 13
+          DO J = 1, NCLD
               FMOLW(J) = CLOUD_MOLAR_MASSES(J) / (GAS_CONSTANT_R/GASCON)
           END DO
 
@@ -1156,7 +1217,7 @@
       read(10,*) dummy_tconds
       close(10)
       ! write(*,*) dummy_tconds(2,:)
-      do i=1, 13
+      do i=1, NCLD
         do J=1, 80
             TCONDS(1,J,I) = dummy_tconds(I+1,J)
         end do
@@ -1166,7 +1227,7 @@
       read(10,*) dummy_tconds
       close(10)
       ! write(*,*) dummy_tconds(2,:)
-      do i=1, 13
+      do i=1, NCLD
         do J=1, 80
             TCONDS(2,J,I) = dummy_tconds(I+1,J)
         end do
@@ -1174,7 +1235,7 @@
       open(UNIT=11, FILE='../CLOUD_DATA/condcurves_10xsolar_special.txt')
       read(11,*) dummy_tconds
       close(11)
-      do i=1, 13
+      do i=1, NCLD
         do J=1, 80
             TCONDS(3,J,I) = dummy_tconds(I+1,J)
         end do
@@ -1182,7 +1243,7 @@
       open(UNIT=12, FILE='../CLOUD_DATA/condcurves_30xsolar_special.txt')
       read(12,*) dummy_tconds
       close(12)
-      do i=1, 13
+      do i=1, NCLD
         do J=1, 80
             TCONDS(4,J,I) = dummy_tconds(I+1,J)
         end do
@@ -1190,7 +1251,7 @@
       open(UNIT=13, FILE='../CLOUD_DATA/condcurves_100xsolar_special.txt')
       read(13,*) dummy_tconds
       close(13)
-      do i=1, 13
+      do i=1, NCLD
         do J=1, 80
             TCONDS(5,J,I) = dummy_tconds(I+1,J)
         end do
@@ -1198,7 +1259,7 @@
       open(UNIT=14, FILE='../CLOUD_DATA/condcurves_300xsolar_special.txt')
       read(14,*) dummy_tconds
       close(14)
-      do i=1, 13
+      do i=1, NCLD
         do J=1, 80
             TCONDS(6,J,I) = dummy_tconds(I+1,J)
         end do
@@ -1507,7 +1568,7 @@
       PCLN1  = LOG(PCDYE(1))
       RDLNPC = 79.0 / (LOG(PCDYE(80)) - PCLN1)
       DO K = 1, NPAIRMX
-        IF (KDYESPEC(K) .GE. 1 .AND. KDYESPEC(K) .LE. 13) THEN
+        IF (KDYESPEC(K) .GE. 1 .AND. KDYESPEC(K) .LE. NCLD) THEN
           DO J = 1,80
               TCDYE(J,K) = TCONDS(MET_INDEX,J,KDYESPEC(K))
           END DO
@@ -1546,7 +1607,7 @@
           STARLIGHT_WAV_WEIGHTS(I) = 5.96e14/(CLOUD_WAV_GRID(I)**5) * 
      & 1/(EXP(14387.75/CLOUD_WAV_GRID(I)/TEFFSTAR) - 1) * DLAMBDA 
           ENDDO
-          DO I = 1, 13
+          DO I = 1, NCLD
             TEMP_CLOUD_DATA(1:100,1:100) = 0.0
             DO J = 1, 100
               ! Calculate the average ke for each particle size
@@ -1576,5 +1637,9 @@
       ! Setting up correction factor for mean vs median particle volume:
       sigma = SIGDYE
       exp_92_lnsig2_pi = EXP(-9.0/2.0 * LOG(sigma)*LOG(sigma)) / (4.D0*DATAN(1.D0))
+
+      DO I = 1, NCLD
+          LHASOPT(I) = ANY(KE_OPPR(:,:,:,I) .NE. 0.0)
+      END DO
 
       END SUBROUTINE get_cloud_scattering_properties

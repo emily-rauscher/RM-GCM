@@ -114,7 +114,7 @@ C
       CHARACTER(30) :: AEROSOLMODEL
       CHARACTER(30) :: AEROSOLCOMP
       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
-      REAL MOLEF(13)
+      REAL MOLEF(NCLOUDS)
       REAL MTLX, METALLICITY, C_TO_O
       INTEGER AERLAYERS
       LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS, GRAYCLDV
@@ -467,7 +467,7 @@ CDIR$    IVDEP
       METALLICITY  = 1.0
       HAZES = .False.
       PICKET_FENCE_CLOUDS = .False.
-      MOLEF        = (/ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 /)
+      MOLEF        = (/ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
       AERLAYERS    = 20.0
       AERTOTTAU    = 100.
       CLOUDBASE    = 10.

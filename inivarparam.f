@@ -155,7 +155,7 @@ C      slots 2..NDYE+1, each pair with its own species.
        ENDIF
 
 C      Species in use: one per pair in KDYEMODE=2, KDYESPEC(1) for every
-C      dye in KDYEMODE=1. Each must be a cloud species 1-13, and no
+C      dye in KDYEMODE=1. Each must be a cloud species 1-NCLOUDS, and no
 C      species may be used by two pairs.
        IF (KDYEMODE.EQ.2) THEN
           NSPDY=NDYE/2
@@ -163,12 +163,12 @@ C      species may be used by two pairs.
           NSPDY=1
        ENDIF
        DO 30 KP=1,NSPDY
-          IF (KDYESPEC(KP).LT.1 .OR. KDYESPEC(KP).GT.13) THEN
+          IF (KDYESPEC(KP).LT.1 .OR. KDYESPEC(KP).GT.NCLOUDS) THEN
              WRITE(2,*) 'INIVARPARAM: KDYESPEC(',KP,') must be a ',
-     &                  'cloud species 1-13 (one per pair):',
+     &                  'cloud species 1 -',NCLOUDS,' (one per pair):',
      &                  KDYESPEC(KP)
              WRITE(*,*) 'INIVARPARAM: KDYESPEC(',KP,') must be a ',
-     &                  'cloud species 1-13 (one per pair):',
+     &                  'cloud species 1 -',NCLOUDS,' (one per pair):',
      &                  KDYESPEC(KP)
              STOP 'KDYESPEC out of range'
           ENDIF

@@ -1,6 +1,8 @@
       MODULE corrkmodule
         IMPLICIT NONE
         include 'nwno.inc'
+        INTEGER NCLOUDS
+        include 'nclouds.inc'
         ! COMMON BLOCK SHAPES HERE:
         REAL :: OPAC_CORRK(NTGRID, NPGRID, NWNO, 8)
         REAL :: TS_CORRK(NTGRID), PS_CORRK(NPGRID), TS_LOG_CORRK(NTGRID), PS_LOG_CORRK(NPGRID), WGTS_CORRK(8) 
@@ -8,7 +10,7 @@
         REAL :: OPAC_CIA(NTGRID, NPGRID, NWNO), TAURAY_PER_DPG(NTGRID, NPGRID, NWNO)
         REAL :: PLANCK_INTS(NWNO, 3925), PLANCK_TS(3925)
         INTEGER :: MINWNOSTEL
-        real :: CLOUD_KEXT(13, 100, NWNO), CLOUD_A(13, 100, NWNO), CLOUD_G(13, 100, NWNO)
+        real :: CLOUD_KEXT(NCLOUDS, 100, NWNO), CLOUD_A(NCLOUDS, 100, NWNO), CLOUD_G(NCLOUDS, 100, NWNO)
         
 
         CONTAINS
@@ -40,7 +42,7 @@
             INTEGER :: MINWNOSTEL
 
             ! Declare cloud opacity stuff:
-            real :: CLOUD_KEXT(13, 100, NWNO), CLOUD_A(13, 100, NWNO), CLOUD_G(13, 100, NWNO)
+            real :: CLOUD_KEXT(NCLOUDS, 100, NWNO), CLOUD_A(NCLOUDS, 100, NWNO), CLOUD_G(NCLOUDS, 100, NWNO)
 
             MMW = 8314.462618 / GASCON ! Mean molecular weight in g/mol (or H masses per molecule)
 
@@ -218,12 +220,12 @@
         SUBROUTINE CLOUD_SETUP(NWNO, FOLDER, CLOUD_KEXT, CLOUD_A, CLOUD_G)
             implicit none
             integer :: NWNO
-            real :: CLOUD_KEXT(13, 100, NWNO) ! species, radius, wavenumber bin 
-            real :: CLOUD_A(13, 100, NWNO)
-            real :: CLOUD_G(13, 100, NWNO)
+            real :: CLOUD_KEXT(NCLOUDS, 100, NWNO) ! species, radius, wavenumber bin 
+            real :: CLOUD_A(NCLOUDS, 100, NWNO)
+            real :: CLOUD_G(NCLOUDS, 100, NWNO)
             real :: DUMMY(NWNO, 100) ! to hold each array as it's read in
             character(len=30) :: FOLDER
-            character(len=15) :: CLOUD_SPECIES(13)
+            character(len=15) :: CLOUD_SPECIES(NCLOUDS)
             integer :: I, J, K
             
             
@@ -240,9 +242,10 @@
             CLOUD_SPECIES(11) = 'CaSiO4'
             CLOUD_SPECIES(12) = 'CaTiO3'
             CLOUD_SPECIES(13) = 'Al2O3'
+            CLOUD_SPECIES(14) = 'MgSiO3_amorph'
 
             ! Read in the cloud kext values
-            DO I = 1, 13
+            DO I = 1, NCLOUDS
                 OPEN(UNIT=1, FILE=trim(FOLDER)//"clouds/"//trim(CLOUD_SPECIES(I))//"_corrk_kext.txt")
                 READ(1,*) DUMMY
                 CLOSE(1)
@@ -254,7 +257,7 @@
                 END DO
             END DO
             ! Read in the cloud albedos
-            DO I = 1, 13
+            DO I = 1, NCLOUDS
                 OPEN(UNIT=1, FILE=trim(FOLDER)//"clouds/"//trim(CLOUD_SPECIES(I))//"_corrk_pi0.txt")
                 READ(1,*) DUMMY
                 CLOSE(1)
@@ -266,7 +269,7 @@
                 END DO
             END DO
             ! Read in the cloud asymmetry factors
-            DO I = 1, 13
+            DO I = 1, NCLOUDS
                 OPEN(UNIT=1, FILE=trim(FOLDER)//"clouds/"//trim(CLOUD_SPECIES(I))//"_corrk_gg.txt")
                 READ(1,*) DUMMY
                 CLOSE(1)

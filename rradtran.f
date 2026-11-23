@@ -90,9 +90,9 @@
       REAL, DIMENSION(NBATCH,3,2*NL+2) :: Y1, Y2, Y4, Y8
       REAL, DIMENSION(NBATCH,2*NL+2)   :: A1, A2, A3, A4, A5, A7, Y5
 
-      REAL PI0_TEMP(NBATCH, NL+1, 13)
-      REAL G0_TEMP(NBATCH, NL+1, 13)
-      REAL tauaer_temp(NBATCH, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, NCLOUDS)
+      REAL G0_TEMP(NBATCH, NL+1, NCLOUDS)
+      REAL tauaer_temp(NBATCH, NL+1, NCLOUDS)
       INTEGER j1
       real denom
       ! Corr-K common block:

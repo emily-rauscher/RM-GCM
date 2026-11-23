@@ -73,7 +73,7 @@ igcm3_nopg: $(OBJS)
 # params.i sizes the COMMON blocks (NTRAC, NL, MG, ...), so every object
 # must be rebuilt when it changes; a partial rebuild mixes layouts and
 # corrupts the COMMONs silently.
-$(OBJS): params.i
+$(OBJS): params.i nclouds.inc
 
 clean:
 	rm -f *.o *.mod igcm3_nopg

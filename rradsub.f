@@ -68,9 +68,9 @@
       real, dimension(NIR)  :: Beta_IR
       real, dimension(NSOL)  :: Beta_V
 
-      REAL PI0_TEMP(NBATCH, NL+1, 13)
-      REAL G0_TEMP(NBATCH, NL+1, 13)
-      REAL tauaer_temp(NBATCH, NL+1, 13)
+      REAL PI0_TEMP(NBATCH, NL+1, NCLOUDS)
+      REAL G0_TEMP(NBATCH, NL+1, NCLOUDS)
+      REAL tauaer_temp(NBATCH, NL+1, NCLOUDS)
       INTEGER j1
       REAL DENOM
 
