@@ -1,6 +1,6 @@
-# NOTE: there are no module dependency rules, so module-providing
-# sources must come early in OBJS (datapaths.o, cloudmods.o, corrk.o, tracerclds.o, dyeadv.o).  This also
-# means "make -j" is not safe.
+# Dependencies are coarse but complete (see the rules after OBJS): any
+# header or module change recompiles everything that could use it, so
+# "make clean" is never needed for correctness and "make -j" is safe.
 # Model configuration.  The array sizes (params.i) and the build record
 # (buildinfo.inc) are generated from these settings by mkparams.sh, and
 # the settings are kept in build.cfg, so a plain "make" rebuilds the
@@ -95,7 +95,15 @@ igcm3_nopg: $(OBJS)
 # layouts and corrupts the COMMONs silently.  mkparams.sh runs on every
 # make but rewrites params.i only when the configuration changes, so an
 # unchanged one recompiles nothing.
-$(OBJS): params.i nclouds.inc
+$(OBJS): params.i nclouds.inc $(wildcard *.h)
+
+# Fortran modules: a user needs the module's .mod built first and must
+# be recompiled when it changes.  Rather than track which file uses
+# which module, every other object depends on all of them.
+MODOBJS = datapaths.o cloudmods.o corrk.o tracerclds.o dyeadv.o
+corrk.o: datapaths.o
+dyeadv.o: tracerclds.o
+$(filter-out $(MODOBJS),$(OBJS)): $(MODOBJS)
 
 params.i: FORCE
 	./mkparams.sh $(RES) $(NL) $(RT) $(NDYE) $(NTGRID) $(NPGRID)
