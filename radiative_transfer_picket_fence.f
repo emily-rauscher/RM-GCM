@@ -149,7 +149,7 @@ C       are channel counts, not the g-point count NKGAUSS.
 
         !! Recalculate Teff and then find parameters
         !! for L1DZenith models, need to hard-code incident_starlight fraction in this line to 0.25 to get a planet avg profile (sorry, pains of doing 1-D with a 3-D code)
-        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * 0.25 * !!incident_starlight_fraction *
+        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         ! Log 10 T_eff variables
