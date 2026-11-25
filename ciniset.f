@@ -116,7 +116,7 @@ C
       NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
      &  AERTOTTAU,CLOUDBASE,CLOUDTOP,AERHFRAC,PI0AERSW,
      &  ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,GRAYCLDV,
-     &  C_TO_O, CLDRAMP
+     &  C_TO_O, CLDRAMP, HAZETYPE
 
       LOGICAL LMASCOR,LMASOLD,LMASPRT                                     
 C                                                                         
@@ -474,6 +474,7 @@ CDIR$    IVDEP
       GRAYCLDV     = .False.
       C_TO_O       = 1.00
       CLDRAMP      = 0.0
+      HAZETYPE     = 'soot'
       READ(7,INCLOUDY)
 C     INCLOUDY is physically the last namelist group INISET reads, but
 C     it sits AFTER INVARPARAM/INMAG/INBINVAL/INPHYS/INPRSIJ/INSIMPRAD

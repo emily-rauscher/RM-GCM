@@ -19,7 +19,7 @@ C     prescribed-cloud fields derived from them (MAKECLOUDS).
      &          DELTASCALE, SIG_AREA, PHI_LON, TAUAEROSOL, AEROPROF,
      &          MAXTAU, MAXTAULOC, TCON, AEROSOLCOMP, MTLX, METALLICITY,
      &          HAZES, PICKET_FENCE_CLOUDS, MOLEF, AERLAYERS, GRAYCLDV,
-     &          C_TO_O, CLDRAMP
+     &          C_TO_O, CLDRAMP, HAZETYPE
 
       CHARACTER(30) :: AEROSOLMODEL, AEROSOLCOMP
       REAL AERTOTTAU, CLOUDBASE, CLOUDTOP, CLDFRCT, AERHFRAC
@@ -40,6 +40,10 @@ C     is scaled by model day/CLDRAMP until day CLDRAMP. Counted from the
 C     start of the run (KOUNT is restored on restart). 0 (default) = no
 C     ramp.
       REAL CLDRAMP
+C
+C     Haze optical properties: CLOUD_DATA/haze_<HAZETYPE>_*.txt, e.g.
+C     soot (default), sulfur, tholin, soot-2xpi0.
+      CHARACTER(30) :: HAZETYPE
       END MODULE cloudsettings
 
 

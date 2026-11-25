@@ -53,6 +53,7 @@
           use cloudtables
 !         CLOUD_DATA/ lives in the fort.7 data directory, DATA_DIR.
           use datapaths, only : DATA_DIR
+          use cloudsettings, only : HAZES, HAZETYPE
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -66,7 +67,13 @@
           LOGICAL :: GRAYCLDV
 
 
-          character (len = 40) :: haze_type
+!         Haze file-name prefix and its 3 means x 3 quantities.
+          CHARACTER(len=400) :: HZPRE
+          CHARACTER(len=6), PARAMETER :: HZ_MEANS(3) =
+     &        (/'Ross  ', 'wav   ', 'Planck'/)
+          CHARACTER(len=9), PARAMETER :: HZ_QTYS(3) =
+     &        (/'tauperbar', 'pi0      ', 'gg       '/)
+          LOGICAL :: LALLHZ
 
           ! Define all the arrays
 
@@ -105,159 +112,65 @@
           REAL TEFFSTAR, DLAMBDA
           REAL sigma
 
-          haze_type = 'soot'
-          if (haze_type .eq. 'soot') THEN
-              !write(*,*) "Model being run with soot hazes"
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_wav_tauperbar.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Planck_tauperbar.txt')
-
+!         Haze optics for the fort.7 HAZETYPE: 9 files in CLOUD_DATA,
+!         haze_<HAZETYPE>_<Ross|wav|Planck>_<tauperbar|pi0|gg>.txt.
+          HZPRE = TRIM(DATA_DIR)//'CLOUD_DATA/haze_'//TRIM(HAZETYPE)//'_'
+          LALLHZ = .TRUE.
+          DO IM = 1, 3
+              DO IQ = 1, 3
+                  INQUIRE(FILE=TRIM(HZPRE)//TRIM(HZ_MEANS(IM))//'_'//
+     &                TRIM(HZ_QTYS(IQ))//'.txt', EXIST=LEX)
+                  LALLHZ = LALLHZ .AND. LEX
+              END DO
+          END DO
+          HAZE_RosselandMean_tau_per_bar = 0.0
+          HAZE_RosselandMean_pi0 = 0.0
+          HAZE_RosselandMean_gg  = 0.0
+          HAZE_PlanckMean_tau_per_bar = 0.0
+          HAZE_PlanckMean_pi0 = 0.0
+          HAZE_PlanckMean_gg  = 0.0
+          HAZE_wav_tau_per_bar = 0.0
+          HAZE_wav_pi0 = 0.0
+          HAZE_wav_gg  = 0.0
+          IF (LALLHZ) THEN
+              open (1, file=TRIM(HZPRE)//'Ross_tauperbar.txt')
+              open (2, file=TRIM(HZPRE)//'wav_tauperbar.txt')
+              open (3, file=TRIM(HZPRE)//'Planck_tauperbar.txt')
               read(1,*) HAZE_RosselandMean_tau_per_bar
               read(2,*) HAZE_wav_tau_per_bar
               read(3,*) HAZE_PlanckMean_tau_per_bar
-
               close(1)
               close(2)
               close(3)
 
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Ross_pi0.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_wav_pi0.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Planck_pi0.txt')
-
-
+              open (1, file=TRIM(HZPRE)//'Ross_pi0.txt')
+              open (2, file=TRIM(HZPRE)//'wav_pi0.txt')
+              open (3, file=TRIM(HZPRE)//'Planck_pi0.txt')
               read(1,*) HAZE_RosselandMean_pi0
               read(2,*) HAZE_wav_pi0
               read(3,*) HAZE_PlanckMean_pi0
-
               close(1)
               close(2)
               close(3)
 
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Ross_gg.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_wav_gg.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Planck_gg.txt')
-
+              open (1, file=TRIM(HZPRE)//'Ross_gg.txt')
+              open (2, file=TRIM(HZPRE)//'wav_gg.txt')
+              open (3, file=TRIM(HZPRE)//'Planck_gg.txt')
               read(1,*) HAZE_RosselandMean_gg
               read(2,*) HAZE_wav_gg
               read(3,*) HAZE_PlanckMean_gg
-
               close(1)
               close(2)
               close(3)
-          else if (haze_type .eq. 'sulfur') THEN
-              !write(*,*) "Model being run with sulfur hazes"
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Ross_tauperbar.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_wav_tauperbar.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Planck_tauperbar.txt')
-
-              read(1,*) HAZE_RosselandMean_tau_per_bar
-              read(2,*) HAZE_wav_tau_per_bar
-              read(3,*) HAZE_PlanckMean_tau_per_bar
-
-              close(1)
-              close(2)
-              close(3)
-
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Ross_pi0.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_wav_pi0.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Planck_pi0.txt')
-
-              read(1,*) HAZE_RosselandMean_pi0
-              read(2,*) HAZE_wav_pi0
-              read(3,*) HAZE_PlanckMean_pi0
-
-              close(1)
-              close(2)
-              close(3)
-
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Ross_gg.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_wav_gg.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Planck_gg.txt')
-
-              read(1,*) HAZE_RosselandMean_gg
-              read(2,*) HAZE_wav_gg
-              read(3,*) HAZE_PlanckMean_gg
-
-              close(1)
-              close(2)
-              close(3)
-          else if (haze_type .eq. 'tholin') THEN
-              !write(*,*) "Model being run with sulfur hazes"
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Ross_tauperbar.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_wav_tauperbar.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Planck_tauperbar.txt')
-
-              read(1,*) HAZE_RosselandMean_tau_per_bar
-              read(2,*) HAZE_wav_tau_per_bar
-              read(3,*) HAZE_PlanckMean_tau_per_bar
-
-              close(1)
-              close(2)
-              close(3)
-
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Ross_pi0.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_wav_pi0.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Planck_pi0.txt')
-
-              read(1,*) HAZE_RosselandMean_pi0
-              read(2,*) HAZE_wav_pi0
-              read(3,*) HAZE_PlanckMean_pi0
-
-              close(1)
-              close(2)
-              close(3)
-
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Ross_gg.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_wav_gg.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Planck_gg.txt')
-
-              read(1,*) HAZE_RosselandMean_gg
-              read(2,*) HAZE_wav_gg
-              read(3,*) HAZE_PlanckMean_gg
-
-              close(1)
-              close(2)
-              close(3)
-          else if (haze_type .eq. 'soot-2xpi0') THEN
-              !write(*,*) "Model being run with sulfur hazes"
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Ross_tauperbar.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_wav_tauperbar.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Planck_tauperbar.txt')
-
-              read(1,*) HAZE_RosselandMean_tau_per_bar
-              read(2,*) HAZE_wav_tau_per_bar
-              read(3,*) HAZE_PlanckMean_tau_per_bar
-
-              close(1)
-              close(2)
-              close(3)
-
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Ross_pi0.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_wav_pi0.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Planck_pi0.txt')
-
-              read(1,*) HAZE_RosselandMean_pi0
-              read(2,*) HAZE_wav_pi0
-              read(3,*) HAZE_PlanckMean_pi0
-
-              close(1)
-              close(2)
-              close(3)
-
-              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Ross_gg.txt')
-              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_wav_gg.txt')
-              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Planck_gg.txt')
-
-              read(1,*) HAZE_RosselandMean_gg
-              read(2,*) HAZE_wav_gg
-              read(3,*) HAZE_PlanckMean_gg
-
-              close(1)
-              close(2)
-              close(3)
-          else
-              write(*,*) "The haze type is being improperly specified"
-          end if
+          ELSE IF (HAZES) THEN
+!             Hazes on with no tables would be silently transparent.
+              WRITE(*,*) 'HAZES=T but CLOUD_DATA has no complete set of ',
+     &            'haze files for HAZETYPE=', TRIM(HAZETYPE)
+              STOP 'no haze optics for HAZETYPE'
+          ELSE
+              WRITE(*,*) 'No haze optics for HAZETYPE=', TRIM(HAZETYPE),
+     &            ' (unused: HAZES=F)'
+          END IF
 
 
           ! READ IN THE CLOUD OPTICS, ONE SPECIES AT A TIME
