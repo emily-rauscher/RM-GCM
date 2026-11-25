@@ -148,7 +148,9 @@ C       are channel counts, not the g-point count NKGAUSS.
         Bond_Albedo = TOAALB
 
         !! Recalculate Teff and then find parameters
-        !! for L1DZenith models, need to hard-code incident_starlight fraction in this line to 0.25 to get a planet avg profile (sorry, pains of doing 1-D with a 3-D code)
+        !! incident_starlight_fraction here is the fraction of SOLC_IN*(1-TOAALB)
+        !! the column absorbs (set in rsetuprad_simple): mu in 3-D, 0.25 with
+        !! L1DZENITH, so a planet-average column gets the planet-average Teff.
         Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 

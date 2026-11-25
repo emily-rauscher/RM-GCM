@@ -46,6 +46,8 @@
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS
       REAL EMISIR, EPSILON, HEATI(NLAYER), HEATS(NLAYER), HEAT(NLAYER), SOLNET
       REAL TPI, SQ3, SBK,AM, AVG, ALOS
+C     Fraction of the stellar constant the column absorbs (picket Teff).
+      REAL FLXFRAC
       REAL SCDAY, RGAS, GANGLE(3), GWEIGHT(3), GRATIO(3), EMIS(NBATCH), RSFX(NBATCH),NPROB(NBATCH),SOL(NBATCH)
       REAL RAYPERBAR(NBATCH),WEIGHT(NBATCH)
       REAL GOL(NBATCH,2*NL+2), WOL(NBATCH,2*NL+2), WAVE(5+1), TT(NL+1), Y3(NBATCH,3,2*NL+2), U0, FDEGDAY
@@ -267,7 +269,13 @@ C     of sublayer k.
       ENDIF
 
       IF (opacity_method .EQ. 'picket') THEN
-        CALL opacity_wrapper(t, P_PASS, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, incident_starlight_fraction,
+C       Picket-fence Teff needs the fraction of SOLC_IN*(1-TOAALB) the
+C       column absorbs, mu*PSOL/SOLC: mu itself in 3-D (PSOL=SOLC), but
+C       0.25 with L1DZENITH (SOLC/4*sqrt(3) along mu = 1/sqrt(3)).
+        FLXFRAC = incident_starlight_fraction
+        IF (SOLC_IN*(1.0-TOAALB) .GT. 0.0) FLXFRAC =
+     &      incident_starlight_fraction*PSOL_aerad/(SOLC_IN*(1.0-TOAALB))
+        CALL opacity_wrapper(t, P_PASS, tau_IRe, tau_Ve, Beta_V, Beta_IR, GA, FLXFRAC,
      &           LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS,
      &           EMISIR, EPSILON, HEATI, HEATS, HEAT, SOLNET, TPI, SQ3, SBK, AM, AVG, ALOS,
      &  SCDAY,RGAS,GANGLE,GWEIGHT,GRATIO,EMIS,RSFX,NPROB,SOL,RAYPERBAR,WEIGHT,

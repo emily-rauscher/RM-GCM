@@ -222,8 +222,9 @@ C     globally averaged solar constant, vertical rays
 C     Single-column RT: the zenith angle comes from fort.7, not from
 C     the column's latitude, longitude and the orbit, and the column
 C     gets the full SOLC_IN*(1-TOAALB) times its cosine, as a 3-D column
-C     does.
-      IF (L1COLRT) THEN
+C     does. With L1DZENITH=T it keeps the planet-average geometry set
+C     above instead (SOLC/4 along mu = 1/sqrt(3)) and ZEN1COL is unused.
+      IF (L1COLRT .AND. .NOT. L1DZENITH) THEN
          incident_starlight_fraction = MAX(0.0, COS(ZEN1COL*PI/180.0))
          IF (incident_starlight_fraction .lt. 1e-6)
      &      incident_starlight_fraction = 0.0
