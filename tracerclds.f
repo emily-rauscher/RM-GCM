@@ -97,6 +97,12 @@ C     and stops. Default F. T1COL: that profile in K, top to bottom.
       REAL ZEN1COL
       REAL T1COL(NL)
 C
+C     Cloud ramp (INCLOUDY; not dye-specific): every cloud and haze
+C     optical depth, prescribed or dye, is scaled by model day/CLDRAMP
+C     until day CLDRAMP. Counted from the start of the run (KOUNT is
+C     restored on restart). 0 (default) = no ramp.
+      REAL CLDRAMP
+C
 C     --- grid-point dye state ----------------------------------------
 C     Mixing ratios q on the Gaussian grid, rows 1..2*JG north to south:
 C     latitude JH of the model's hemisphere loop is row JH in the north

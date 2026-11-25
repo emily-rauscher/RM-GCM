@@ -31,7 +31,7 @@
 !
       use corrkmodule  , only : MINWNOSTEL
       use tracerclds, only : ADYE, KSLOTRAD, ISPRAD, LDYERAD,
-     &                       QDYECOL
+     &                       QDYECOL, CLDRAMP, L1COLRT
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, MET_INDEX, itspd
@@ -463,29 +463,19 @@ C           tau split by the sublayer's share of its mass.
                 END DO
             END DO
         END IF
-
-
-        ramp = 5.0  ! Set an appropriate value for ramping up clouds linearly
-        ! Apply a ramp to the cloud properties
-        IF (KOUNT/ITSPD .LT. ramp) THEN
-          factor = (KOUNT/ramp)/ITSPD
-          ! write(*,*) 'Ramping up the cloud properties by a factor of:', factor
-          ! write(*,*) 'TAUAER before ramp:', TAUAER
-          TAUAER = TAUAER * factor
-          ! write(*,*) 'TAUAER after ramp:', TAUAER
-        ENDIF
       END IF
 
-
-
-      ramp = 0.0  ! Set an appropriate value for ramp (days)
-      ! Apply a ramp to the cloud properties
-      IF (KOUNT/ITSPD .LT. ramp) THEN
-       factor = (KOUNT/ramp)/ITSPD
-       ! write(*,*) 'Ramping up the cloud properties by a factor of:', factor
-       ! write(*,*) 'TAUAER before ramp:', TAUAER
-       TAUAER = TAUAER * factor
-       ! write(*,*) 'TAUAER after ramp:', TAUAER
+C     Cloud ramp: scale all aerosol optical depth by day/CLDRAMP until
+C     day CLDRAMP (fort.7 INCLOUDY; 0 = off). Real-valued day, so a
+C     fractional CLDRAMP never gives a factor above 1; clipped at 0 for
+C     the negative KOUNT of an initial balancing. The single-column RT
+C     (L1COLRT, KOUNT=0) is never ramped, or its clouds would vanish.
+      IF (CLDRAMP .GT. 0.0 .AND. .NOT. L1COLRT) THEN
+          RAMP = REAL(KOUNT)/REAL(ITSPD)
+          IF (RAMP .LT. CLDRAMP) THEN
+              FACTOR = MAX(0.0, RAMP/CLDRAMP)
+              TAUAER = TAUAER * FACTOR
+          ENDIF
       ENDIF
 
       iradgas = 1
