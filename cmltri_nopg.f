@@ -421,7 +421,9 @@ C     in the last orbit like ITSOUT above. fort.27xx 3D, fort.70xx
 C     surface pressure, fort.90xx fluxes. Each snapshot takes one unit
 C     from each counter, and the ranges must not run into the next base
 C     in use (2700->5000, 7000->9000), so keep KTOTAL/NSNAP <= 2000.
-      NSNAP=KRUN/100
+C     At least 1: a run under 100 steps (e.g. a benchmark) would
+C     otherwise get NSNAP=0 and MOD(KOUNT,NSNAP) divides by zero.
+      NSNAP=MAX(KRUN/100,1)
       ITSOUT2=2700
       IFTOUT2=7000
       ISFOUT2=9000
