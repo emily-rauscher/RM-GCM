@@ -474,8 +474,12 @@ C           do not also clip it to AERLAYERS below the condensation base.
         END DO
         ! write(*,*) "TAUAER:", TAUAER
     !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
-        k = 1
-        DO J = 1,NDBL,2
+C       Each LW sublayer belongs to one RT layer K (sublayer 1 to layer
+C       1, sublayers 2K and 2K+1 to layer K+1; see rsetuprad_simple.f)
+C       and gets its optics, with the layer's cloud tau split by the
+C       sublayer's share of its mass.
+        DO J = 1,NDBL
+            K = MIN(J/2+1, NLAYER)
             JJ = J
             DO L = NKGAUSS+1,NBATCH
                 TAUAER(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS))
@@ -484,13 +488,9 @@ C           do not also clip it to AERLAYERS below the condensation base.
                 GOL(L,JJ) = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)
      &                        *G0_TEMP(L,min(K,NVERT),1:NCLOUDS))
             END DO
-            JJ = J+1
             DO L = NKGAUSS+1,NBATCH
-                TAUAER(L,JJ) = TAUAER(L,JJ-1)
-                WOL(L,JJ)    = WOL(L,JJ-1)
-                GOL(L,JJ)    = GOL(L,JJ-1)
+                TAUAER(L,JJ) = TAUAER(L,JJ)*DPGSUB(J)/DPG(K)
             END DO
-            k = k+1
         END DO
         ! ELSE
     !     !     SW AT STANDARD VERTICAL RESOLUTION
@@ -542,25 +542,6 @@ C           do not also clip it to AERLAYERS below the condensation base.
     !     END IF
 
 
-        ! Smooth out the cloud properties after doubling
-        DO L = NKGAUSS+1,NBATCH
-            DO J = 2, NDBL-1, 2
-                TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
-                WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
-                GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
-            END DO
-        END DO
-
-C       Split each layer's LW cloud tau between its two sublayers by mass
-C       (it was copied into both, doubling the LW cloud column). After the
-C       smoothing, which assumes equal sublayers.
-        DO J = 1,NDBL,2
-            FSUB = DPGSUB(J)/(DPGSUB(J)+DPGSUB(J+1))
-            DO L = NKGAUSS+1,NBATCH
-                TAUAER(L,J)   = TAUAER(L,J)*FSUB
-                TAUAER(L,J+1) = TAUAER(L,J+1)*(1.0-FSUB)
-            END DO
-        END DO
 
         ! ramp = 5.0  ! Set an appropriate value for ramping up clouds linearly
         ! ! Apply a ramp to the cloud properties
@@ -581,8 +562,8 @@ C       smoothing, which assumes equal sublayers.
           DO L = solar_calculation_indexer,NKGAUSS
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
-              if(TAUL(L,J) .lt. 1d-6 ) then
-                  TAUL(L,J) = 1d-6
+              if(TAUL(L,J) .lt. 1d-30 ) then
+                  TAUL(L,J) = 1d-30
               endif
 
               utauL(L,j)  = TAUL(L,J)
@@ -652,7 +633,16 @@ C       smoothing, which assumes equal sublayers.
               !endif
 
               utauL(L,j)  = TAUL(L,J)
-              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+C             (The last LW sublayer, from the bottom edge to the surface
+C             level, which coincide, is empty: TAUL=0 and nothing to
+C             scatter. This loop has no TAUL floor, and 0/0 here is NaN,
+C             which gfortran's MIN below happens to drop but ifort's
+C             keeps.)
+              IF (TAUL(L,J) .GT. 0.0) THEN
+                  WOT     = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+              ELSE
+                  WOT     = 0.0
+              END IF
               if (iradgas.eq.0) then
                   wot = woL(L,j)
               endif

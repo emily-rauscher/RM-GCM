@@ -377,8 +377,12 @@ C           condensation base.
             END DO
 
         !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
-            k = 1
-            DO J = 1,NDBL,2
+C           Each LW sublayer belongs to one RT layer K (sublayer 1 to
+C           layer 1, sublayers 2K and 2K+1 to layer K+1; see
+C           rsetuprad_simple.f) and gets its optics, with the layer's
+C           tau split by the sublayer's share of its mass.
+            DO J = 1,NDBL
+                K = MIN(J/2+1, NLAYER)
                 IF (HAZES) THEN
                     haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(K))  ! Both of these are in pa
                     temp_loc = NEARIDX(input_temperature_array, 100, TT(K)) ! Not needed for the stellar calc
@@ -398,13 +402,9 @@ C           condensation base.
                     GOL(L,JJ)    = SUM(tauaer_temp(L,K,1:NCLOUDS)/(TAUAER(L,JJ)+1e-8)*G0_TEMP(L,K,1:NCLOUDS))  +
      &                              (TAU_HAZE(L,K) * HAZE_wav_gg(WAV_LOC, haze_layer_index)  / (TAUAER(L,JJ) + 1e-8))
                 END DO
-                JJ = J+1
                 DO L = NSOL+1,NTOTAL
-                    TAUAER(L,JJ) = TAUAER(L,JJ-1)
-                    WOL(L,JJ)    = WOL(L,JJ-1)
-                    GOL(L,JJ)    = GOL(L,JJ-1)
+                    TAUAER(L,JJ) = TAUAER(L,JJ)*DPGSUB(J)/DPG(K)
                 END DO
-                k = k+1
             END DO
         ELSE
         !     SW AT STANDARD VERTICAL RESOLUTION
@@ -425,8 +425,12 @@ C           condensation base.
             END DO
 
         !     LW AT 2X VERTICAL RESOLUTION (FOR PERFORMANCE).
-            k = 1
-            DO J = 1,NDBL,2
+C           Each LW sublayer belongs to one RT layer K (sublayer 1 to
+C           layer 1, sublayers 2K and 2K+1 to layer K+1; see
+C           rsetuprad_simple.f) and gets its optics, with the layer's
+C           tau split by the sublayer's share of its mass.
+            DO J = 1,NDBL
+                K = MIN(J/2+1, NLAYER)
                 IF (HAZES) THEN
                     haze_layer_index = NEARIDX(haze_pressure_array_pascals, 100, p_pass(K)) ! Both of these are in pa
                     temp_loc = NEARIDX(input_temperature_array, 100, TT(K)) ! Not needed for the stellar calc
@@ -454,24 +458,12 @@ C           condensation base.
      &        SUM(tauaer_temp(NSOL+2,K,1:NCLOUDS)/(TAUAER(NSOL+2,JJ)+1e-8)*G0_TEMP(NSOL+2,K,1:NCLOUDS))
      &        + (TAU_HAZE(NSOL+2,K) * HAZE_RosselandMean_gg(temp_loc, haze_layer_index) / (TAUAER(NSOL+2,JJ) + 1e-8))
 
-                JJ = J+1
                 DO L = NSOL+1,NTOTAL
-                    TAUAER(L,JJ) = TAUAER(L,JJ-1)
-                    WOL(L,JJ)    = WOL(L,JJ-1)
-                    GOL(L,JJ)    = GOL(L,JJ-1)
+                    TAUAER(L,JJ) = TAUAER(L,JJ)*DPGSUB(J)/DPG(K)
                 END DO
-                k = k+1
             END DO
         END IF
 
-        ! Smooth out the cloud properties after doubling
-        DO L = NSOL+1,NTOTAL
-            DO J = 2, NDBL-1, 2
-                TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
-                WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
-                GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
-            END DO
-        END DO
 
         ramp = 5.0  ! Set an appropriate value for ramping up clouds linearly
         ! Apply a ramp to the cloud properties
@@ -485,25 +477,6 @@ C           condensation base.
       END IF
 
 
-      ! Smooth out the cloud properties after doubling
-      DO L = NSOL+1,NTOTAL
-          DO J = 2, NDBL-1, 2
-              TAUAER(L,J) = (TAUAER(L,J+1) + TAUAER(L,J-1)) / 2.0
-              WOL(L,J) = (WOL(L,J+1) + WOL(L,J-1)) / 2.0
-              GOL(L,J) = (GOL(L,J+1) + GOL(L,J-1)) / 2.0
-          END DO
-      END DO
-
-C     Split each layer's LW cloud tau between its two sublayers by mass
-C     (it was copied into both, doubling the LW cloud column). After the
-C     smoothing, which assumes equal sublayers.
-      DO J = 1,NDBL,2
-          FSUB = DPGSUB(J)/(DPGSUB(J)+DPGSUB(J+1))
-          DO L = NSOL+1,NTOTAL
-              TAUAER(L,J)   = TAUAER(L,J)*FSUB
-              TAUAER(L,J+1) = TAUAER(L,J+1)*(1.0-FSUB)
-          END DO
-      END DO
 
       ramp = 0.0  ! Set an appropriate value for ramp (days)
       ! Apply a ramp to the cloud properties
@@ -523,8 +496,8 @@ C     smoothing, which assumes equal sublayers.
           DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
               TAUL(L,J) = TAUGAS(L,J)+TAURAY(L,J)+TAUAER(L,J)
 
-              if(TAUL(L,J) .lt. 1d-6 ) then
-                  TAUL(L,J) = 1d-6
+              if(TAUL(L,J) .lt. 1d-30 ) then
+                  TAUL(L,J) = 1d-30
               endif
 
               utauL(L,j)  = TAUL(L,J)
@@ -594,7 +567,16 @@ C     smoothing, which assumes equal sublayers.
               !endif
 
               utauL(L,j)  = TAUL(L,J)
-              WOT         = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+C             (The last LW sublayer, from the bottom edge to the surface
+C             level, which coincide, is empty: TAUL=0 and nothing to
+C             scatter. This loop has no TAUL floor, and 0/0 here is NaN,
+C             which gfortran's MIN below happens to drop but ifort's
+C             keeps.)
+              IF (TAUL(L,J) .GT. 0.0) THEN
+                  WOT     = (TAURAY(L,J)+TAUAER(L,J)*WOL(L,J))/TAUL(L,J)
+              ELSE
+                  WOT     = 0.0
+              END IF
               if (iradgas.eq.0) then
                   wot = woL(L,j)
               endif

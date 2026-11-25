@@ -225,61 +225,31 @@
       DPG(1)   = 10.0 ** (LOG10(DPG(2))  - (LOG10(DPG(3))  - LOG10(DPG(2))))
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!!!!! New interpolation to smooth the layers a bit !!!!!!
+      !!!!!! LW sublayers: each RT layer split at its level  !!!!!!
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      LOG_START = LOG(P_PASS(1))
-      LOG_END = LOG(P_PASS(NLAYER))
-      LOG_STEP = (LOG_END - LOG_START) / (2*NLAYER - 1)
-
-      ! Creating the new grid
-      DO I = 1, 2*NLAYER
-          P_PASS_SUB(I) = EXP(LOG_START + LOG_STEP * (I - 1))
+C     The doubled LW grid takes its structure from the RT itself: flux
+C     index k is the bottom of sublayer k, odd boundaries 2K-1 are the
+C     RT layer edges p_pass(K) (where radtran reads the layer-edge
+C     fluxes back) and even boundaries 2K are the GCM levels pr(K)
+C     (where the Planck function uses T(K); the odd ones use TT(K)). So
+C     RT layer 1 is sublayer 1, and RT layer K+1 (edges p_pass(K) to
+C     p_pass(K+1), holding level K) is sublayers 2K (p_pass(K) to
+C     pr(K)) and 2K+1 (pr(K) to p_pass(K+1)). The last sublayer, from
+C     p_pass(NL+1) to pr(NL+1), both the surface, is empty. P_PASS_SUB(k) is the pressure at the bottom
+C     of sublayer k.
+      DPGSUB(1)     = DPG(1)
+      PBARSUB(1)    = PBAR(1)
+      P_PASS_SUB(1) = P_PASS(1)
+      DO K = 1, NL+1
+          DPGSUB(2*K)      = ((pr(K) - P_PASS(K)) * 10.0) / G
+          PBARSUB(2*K)     = (pr(K) - P_PASS(K)) * 1e-5
+          P_PASS_SUB(2*K)  = pr(K)
+          IF (K .LE. NL) THEN
+              DPGSUB(2*K+1)     = ((P_PASS(K+1) - pr(K)) * 10.0) / G
+              PBARSUB(2*K+1)    = (P_PASS(K+1) - pr(K)) * 1e-5
+              P_PASS_SUB(2*K+1) = P_PASS(K+1)
+          END IF
       END DO
-
-      ! Calculating PBARSUB and DPGSUB for indices 2 to 2*NLAYER
-      DO J = 2, 2*NLAYER
-          PBARSUB(J) = (P_PASS_SUB(J) - P_PASS_SUB(J-1)) * 1e-5
-          DPGSUB(J)  = ((P_PASS_SUB(J) * 10.0) - (P_PASS_SUB(J-1) * 10.0)) / G
-      END DO
-
-      ! Extrapolating the first values using a logarithmic trend
-      PBARSUB(1) = 10.0 ** (LOG10(PBARSUB(2)) - (LOG10(PBARSUB(3)) - LOG10(PBARSUB(2))))
-      DPGSUB(1)  = 10.0 ** (LOG10(DPGSUB(2))  - (LOG10(DPGSUB(3))  - LOG10(DPGSUB(2))))
-
-
-
-
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!!!!! Keeping Michael Roman's Old Regridding Just !!!!!!!
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      IF (.FALSE.) THEN
-          PBAR(1)                = p_pass(1) * 1e-5
-          DPG(1)                 = (p_pass(1) * 10.0)/G
-
-          DO J  = 2,NLAYER
-              PBAR(J) = (p_pass(J)-p_pass(J-1))*1e-5
-              DPG(J)  = ((p_pass(J) * 10.0)-(p_pass(J-1)*10.0)) / G
-          END DO
-
-          K = 1
-          DO J  = 2, NDBL-1,2
-             L  =  J
-             PBARsub(L) =  ((pr(K)*10.0) - (p_pass(K) * 10.0))*1e-6
-             DPGsub (L) =  ((pr(K)*10.0) - (p_pass(K) * 10.0)) / G
-             K = K + 1
-             L = L + 1
-             PBARsub(L) =  ((p_pass(K) * 10.0) - (pr(K-1)*10.0))*1e-6
-             DPGsub (L) =  ((p_pass(K) * 10.0) - (pr(K-1)*10.0)) / G
-          END DO
-
-          PBARsub(NDBL) = PBARsub(NDBL-1) + ABS(PBARsub(NDBL-2) - PBARsub(NDBL-3))
-          DPGsub(NDBL)  = DPGsub(NDBL-1)  + ABS(DPGsub(NDBL-2)  - DPGsub(NDBL-3))
-
-          PBARsub(1) = PBAR(1)
-          DPGsub(1)  = DPG(1)
-      END IF
 
       TAURAY(:,:) = 0.0
       TAUAER(:,:) = 0.0
@@ -325,17 +295,13 @@
           END DO
         END DO
         k_irl_doubled = 0.0
-        ! smooth out the IR optical depths to twice the resolution (linear interpolation)
+C       Each LW sublayer takes the opacity of the RT layer it belongs to:
+C       sublayer 1 is layer 1, sublayers 2K and 2K+1 are layer K+1, and
+C       the empty last sublayer takes the bottom layer's.
         DO L = NKGAUSS+1,NBATCH
-          k = 1
-          DO J     =   1,NDBL, 2
+          DO J     =   1,NDBL
+            k = MIN(J/2+1, NLAYER)
             k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
-C           The second sublayer takes the midpoint of this layer and the
-C           next, whichever way the opacity changes.
-            k_irl_doubled(L-NKGAUSS,J+1) = 0.5*(k_irl(L-NKGAUSS, k)
-     &           + k_irl(L-NKGAUSS,min(k+1,NL+1)))
-
-            k = k + 1
           END DO
         END DO
         DO L  = NKGAUSS+1,NBATCH
@@ -462,20 +428,11 @@ C           next, whichever way the opacity changes.
         END DO
         k_irl_doubled = 0.0
         k_ray_doubled = 0.0
-        ! smooth out the IR optical depths to twice the resolution (linear interpolation)
         DO L = NKGAUSS+1,NBATCH
-          k = 1
-          DO J     =   1,NDBL, 2
+          DO J     =   1,NDBL
+            k = MIN(J/2+1, NLAYER)
             k_irl_doubled(L-NKGAUSS,J) = k_irl(L-NKGAUSS, k)
-C           The second sublayer takes the midpoint of this layer and the
-C           next, whichever way the opacity changes.
-            k_irl_doubled(L-NKGAUSS,J+1) = 0.5*(k_irl(L-NKGAUSS, k)
-     &           + k_irl(L-NKGAUSS,min(k+1,NL+1)))
-
             k_ray_doubled(L-NKGAUSS,J) = tau_ray_temp(L-NKGAUSS, k)
-            k_ray_doubled(L-NKGAUSS,J+1) = 0.5*(tau_ray_temp(L-NKGAUSS,k)
-     &           + tau_ray_temp(L-NKGAUSS,min(k+1,NL+1)))
-            k = k + 1
           END DO
         END DO
         ! multiply opacities by deltaP/g to get optical depths

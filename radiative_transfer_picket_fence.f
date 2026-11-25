@@ -66,28 +66,26 @@ C         every per-layer write into the caller's array.
           Tint = (FBASEFLUX / 5.670367E-8) ** 0.25
           Tirr = (SOLC_IN   / 5.670367E-8) ** 0.25
 
+C         Each RT layer J (J>=2) lies between the edges p_pass(J-1) and
+C         p_pass(J) (its mass is DPG(J)) and holds GCM level J-1, so its
+C         opacity is taken at its own log-mean pressure and that level's
+C         temperature. (It used to be taken at layer J+1's pressure and
+C         the edge temperature TT(J), one layer too deep.) Layer 1, above
+C         p_pass(1), is extrapolated.
           do J = 1, NL+1
              pe(J) = p_pass(J)
           end do
-
-          DO J = 1, NL
-              dpe(J) = pe(J+1) - pe(J)
-              pl(J) = dpe(J) / log(pe(J+1)/pe(J))
-          END DO
-
-          if (tt(1) .ge. 1.0) then
-              DO J = 1, NLAYER
-                  Tl(J) = tt(J)
-              END DO
-          else
+          if (t(1) .lt. 1.0) then
               write(*,*) 'Something went wrong with the temperature profile'
           end if
-          ! write(*,*) 'mu: ', incident_starlight_fraction
-          ! write(*,*) 'tt (radiative_transfer_corrk): ', tt
-
-          dpe(NLAYER) = 10.0 ** (LOG10(dpe(NLAYER-1)) + (LOG10(dpe(NLAYER-1)) - LOG10(dpe(NLAYER-2))))
-          pl(NLAYER)  = 10.0 ** (LOG10(pl(NLAYER-1))  + (LOG10(pl(NLAYER-1))  - LOG10(pl(NLAYER-2))))
-          Tl(NLAYER)  = Tl(NLAYER-1) + ABS(Tl(NLAYER-1) - Tl(NLAYER-2)) / 2.0
+          DO J = 2, NLAYER
+              dpe(J) = pe(J) - pe(J-1)
+              pl(J)  = dpe(J) / log(pe(J)/pe(J-1))
+              Tl(J)  = t(J-1)
+          END DO
+          dpe(1) = 10.0 ** (2.0*LOG10(dpe(2)) - LOG10(dpe(3)))
+          pl(1)  = 10.0 ** (2.0*LOG10(pl(2))  - LOG10(pl(3)))
+          Tl(1)  = TT(1)
           CALL calculate_opacities(NLAYER, NSOL, NIR, NKGAUSS, incident_starlight_fraction, Tirr, Tint,
      &                             Tl, Pl, dpe, tau_IRe,tau_Ve, Beta_V,
      &                             Beta_IR,gravity_SI, with_TiO_and_VO, METALLICITY,pe, k_IRl, k_Vl, TOAALB)
@@ -151,7 +149,7 @@ C       are channel counts, not the g-point count NKGAUSS.
 
         !! Recalculate Teff and then find parameters
         !! for L1DZenith models, need to hard-code incident_starlight fraction in this line to 0.25 to get a planet avg profile (sorry, pains of doing 1-D with a 3-D code)
-        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * incident_starlight_fraction *
+        Teff = ((Tint * Tint * Tint * Tint) + (1.0 - Bond_Albedo) * 0.25 * !!incident_starlight_fraction *
      &          (Tirr * Tirr * Tirr * Tirr)) ** (0.25)
 
         ! Log 10 T_eff variables
