@@ -106,6 +106,7 @@
 
           ! Kennedy adding cond curve interpolation
           INTEGER MET_INDEX, LOW_MET_INDEX, HIGH_MET_INDEX, I
+          REAL WMET
           REAL, dimension(6) :: COND_CURVE_METS ! These are log10(Z/Zsun) values for the pre-calculated curves
           REAL CLOUD_MOLAR_MASSES(NCLD)
 
@@ -657,7 +658,8 @@
         MET_INDEX = 6
       ELSE
         ! If metallicity isnt close to one of the pre-calculated curves, interpolate between nearest 2
-        COND_CURVE_METS = (/-1.0, 0.0, 1.0, 1.5, 2.0, 2.5/) ! these are log10(Z/Zsun)
+        ! log10(Z/Zsun) of the tabulated curves: 0.1, 1, 10, 30, 100, 300x
+        COND_CURVE_METS = (/-1.0, 0.0, 1.0, LOG10(30.0), 2.0, LOG10(300.0)/)
         IF (METALLICITY .gt. -0.99 .AND. METALLICITY .lt. -0.01) THEN
             LOW_MET_INDEX = 1
             HIGH_MET_INDEX = 2
@@ -678,14 +680,21 @@
             stop
         END IF
         MET_INDEX = 7
+!       Linear in 1/T: the curves follow 1e4/T = a - b*logP - c*[M/H], so
+!       1/T is linear in [M/H] at fixed pressure. A species without a
+!       curve (0 K) stays 0.
+        WMET = (METALLICITY - COND_CURVE_METS(LOW_MET_INDEX))
+     &       / (COND_CURVE_METS(HIGH_MET_INDEX) - COND_CURVE_METS(LOW_MET_INDEX))
         DO J = 1, 80
             DO I = 1, NCLOUDS
-                ! WRITE(*,*) COND_CURVE_METS(LOW_MET_INDEX), COND_CURVE_METS(HIGH_MET_INDEX)
-                !TCONDS(6,J,I) = TCONDS(LOW_MET_INDEX,J,I) + ((METALLICITY - (COND_CURVE_METS(LOW_MET_INDEX))) * (TCONDS(HIGH_MET_INDEX,J,I) - TCONDS(LOW_MET_INDEX,J,I)) / (COND_CURVE_METS(HIGH_MET_INDEX) - COND_CURVE_METS(LOW_MET_INDEX)))
-                TCONDS(MET_INDEX,J,I) = (METALLICITY - (COND_CURVE_METS(LOW_MET_INDEX)))
-                TCONDS(MET_INDEX,J,I) = TCONDS(MET_INDEX,J,I) * (TCONDS(HIGH_MET_INDEX,J,I) - TCONDS(LOW_MET_INDEX,J,I))
-                TCONDS(MET_INDEX,J,I) = TCONDS(MET_INDEX,J,I) / (COND_CURVE_METS(HIGH_MET_INDEX) - COND_CURVE_METS(LOW_MET_INDEX))
-                TCONDS(MET_INDEX,J,I) = TCONDS(MET_INDEX,J,I) + TCONDS(LOW_MET_INDEX,J,I)
+                IF (TCONDS(LOW_MET_INDEX,J,I) .GT. 0.0 .AND.
+     &              TCONDS(HIGH_MET_INDEX,J,I) .GT. 0.0) THEN
+                    TCONDS(MET_INDEX,J,I) = 1.0 /
+     &                  ((1.0-WMET)/TCONDS(LOW_MET_INDEX,J,I)
+     &                   + WMET/TCONDS(HIGH_MET_INDEX,J,I))
+                ELSE
+                    TCONDS(MET_INDEX,J,I) = 0.0
+                END IF
             END DO
         END DO
         
