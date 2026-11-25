@@ -1,14 +1,14 @@
 # NOTE: there are no module dependency rules, so module-providing
 # sources must come early in OBJS (corrk.o, tracerclds.o, dyeadv.o).  This also
 # means "make -j" is not safe.
-# Compiler selection.  gfortran is the default: ifort ships as an
-# x86_64 binary and will not execute on Apple Silicon once Rosetta is
-# gone ("Bad CPU type in executable").  The ifort branch below is
-# unchanged and still carries the flags this model has always used, so
-# "make COMPILER=ifort" reproduces the old build wherever ifort runs.
-#   make                   -> gfortran (default)
-#   make COMPILER=ifort    -> ifort
-COMPILER ?= gfortran
+# Compiler selection.  ifort is the default because it gives the faster
+# executable.  It needs the oneAPI environment loaded first
+# ("source /opt/intel/oneapi/setvars.sh").  It is an x86_64 binary, so
+# on Apple Silicon it runs under Rosetta and stops working once Rosetta
+# is gone ("Bad CPU type in executable"); gfortran is the fallback there.
+#   make                     -> ifort (default)
+#   make COMPILER=gfortran   -> gfortran
+COMPILER ?= ifort
 
 ifeq ($(COMPILER),gfortran)
 
@@ -51,7 +51,7 @@ PROF=-g -p
 REPORT=-warn noalign
 PARALLEL=-fopenmp -recursive -heap-arrays 0
 # DEBUG=-debug extended
-DEBUG_OPTS=''
+DEBUG_OPTS=
 FFLAGS = -g $(OPT) $(REPORT) $(PARALLEL) $(DEBUG_OPTS) -r8 -132 -traceback
 
 endif
