@@ -91,6 +91,7 @@ C     Which radiatively active dye carries species I (0 = none).
       INTEGER, AUTOMATIC :: KDR
       REAL, AUTOMATIC :: p_weight, size_weight, tconds_interp, corfact_interp
       REAL, AUTOMATIC :: tconds_lo, tconds_hi, kext_interp
+      REAL, AUTOMATIC :: ZSCALE
 
 
       ! TAUAER/WOL/GOL are only filled for a subset of (L,J) index ranges below
@@ -112,6 +113,10 @@ C     Which radiatively active dye carries species I (0 = none).
     
 
       IF (aerosolcomp .eq. 'standard') THEN
+C       MOLEF holds solar abundances; METALLICITY scales every species'
+C       cloud material, matching the metallicity-scaled condensation
+C       curves (MTLX stays a separate optical-depth factor).
+        ZSCALE = 10.0**METALLICITY
         ! Same slots as cloud_properties_set_up.f fills: 0.1x, 1x, 10x,
         ! 30x, 100x, 300x solar, then 7 for an interpolated curve.
         IF (METALLICITY .gt. -1.1 .AND. METALLICITY .lt. -0.9) THEN
@@ -316,13 +321,13 @@ C               the 0-or-J presence flag BASELEV expects.
                 corfact_interp = LERP(CORFACT(layer_index), CORFACT(layer_index+1), p_weight)
 
                 DO L = solar_calculation_indexer,NKGAUSS
-                    tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+                    tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*corfact_interp*
      &                              LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                 END DO
                 DO L = NKGAUSS+1,NBATCH
-                    tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+                    tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*corfact_interp*
      &                              LERP(CLOUD_KEXT(I,size_loc,iband), CLOUD_KEXT(I,size_loc+1,iband), size_weight) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
@@ -381,26 +386,26 @@ C           do not also clip it to AERLAYERS below the condensation base.
     !                 DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
     !                     WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
 
-    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/density(I)*
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
     !                 END DO
     !                 DO L = NKGAUSS+1,NBATCH
     !                     WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
-    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/density(I)*
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
     !                 END DO
     !             ELSE
     !                 DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
     !                     WAV_LOC = CLOUD_WAVELENGTH_INDEXES(L)
-    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/density(I)*
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
     !                 END DO
 
     !                 DO L = NKGAUSS+1,NBATCH
-    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+    !                     tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/density(I)*
     !  &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
     !  &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
     !                 END DO

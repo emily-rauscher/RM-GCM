@@ -82,6 +82,7 @@ C     LW sublayer masses
       INTEGER K,J,L, iradgas
       INTEGER size_loc, temp_loc, solar_calculation_indexer, layer_index, haze_layer_index
       real particle_size
+      real ZSCALE
 C     Which radiatively active dye carries species I (0 = none).
       INTEGER KDR
 
@@ -93,6 +94,10 @@ C     Which radiatively active dye carries species I (0 = none).
       ! Malsky
     !   write(*,*) 'made it to ropprmulti.f'
       IF (aerosolcomp .eq. 'standard') THEN
+C       MOLEF holds solar abundances; METALLICITY scales every species'
+C       cloud material, matching the metallicity-scaled condensation
+C       curves (MTLX stays a separate optical-depth factor).
+        ZSCALE = 10.0**METALLICITY
         ! Same slots as cloud_properties_set_up.f fills: 0.1x, 1x, 10x,
         ! 30x, 100x, 300x solar, then 7 for an interpolated curve.
         IF (METALLICITY .gt. -1.1 .AND. METALLICITY .lt. -0.9) THEN
@@ -268,26 +273,30 @@ C             keep CLOUDLOC the 0-or-J presence flag BASELEV expects.
                     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
                         WAV_LOC = CLOUD_WAVELENGTH_INDEXES(2)
 
-                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/
+     &                              density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                     END DO
                     DO L = NSOL+1,NTOTAL
                         WAV_LOC = CLOUD_WAVELENGTH_INDEXES(4)
-                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/
+     &                              density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(1,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                     END DO
                 ELSE
                     DO L = MAX(solar_calculation_indexer,MINWNOSTEL*8),NSOL
                         WAV_LOC = CLOUD_WAVELENGTH_INDEXES(L)
-                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/
+     &                              density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,WAV_LOC,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                     END DO
 
                     DO L = NSOL+1,NTOTAL
-                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*3./4./particle_size/particle_size/particle_size/density(I)*
+                        tauaer_temp(L,J,I) = (DPG(J)*10.0)*molef(I)*ZSCALE*3./4./particle_size/particle_size/particle_size/
+     &                              density(I)*
      &                              fmolw(I)*CONDFACT(J,I)*MTLX*CORFACT(layer_index)*KE_OPPR(L,temp_loc,size_loc,I) / 1.0e4 ! convert k from cm^2 to m^2
      &                              * exp_92_lnsig2_pi ! correction factor for mean vs median radius, divided by pi
                     END DO
