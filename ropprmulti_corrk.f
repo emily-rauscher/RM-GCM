@@ -29,7 +29,7 @@
 !     *  Output              :  TAUL, W0, G0, OPD, Y3              *
 !     * ************************************************************
 !
-      use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT, NWNO
+      use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT
       use tracerclds, only : ADYE, KSLOTRAD, ISPRAD, LDYERAD,
      &                       QDYECOL, L1COLRT
 C     Cloud/haze optical tables

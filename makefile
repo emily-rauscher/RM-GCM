@@ -1,6 +1,26 @@
 # NOTE: there are no module dependency rules, so module-providing
 # sources must come early in OBJS (datapaths.o, cloudmods.o, corrk.o, tracerclds.o, dyeadv.o).  This also
 # means "make -j" is not safe.
+# Model configuration.  The array sizes (params.i) and the build record
+# (buildinfo.inc) are generated from these settings by mkparams.sh, and
+# the settings are kept in build.cfg, so a plain "make" rebuilds the
+# same configuration and a changed one recompiles everything.
+#   make RES=T2 NL=100 RT=picket   T2, 100 levels, picket fence/double-gray
+#   make RES=T31 NL=50 RT=11       T31, 50 levels, 11-band corr-k
+#   RES     horizontal resolution: T2 or T31
+#   NL      number of vertical levels
+#   RT      picket, or a corr-k band count (11, 30, 196, ...)
+#   NDYE    number of cloud dye tracers
+#   NTGRID, NPGRID  size of the corr-k k-table T-P grid
+# A fresh checkout (no build.cfg) builds T31 L50 picket fence.
+-include build.cfg
+RES ?= T31
+NL ?= 50
+RT ?= 11
+NDYE ?= 2
+NTGRID ?= 73
+NPGRID ?= 20
+
 # Compiler selection.  ifort is the default because it gives the faster
 # executable.  It needs the oneAPI environment loaded first
 # ("source /opt/intel/oneapi/setvars.sh").  It is an x86_64 binary, so
@@ -70,10 +90,26 @@ igcm3_nopg: $(OBJS)
 %.o: %.f
 	$(FC) $(FFLAGS) -c $<
 
-# params.i sizes the COMMON blocks (NTRAC, NL, MG, ...), so every object
-# must be rebuilt when it changes; a partial rebuild mixes layouts and
-# corrupts the COMMONs silently.
+# params.i sizes the COMMON blocks and arrays (NTRAC, NL, MG, ...), so
+# every object must be rebuilt when it changes; a partial rebuild mixes
+# layouts and corrupts the COMMONs silently.  mkparams.sh runs on every
+# make but rewrites params.i only when the configuration changes, so an
+# unchanged one recompiles nothing.
 $(OBJS): params.i nclouds.inc
+
+params.i: FORCE
+	./mkparams.sh $(RES) $(NL) $(RT) $(NDYE) $(NTGRID) $(NPGRID)
+
+buildinfo.inc: params.i ;
+
+cinital.o: buildinfo.inc
+
+.PHONY: FORCE clean distclean
+FORCE:
 
 clean:
 	rm -f *.o *.mod igcm3_nopg
+
+# Also forget the configuration: the next make builds the defaults.
+distclean: clean
+	rm -f params.i buildinfo.inc build.cfg

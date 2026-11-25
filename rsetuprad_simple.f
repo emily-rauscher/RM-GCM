@@ -37,7 +37,7 @@
 !     * *******************************************************
       use corrkmodule, only : corrk_setup, TS_CORRK, PS_CORRK, TS_LOG_CORRK, 
      &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
-     &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO, MINWNOSTEL
+     &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, MINWNOSTEL
       include 'rcommons.h'
       ! KENNEDY NOTES: Changing the hardcoded stuff to be dependent on channel numbers
       ! This block is repeated throughout the radiative transfer stuff, but I'm first changing here

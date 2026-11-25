@@ -1,8 +1,13 @@
       MODULE corrkmodule
         IMPLICIT NONE
-        include 'nwno.inc'
-        INTEGER NCLOUDS
-        include 'nclouds.inc'
+        ! params.i is untyped (most files include it before their
+        ! IMPLICIT statement), so under IMPLICIT NONE every name it
+        ! defines is typed here first; keep this list in step with the
+        ! PARAMETER names mkparams.sh writes.
+        INTEGER NCLOUDS, NN, MM, NHEM, NL, MOCT, MG, JG, NWJ2, NCRAY,
+     &          JGL, NTRAC, NLEVRF, NDYE, NWNO, NTGRID, NPGRID,
+     &          NKGAUSS, NIR, NSOL, NTOTAL, NBATCH
+        include 'params.i'
         ! COMMON BLOCK SHAPES HERE:
         REAL :: OPAC_CORRK(NTGRID, NPGRID, NWNO, 8)
         REAL :: TS_CORRK(NTGRID), PS_CORRK(NPGRID), TS_LOG_CORRK(NTGRID), PS_LOG_CORRK(NPGRID), WGTS_CORRK(8) 
@@ -85,6 +90,16 @@
             write(*,*) 'Reading in k-coefficients from file: ', FNM
             write(*,*) 'Reading in CIA opacities from file: ', CIAFNM
             write(*,*) 'Reading in Rayleigh opacities from file: ', RAYFNM
+            ! The tables are read into arrays sized at build time (make
+            ! RT= and NTGRID/NPGRID); a file of another size (or an empty
+            ! one) would be read partly or fail with a bare end-of-file.
+            CALL CHECK_TABLE_SIZE(trim(FOLDER)//"kcoeffs/Tpts.txt", NTGRID)
+            CALL CHECK_TABLE_SIZE(trim(FOLDER)//"kcoeffs/Ppts.txt", NPGRID)
+            CALL CHECK_TABLE_SIZE(trim(FOLDER)//"kcoeffs/wno_edges.txt", NWNO+1)
+            CALL CHECK_TABLE_SIZE(FNM, 8*NTGRID*NPGRID*NWNO)
+            CALL CHECK_TABLE_SIZE(CIAFNM, NWNO*NTGRID*NPGRID)
+            CALL CHECK_TABLE_SIZE(RAYFNM, NWNO*NTGRID*NPGRID)
+
             OPEN(UNIT=1, FILE=FNM)
             READ(1,*) TEMP_OPAC_CORRK
             CLOSE(1)
@@ -214,6 +229,45 @@
             ! MINWNOSTEL = 1
             WRITE(*,*) 'WNO MIN: ', MINWNOSTEL
         END SUBROUTINE corrk_setup
+
+        SUBROUTINE CHECK_TABLE_SIZE(file_name, NEXPECT)
+            ! Stop unless file_name holds exactly NEXPECT numbers, in any
+            ! layout (whitespace- or comma-separated, any per line).
+            implicit none
+            CHARACTER(len=*) :: file_name
+            INTEGER :: NEXPECT, NFOUND, IOS, K
+            CHARACTER(len=65536) :: LINE
+            LOGICAL :: INTOK, SEP
+            NFOUND = 0
+            OPEN(UNIT=1, FILE=file_name, STATUS='OLD', IOSTAT=IOS)
+            IF (IOS .NE. 0) THEN
+                WRITE(*,*) 'corr-k table not found: ', trim(file_name)
+                STOP 'missing corr-k table'
+            END IF
+            DO
+                READ(1, '(A)', IOSTAT=IOS) LINE
+                IF (IOS .NE. 0) EXIT
+                IF (LEN_TRIM(LINE) .EQ. LEN(LINE)) THEN
+                    WRITE(*,*) 'CHECK_TABLE_SIZE: a line of ',
+     &                  trim(file_name), ' is too long to count'
+                    STOP 'corr-k table line too long'
+                END IF
+                INTOK = .FALSE.
+                DO K = 1, LEN_TRIM(LINE)
+                    SEP = LINE(K:K) .EQ. ' ' .OR. LINE(K:K) .EQ. ',' .OR.
+     &                    LINE(K:K) .EQ. CHAR(9)
+                    IF (.NOT. SEP .AND. .NOT. INTOK) NFOUND = NFOUND + 1
+                    INTOK = .NOT. SEP
+                END DO
+            END DO
+            CLOSE(1)
+            IF (NFOUND .NE. NEXPECT) THEN
+                WRITE(*,*) 'corr-k table ', trim(file_name), ' has ',
+     &              NFOUND, ' values; this build expects ', NEXPECT,
+     &              ' (make RT=, NTGRID=, NPGRID=)'
+                STOP 'corr-k table size does not match the build'
+            END IF
+        END SUBROUTINE CHECK_TABLE_SIZE
 
         SUBROUTINE BIN_STELLAR_SPECTRUM(file_name, STEL_SPEC, WNO_EDGES, NWNO)
             implicit none

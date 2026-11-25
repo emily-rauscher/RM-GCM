@@ -2,7 +2,6 @@ C************************************************************
 C                   SUBROUTINE INITAL                                     
 C************************************************************             
       SUBROUTINE INITAL                                                   
-      use corrkmodule, only : NWNO
 C     Cloud settings (&INCLOUDY)
       use cloudsettings
 C                                                                         
@@ -76,7 +75,11 @@ C
       REAL :: OOM_IN, RFCOEFF_IN, BOTRELAXTIME, FBASEFLUX
       LOGICAL :: LPLOTMAP
       INTEGER :: NLPLOTMAP_IN, NTSTEP_IN, NSKIP_IN
+C     BUILDCFG: the make settings this binary was built with.
+      include 'buildinfo.inc'
 
+      WRITE(*,'(2A)') ' Build configuration: ', BUILDCFG
+      WRITE(2,'(2A)') ' Build configuration: ', BUILDCFG
       CALL INIGAU
 
 !!KM Modif
@@ -101,12 +104,24 @@ C     '_witiovo' table regardless of fort.7 (self-corrected on the
 C     second INISET/INITAL pass of a fresh start, but restarts only get
 C     one pass and never picked up the correct table).
       WRITE(*,*) 'C to O ratio: ', C_TO_O
-C     Corr-k needs NKGAUSS g-points per band, in both the SW and the IR.
+C     The RT channel counts are fixed at build time (make RT=...), so a
+C     fort.7 opacity_method needs a binary built for it: corr-k needs
+C     NKGAUSS g-points per band in both the SW and the IR (RT=<bands>),
+C     picket fence and double-gray 3 SW and 2 IR channels (RT=picket).
       IF (opacity_method .EQ. 'correk') THEN
          IF (NIR.NE.NWNO*NKGAUSS .OR. NSOL.NE.NWNO*NKGAUSS) THEN
             WRITE(*,*) 'INITAL: corr-k needs NIR=NSOL=NWNO*NKGAUSS;',
      &         ' NIR,NSOL,NWNO,NKGAUSS =', NIR, NSOL, NWNO, NKGAUSS
-            STOP 'params.i NIR/NSOL do not match nwno.inc NWNO'
+            WRITE(*,'(3A)') ' This binary was built with ', BUILDCFG,
+     &         '; rebuild with make RT=<number of bands>'
+            STOP 'opacity_method=correk needs a corr-k build'
+         ENDIF
+      ELSE IF (opacity_method .EQ. 'picket' .OR.
+     &         opacity_method .EQ. 'dogray') THEN
+         IF (NIR.NE.2 .OR. NSOL.NE.3) THEN
+            WRITE(*,'(3A)') ' This binary was built with ', BUILDCFG,
+     &         '; rebuild with make RT=picket'
+            STOP 'picket/dogray need a make RT=picket build'
          ENDIF
       ENDIF
       CALL get_cloud_scattering_properties_wrapper

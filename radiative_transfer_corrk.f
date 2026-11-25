@@ -23,7 +23,6 @@
      &           PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
      &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS
           include 'rcommons.h'
-          include 'nwno.inc'
           ! integer :: NWNO
 
           ! Thomas inclusions from corr-k common block

@@ -32,7 +32,7 @@
 !     p_pass--the layer boundary pressures in pascal (NL+1)
 !     both p_ and t_ pass begin at the top and go down.
 
-      use corrkmodule, only: NWNO, MINWNOSTEL, WNO_EDGES
+      use corrkmodule, only: MINWNOSTEL, WNO_EDGES
       use tracerclds, only : L1COLRT, ZEN1COL
       include 'rcommons.h'
 

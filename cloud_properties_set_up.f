@@ -74,6 +74,9 @@
           CHARACTER(len=9), PARAMETER :: HZ_QTYS(3) =
      &        (/'tauperbar', 'pi0      ', 'gg       '/)
           LOGICAL :: LALLHZ
+!         Unit for the data files: NEWUNIT, never a fixed number, which
+!         could close one of the model's own (fort.2, fort.11-13, ...).
+          INTEGER :: IUF
 
           ! Define all the arrays
 
@@ -133,35 +136,35 @@
           HAZE_wav_pi0 = 0.0
           HAZE_wav_gg  = 0.0
           IF (LALLHZ) THEN
-              open (1, file=TRIM(HZPRE)//'Ross_tauperbar.txt')
-              open (2, file=TRIM(HZPRE)//'wav_tauperbar.txt')
-              open (3, file=TRIM(HZPRE)//'Planck_tauperbar.txt')
-              read(1,*) HAZE_RosselandMean_tau_per_bar
-              read(2,*) HAZE_wav_tau_per_bar
-              read(3,*) HAZE_PlanckMean_tau_per_bar
-              close(1)
-              close(2)
-              close(3)
+              open (newunit=IUF, file=TRIM(HZPRE)//'Ross_tauperbar.txt')
+              read(IUF,*) HAZE_RosselandMean_tau_per_bar
+              close(IUF)
+              open (newunit=IUF, file=TRIM(HZPRE)//'wav_tauperbar.txt')
+              read(IUF,*) HAZE_wav_tau_per_bar
+              close(IUF)
+              open (newunit=IUF, file=TRIM(HZPRE)//'Planck_tauperbar.txt')
+              read(IUF,*) HAZE_PlanckMean_tau_per_bar
+              close(IUF)
 
-              open (1, file=TRIM(HZPRE)//'Ross_pi0.txt')
-              open (2, file=TRIM(HZPRE)//'wav_pi0.txt')
-              open (3, file=TRIM(HZPRE)//'Planck_pi0.txt')
-              read(1,*) HAZE_RosselandMean_pi0
-              read(2,*) HAZE_wav_pi0
-              read(3,*) HAZE_PlanckMean_pi0
-              close(1)
-              close(2)
-              close(3)
+              open (newunit=IUF, file=TRIM(HZPRE)//'Ross_pi0.txt')
+              read(IUF,*) HAZE_RosselandMean_pi0
+              close(IUF)
+              open (newunit=IUF, file=TRIM(HZPRE)//'wav_pi0.txt')
+              read(IUF,*) HAZE_wav_pi0
+              close(IUF)
+              open (newunit=IUF, file=TRIM(HZPRE)//'Planck_pi0.txt')
+              read(IUF,*) HAZE_PlanckMean_pi0
+              close(IUF)
 
-              open (1, file=TRIM(HZPRE)//'Ross_gg.txt')
-              open (2, file=TRIM(HZPRE)//'wav_gg.txt')
-              open (3, file=TRIM(HZPRE)//'Planck_gg.txt')
-              read(1,*) HAZE_RosselandMean_gg
-              read(2,*) HAZE_wav_gg
-              read(3,*) HAZE_PlanckMean_gg
-              close(1)
-              close(2)
-              close(3)
+              open (newunit=IUF, file=TRIM(HZPRE)//'Ross_gg.txt')
+              read(IUF,*) HAZE_RosselandMean_gg
+              close(IUF)
+              open (newunit=IUF, file=TRIM(HZPRE)//'wav_gg.txt')
+              read(IUF,*) HAZE_wav_gg
+              close(IUF)
+              open (newunit=IUF, file=TRIM(HZPRE)//'Planck_gg.txt')
+              read(IUF,*) HAZE_PlanckMean_gg
+              close(IUF)
           ELSE IF (HAZES) THEN
 !             Hazes on with no tables would be silently transparent.
               WRITE(*,*) 'HAZES=T but CLOUD_DATA has no complete set of ',
@@ -214,9 +217,9 @@
                   DO IQ = 1, 3
                       OPT_FILE = TRIM(DATA_DIR)//'CLOUD_DATA/'//TRIM(OPT_SPECIES(I))//'_'//
      &                    TRIM(OPT_MEANS(IM))//'_'//TRIM(OPT_QTYS(IQ))//'.txt'
-                      OPEN(1, FILE=OPT_FILE, STATUS='OLD')
-                      READ(1,*) TEMP_CLOUD_DATA
-                      CLOSE(1)
+                      OPEN(NEWUNIT=IUF, FILE=OPT_FILE, STATUS='OLD')
+                      READ(IUF,*) TEMP_CLOUD_DATA
+                      CLOSE(IUF)
                       DO IB = OPT_BAND_LO(IM), OPT_BAND_HI(IM)
                           SELECT CASE (IQ)
                           CASE (1)
@@ -578,9 +581,9 @@
       ! The first column is pressure (cgs), then each cloud species gets its own column in the usual order
       write(*,*) 'Reading CARMA condensation curves from file, no SiO2, VO, Ni, Ca2SiO4, or CaTiO3!!'
 
-      open(UNIT=10, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_0.1xsolar_special.txt')
-      read(10,*) dummy_tconds
-      close(10)
+      open(NEWUNIT=IUF, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_0.1xsolar_special.txt')
+      read(IUF,*) dummy_tconds
+      close(IUF)
       ! write(*,*) dummy_tconds(2,:)
       do i=1, NCLD
         do J=1, 80
@@ -588,42 +591,42 @@
         end do
       end do
       
-      open(UNIT=10, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_1xsolar_special.txt')
-      read(10,*) dummy_tconds
-      close(10)
+      open(NEWUNIT=IUF, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_1xsolar_special.txt')
+      read(IUF,*) dummy_tconds
+      close(IUF)
       ! write(*,*) dummy_tconds(2,:)
       do i=1, NCLD
         do J=1, 80
             TCONDS(2,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=11, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_10xsolar_special.txt')
-      read(11,*) dummy_tconds
-      close(11)
+      open(NEWUNIT=IUF, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_10xsolar_special.txt')
+      read(IUF,*) dummy_tconds
+      close(IUF)
       do i=1, NCLD
         do J=1, 80
             TCONDS(3,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=12, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_30xsolar_special.txt')
-      read(12,*) dummy_tconds
-      close(12)
+      open(NEWUNIT=IUF, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_30xsolar_special.txt')
+      read(IUF,*) dummy_tconds
+      close(IUF)
       do i=1, NCLD
         do J=1, 80
             TCONDS(4,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=13, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_100xsolar_special.txt')
-      read(13,*) dummy_tconds
-      close(13)
+      open(NEWUNIT=IUF, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_100xsolar_special.txt')
+      read(IUF,*) dummy_tconds
+      close(IUF)
       do i=1, NCLD
         do J=1, 80
             TCONDS(5,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=14, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_300xsolar_special.txt')
-      read(14,*) dummy_tconds
-      close(14)
+      open(NEWUNIT=IUF, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_300xsolar_special.txt')
+      read(IUF,*) dummy_tconds
+      close(IUF)
       do i=1, NCLD
         do J=1, 80
             TCONDS(6,J,I) = dummy_tconds(I+1,J)

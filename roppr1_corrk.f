@@ -25,7 +25,7 @@
 !     *  Output              :  PTEMP, PTEMPG, SLOPE           *
 !     * ********************************************************
 !
-      use corrkmodule, only : PLANCK_INTS, NWNO
+      use corrkmodule, only : PLANCK_INTS
       include 'rcommons.h'
       
       integer num_layers, iband
