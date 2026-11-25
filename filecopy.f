@@ -8,7 +8,7 @@ C**********************************************************
 C     The unit-26 record is relayed verbatim rather than parsed into a
 C     fixed variable list, which used to drop any column added in
 C     xsect2.f until this list was widened to match.
-      CHARACTER*512 TLINE
+      CHARACTER*1024 TLINE
 
 
       REWIND 26 
@@ -43,7 +43,7 @@ C     unit 64 is relayed verbatim too, so its SW columns are kept
 
 
 
- 102  FORMAT(3E13.5)
+ 102  FORMAT(3E14.5E3)
 
 C     Format 105 (used for WRITE) contains character literals, which are not
 C     legal in an INPUT format.  ifort accepts them and skips that many

@@ -335,8 +335,8 @@ CC     :                     1,mg,1,jgg,1,nl,inetcount,inetcount)
 
 C     Repeat count is deliberately oversized: the format stops at the
 C     end of the output list, so adding a dye needs no edit here.
- 107              FORMAT(2E13.5,I4,50E13.5)
- 102              FORMAT(3E13.5)
+ 107              FORMAT(2E14.5E3,I4,50E14.5E3)
+ 102              FORMAT(3E14.5E3)
 
 C-------- Emily Modif 3/3
       DO 40 L=1,NL
@@ -356,12 +356,12 @@ C         TOUTU(L,2)=MIN(TOUTST(L,JG,1:MG,1),TOUTST(L,JG+1,1:MG,1))
          TOUTT(L,5)=SUM(TOUTST(L,1,1:MG,3))/MG
          TOUTT(L,6)=SUM(TOUTST(L,JG*2,1:MG,3))/MG
          WRITE (27,109) TOUTU(L,1),TOUTU(L,2),TOUTU(L,3)
- 109     FORMAT(3E13.5)
+ 109     FORMAT(3E14.5E3)
          WRITE (28,110) TOUTT(L,1),TOUTT(L,2),TOUTT(L,3),TOUTT(L,4),
      &        TOUTT(L,5),TOUTT(L,6)
- 110     FORMAT(6E13.5)
+ 110     FORMAT(6E14.5E3)
          WRITE (52,111) TOUTE(L,1),TOUTE(L,2)
- 111     FORMAT(2E13.5)
+ 111     FORMAT(2E14.5E3)
  40   CONTINUE
 
 C--------
@@ -403,7 +403,7 @@ C 111              FORMAT(3E13.5)
 C     TK: columns are lon, lat, OLR, SW down at TOA, SW up at TOA (W m-2)
                   WRITE (64,114) TOUTLON,TOUTLAT, TOUTFLUX(I,J),
      &                           TOUTSWD(I,J),TOUTSWU(I,J)
- 114              FORMAT(5E13.5)
+ 114              FORMAT(5E14.5E3)
         ENDDO         
        ENDDO
 
