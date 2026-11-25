@@ -8,6 +8,7 @@ C**********************************************************
      &                       LBENCH, PDYEBUD, NDYEBUD,
      &                       L1COLRT, ZEN1COL, NPAIRMX, NDYERAD,
      &                       KSLOTRAD, ISPRAD, LDYELOGN
+      use datapaths, only : DATA_DIR
 C-----------------------------------------------------------------------  
 C     Subroutine to initialise various model parameters            
 C-----------------------------------------------------------------------  
@@ -93,7 +94,7 @@ C      the dyes are vapour/solid pairs and KDYERAD must be a solid slot.
      & ADYE, PDYEFIX, PDYEUPPER, TRELAXORB,
      & LDYERAD, KDYERAD, KDYESPEC,
      & KDYEMODE, TCONDDYE, TEVAPDYE, LDYEFIX, LBENCH,
-     & PDYEBUD, NDYEBUD, L1COLRT, ZEN1COL, LDYELOGN
+     & PDYEBUD, NDYEBUD, L1COLRT, ZEN1COL, LDYELOGN, DATA_DIR
 
        NAMELIST/INMAG/ LBDRAG,BFIELD,TDRAG_MIN,RAMPUP
 
@@ -130,8 +131,16 @@ C      a one-pair run read only the first, so "KDYESPEC = 7" still works.
 C      Negative means "same as TCONDDYE", resolved after the read.
        TEVAPDYE=-1.0
 
+       DATA_DIR='../'
+
        READ (7,INVARPARAM)
        IF (TEVAPDYE.LT.0.0) TEVAPDYE=TCONDDYE
+C      DATA_DIR gets a trailing '/', so '..' and '../' both work; blank
+C      means the run directory itself.
+       IF (LEN_TRIM(DATA_DIR) .EQ. 0) DATA_DIR='./'
+       IF (DATA_DIR(LEN_TRIM(DATA_DIR):LEN_TRIM(DATA_DIR)) .NE. '/')
+     &    DATA_DIR=TRIM(DATA_DIR)//'/'
+       WRITE(*,'(2A)') ' Input data directory (DATA_DIR): ', TRIM(DATA_DIR)
        WRITE(2,INVARPARAM)
 
 C      Single-column RT: its clouds come from the condensation curve, as

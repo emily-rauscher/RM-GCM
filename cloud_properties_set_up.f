@@ -51,6 +51,8 @@
      &                           NDYERAD, KSLOTRAD, SIGDYE,
      &                           NCLD => NCLOUDS
           use cloudtables
+!         CLOUD_DATA/ lives in the fort.7 data directory, DATA_DIR.
+          use datapaths, only : DATA_DIR
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
@@ -82,7 +84,7 @@
           INTEGER, PARAMETER :: OPT_BAND_HI(3) = (/3, 4, 5/)
           CHARACTER(len=4), PARAMETER :: OPT_QTYS(3) =
      &        (/'gg  ', 'kext', 'pi0 '/)
-          CHARACTER(len=80) :: OPT_FILE
+          CHARACTER(len=400) :: OPT_FILE
           INTEGER :: IM, IQ, IB
           LOGICAL :: LEX, LALLOPT
 
@@ -106,9 +108,9 @@
           haze_type = 'soot'
           if (haze_type .eq. 'soot') THEN
               !write(*,*) "Model being run with soot hazes"
-              open (1, file='../CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
-              open (2, file='../CLOUD_DATA/haze_soot_wav_tauperbar.txt')
-              open (3, file='../CLOUD_DATA/haze_soot_Planck_tauperbar.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Ross_tauperbar.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_wav_tauperbar.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Planck_tauperbar.txt')
 
               read(1,*) HAZE_RosselandMean_tau_per_bar
               read(2,*) HAZE_wav_tau_per_bar
@@ -118,9 +120,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_soot_Ross_pi0.txt')
-              open (2, file='../CLOUD_DATA/haze_soot_wav_pi0.txt')
-              open (3, file='../CLOUD_DATA/haze_soot_Planck_pi0.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Ross_pi0.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_wav_pi0.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Planck_pi0.txt')
 
 
               read(1,*) HAZE_RosselandMean_pi0
@@ -131,9 +133,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_soot_Ross_gg.txt')
-              open (2, file='../CLOUD_DATA/haze_soot_wav_gg.txt')
-              open (3, file='../CLOUD_DATA/haze_soot_Planck_gg.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Ross_gg.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_wav_gg.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot_Planck_gg.txt')
 
               read(1,*) HAZE_RosselandMean_gg
               read(2,*) HAZE_wav_gg
@@ -144,9 +146,9 @@
               close(3)
           else if (haze_type .eq. 'sulfur') THEN
               !write(*,*) "Model being run with sulfur hazes"
-              open (1, file='../CLOUD_DATA/haze_sulfur_Ross_tauperbar.txt')
-              open (2, file='../CLOUD_DATA/haze_sulfur_wav_tauperbar.txt')
-              open (3, file='../CLOUD_DATA/haze_sulfur_Planck_tauperbar.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Ross_tauperbar.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_wav_tauperbar.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Planck_tauperbar.txt')
 
               read(1,*) HAZE_RosselandMean_tau_per_bar
               read(2,*) HAZE_wav_tau_per_bar
@@ -156,9 +158,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_sulfur_Ross_pi0.txt')
-              open (2, file='../CLOUD_DATA/haze_sulfur_wav_pi0.txt')
-              open (3, file='../CLOUD_DATA/haze_sulfur_Planck_pi0.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Ross_pi0.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_wav_pi0.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Planck_pi0.txt')
 
               read(1,*) HAZE_RosselandMean_pi0
               read(2,*) HAZE_wav_pi0
@@ -168,9 +170,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_sulfur_Ross_gg.txt')
-              open (2, file='../CLOUD_DATA/haze_sulfur_wav_gg.txt')
-              open (3, file='../CLOUD_DATA/haze_sulfur_Planck_gg.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Ross_gg.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_wav_gg.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_sulfur_Planck_gg.txt')
 
               read(1,*) HAZE_RosselandMean_gg
               read(2,*) HAZE_wav_gg
@@ -181,9 +183,9 @@
               close(3)
           else if (haze_type .eq. 'tholin') THEN
               !write(*,*) "Model being run with sulfur hazes"
-              open (1, file='../CLOUD_DATA/haze_tholin_Ross_tauperbar.txt')
-              open (2, file='../CLOUD_DATA/haze_tholin_wav_tauperbar.txt')
-              open (3, file='../CLOUD_DATA/haze_tholin_Planck_tauperbar.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Ross_tauperbar.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_wav_tauperbar.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Planck_tauperbar.txt')
 
               read(1,*) HAZE_RosselandMean_tau_per_bar
               read(2,*) HAZE_wav_tau_per_bar
@@ -193,9 +195,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_tholin_Ross_pi0.txt')
-              open (2, file='../CLOUD_DATA/haze_tholin_wav_pi0.txt')
-              open (3, file='../CLOUD_DATA/haze_tholin_Planck_pi0.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Ross_pi0.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_wav_pi0.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Planck_pi0.txt')
 
               read(1,*) HAZE_RosselandMean_pi0
               read(2,*) HAZE_wav_pi0
@@ -205,9 +207,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_tholin_Ross_gg.txt')
-              open (2, file='../CLOUD_DATA/haze_tholin_wav_gg.txt')
-              open (3, file='../CLOUD_DATA/haze_tholin_Planck_gg.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Ross_gg.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_wav_gg.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_tholin_Planck_gg.txt')
 
               read(1,*) HAZE_RosselandMean_gg
               read(2,*) HAZE_wav_gg
@@ -218,9 +220,9 @@
               close(3)
           else if (haze_type .eq. 'soot-2xpi0') THEN
               !write(*,*) "Model being run with sulfur hazes"
-              open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_tauperbar.txt')
-              open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_tauperbar.txt')
-              open (3, file='../CLOUD_DATA/haze_soot-2xpi0_Planck_tauperbar.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Ross_tauperbar.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_wav_tauperbar.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Planck_tauperbar.txt')
 
               read(1,*) HAZE_RosselandMean_tau_per_bar
               read(2,*) HAZE_wav_tau_per_bar
@@ -230,9 +232,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_pi0.txt')
-              open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_pi0.txt')
-              open (3, file='../CLOUD_DATA/haze_soot-2xpi0_Planck_pi0.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Ross_pi0.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_wav_pi0.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Planck_pi0.txt')
 
               read(1,*) HAZE_RosselandMean_pi0
               read(2,*) HAZE_wav_pi0
@@ -242,9 +244,9 @@
               close(2)
               close(3)
 
-              open (1, file='../CLOUD_DATA/haze_soot-2xpi0_Ross_gg.txt')
-              open (2, file='../CLOUD_DATA/haze_soot-2xpi0_wav_gg.txt')
-              open (3, file='../CLOUD_DATA/haze_soot-2xpi0_Planck_gg.txt')
+              open (1, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Ross_gg.txt')
+              open (2, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_wav_gg.txt')
+              open (3, file=TRIM(DATA_DIR)//'CLOUD_DATA/haze_soot-2xpi0_Planck_gg.txt')
 
               read(1,*) HAZE_RosselandMean_gg
               read(2,*) HAZE_wav_gg
@@ -284,7 +286,7 @@
               LALLOPT = LEN_TRIM(OPT_SPECIES(I)) .GT. 0
               DO IM = 1, 3
                   DO IQ = 1, 3
-                      OPT_FILE = '../CLOUD_DATA/'//TRIM(OPT_SPECIES(I))//'_'//
+                      OPT_FILE = TRIM(DATA_DIR)//'CLOUD_DATA/'//TRIM(OPT_SPECIES(I))//'_'//
      &                    TRIM(OPT_MEANS(IM))//'_'//TRIM(OPT_QTYS(IQ))//'.txt'
                       INQUIRE(FILE=OPT_FILE, EXIST=LEX)
                       LALLOPT = LALLOPT .AND. LEX
@@ -297,7 +299,7 @@
               END IF
               DO IM = 1, 3
                   DO IQ = 1, 3
-                      OPT_FILE = '../CLOUD_DATA/'//TRIM(OPT_SPECIES(I))//'_'//
+                      OPT_FILE = TRIM(DATA_DIR)//'CLOUD_DATA/'//TRIM(OPT_SPECIES(I))//'_'//
      &                    TRIM(OPT_MEANS(IM))//'_'//TRIM(OPT_QTYS(IQ))//'.txt'
                       OPEN(1, FILE=OPT_FILE, STATUS='OLD')
                       READ(1,*) TEMP_CLOUD_DATA
@@ -663,7 +665,7 @@
       ! The first column is pressure (cgs), then each cloud species gets its own column in the usual order
       write(*,*) 'Reading CARMA condensation curves from file, no SiO2, VO, Ni, Ca2SiO4, or CaTiO3!!'
 
-      open(UNIT=10, FILE='../CLOUD_DATA/condcurves_0.1xsolar_special.txt')
+      open(UNIT=10, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_0.1xsolar_special.txt')
       read(10,*) dummy_tconds
       close(10)
       ! write(*,*) dummy_tconds(2,:)
@@ -673,7 +675,7 @@
         end do
       end do
       
-      open(UNIT=10, FILE='../CLOUD_DATA/condcurves_1xsolar_special.txt')
+      open(UNIT=10, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_1xsolar_special.txt')
       read(10,*) dummy_tconds
       close(10)
       ! write(*,*) dummy_tconds(2,:)
@@ -682,7 +684,7 @@
             TCONDS(2,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=11, FILE='../CLOUD_DATA/condcurves_10xsolar_special.txt')
+      open(UNIT=11, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_10xsolar_special.txt')
       read(11,*) dummy_tconds
       close(11)
       do i=1, NCLD
@@ -690,7 +692,7 @@
             TCONDS(3,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=12, FILE='../CLOUD_DATA/condcurves_30xsolar_special.txt')
+      open(UNIT=12, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_30xsolar_special.txt')
       read(12,*) dummy_tconds
       close(12)
       do i=1, NCLD
@@ -698,7 +700,7 @@
             TCONDS(4,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=13, FILE='../CLOUD_DATA/condcurves_100xsolar_special.txt')
+      open(UNIT=13, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_100xsolar_special.txt')
       read(13,*) dummy_tconds
       close(13)
       do i=1, NCLD
@@ -706,7 +708,7 @@
             TCONDS(5,J,I) = dummy_tconds(I+1,J)
         end do
       end do
-      open(UNIT=14, FILE='../CLOUD_DATA/condcurves_300xsolar_special.txt')
+      open(UNIT=14, FILE=TRIM(DATA_DIR)//'CLOUD_DATA/condcurves_300xsolar_special.txt')
       read(14,*) dummy_tconds
       close(14)
       do i=1, NCLD

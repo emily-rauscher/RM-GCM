@@ -22,6 +22,7 @@
         SUBROUTINE corrk_setup(METALLICITY, C_TO_O, FBASEFLUX, GASCON, with_TiO_and_VO,TS_CORRK, PS_CORRK, 
      &           TS_LOG_CORRK, PS_LOG_CORRK, WGTS_CORRK, WNO_EDGES, WNO_CTRS, STEL_SPEC, INT_SPEC, TAURAY_PER_DPG,
      &           OPAC_CORRK, PLANCK_INTS, PLANCK_TS, NWNO, MINWNOSTEL, CLOUD_KEXT, CLOUD_A, CLOUD_G)
+            use datapaths, only : DATA_DIR
             implicit none
             integer :: NWNO
             INTEGER :: I, J, K, L
@@ -34,8 +35,8 @@
             REAL :: with_TiO_and_VO
 
             CHARACTER(LEN=32) :: dummyMETALLICITY_str, dummyC_TO_O_str, tiovo_str
-            CHARACTER(len=30) :: FOLDER
-            CHARACTER(len=80) :: FNM, CIAFNM, RAYFNM
+            CHARACTER(len=300) :: FOLDER
+            CHARACTER(len=400) :: FNM, CIAFNM, RAYFNM
             REAL :: TEMP_OPAC_CORRK(8,NTGRID*NPGRID*NWNO) ! 8 gauss pts, NTGRID T, NPGRID P, NWNO wavelengths
             REAL :: TEMP_OPAC_CIA(NWNO,NTGRID*NPGRID) ! NTGRID T, NPGRID P, NWNO wavelengths
             REAL :: TEMP_TAURAY_PER_DPG_PERMU(NWNO, NTGRID*NPGRID)
@@ -69,10 +70,11 @@
             end if
             ! write(*,*) 'METALLICITY: ', dummyMETALLICITY_str
             ! write(*,*) 'C_TO_O: ', dummyC_TO_O_str
-            ! The band set for NWNO bands lives in ../<NWNO>bands/ (e.g.
-            ! ../11bands/), with the kcoeffs/, continuum/, rayleigh/ and
-            ! clouds/ layout of the existing sets.
-            WRITE(FOLDER,'(A,I0,A)') '../', NWNO, 'bands/'
+            ! The band set for NWNO bands lives in <DATA_DIR><NWNO>bands/
+            ! (e.g. ../11bands/ with the default DATA_DIR), with the
+            ! kcoeffs/, continuum/, rayleigh/ and clouds/ layout of the
+            ! existing sets.
+            WRITE(FOLDER,'(A,I0,A)') TRIM(DATA_DIR), NWNO, 'bands/'
             ! FOLDER = '../11bands/'
             FNM= trim(FOLDER)//"kcoeffs/feh"//trim(dummyMETALLICITY_str)//"_co_"//trim(dummyC_TO_O_str)//trim(tiovo_str)//".txt"
             CIAFNM= trim(FOLDER)//"continuum/cia+hmin_feh"//trim(dummyMETALLICITY_str)//"_co_"//trim(dummyC_TO_O_str)
@@ -252,7 +254,7 @@
             real :: CLOUD_A(NCLOUDS, 100, NWNO)
             real :: CLOUD_G(NCLOUDS, 100, NWNO)
             real :: DUMMY(NWNO, 100) ! to hold each array as it's read in
-            character(len=30) :: FOLDER
+            character(len=*) :: FOLDER
             character(len=15) :: CLOUD_SPECIES(NCLOUDS)
             integer :: I, J, K
             

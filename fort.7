@@ -97,7 +97,10 @@ LBENCH          = F,
 ! stellar zenith angle ZEN1COL (degrees), writes rt1col.txt and
 ! rt1col_bands.txt, and stops. Needs LRSTRT=F and LDYERAD=F.
 L1COLRT         = F,
-ZEN1COL         = 0.0
+ZEN1COL         = 0.0,
+! Directory holding CLOUD_DATA/ and the corr-k band sets (11bands/, ...),
+! absolute or relative to the run directory. Default '../'.
+DATA_DIR        = '../'
 /
 &INMAG
  LBDRAG = F,
