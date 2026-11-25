@@ -127,22 +127,6 @@ C
      + ,LWSCAT, FLXLIMDIF,RAYSCAT,AEROSOLS
       CHARACTER(len=6) :: opacity_method
 
-      CHARACTER(30) :: AEROSOLMODEL
-
-      REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
-      LOGICAL DELTASCALE,HAZES,PICKET_FENCE_CLOUDS,GRAYCLDV
-C     Declared as in every other copy of /CLOUDY/ (unused here, but left
-C     implicit they gave this copy a different layout and size).
-      CHARACTER(30) :: AEROSOLCOMP
-      INTEGER MAXTAULOC,AERLAYERS
-      REAL MOLEF(NCLOUDS)
-
-      COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
-     &               CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &               ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &               MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
-     &               GRAYCLDV,C_TO_O
-
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC
      +              ,RNTAPO
      +              ,KOUNTP,KOUNTE,KOUNTH,KOUNTR
@@ -332,6 +316,8 @@ C**********************************************************
       SUBROUTINE RADIATION_ALLLATS()
       use tracerclds, only : LDYERAD, TRAG_forrad, QDYECOL, KDYEMODE,
      &                       FCONDYE, L1COLRT, T1COL, NDYERAD
+C     Cloud settings
+      use cloudsettings, only : AEROSOLMODEL, TAUAEROSOL, AEROPROF
 C     Parallelized over all JG*MG columns simultaneously.
 C     Computes radiative heating rates and stores in HTNET.
 C     HTNET_old is saved before the parallel loop.
@@ -434,22 +420,6 @@ C     TTRD is computed by the stripped-down RADIATION subroutine.
       LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF,RAYSCAT,AEROSOLS
       CHARACTER(len=6) :: opacity_method
-
-      CHARACTER(30) :: AEROSOLMODEL
-
-      REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),TCON(NL+1)
-      LOGICAL DELTASCALE,HAZES,PICKET_FENCE_CLOUDS,GRAYCLDV
-C     Declared as in every other copy of /CLOUDY/ (unused here, but left
-C     implicit they gave this copy a different layout and size).
-      CHARACTER(30) :: AEROSOLCOMP
-      INTEGER MAXTAULOC,AERLAYERS
-      REAL MOLEF(NCLOUDS)
-
-      COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
-     &               CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &               ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &               MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
-     &               GRAYCLDV,C_TO_O
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC
      +              ,RNTAPO

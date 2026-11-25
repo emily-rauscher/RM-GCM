@@ -3,6 +3,11 @@ c  Declare and define symbolic constants
 c  This simply cleans up the code and prevents me from
 c  introducing a bunch of common blocks
 
+!      The cloud settings (formerly COMMON/CLOUDY/) come from a module;
+!      a USE must precede the IMPLICIT that params.i brings in, so this
+!      file goes right after the routine's own USE statements, before
+!      any declaration.
+       use cloudsettings
        include 'params.i'
        include 'rglobrad.h'
 C                                                                       
@@ -22,23 +27,6 @@ C
        LOGICAL LLOGPLEV,LFLUXDIAG,L1DZENITH,LDIUR,DOSWRAD,DOLWRAD
      + ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
        CHARACTER(len=6) :: opacity_method
-
-!      NCLOUDS (number of cloud species) comes from nclouds.inc, via
-!      params.i above.
-
-       CHARACTER(30) :: AEROSOLMODEL
-       CHARACTER(30) :: AEROSOLCOMP
-       REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
-       REAL MTLX, METALLICITY
-       INTEGER MAXTAULOC,AERLAYERS
-       LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS, GRAYCLDV
-       REAL MOLEF(NCLOUDS)
-
-       COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
-     &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
-     &   GRAYCLDV
 
       COMMON/OUTCON/RNTAPE,NCOEFF,NLAT,INLAT,INSPC                        
      +              ,RNTAPO                                               

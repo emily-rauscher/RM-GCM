@@ -50,12 +50,13 @@
      &                           LDYERAD, KDYERAD, ADYE, NPAIRMX,
      &                           NDYERAD, KSLOTRAD, SIGDYE,
      &                           NCLD => NCLOUDS
+          use cloudtables
           implicit none
           save
           integer :: J, L, K, NL, NCLOUDS, NLAYER, NVERT, NIR, NSOL
 !         NCLOUDS is the argument here (the caller passes the parameter);
-!         arrays in COMMON need the constant itself, taken from tracerclds
-!         as NCLD.
+!         local arrays sized by it use the constant itself, taken from
+!         tracerclds as NCLD.
           real :: GAS_CONSTANT_R, GASCON, METALLICITY
 !         Out: species I has CLOUD_DATA optics (a species without a read
 !         block below keeps zero KE_OPPR, which is fine for corr-k).
@@ -66,12 +67,6 @@
           character (len = 40) :: haze_type
 
           ! Define all the arrays
-
-          ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
-          real, dimension(50, 100)  :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
-          real, dimension(50, 100)  :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
-          real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
-          real, dimension(100)      :: haze_pressure_array_pascals
 
           ! These are 50 by 50 because that's what the data in CLOUD_DATA is
           ! That can change but use to code from Elsie and Isaac
@@ -250,43 +245,19 @@
           ! SET UP THE CONDENSATION CURVES
           ! SHOULD BE MET DEPENDENT EVENTUALLY
 
-          REAL CORFACT(80)
-          REAL TCONDS(7, 80, NCLD)
           REAL DUMMY_TCONDS(NCLOUDS+1, 80) ! +1 is pressure axis in the files
 
-          REAL KE_OPPR(5, 100, 100, NCLD)
-          REAL PI0_OPPR(5, 100, 100, NCLD)
-          REAL G0_OPPR(5, 100, 100, NCLD)
 
           ! Kennedy adding cond curve interpolation
           INTEGER MET_INDEX, LOW_MET_INDEX, HIGH_MET_INDEX, I
           REAL, dimension(6) :: COND_CURVE_METS ! These are log10(Z/Zsun) values for the pre-calculated curves
-          REAL DENSITY(NCLD)
-          REAL FMOLW(NCLD)
           REAL CLOUD_MOLAR_MASSES(NCLD)
 
-          real, dimension(100) :: input_temperature_array
-          real, dimension(80) :: input_pressure_array_cgs
 
-          real, dimension(100) :: input_particle_size_array_in_meters
-          real, dimension(80) :: particle_size_vs_layer_array_in_meters
-          REAL, dimension (500) :: HAZE_WAV_GRID
-          REAL, dimension (100)  :: CLOUD_WAV_GRID
           REAL, dimension (100)  :: STARLIGHT_WAV_WEIGHTS
           REAL, dimension(100,100) :: TEMP_CLOUD_DATA
           REAL TEFFSTAR, DLAMBDA
-          REAL exp_92_lnsig2_pi, sigma
-      COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW,
-     &                              CORFACT,
-     &                              input_particle_size_array_in_meters,
-     &                              input_temperature_array,
-     &                              particle_size_vs_layer_array_in_meters,
-     &                              input_pressure_array_cgs,
-     &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
-     &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
-     &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
+          REAL sigma
 
           haze_type = 'soot'
           if (haze_type .eq. 'soot') THEN

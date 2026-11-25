@@ -31,7 +31,10 @@
 !
       use corrkmodule, only : MINWNOSTEL, CLOUD_A, CLOUD_G, CLOUD_KEXT, NWNO
       use tracerclds, only : ADYE, KSLOTRAD, ISPRAD, LDYERAD,
-     &                       QDYECOL, CLDRAMP, L1COLRT
+     &                       QDYECOL, L1COLRT
+C     Cloud/haze optical tables
+C     (the cloud settings come through rcommons.h).
+      use cloudtables
       include 'rcommons.h'
 
       INTEGER LLA, LLS, JDBLE, JDBLEDBLE, JN, JN2, iblackbody_above, ISL, IR, IRS, j1,kount, itspd, iband
@@ -75,28 +78,6 @@ C     LW sublayer masses
       real, dimension(NBATCH,2*NL+2) :: TAURAY,TAUL,TAUGAS,TAUAER
       real, automatic, dimension(NBATCH,NL+1) :: TAU_HAZE
 
-      real, dimension(100) :: input_temperature_array
-      real, dimension(80) :: input_pressure_array_cgs
-
-      real, dimension(100) :: input_particle_size_array_in_meters
-      real, dimension(80) :: particle_size_vs_layer_array_in_meters
-
-      REAL KE_OPPR(5, 100, 100, NCLOUDS) ! hardcoded for PF and DG!
-      REAL PI0_OPPR(5, 100, 100, NCLOUDS) ! hardcoded for PF and DG!
-      REAL G0_OPPR(5, 100, 100, NCLOUDS) ! hardcoded for PF and DG!
-
-      ! HAZE ARRAYS ARE DIFFERENT THAN THE OTHER ONES
-      real, dimension(50, 100)  :: HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg
-      real, dimension(50, 100)  :: HAZE_PlanckMean_tau_per_bar, HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg
-      real, dimension(500, 100) :: HAZE_wav_tau_per_bar, HAZE_wav_pi0, HAZE_wav_gg
-      real, dimension(100)      :: haze_pressure_array_pascals
-
-      REAL TCONDS(7,80,NCLOUDS)
-      REAL CORFACT(80)
-
-      REAL DENSITY(NCLOUDS)
-      REAL FMOLW(NCLOUDS)
-    !   REAL MOLEF(NCLOUDS)
 
       INTEGER, AUTOMATIC :: CLOUD_WAVELENGTH_INDEXES(5)
       INTEGER, AUTOMATIC :: HAZE_WAVELENGTH_INDEXES(5)
@@ -111,21 +92,6 @@ C     Which radiatively active dye carries species I (0 = none).
       REAL, AUTOMATIC :: p_weight, size_weight, tconds_interp, corfact_interp
       REAL, AUTOMATIC :: tconds_lo, tconds_hi, kext_interp
 
-      REAL, dimension (500) :: HAZE_WAV_GRID
-      REAL, dimension (100)  :: CLOUD_WAV_GRID
-      REAL :: exp_92_lnsig2_pi
-
-      COMMON /CLOUD_PROPERTIES/ TCONDS, KE_OPPR, PI0_OPPR, G0_OPPR,
-     &                              DENSITY, FMOLW,
-     &                              CORFACT,
-     &                              input_particle_size_array_in_meters,
-     &                              input_temperature_array,
-     &                              particle_size_vs_layer_array_in_meters,
-     &                              input_pressure_array_cgs,
-     &                              HAZE_RosselandMean_tau_per_bar, HAZE_RosselandMean_pi0, HAZE_RosselandMean_gg,
-     &                              HAZE_PlanckMean_tau_per_bar,HAZE_PlanckMean_pi0, HAZE_PlanckMean_gg,
-     &                              HAZE_wav_tau_per_bar,HAZE_wav_pi0, HAZE_wav_gg,
-     &                              haze_pressure_array_pascals, HAZE_WAV_GRID, CLOUD_WAV_GRID, exp_92_lnsig2_pi
 
       ! TAUAER/WOL/GOL are only filled for a subset of (L,J) index ranges below
       ! (e.g. solar L only up to J=NLAYER, IR L for the full doubled grid).

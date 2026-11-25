@@ -2,7 +2,8 @@ C*************************************************************
 C                   SUBROUTINE INISET                                     
 C*************************************************************            
       SUBROUTINE INISET                                                   
-      use tracerclds, only : CLDRAMP
+C     Cloud settings (&INCLOUDY)
+      use cloudsettings
 C                                                                         
 C     Sets up various variables and arrays. Sets NAMELIST variables       
 C     to their default settings, then reads NAMELIST                      
@@ -112,18 +113,6 @@ C
      & ,LWSCAT, FLXLIMDIF, RAYSCAT,AEROSOLS
       REAL with_TiO_and_VO
       CHARACTER(len=6) :: opacity_method
-      CHARACTER(30) :: AEROSOLMODEL
-      CHARACTER(30) :: AEROSOLCOMP
-      REAL TAUAEROSOL(nl+1,mg,2,jg),AEROPROF(NL+1),MAXTAU,TCON(NL+1)
-      REAL MOLEF(NCLOUDS)
-      REAL MTLX, METALLICITY, C_TO_O
-      INTEGER AERLAYERS
-      LOGICAL DELTASCALE, HAZES, PICKET_FENCE_CLOUDS, GRAYCLDV
-      COMMON/CLOUDY/AEROSOLMODEL,AERTOTTAU,CLOUDBASE,
-     &   CLOUDTOP,CLDFRCT,AERHFRAC,PI0AERSW,ASYMSW,EXTFACTLW,PI0AERLW,
-     &   ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,TAUAEROSOL,AEROPROF,
-     &   MAXTAU,MAXTAULOC,TCON,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,GRAYCLDV,
-     &   C_TO_O
       NAMELIST/INCLOUDY/AEROSOLMODEL,AEROSOLCOMP,MTLX,METALLICITY,HAZES,PICKET_FENCE_CLOUDS,MOLEF,AERLAYERS,
      &  AERTOTTAU,CLOUDBASE,CLOUDTOP,AERHFRAC,PI0AERSW,
      &  ASYMSW,EXTFACTLW,PI0AERLW,ASYMLW,DELTASCALE,SIG_AREA,PHI_LON,GRAYCLDV,
